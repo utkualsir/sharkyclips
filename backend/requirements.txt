@@ -1,0 +1,10 @@
+# ClipForge core dependencies (all free & open source).
+# NVIDIA GPU users: also install requirements-nvidia.txt (or just run `python cli.py doctor`).
+faster-whisper>=1.1.0
+yt-dlp[default]>=2025.11.12
+numpy>=1.24
+psutil>=5.9
+rich>=13.7
+
+# Apple Silicon (M1/M2/M3/M4...) only:
+mlx-whisper>=0.4.2; platform_system == "Darwin" and platform_machine == "arm64"

@@ -1,0 +1,20 @@
+# Store text files with LF line endings in the repo, on every OS.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mp4 binary
+*.mkv binary
+*.webm binary
+*.wav binary
+*.mp3 binary
+*.m4a binary
