@@ -5,7 +5,7 @@ Encoder choice (first one that really works on this machine wins):
 "Really works" = a 0.5 s test encode succeeds; ffmpeg lists encoders it has no
 hardware for, so listing alone proves nothing.
 
-9:16 / subtitle rendering comes in Phase 4 and will build on this module.
+9:16 clips with subtitles are rendered by clips.py on top of this module.
 """
 
 from __future__ import annotations
@@ -112,17 +112,25 @@ class RenderResult:
 
 
 def run_ffmpeg(cmd: list[str], duration: float,
-               on_progress: Callable[[float], None] | None = None) -> tuple[int, str]:
+               on_progress: Callable[[float], None] | None = None,
+               cwd: Path | None = None) -> tuple[int, str]:
     """Run ffmpeg with -progress on stdout; report output seconds done."""
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
-                            encoding="utf-8", errors="replace", creationflags=_flags())
+                            encoding="utf-8", errors="replace", creationflags=_flags(),
+                            cwd=str(cwd) if cwd else None)
     assert proc.stdout is not None
-    for line in proc.stdout:
-        if on_progress and line.startswith("out_time_us="):
-            try:
-                on_progress(min(int(line.split("=", 1)[1]) / 1e6, duration))
-            except ValueError:
-                pass
+    try:
+        for line in proc.stdout:
+            if on_progress and line.startswith("out_time_us="):
+                try:
+                    secs = min(int(line.split("=", 1)[1]) / 1e6, duration)
+                except ValueError:
+                    continue
+                on_progress(secs)
+    except BaseException:  # cancelled (web UI) or Ctrl+C: don't leave ffmpeg running
+        proc.kill()
+        proc.wait()
+        raise
     err = proc.stderr.read() if proc.stderr else ""
     return proc.wait(), err
 

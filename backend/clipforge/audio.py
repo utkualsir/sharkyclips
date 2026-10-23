@@ -82,12 +82,19 @@ def extract_audio(source: Path, dest: Path, duration: float | None = None,
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                             encoding="utf-8", errors="replace", creationflags=_creationflags())
     assert proc.stdout is not None
-    for line in proc.stdout:
-        if on_progress and line.startswith("out_time_us=") and duration:
-            try:
-                on_progress(min(int(line.split("=", 1)[1]) / 1e6, duration))
-            except ValueError:
-                pass
+    try:
+        for line in proc.stdout:
+            if on_progress and line.startswith("out_time_us=") and duration:
+                try:
+                    secs = min(int(line.split("=", 1)[1]) / 1e6, duration)
+                except ValueError:
+                    continue
+                on_progress(secs)
+    except BaseException:  # cancelled: stop ffmpeg and drop the partial file
+        proc.kill()
+        proc.wait()
+        tmp.unlink(missing_ok=True)
+        raise
     stderr = proc.stderr.read() if proc.stderr else ""
     if proc.wait() != 0:
         tmp.unlink(missing_ok=True)

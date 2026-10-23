@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="tr" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
+    <title>ClipForge</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=Noto+Sans+Arabic:wght@400..700&display=swap"
+    />
+    <script>
+      // Theme + language before first paint (no flash). Both are remembered per browser.
+      (function () {
+        try {
+          var t = localStorage.getItem("cf-theme");
+          if (t !== "light" && t !== "dark")
+            t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", t);
+          var l = localStorage.getItem("cf-lang") || "tr";
+          document.documentElement.lang = l;
+          document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-CirFPnoD.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CGLYyJjA.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

@@ -8,6 +8,7 @@
     python cli.py cut <id> <rank> | --all
     python cli.py list
     python cli.py languages
+    python cli.py serve [--lan] [--port 8000]
 """
 
 from __future__ import annotations
@@ -204,6 +205,70 @@ def cmd_languages(args) -> int:
     return 0
 
 
+def _lan_ip() -> str | None:
+    import socket
+
+    try:  # no packet is sent; this just asks the OS which interface would be used
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("192.168.255.255", 1))
+            ip = s.getsockname()[0]
+        return None if ip.startswith("127.") else ip
+    except OSError:
+        return None
+
+
+def _ensure_frontend() -> None:
+    """Build the React app if it's missing or older than its sources (needs Node.js)."""
+    import shutil
+    import subprocess
+
+    root = Path(__file__).resolve().parent.parent / "frontend"
+    index = root / "dist" / "index.html"
+    sources = [p for p in (root / "src").rglob("*") if p.is_file()] +               [root / n for n in ("index.html", "package.json", "vite.config.ts") if (root / n).is_file()]
+    newest = max((p.stat().st_mtime for p in sources), default=0)
+    if index.is_file() and index.stat().st_mtime >= newest:
+        return
+    npm = shutil.which("npm")
+    if npm is None:
+        if index.is_file():
+            return  # the shipped build is fine; sources only matter to developers
+        raise ClipForgeError("The web UI isn't built and Node.js isn't installed.",
+                             "Install Node.js (Windows: winget install OpenJS.NodeJS.LTS, "
+                             "macOS: brew install node), then run serve again.")
+    console.print("Building the web UI (first run only) ...")
+    if not (root / "node_modules").is_dir():
+        subprocess.run([npm, "install", "--no-audit", "--no-fund"], cwd=root, check=True)
+    subprocess.run([npm, "run", "build"], cwd=root, check=True)
+
+
+def cmd_serve(args) -> int:
+    import threading
+    import webbrowser
+
+    import uvicorn
+
+    _ensure_frontend()
+    from clipforge.web.app import app
+
+    host = "0.0.0.0" if args.lan else "127.0.0.1"
+    local_url = f"http://localhost:{args.port}"
+    console.print(f"[bold]ClipForge[/] web UI: [cyan]{local_url}[/]")
+    if args.lan:
+        ip = _lan_ip()
+        if ip:
+            app.state.lan_url = f"http://{ip}:{args.port}"
+            console.print(f"On your phone / other computers (same Wi-Fi): [cyan]{app.state.lan_url}[/]")
+            console.print("[dim]Anyone on this network can open it. Windows may ask to allow "
+                          "Python through the firewall: allow it for private networks.[/]")
+        else:
+            console.print("[yellow]Couldn't find this computer's network address.[/]")
+    console.print("[dim]Press Ctrl+C to stop.[/]")
+    if not args.no_browser:
+        threading.Timer(1.2, lambda: webbrowser.open(local_url)).start()
+    uvicorn.run(app, host=host, port=args.port, log_level="warning")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="clipforge",
                                 description=f"ClipForge {__version__} - local stream & video highlight clipper")
@@ -239,6 +304,13 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("rank", nargs="?", type=int, help="candidate rank from `highlights` (e.g. 1)")
     c.add_argument("--all", action="store_true", help="export every candidate")
     c.set_defaults(func=cmd_cut)
+
+    s = sub.add_parser("serve", help="start the web UI in your browser")
+    s.add_argument("--lan", action="store_true",
+                   help="also allow other devices on your network (phone, laptop)")
+    s.add_argument("--port", type=int, default=8000)
+    s.add_argument("--no-browser", action="store_true", help="don't open the browser")
+    s.set_defaults(func=cmd_serve)
 
     sub.add_parser("list", help="list projects").set_defaults(func=cmd_list)
     sub.add_parser("languages", help="show supported languages").set_defaults(func=cmd_languages)

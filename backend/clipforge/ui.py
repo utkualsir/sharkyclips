@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import sys
+import threading
+from typing import Callable
 
 from rich.console import Console
 from rich.progress import (BarColumn, DownloadColumn, Progress, TaskProgressColumn, TextColumn,
@@ -15,6 +17,58 @@ for _stream in (sys.stdout, sys.stderr):
         pass
 
 console = Console(highlight=False)
+
+# --------------------------------------------------------------- progress sink
+# The web UI runs pipeline steps in a worker thread and wants their progress.
+# A thread can register a sink; every progress bar created in that thread then
+# reports (description, completed, total) to it instead of drawing in the terminal.
+ProgressSink = Callable[[str, float, "float | None"], None]
+_local = threading.local()
+
+
+def set_progress_sink(sink: ProgressSink | None) -> None:
+    _local.sink = sink
+
+
+def progress_sink() -> ProgressSink | None:
+    return getattr(_local, "sink", None)
+
+
+class _ReportingProgress(Progress):
+    """A rich Progress that also reports every change to the thread's sink."""
+
+    def __init__(self, *columns, sink: ProgressSink, **kwargs):
+        super().__init__(*columns, disable=True, **kwargs)
+        self._sink = sink
+
+    def _report(self, task_id) -> None:
+        task = self._tasks.get(task_id)
+        if task is not None:
+            self._sink(task.description, float(task.completed), task.total)
+
+    def add_task(self, description, *args, **kwargs):
+        task_id = super().add_task(description, *args, **kwargs)
+        self._report(task_id)
+        return task_id
+
+    def update(self, task_id, *args, **kwargs) -> None:
+        super().update(task_id, *args, **kwargs)
+        self._report(task_id)
+
+    def advance(self, task_id, advance: float = 1) -> None:
+        super().advance(task_id, advance)
+        self._report(task_id)
+
+    def reset(self, task_id, *args, **kwargs) -> None:
+        super().reset(task_id, *args, **kwargs)
+        self._report(task_id)
+
+
+def _progress(*columns) -> Progress:
+    sink = progress_sink()
+    if sink is not None:
+        return _ReportingProgress(*columns, sink=sink, console=console)
+    return Progress(*columns, console=console)
 
 
 def fmt_time(seconds: float | None) -> str:
@@ -40,16 +94,15 @@ class _MediaTime(TextColumn):
 
 def time_progress() -> Progress:
     """Progress bar for media time (seconds) with ETA."""
-    return Progress(
+    return _progress(
         TextColumn("[bold]{task.description}"), BarColumn(), TaskProgressColumn(),
         _MediaTime(), TextColumn("elapsed"), TimeElapsedColumn(),
-        TextColumn("ETA"), TimeRemainingColumn(), console=console,
+        TextColumn("ETA"), TimeRemainingColumn(),
     )
 
 
 def download_progress() -> Progress:
-    return Progress(
+    return _progress(
         TextColumn("[bold]{task.description}"), BarColumn(), TaskProgressColumn(),
         DownloadColumn(), TransferSpeedColumn(), TextColumn("ETA"), TimeRemainingColumn(),
-        console=console,
     )

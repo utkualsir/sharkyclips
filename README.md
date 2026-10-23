@@ -4,8 +4,8 @@
 Point it at a Twitch/Kick/YouTube VOD or a video file and it finds the best moments for you.
 Everything runs on your own computer: no paid APIs, no cloud, no account.
 
-> Status: **Phase 2** (ingest, multilingual transcription, signal-based highlight engine).
-> The CLI works today; a web UI comes in a later phase.
+> Status: **Phase 5** (web UI) on top of phases 1-2, with 9:16 clip rendering built in.
+> Phase 3 (chat + local LLM) is next; its publish-package fields are already in the UI.
 
 ## Features & roadmap
 
@@ -14,8 +14,8 @@ Everything runs on your own computer: no paid APIs, no cloud, no account.
 | 1 | Hardware detection, `doctor`, ingest from URL or file, 16 kHz audio, multilingual transcription with word timestamps, resumable for 3-6 h streams | ✅ done |
 | 2 | Highlight engine: pluggable signals (loudness, keywords, laughter/shouting, speech rhythm, music chorus/drop) → hype curve → non-overlapping clip candidates with reasons | ✅ done |
 | 3 | Chat activity + local LLM as extra signals (LLM on the same GPU, never loaded at the same time as Whisper) to rank and title clips | planned |
-| 4 | Clip rendering: vertical 9:16 crops, burned-in subtitles (incl. RTL Arabic), export presets | planned |
-| 5 | FastAPI web UI (Turkish by default, all 7 languages) | planned |
+| 4 | Clip rendering: vertical 9:16 (facecam + game / fit / fill), burned-in word-timed subtitles (incl. RTL Arabic), hook text, facecam detection | ✅ core done (via the web UI) |
+| 5 | Local web UI: library, timeline with Hype Map, review & render, 7 languages, dark/light | ✅ done |
 
 **Languages:** Turkish (tr, default), English (en), Russian (ru), Hungarian (hu), German (de),
 Arabic (ar, right-to-left), Chinese (zh). Run `python cli.py languages` to see the registry.
@@ -75,6 +75,39 @@ source .venv/bin/activate
 python -m pip install -r backend/requirements.txt   # installs mlx-whisper on Apple Silicon
 ```
 
+### Web UI
+
+```bash
+cd backend
+python cli.py serve          # opens http://localhost:8000 in your browser
+python cli.py serve --lan    # also reachable from your phone / Mac on the same Wi-Fi
+```
+
+`--lan` prints the address to open on the other device (e.g. `http://192.168.1.20:8000`).
+Anyone on that network can use it, so only do this on a network you trust. Windows may ask to
+allow Python through the firewall: allow it for private networks.
+
+The built UI ships in `frontend/dist`, so Node.js isn't needed to use it. If you change the
+frontend sources and Node.js is installed, `serve` rebuilds it automatically
+(or run `cd frontend && npm install && npm run dev` for live reloading on port 5173).
+
+What you can do in the browser:
+
+- **Library**: all projects with live status ("Transcribing 60%", "12 candidates ready").
+  New project: paste a URL, a local file path (on this computer only), or drop a file.
+  Download -> transcription -> highlight analysis -> facecam detection run by themselves.
+- **Project**: 16:9 player with a live 9:16 preview of the selected clip (layout, subtitles,
+  hook), the Hype Map (click to jump), per-clip signal stats, the candidate list with
+  translated reasons and Accept toggles, render options and "Render N clips". Finished clips
+  play inline and download as MP4 (1080x1920, H.264/AAC).
+- **Facecam editor**: drag/resize the detected webcam box on a real frame.
+- **Settings**: UI language (Turkish default, English, Russian, Hungarian, German, Arabic RTL,
+  Chinese), custom trigger words per language, video encoder, default mode.
+- Keyboard: up/down (or j/k) moves through candidates, `a` accepts/unaccepts.
+
+Heavy work (transcription, analysis, rendering) runs one job at a time on the GPU lane;
+downloads run alongside. Progress streams live to every open browser tab.
+
 ### Check everything
 
 ```bash
@@ -127,6 +160,8 @@ workspace/<id>/
   hype_curve.json   small Hype Map file for the UI: combined + per-signal curves (max 1500
                     points, values 0-100, peaks kept) + clip markers
   previews/         quick preview MP4s from `cut` (rank_score_start-time.mp4)
+  review.json       web UI choices: accepted clips, hook texts, render options, facecam box
+  clips/            rendered 9:16 clips (01_c01.mp4 ...), listed in clips.json
   cache/            per-chunk / per-signal results (lets long runs resume)
 ```
 
