@@ -49,7 +49,9 @@ def hype_curve_json(project: Project, ctx: AnalysisContext, hype, result: dict) 
 
 
 def run_highlights(project: Project, mode: str | None = None, top: int | None = None,
-                   force: bool = False) -> dict:
+                   force: bool = False, fetch_chat: bool = True) -> dict:
+    """fetch_chat=False: don't download the chat replay here (the web UI does it in its
+    downloads lane, so the GPU lane isn't blocked); an existing chat.json is still used."""
     meta = project.load_meta()
     mode_name = mode or meta.get("mode") or "gaming"
     preset = get_mode(mode_name)
@@ -58,6 +60,11 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
                              "Re-run: python cli.py ingest <url-or-path>")
     if force:
         shutil.rmtree(project.cache_dir / "signals", ignore_errors=True)
+
+    if fetch_chat and "chat" in preset.weights:
+        from ..chat import ensure_chat
+
+        ensure_chat(project)  # once per project; no chat replay = signal skipped
 
     t0 = time.perf_counter()
     ctx = AnalysisContext(project, preset)

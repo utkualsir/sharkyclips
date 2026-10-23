@@ -107,6 +107,26 @@ export default function Settings() {
 
           <section className="card setting">
             <div>
+              <h3>{t("settings.output_language")}</h3>
+              <p>{t("settings.output_language_desc")}</p>
+            </div>
+            <div>
+              <select
+                className="select"
+                value={settings.output_language}
+                onChange={(e) => save({ output_language: e.target.value })}
+              >
+                {UI_LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </section>
+
+          <section className="card setting">
+            <div>
               <h3>{t("settings.triggers")}</h3>
               <p>{t("settings.triggers_desc")}</p>
             </div>

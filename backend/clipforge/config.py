@@ -30,6 +30,14 @@ DEFAULTS: dict[str, Any] = {
     # Preview/clip encoder: "auto" (first working hardware encoder, else CPU) or an ffmpeg
     # name: h264_nvenc, h264_videotoolbox, h264_qsv, h264_amf, libx264
     "video_encoder": "auto",
+    # Local LLM (Ollama). "auto" picks by hardware: qwen3.5:9b with 8 GB+ VRAM, else the fallback.
+    "llm_enabled": True,
+    "llm_model": "auto",
+    "llm_fallback_model": "qwen3.5:4b",
+    "llm_num_ctx": 8192,
+    "ollama_url": "http://127.0.0.1:11434",
+    # Chat reacts a few seconds after the moment; the chat curve is shifted back by this much.
+    "chat_delay": 5,
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,

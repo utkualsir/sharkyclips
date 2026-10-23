@@ -31,6 +31,9 @@ STAGES = {
     "Transcribing": "transcribing",
     "Audio event model": "downloading_model",
     "Listening for laughter": "listening",
+    "LLM reading": "llm_reading",
+    "Downloading LLM": "downloading_llm",
+    "Downloading chat": "downloading_chat",
 }
 
 ACTIVE = ("queued", "running")

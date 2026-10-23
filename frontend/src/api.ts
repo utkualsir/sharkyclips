@@ -24,11 +24,12 @@ export interface Meta {
   is_local: boolean;
   lan_url: string | null;
   workspace: string | null;
+  llm: { available: boolean };
 }
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -72,9 +73,14 @@ export interface Publish {
   available: boolean;
   viral_score: number | null;
   viral_label: "low" | "medium" | "high" | "very_high" | null;
+  sub_scores: { hook: number; retention: number; trend_fit: number; length_fit: number } | null;
   titles: string[];
+  title_styles: string[] | null;
   hashtags: string[];
   cover_prompt: string | null;
+  cover_text: string | null;
+  hook_text: string | null;
+  language: string | null;
 }
 
 export interface Candidate {
@@ -90,12 +96,23 @@ export interface Candidate {
   text: string;
   default_hook: string;
   publish: Publish;
+  llm: null | {
+    what_happens: string;
+    self_contained: boolean;
+    moment_type: string;
+    game_or_topic: string;
+    refined: boolean;
+    original: { start: number; end: number };
+  };
+  subtitle_languages: string[];
 }
 
 export interface ClipOptions {
   layout: Layout;
   subtitles: SubtitleStyle;
   hook: boolean;
+  hook_flash: boolean;
+  subtitle_lang: string;
 }
 
 export interface Facecam {
@@ -142,6 +159,8 @@ export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
   review: Review;
   clips: Record<string, RenderedClip>;
   jobs: Job[];
+  chat: null | { status: "ok" | "none"; source: string; reason: string | null; count: number; authors: number };
+  analysis: null | { language: string; model: string; analyzed_at: string };
 }
 
 export interface HypeCurve {
@@ -162,6 +181,7 @@ export interface Settings {
   ui_language: string;
   default_mode: Mode;
   video_encoder: string;
+  output_language: string;
   custom_triggers: Record<string, string[]>;
 }
 
@@ -217,7 +237,14 @@ export const api = {
   detectFacecam: (id: string) => req<Job>("POST", `${P(id)}/facecam/detect`),
   render: (id: string, clip_ids: string[], options: ClipOptions, hooks: Record<string, string>) =>
     req<Job>("POST", `${P(id)}/render`, { clip_ids, options, hooks }),
-  regeneratePublish: (id: string, cid: string) => req<Publish>("POST", `${P(id)}/candidates/${cid}/publish`),
+  regeneratePublish: (id: string, cid: string) => req<Job>("POST", `${P(id)}/candidates/${cid}/publish`),
+  analyze: (id: string, lang?: string, force = false) => req<Job>("POST", `${P(id)}/analyze`, { lang, force }),
+  importChat: async (id: string, file: File) => {
+    const res = await fetch(`${P(id)}/chat?filename=${encodeURIComponent(file.name)}`, { method: "PUT", body: file });
+    const data = await res.json();
+    if (!res.ok) throw new ApiError(data.error || res.statusText, data.hint || null, res.status);
+    return data as NonNullable<ProjectDetail["chat"]>;
+  },
   cancelJob: (jobId: string) => req<Job>("POST", `/api/jobs/${jobId}/cancel`),
   jobs: () => req<Job[]>("GET", "/api/jobs"),
 };

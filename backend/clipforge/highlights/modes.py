@@ -1,7 +1,7 @@
 """Mode presets: which signals matter, and what a good clip looks like.
 
 Weights reference signals by name. A weight for a signal that doesn't exist yet
-(e.g. "chat", "llm" in Phase 3) is simply ignored until that signal is registered.
+(or one that can't run here, e.g. no chat replay) is skipped and the rest re-normalized.
 """
 
 from __future__ import annotations
@@ -31,9 +31,8 @@ class ModePreset:
 MODES: dict[str, ModePreset] = {
     "gaming": ModePreset(
         name="gaming",
-        weights={"loudness": 0.30, "laughter": 0.25, "keywords": 0.25, "speech": 0.20,
-                 # Phase 3: "chat": 0.0, "llm": 0.0
-                 },
+        # "chat" only runs when there's a chat replay; missing signals are re-normalized away.
+        weights={"loudness": 0.30, "laughter": 0.25, "keywords": 0.25, "speech": 0.20, "chat": 0.30},
         keyword_categories=("reaction",),
         clip_min=15, clip_ideal=38, clip_max=60,
         pre_roll=(6, 10), post_roll=3, min_gap=45, smooth_sigma=2.0,
@@ -41,10 +40,10 @@ MODES: dict[str, ModePreset] = {
     ),
     "study": ModePreset(
         name="study",
-        weights={"keywords": 0.40, "steady_speech": 0.35, "speech": 0.10,
-                 "loudness": 0.03, "laughter": 0.02,
-                 # Phase 3: the local LLM ("llm") will do the heavy lifting here.
-                 },
+        # The local LLM reads the transcript and finds self-contained explanations: it's
+        # the main signal here. Without Ollama the other signals still work.
+        weights={"llm": 0.55, "keywords": 0.20, "steady_speech": 0.15, "speech": 0.05,
+                 "loudness": 0.02, "laughter": 0.01, "chat": 0.05},
         keyword_categories=("study",),
         clip_min=30, clip_ideal=45, clip_max=60,
         pre_roll=(1, 4), post_roll=1, min_gap=60, smooth_sigma=5.0,
@@ -52,7 +51,8 @@ MODES: dict[str, ModePreset] = {
     ),
     "music": ModePreset(
         name="music",
-        weights={"music": 0.80, "loudness": 0.12, "laughter": 0.08},  # laughter -> cheering
+        weights={"music": 0.80, "loudness": 0.12, "laughter": 0.08,  # laughter -> cheering
+                 "chat": 0.10},
         keyword_categories=(),
         clip_min=15, clip_ideal=25, clip_max=30,
         pre_roll=(0, 2), post_roll=0, min_gap=30, smooth_sigma=3.0,

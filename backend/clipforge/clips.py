@@ -6,6 +6,10 @@ Layouts (output is always 1080x1920):
   crop   fill the frame (center crop)
   auto   split when the project has a facecam region, else fit
 
+Hook options: a hook text on screen for the first seconds, and/or a "flash": the
+clip's peak moment shown for ~1 s at the very start, then the clip from its start.
+Subtitles can use the LLM translation (analyze --lang) instead of the spoken words.
+
 Subtitles come from the word timestamps in transcript.json and are drawn by
 libass (ffmpeg's `ass` filter), which also handles right-to-left Arabic and
 CJK text. All text (subtitles and the hook) goes through one .ass file.
@@ -32,6 +36,7 @@ SPLIT_TOP = 768  # facecam height in the split layout (40%)
 LAYOUTS = ("auto", "split", "fit", "crop")
 SUBTITLE_STYLES = ("bold", "clean", "minimal", "none")
 NO_SPACE_LANGS = {"zh", "ja"}
+FLASH_SECONDS = 1.0
 
 GOLD = "&H006AB5D9"  # #D9B56A as ASS &HAABBGGRR
 WHITE = "&H00FFFFFF"
@@ -44,12 +49,19 @@ class ClipOptions:
     layout: str = "auto"
     subtitles: str = "bold"
     hook: bool = True
-    hook_text: str = ""  # empty -> first sentence of the clip
+    hook_text: str = ""  # empty -> the LLM's hook text, else the clip's first sentence
+    hook_flash: bool = False  # show the peak moment for ~1 s before the clip
+    subtitle_lang: str = ""  # "" = spoken language; a code = use that translation if available
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
-        opts = cls(**{k: data[k] for k in ("layout", "subtitles", "hook", "hook_text") if k in data})
+        keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang")
+        opts = cls(**{k: data[k] for k in keys if k in data})
+        opts.hook_flash = bool(opts.hook_flash)
+        opts.subtitle_lang = str(opts.subtitle_lang or "")
+        if opts.subtitle_lang and not languages.get(opts.subtitle_lang):
+            raise ClipForgeError(f"Unknown subtitle language '{opts.subtitle_lang}'.")
         if opts.layout not in LAYOUTS:
             raise ClipForgeError(f"Unknown layout '{opts.layout}'.", f"Use one of: {', '.join(LAYOUTS)}")
         if opts.subtitles not in SUBTITLE_STYLES:
@@ -182,10 +194,32 @@ def first_sentence(text: str, limit: int = 70, min_len: int = 24) -> str:
     return out[:1].upper() + out[1:] if out else out
 
 
+def translated_words(lines: list[dict], start: float, end: float, lang: str) -> list[dict]:
+    """Subtitle lines (segment timing) -> evenly timed pseudo-words, so the translated
+    subtitles get the same word-by-word look. Times relative to the clip start."""
+    out = []
+    for ln in lines:
+        a, b = max(start, ln["start"]), min(end, ln["end"])
+        if b <= a:
+            continue
+        tokens = list(ln["text"].replace(" ", "")) if lang in NO_SPACE_LANGS else ln["text"].split()
+        if not tokens:
+            continue
+        total = sum(len(t) + 1 for t in tokens)
+        t = a
+        for tok in tokens:
+            d = (b - a) * (len(tok) + 1) / total
+            out.append({"start": t - start, "end": t + d - start, "word": tok})
+            t += d
+    return out
+
+
 def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str,
-              lang: str | None, hook_text: str) -> str:
+              lang: str | None, hook_text: str, offset: float = 0.0,
+              hook_lang: str | None = None) -> str:
+    """offset: seconds of hook flash before the clip (subtitles start after it)."""
     font = _font_for(lang)
-    rtl = languages.is_rtl(lang)
+    rtl = languages.is_rtl(hook_lang or lang)
     # Caption line position (center of the text block)
     cap_y = SPLIT_TOP if layout == "split" else 1390
     styles = {
@@ -210,7 +244,9 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
     lines += ["", "[Events]",
               "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
 
-    def event(start: float, end: float, style: str, text: str, layer: int = 0) -> None:
+    def event(start: float, end: float, style: str, text: str, layer: int = 0, shift: bool = True) -> None:
+        if shift:
+            start, end = start + offset, end + offset
         lines.append(f"Dialogue: {layer},{_ass_time(start)},{_ass_time(end)},{style},,0,0,0,,{text}")
 
     if opts.subtitles != "none" and words:
@@ -236,7 +272,11 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
                         continue
                     parts = [(f"{{\\c{GOLD}}}{t}{{\\c{WHITE}}}" if i == wi else t)
                              for i, t in enumerate(texts)]
-                    pop = "{\\fscx108\\fscy108\\t(0,90,\\fscx100\\fscy100)}" if wi == 0 else ""
+                    if languages.is_rtl(lang):
+                        # libass lays out runs split by override tags left-to-right, so the
+                        # word order of right-to-left text must be reversed here (measured).
+                        parts.reverse()
+                    pop ="{\\fscx108\\fscy108\\t(0,90,\\fscx100\\fscy100)}" if wi == 0 else ""
                     event(w_start, w_end, "bold", pos + pop + joiner.join(parts))
             else:
                 event(g_start, g_end, style, pos + "{\\fad(80,80)}" + joiner.join(texts))
@@ -246,8 +286,8 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
         text = _ass_escape(hook_text)
         if rtl:
             text = "‫" + text + "‬"  # keep punctuation on the right side
-        event(0.0, min(3.2, duration), "hook",
-              f"{{\\an8\\pos({OUT_W // 2},{hook_y})\\fad(150,300)}}{text}", layer=1)
+        event(0.0, min(3.2, duration) + offset * 0.6, "hook",
+              f"{{\\an8\\pos({OUT_W // 2},{hook_y})\\fad(150,300)}}{text}", layer=1, shift=False)
     return "\n".join(lines) + "\n"
 
 
@@ -258,18 +298,21 @@ def _even(v: float) -> int:
     return max(2, int(round(v / 2)) * 2)
 
 
-def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None) -> str:
+def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
+                  inp: str = "0:v", out: str = "base") -> str:
+    """Layout filter chain from input pad `inp` to output pad `out` (labels are unique per out)."""
     cover = f"scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=increase:flags=bicubic,crop={OUT_W}:{OUT_H}"
+    a, b, bg_, fg_, cam_, game_ = (f"{out}_{x}" for x in ("a", "b", "bg", "fg", "cam", "game"))
     if layout == "crop":
-        return f"[0:v]{cover},setsar=1[base]"
+        return f"[{inp}]{cover},setsar=1[{out}]"
     if layout == "fit":
         # Blur at quarter size (fast), then scale back up.
         bg = (f"scale={OUT_W // 4}:{OUT_H // 4}:force_original_aspect_ratio=increase,"
               f"crop={OUT_W // 4}:{OUT_H // 4},boxblur=12:2,eq=brightness=-0.10:saturation=1.1,"
               f"scale={OUT_W}:{OUT_H}")
         fg = f"scale={OUT_W}:{OUT_H}:force_original_aspect_ratio=decrease:flags=bicubic"
-        return (f"[0:v]split=2[a][b];[a]{bg}[bg];[b]{fg}[fg];"
-                f"[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1[base]")
+        return (f"[{inp}]split=2[{a}][{b}];[{a}]{bg}[{bg_}];[{b}]{fg}[{fg_}];"
+                f"[{bg_}][{fg_}]overlay=(W-w)/2:(H-h)/2,setsar=1[{out}]")
     assert facecam is not None
     bottom_h = OUT_H - SPLIT_TOP
     # Facecam: cut the region, then center-crop it to the top panel's aspect ratio.
@@ -298,8 +341,8 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None) 
     game = (f"crop={_even(gw)}:{_even(src_h)}:{_even(gx)}:0,"
             f"scale={OUT_W}:{bottom_h}:force_original_aspect_ratio=increase:flags=bicubic,"
             f"crop={OUT_W}:{bottom_h}")
-    return (f"[0:v]split=2[a][b];[a]{cam}[cam];[b]{game}[game];"
-            f"[cam][game]vstack=inputs=2,setsar=1[base]")
+    return (f"[{inp}]split=2[{a}][{b}];[{a}]{cam}[{cam_}];[{b}]{game}[{game_}];"
+            f"[{cam_}][{game_}]vstack=inputs=2,setsar=1[{out}]")
 
 
 def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None,
@@ -317,10 +360,25 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
 
     transcript = read_json(project.transcript_path) if project.transcript_path.is_file() else {}
     lang = transcript.get("language")
-    words = clip_words(transcript, start, end) if transcript else []
+    translated = (cand.get("translations") or {}).get(opts.subtitle_lang) if opts.subtitle_lang else None
+    if translated and opts.subtitle_lang != lang:
+        words = translated_words(translated, start, end, opts.subtitle_lang)
+        lang = opts.subtitle_lang
+    else:
+        words = clip_words(transcript, start, end) if transcript else []
     layout = resolve_layout(opts.layout, facecam)
-    hook_text = opts.hook_text or first_sentence(cand.get("text") or "")
-    ass = build_ass(words, duration, opts, layout, lang, hook_text)
+    publish = cand.get("publish") or {}
+    hook_text = opts.hook_text or publish.get("hook_text") or first_sentence(cand.get("text") or "")
+    # The hook text's language decides its direction (Arabic hook = right-to-left).
+    hook_lang = publish.get("language") if (publish.get("hook_text") and not opts.hook_text) else lang
+    has_audio = bool(meta.get("audio_codec")) or meta.get("audio_codec") is None
+
+    # Hook flash: ~1 s around the peak, shown first.
+    flash = FLASH_SECONDS if opts.hook_flash else 0.0
+    src_dur = float(meta.get("duration") or end)
+    peak = float(cand.get("peak") or (start + end) / 2)
+    flash_start = min(max(0.0, peak - 0.45), max(0.0, src_dur - FLASH_SECONDS))
+    ass = build_ass(words, duration, opts, layout, lang, hook_text, offset=flash, hook_lang=hook_lang)
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_name(dest.stem + ".partial.mp4")
@@ -328,24 +386,48 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
     try:
         # Relative file name + cwd: avoids ffmpeg filter escaping of Windows paths.
         (work / "subs.ass").write_text(ass, encoding="utf-8")
-        graph = _filter_graph(layout, src_w, src_h, facecam) + ";[base]ass=subs.ass,format=yuv420p[v]"
         rate = ["-r", "60"] if fps > 61 else []
-        fade_out = max(0.0, duration - 0.2)
-        audio = f"afade=t=in:d=0.12,afade=t=out:st={fade_out:.3f}:d=0.2"
+        total = duration + flash
+        fade_out = max(0.0, total - 0.2)
+        src = str(source.resolve())
+        if flash:
+            # [1] = flash (slight punch-in zoom), [0] = the clip, which starts with a white flash.
+            punch = (f"scale={int(OUT_W * 1.08) // 2 * 2}:{int(OUT_H * 1.08) // 2 * 2},"
+                     f"crop={OUT_W}:{OUT_H}")
+            graph = (_filter_graph(layout, src_w, src_h, facecam, "1:v", "fl") + ";"
+                     + _filter_graph(layout, src_w, src_h, facecam, "0:v", "main") + ";"
+                     f"[fl]{punch},setsar=1,fps={min(60, round(fps))},format=yuv420p[flv];"
+                     f"[main]fade=t=in:st=0:d=0.18:color=white,setsar=1,fps={min(60, round(fps))},format=yuv420p[mainv];")
+            if has_audio:
+                graph += (f"[1:a]aresample=48000,afade=t=in:d=0.05,afade=t=out:st={flash - 0.12:.3f}:d=0.12[fla];"
+                          f"[0:a]aresample=48000[maina];"
+                          f"[flv][fla][mainv][maina]concat=n=2:v=1:a=1[cv][ca];"
+                          f"[ca]afade=t=out:st={fade_out:.3f}:d=0.2[a];")
+            else:
+                graph += "[flv][mainv]concat=n=2:v=1:a=0[cv];"
+            graph += "[cv]ass=subs.ass,format=yuv420p[v]"
+            inputs = ["-ss", f"{start:.3f}", "-t", f"{duration:.3f}", "-i", src,
+                      "-ss", f"{flash_start:.3f}", "-t", f"{flash:.3f}", "-i", src]
+            maps = ["-map", "[v]"] + (["-map", "[a]"] if has_audio else [])
+            audio_args: list[str] = []
+        else:
+            graph = _filter_graph(layout, src_w, src_h, facecam) + ";[base]ass=subs.ass,format=yuv420p[v]"
+            inputs = ["-ss", f"{start:.3f}", "-t", f"{duration:.3f}", "-i", src]
+            maps = ["-map", "[v]", "-map", "0:a:0?"]
+            audio_args = ["-af", f"afade=t=in:d=0.12,afade=t=out:st={fade_out:.3f}:d=0.2"]
 
         def build(e) -> list[str]:
-            return [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-nostats",
-                    "-ss", f"{start:.3f}", "-i", str(source.resolve()), "-t", f"{duration:.3f}",
-                    "-filter_complex", graph, "-map", "[v]", "-map", "0:a:0?", *rate,
-                    "-c:v", e.name, *e.args, "-c:a", "aac", "-b:a", "192k", "-af", audio,
+            return [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-nostats", *inputs,
+                    "-filter_complex", graph, *maps, *rate,
+                    "-c:v", e.name, *e.args, "-c:a", "aac", "-b:a", "192k", *audio_args,
                     "-movflags", "+faststart", "-progress", "pipe:1", str(tmp.resolve())]
 
         enc, _ = pick_encoder()
         t0 = time.perf_counter()
-        code, err = run_ffmpeg(build(enc), duration, on_progress, cwd=work)
+        code, err = run_ffmpeg(build(enc), total, on_progress, cwd=work)
         if code != 0 and enc.hardware:  # e.g. GPU busy: retry on the CPU
             enc = ENCODERS["libx264"]
-            code, err = run_ffmpeg(build(enc), duration, on_progress, cwd=work)
+            code, err = run_ffmpeg(build(enc), total, on_progress, cwd=work)
         if code != 0:
             tmp.unlink(missing_ok=True)
             raise ClipForgeError(f"ffmpeg could not render the clip: {err.strip()[-500:]}")

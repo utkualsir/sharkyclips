@@ -4,8 +4,8 @@
 Point it at a Twitch/Kick/YouTube VOD or a video file and it finds the best moments for you.
 Everything runs on your own computer: no paid APIs, no cloud, no account.
 
-> Status: **Phase 5** (web UI) on top of phases 1-2, with 9:16 clip rendering built in.
-> Phase 3 (chat + local LLM) is next; its publish-package fields are already in the UI.
+> Status: phases 1, 2, 3A and 5 done: transcription, highlight engine, chat signal, local LLM
+> (viral score, titles, hashtags, cover prompt, subtitle translation), 9:16 rendering, web UI.
 
 ## Features & roadmap
 
@@ -13,8 +13,8 @@ Everything runs on your own computer: no paid APIs, no cloud, no account.
 |---|---|---|
 | 1 | Hardware detection, `doctor`, ingest from URL or file, 16 kHz audio, multilingual transcription with word timestamps, resumable for 3-6 h streams | ✅ done |
 | 2 | Highlight engine: pluggable signals (loudness, keywords, laughter/shouting, speech rhythm, music chorus/drop) → hype curve → non-overlapping clip candidates with reasons | ✅ done |
-| 3 | Chat activity + local LLM as extra signals (LLM on the same GPU, never loaded at the same time as Whisper) to rank and title clips | planned |
-| 4 | Clip rendering: vertical 9:16 (facecam + game / fit / fill), burned-in word-timed subtitles (incl. RTL Arabic), hook text, facecam detection | ✅ core done (via the web UI) |
+| 3A | Chat replay signal (YouTube, Twitch, or a log file) + local LLM via Ollama: judges clips, refines cuts, viral score, titles, hashtags, cover prompt, hook text, subtitle translation, study-mode explanations | ✅ done |
+| 4 | Clip rendering: vertical 9:16 (facecam + game / fit / fill), burned-in word-timed subtitles (incl. RTL Arabic), hook text + peak flash, facecam detection | ✅ core done |
 | 5 | Local web UI: library, timeline with Hype Map, review & render, 7 languages, dark/light | ✅ done |
 
 **Languages:** Turkish (tr, default), English (en), Russian (ru), Hungarian (hu), German (de),
@@ -143,6 +143,19 @@ python cli.py highlights me-at --force                       # recompute cached 
 python cli.py cut me-at 1          # one candidate by rank
 python cli.py cut me-at --all      # -> workspace/<id>/previews/01_s94_02-14-37.mp4 ...
 
+# 5. Chat replay (optional; `highlights` fetches it by itself for YouTube/Twitch streams)
+python cli.py chat me-at                                    # download it again: --force
+python cli.py chat me-at --file chat.json                   # or import a chat log
+
+# 6. Local LLM: judge every clip, viral score, titles, hashtags, cover prompt, hook text
+python cli.py analyze me-at                  # output language from config (default tr)
+python cli.py analyze me-at --lang en        # English titles + English subtitles
+python cli.py analyze me-at --ranks 1 2 3    # only some clips; --no-refine keeps the cuts
+
+# 7. Render vertical 9:16 clips (the web UI does the same)
+python cli.py render me-at 1 2 3 --hook flash+text --subs bold
+python cli.py render me-at --accepted --sub-lang en          # clips accepted in the web UI
+
 # Other
 python cli.py list         # projects in the workspace
 python cli.py languages    # supported languages
@@ -160,6 +173,7 @@ workspace/<id>/
   hype_curve.json   small Hype Map file for the UI: combined + per-signal curves (max 1500
                     points, values 0-100, peaks kept) + clip markers
   previews/         quick preview MP4s from `cut` (rank_score_start-time.mp4)
+  chat.json         chat replay: [[seconds, "message", author_index], ...] (no names stored)
   review.json       web UI choices: accepted clips, hook texts, render options, facecam box
   clips/            rendered 9:16 clips (01_c01.mp4 ...), listed in clips.json
   cache/            per-chunk / per-signal results (lets long runs resume)
@@ -193,12 +207,16 @@ sentence edges preferred) and no overlaps.
 | `speech` | Excited fast talk, and a pause followed by a burst (setup → punchline) |
 | `steady_speech` | Calm, continuous explanation (study mode) |
 | `music` | Repeated chorus (chroma self-similarity) and drops (energy rise); first strong chorus preferred |
+| `chat` | Chat speed vs. its usual speed (rolling 2 min median) + reaction spam (KEKW, LUL, ahahah, ????, emotes, copy-paste waves; per language in `triggers/chat_reactions.json`). Shifted ~5 s earlier, because chat reacts late. Bots and poll votes are ignored |
+| `llm` | Study mode: the local LLM reads the transcript in overlapping 2.5 min windows and marks self-contained explanations |
 
 | Mode | Main signals | Clip length |
 |---|---|---|
-| gaming | loudness, laughter, keywords, speech | 15-60 s (ideal ~38 s), 6-10 s pre-roll |
-| study | study keywords, steady speech; loud/laugh nearly off | 30-60 s, sentence-complete |
-| music | music | 15-30 s around the chorus/drop |
+| gaming | loudness, laughter, keywords, speech, chat | 15-60 s (ideal ~38 s), 6-10 s pre-roll |
+| study | LLM explanations, study keywords, steady speech; loud/laugh nearly off | 30-60 s, sentence-complete |
+| music | music, chat | 15-30 s around the chorus/drop |
+
+Signals that can't run (no chat replay, no Ollama) are skipped and the other weights re-normalized.
 
 A candidate in `highlights.json`:
 
@@ -214,7 +232,62 @@ A candidate in `highlights.json`:
 `hype_score` is relative within the video (best clip = 100); `hype_raw` is the absolute value,
 kept for later calibration. Reason `code`s are stable identifiers (`loudness_spike`, `keyword`,
 `laughter`, `shouting`, `cheering`, `fast_speech`, `pause_then_burst`, `steady_explanation`,
-`chorus`, `drop`) so the UI can translate them.
+`chorus`, `drop`, `chat_spike` (value e.g. `"5.2x"`), `chat_reactions` (e.g. `"KEKW"`),
+`llm_explanation`) so the UI can translate them.
+
+### Chat replay
+
+| Source | How |
+|---|---|
+| YouTube (videos that were live streams) | yt-dlp's live chat replay. YouTube sends it in small pieces, so a long stream takes a few minutes |
+| Twitch VODs | Twitch's public chat API, 8 parts of the VOD in parallel (a 5 h VOD: ~30 s) |
+| Anything else | `python cli.py chat <id> --file ...` or "Import chat" in the web UI: chat-downloader / yt-dlp `.live_chat.json` / TwitchDownloader JSON, or text lines like `[1:02:03] name: message` |
+
+No chat replay is fine: the signal is skipped. Twitch only keeps the chat of VODs that still exist.
+
+### Local LLM (Ollama)
+
+`python cli.py doctor` installs [Ollama](https://ollama.com) (winget / brew) and downloads the model.
+The model is picked by hardware: **qwen3.5:9b** (6.6 GB, 4-bit) with 8 GB+ VRAM or Apple Silicon
+with 16 GB+, otherwise **qwen3.5:4b** (3.3 GB). Set `llm_model` to any Ollama model to override.
+If Ollama's own download keeps failing (seen with broken IPv6), ClipForge downloads the model
+files directly from the same registry over IPv4 and resumes where it stopped.
+
+- The LLM and Whisper are **never on the GPU at the same time**: loading one unloads the other,
+  and the LLM is unloaded (`keep_alive 0`) when a batch ends.
+- Answers use Ollama's structured JSON output with a schema, are validated, and retried with the
+  problems listed. Titles that swear, repeat each other or reuse phrases from other clips of the
+  same video are sent back; leftovers are dropped.
+- Results are cached per clip in `cache/llm/`, so re-running is instant and an interrupted run
+  resumes.
+
+`analyze` writes, per candidate in `highlights.json`:
+
+```json
+"publish": {"viral_score": 62, "viral_label": "medium",
+            "sub_scores": {"hook": 56, "retention": 64, "trend_fit": 70, "length_fit": 100},
+            "titles": ["KONTROLÜ ÇALDIK!", "..."], "hashtags": ["#shorts", "#DeltaForce", "..."],
+            "hook_text": "KONTROLÜ ALDIK!", "cover_prompt": "... 9:16 thumbnail, navy and gold ...",
+            "language": "tr", "model": "qwen3.5:9b"},
+"llm": {"what_happens": "...", "self_contained": true, "moment_type": "exciting",
+        "original": {"start": 1068.0, "end": 1083.4}, "refined": true},
+"translations": {"en": [{"start": 1065.2, "end": 1067.9, "text": "So good, so good."}]}
+```
+
+- **Viral score** = signals (22%) + hook (22%) + retention (22%) + trend fit (10%) + length fit (6%)
+  + how funny/exciting/useful the moment is (18%); x0.85 if it isn't self-contained.
+  Labels: Low < 40, Medium 40-64, High 65-84, Very high 85+. Small local models rate almost
+  everything 70-85, so their sub-scores are spread out (75 -> 50) before they're combined.
+- **Cuts**: the LLM may move the start/end by up to 10 s (setup / payoff); the new edges are
+  snapped to word boundaries and never overlap other clips. `--no-refine` keeps the original cut.
+- **Subtitles**: when the output language differs from the spoken one, the clip's sentences are
+  translated with their timing kept; render with `--sub-lang <code>` (or pick it in the web UI).
+- **Cover prompt**: English, describes what really happens in the clip, always in the same style
+  (dramatic, high contrast, navy & gold grade, short bold text, no logos/watermarks).
+
+Measured on an RTX 5070 Laptop (8 GB), qwen3.5:9b, 15 clips of a 19 min stream: 266 s in total
+(model load 7 s, ~12 s per clip, ~40 tokens/s with ~85% of the model on the GPU, peak VRAM 7.0 GB,
+unloaded afterwards). A 7 min study video: the LLM reads the transcript in ~30 s.
 
 **Your own trigger words** go in `~/.clipforge/config.json`:
 
@@ -241,7 +314,8 @@ Set the `CLIPFORGE_HOME` environment variable to use another folder. Useful keys
 `workspace_dir`, `default_mode`, `transcribe_language`, `transcribe_model`,
 `download_max_height` (default 1080), `ui_language` / `output_language` (default `tr`),
 `custom_triggers`, `video_encoder` (`auto` or `h264_nvenc`, `h264_videotoolbox`, `h264_qsv`,
-`h264_amf`, `libx264`).
+`h264_amf`, `libx264`), `llm_enabled`, `llm_model` (`auto` or an Ollama tag),
+`llm_fallback_model` (`qwen3.5:4b`), `llm_num_ctx` (8192), `ollama_url`, `chat_delay` (5 s).
 
 ## Troubleshooting
 
@@ -252,6 +326,8 @@ Set the `CLIPFORGE_HOME` environment variable to use another folder. Useful keys
 | GPU test fails | Update your NVIDIA driver, then `python cli.py doctor` again |
 | Slow transcription | You're on CPU mode; check `doctor` output. `--model small` is faster |
 | First run is slow | The Whisper model (~1.6 GB) is downloaded once and cached in `~/.cache/huggingface` |
+| LLM is slow or runs out of memory | Set `"llm_model": "qwen3.5:4b"` in the config (or any smaller Ollama model) |
+| No titles / viral score | Ollama isn't installed or running: `python cli.py doctor` |
 
 ## License
 

@@ -99,15 +99,50 @@ def submit_highlights(project_id: str, mode: str | None = None, force: bool = Fa
             meta = project.load_meta()
             meta["mode"] = mode
             project.save_meta(meta)
-        res = run_highlights(project, mode=mode, force=force)
+        res = run_highlights(project, mode=mode, force=force, fetch_chat=False)
         return {"candidates": len(res["candidates"]), "mode": res["mode"]}
 
     def then(_job: Job):
         review = state.load_review(get_project(project_id))
         if not review["facecam_checked"]:
             submit_facecam(project_id)
+        if llm_available():
+            submit_analyze(project_id)  # titles, viral score, ... (cached per clip)
 
     return jobs.submit("highlights", "gpu", project_id, {"mode": mode, "force": force}, run, then)
+
+
+def llm_available() -> bool:
+    from .. import llm
+
+    return config.get("llm_enabled") is not False and (llm.ollama_exe() is not None
+                                                        or llm.server_version(0.3) is not None)
+
+
+def submit_analyze(project_id: str, lang: str | None = None, force: bool = False) -> Job:
+    def run(job: Job):
+        from ..analyze import analyze_project
+
+        jobs.update(job, stage="loading_llm", progress=None)
+
+        def progress(i: int, n: int, _c: dict) -> None:
+            jobs.update(job, stage="llm_analyzing", progress=i / n, detail={"index": i, "count": n})
+
+        res = analyze_project(get_project(project_id), out_lang=lang, force=force, on_progress=progress)
+        return {"language": res["language"], "model": res["model"], "seconds": res["total_seconds"],
+                "count": len(res["candidates"])}
+
+    return jobs.submit("analyze", "gpu", project_id, {"lang": lang, "force": force}, run)
+
+
+def submit_titles(project_id: str, cid: str) -> Job:
+    def run(job: Job):
+        from ..analyze import regenerate_titles
+
+        jobs.update(job, stage="writing_titles", progress=None)
+        return {"titles": regenerate_titles(get_project(project_id), cid)["titles"], "clip_id": cid}
+
+    return jobs.submit("titles", "gpu", project_id, {"clip_id": cid}, run)
 
 
 def submit_facecam(project_id: str) -> Job:
@@ -121,6 +156,18 @@ def submit_facecam(project_id: str) -> Job:
         return {"facecam": fc.to_dict() if fc else None}
 
     return jobs.submit("facecam", "io", project_id, {}, run)
+
+
+def submit_chat(project_id: str, force: bool = False) -> Job:
+    """Chat replay download (downloads lane: it can take minutes and needs no GPU)."""
+    def run(job: Job):
+        from ..chat import ensure_chat
+
+        jobs.update(job, stage="downloading_chat", progress=None)
+        data = ensure_chat(get_project(project_id), force=force)
+        return {"status": data["status"], "count": data["count"], "reason": data.get("reason")}
+
+    return jobs.submit("chat", "io", project_id, {"force": force}, run)
 
 
 def submit_proxy(project_id: str) -> Job:
@@ -155,6 +202,8 @@ def submit_import(source: str, mode: str, language: str, title: str,
         project = get_project(pid)
         if not _playable(project) and not _proxy_path(project).is_file():
             submit_proxy(pid)
+        if (project.load_meta().get("source") or {}).get("type") == "url":
+            submit_chat(pid)  # runs alongside transcription
         if not project.transcript_path.is_file():
             submit_transcribe(pid, language)
         elif not (project.dir / "highlights.json").is_file():
@@ -219,6 +268,7 @@ def api_meta(request: Request) -> dict:
         "is_local": _is_local(request),
         "lan_url": app.state.lan_url,
         "workspace": str(config.workspace_dir()) if _is_local(request) else None,
+        "llm": {"available": llm_available()},
     }
 
 
@@ -239,6 +289,7 @@ def _settings_view() -> dict:
     return {"ui_language": cfg.get("ui_language") or languages.DEFAULT_UI_LANGUAGE,
             "default_mode": cfg.get("default_mode") or "gaming",
             "video_encoder": cfg.get("video_encoder") or "auto",
+            "output_language": cfg.get("output_language") or languages.DEFAULT_OUTPUT_LANGUAGE,
             "custom_triggers": triggers}
 
 
@@ -252,6 +303,8 @@ def api_settings_put(body: dict) -> dict:
     changes: dict[str, Any] = {}
     if "ui_language" in body:
         changes["ui_language"] = languages.require(str(body["ui_language"])).code
+    if "output_language" in body:
+        changes["output_language"] = languages.require(str(body["output_language"])).code
     if "default_mode" in body:
         if body["default_mode"] not in MODES:
             raise ClipForgeError(f"Unknown mode '{body['default_mode']}'.")
@@ -405,7 +458,7 @@ def api_project(project_id: str) -> dict:
     transcript_lang = (meta.get("transcript") or {}).get("language")
     cands = [state.candidate_view(c) for c in (hl or {}).get("candidates", [])]
     for c in cands:
-        c["default_hook"] = first_sentence(c.get("text") or "")
+        c["default_hook"] = c["publish"].get("hook_text") or first_sentence(c.get("text") or "")
     signals = {k: {"status": v.get("status"), "weight": v.get("weight"), "share": v.get("share"),
                    "reason": v.get("reason")}
                for k, v in ((hl or {}).get("signals") or {}).items()}
@@ -420,6 +473,8 @@ def api_project(project_id: str) -> dict:
             "settings": hl.get("settings"), "candidates": cands},
         "review": review,
         "clips": state.load_clips(project),
+        "chat": _chat_summary(project),
+        "analysis": (hl or {}).get("analysis"),
         "jobs": [j.to_dict() for j in jobs.for_project(project.id)][-10:],
     }
 
@@ -489,10 +544,58 @@ def api_render(project_id: str, body: dict) -> dict:
 
 
 @app.post("/api/projects/{project_id}/candidates/{cid}/publish")
-def api_publish_regenerate(project_id: str, cid: str):
-    """New title/hashtag suggestions - needs the local LLM from Phase 3."""
-    _project(project_id)
-    return JSONResponse({"error": "coming_soon", "hint": "Phase 3 (local LLM)"}, status_code=501)
+def api_publish_regenerate(project_id: str, cid: str) -> dict:
+    """New title suggestions for one clip (local LLM, runs in the GPU lane)."""
+    project = _project(project_id)
+    if not llm_available():
+        raise ClipForgeError("The local LLM isn't installed.", "Run: python cli.py doctor")
+    return submit_titles(project.id, cid).to_dict()
+
+
+@app.post("/api/projects/{project_id}/analyze")
+def api_analyze(project_id: str, body: dict | None = None) -> dict:
+    project = _project(project_id)
+    body = body or {}
+    lang = body.get("lang")
+    if lang:
+        languages.require(lang)
+    if not (project.dir / "highlights.json").is_file():
+        raise ClipForgeError("Find highlights first.")
+    if not llm_available():
+        raise ClipForgeError("The local LLM isn't installed.", "Run: python cli.py doctor")
+    return submit_analyze(project.id, lang, bool(body.get("force"))).to_dict()
+
+
+def _chat_summary(project: Project) -> dict | None:
+    from ..chat import load_chat
+
+    c = load_chat(project)
+    return None if c is None else {k: c.get(k) for k in ("status", "source", "reason", "count", "authors")}
+
+
+@app.post("/api/projects/{project_id}/chat/download")
+def api_chat_download(project_id: str) -> dict:
+    return submit_chat(_project(project_id).id, force=True).to_dict()
+
+
+@app.put("/api/projects/{project_id}/chat")
+async def api_chat_import(project_id: str, request: Request, filename: str = Query("chat.txt")) -> dict:
+    """Import a chat log file (raw body). Re-analyze afterwards to use it."""
+    from ..chat import import_file
+
+    project = _project(project_id)
+    dest_dir = project.cache_dir / "chat"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / ("import" + (Path(filename).suffix.lower()[:8] or ".txt"))
+    size = 0
+    with open(dest, "wb") as f:
+        async for chunk in request.stream():
+            size += len(chunk)
+            if size > 500 * 1024**2:
+                raise ClipForgeError("Chat file too large (max 500 MB).")
+            f.write(chunk)
+    import_file(project, dest)
+    return _chat_summary(project) or {}
 
 
 # ------------------------------------------------------------------ media

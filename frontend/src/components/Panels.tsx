@@ -1,9 +1,8 @@
-import { useState } from "react";
-import { api, type Candidate, type ProjectDetail } from "../api";
+import { api, type Candidate, type Job, type ProjectDetail } from "../api";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
-import { CopyButton } from "./ui";
+import { CopyButton, jobLabel } from "./ui";
 import { Icon } from "./Icons";
 
 // ----------------------------------------------------------------- signals
@@ -106,24 +105,44 @@ function ScoreRing({ score, label }: { score: number | null; label: string | nul
   );
 }
 
-export function PublishPanel({ cand, projectId }: { cand: Candidate | null; projectId: string }) {
-  const { t } = useI18n();
+const SUBS = ["hook", "retention", "trend_fit", "length_fit"] as const;
+
+export function PublishPanel({
+  cand,
+  projectId,
+  llmAvailable,
+  llmJob,
+}: {
+  cand: Candidate | null;
+  projectId: string;
+  llmAvailable: boolean;
+  llmJob: Job | null;
+}) {
+  const { t, num } = useI18n();
   const toast = useToast();
-  const [busy, setBusy] = useState(false);
   const pub = cand?.publish;
   const ready = !!pub?.available;
+  const working = !!llmJob;
+  const writingTitles = llmJob?.kind === "titles" && llmJob.params?.clip_id === cand?.id;
 
-  const regenerate = async () => {
-    if (!cand) return;
-    setBusy(true);
+  const run = async (fn: () => Promise<unknown>) => {
     try {
-      await api.regeneratePublish(projectId, cand.id);
-    } catch {
-      toast({ kind: "info", text: t("publish.soon") });
-    } finally {
-      setBusy(false);
+      await fn();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
     }
   };
+
+  const skeletonTitles = [92, 74, 84].map((w) => (
+    <div className="sugg" key={w} aria-hidden="true">
+      <span>
+        <span className="skeleton" style={{ display: "block", height: 10, width: `${w}%` }} />
+      </span>
+      <button className="btn btn-sm btn-ghost icon-btn" disabled tabIndex={-1}>
+        <Icon name="copy" />
+      </button>
+    </div>
+  ));
 
   return (
     <section className="panel" aria-labelledby="pub-title">
@@ -131,43 +150,71 @@ export function PublishPanel({ cand, projectId }: { cand: Candidate | null; proj
         <h2 className="section-title" id="pub-title">
           {t("publish.title")}
         </h2>
-        {!ready && (
+        {ready ? (
+          <span className="chip chip-outline" title={pub?.language ?? ""}>
+            <Icon name="sparkles" size={12} />
+            {t("publish.by_ai")}
+          </span>
+        ) : !llmAvailable ? (
           <span className="soon">
             <Icon name="sparkles" size={12} />
             {t("publish.soon")}
           </span>
-        )}
+        ) : null}
       </div>
+
+      {working && !writingTitles && (
+        <div className="notice" style={{ marginBottom: 14 }}>
+          <span className="spinner" />
+          <span>{jobLabel(llmJob!, t, num)}</span>
+        </div>
+      )}
+
       <div className="pub-grid">
-        <ScoreRing score={ready ? pub!.viral_score : null} label={ready ? pub!.viral_label : null} />
+        <div style={{ display: "grid", gap: 14, justifyItems: "center", alignContent: "start" }}>
+          <ScoreRing score={ready ? pub!.viral_score : null} label={ready ? pub!.viral_label : null} />
+          {ready && pub!.sub_scores && (
+            <div className="sig-list" style={{ width: "100%", gap: 8 }}>
+              {SUBS.map((k) => (
+                <div className="sig" key={k} style={{ gap: 4 }}>
+                  <div className="sig-top" style={{ fontSize: 11.5 }}>
+                    <span className="muted">{t(`publish.sub.${k}`)}</span>
+                    <span className="val">{num(pub!.sub_scores![k])}</span>
+                  </div>
+                  <div className="sig-bar" style={{ height: 4 }}>
+                    <span style={{ width: `${Math.max(2, pub!.sub_scores![k])}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         <div style={{ minWidth: 0 }}>
+          {ready && cand?.llm?.what_happens && (
+            <p className="muted" style={{ margin: "0 0 12px", fontSize: 12.5, lineHeight: 1.5 }} lang="en" dir="ltr">
+              {cand.llm.what_happens}
+            </p>
+          )}
           <div className="pub-block">
             <div className="pub-row">
               <span className="field-label">{t("publish.titles")}</span>
-              <button className="btn btn-sm btn-ghost" disabled={!ready || busy} onClick={regenerate}>
-                <Icon name="refresh" />
+              <button
+                className="btn btn-sm btn-ghost"
+                disabled={!ready || working}
+                onClick={() => cand && run(() => api.regeneratePublish(projectId, cand.id))}
+              >
+                {writingTitles ? <span className="spinner" style={{ width: 13, height: 13 }} /> : <Icon name="refresh" />}
                 {t("publish.new")}
               </button>
             </div>
-            {ready && pub!.titles.length ? (
-              pub!.titles.map((title) => (
-                <div className="sugg" key={title}>
-                  <span dir="auto">{title}</span>
-                  <CopyButton text={title} />
-                </div>
-              ))
-            ) : (
-              [92, 74, 84].map((w) => (
-                <div className="sugg" key={w} aria-hidden="true">
-                  <span>
-                    <span className="skeleton" style={{ display: "block", height: 10, width: `${w}%` }} />
-                  </span>
-                  <button className="btn btn-sm btn-ghost icon-btn" disabled tabIndex={-1}>
-                    <Icon name="copy" />
-                  </button>
-                </div>
-              ))
-            )}
+            {ready && pub!.titles.length
+              ? pub!.titles.map((title) => (
+                  <div className="sugg" key={title} style={writingTitles ? { opacity: 0.5 } : undefined}>
+                    <span dir="auto">{title}</span>
+                    <CopyButton text={title} />
+                  </div>
+                ))
+              : skeletonTitles}
           </div>
           <div className="pub-block">
             <div className="pub-row">
@@ -205,7 +252,7 @@ export function PublishPanel({ cand, projectId }: { cand: Candidate | null; proj
               )}
             </div>
             {ready && pub!.cover_prompt ? (
-              <div className="prompt-box" dir="auto">
+              <div className="prompt-box" dir="ltr" lang="en">
                 {pub!.cover_prompt}
               </div>
             ) : (
@@ -218,7 +265,18 @@ export function PublishPanel({ cand, projectId }: { cand: Candidate | null; proj
           </div>
         </div>
       </div>
-      {!ready && <p className="pub-soon-note">{t("publish.soon_note")}</p>}
+      {!ready && !llmAvailable && <p className="pub-soon-note">{t("publish.no_llm")}</p>}
+      {!ready && llmAvailable && !working && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14, flexWrap: "wrap" }}>
+          <button className="btn btn-primary btn-sm" onClick={() => run(() => api.analyze(projectId))}>
+            <Icon name="sparkles" />
+            {t("publish.analyze")}
+          </button>
+          <span className="muted" style={{ fontSize: 12.5 }}>
+            {t("publish.analyze_note")}
+          </span>
+        </div>
+      )}
     </section>
   );
 }

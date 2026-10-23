@@ -139,6 +139,9 @@ export function CopyButton({ text, label, small = true }: { text: string; label?
 /** "Transcribing 60%", "Waiting for the GPU", ... */
 export function jobLabel(job: Job, t: ReturnType<typeof useI18n>["t"], num: (n: number) => string): string {
   if (job.status === "queued") return job.lane === "gpu" ? t("job.waiting") : t("status.queued");
+  if (job.kind === "analyze" && job.detail?.count) {
+    return `${t("stage.llm_analyzing")} ${job.detail.index}/${job.detail.count}`;
+  }
   if (job.kind === "render" && job.detail?.count) {
     const base = t("render.progress", { i: job.detail.index, n: job.detail.count });
     return job.progress != null ? `${base} · ${num(Math.round(job.progress * 100))}%` : base;

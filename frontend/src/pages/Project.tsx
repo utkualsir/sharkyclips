@@ -22,6 +22,7 @@ import VerticalPreview, { resolveLayout } from "../components/VerticalPreview";
 import { fmtBytes, fmtTime, sourceLabel } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
+import { useMeta } from "../meta";
 import { href } from "../router";
 import { useToast } from "../toast";
 
@@ -67,6 +68,12 @@ function CandidateRow({
             <span className="tc">{fmtTime(c.start)}</span>
             <span aria-hidden="true">·</span>
             <span className="tc">{num(Math.round(c.duration))} s</span>
+            {c.publish.available && c.publish.viral_score != null && (
+              <span className="chip chip-gold" title={t("publish.viral")}>
+                <Icon name="sparkles" size={11} />
+                {num(c.publish.viral_score)}
+              </span>
+            )}
           </div>
           <div className="cand-score" title={`${t("signals.score")}: ${c.hype_score}/100`}>
             <div className="bar">
@@ -95,6 +102,8 @@ function CandidateRow({
 
 export default function ProjectPage({ id }: { id: string }) {
   const { t, num, relTime } = useI18n();
+  const meta = useMeta();
+  const chatInput = useRef<HTMLInputElement>(null);
   const toast = useToast();
   const { jobs, finishedTick, lastFinished } = useJobs();
   const [project, setProject] = useState<ProjectDetail | null>(null);
@@ -148,14 +157,18 @@ export default function ProjectPage({ id }: { id: string }) {
   const projectJobs = jobs.filter((j) => j.project_id === id);
   const activeJobs = projectJobs.filter(isActive);
   const renderJob = activeJobs.find((j) => j.kind === "render");
-  const pipelineJob = activeJobs.find((j) => j.kind !== "render" && j.kind !== "facecam") ?? null;
+  const pipelineJob = activeJobs.find((j) => !["render", "facecam", "titles"].includes(j.kind)) ?? null;
+  const llmJob = activeJobs.find((j) => j.kind === "analyze" || j.kind === "titles") ?? null;
   const facecamJob = activeJobs.find((j) => j.kind === "facecam");
 
   const cands = project?.highlights?.candidates ?? [];
   const selected = cands.find((c) => c.id === selectedId) ?? null;
   const review = project?.review;
   const accepted = useMemo(() => new Set(review?.accepted ?? []), [review]);
-  const options: ClipOptions = review?.options ?? { layout: "auto", subtitles: "bold", hook: true };
+  const options: ClipOptions = review?.options ?? {
+    layout: "auto", subtitles: "bold", hook: true, hook_flash: false, subtitle_lang: "",
+  };
+  const subLangs = [...new Set(cands.flatMap((c) => c.subtitle_languages ?? []))].filter((l) => l !== project?.language);
   const hookText = selected ? review?.hooks[selected.id] ?? selected.default_hook : "";
 
   // Words of the selected clip (for the live subtitle preview)
@@ -306,6 +319,25 @@ export default function ProjectPage({ id }: { id: string }) {
     }
   };
 
+  const analyzeAI = async () => {
+    try {
+      await api.analyze(id);
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+
+  const importChat = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const c = await api.importChat(id, file);
+      toast({ kind: "ok", text: t("project.chat_count", { n: c.count }), hint: t("settings.triggers_note") });
+      load();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+
   const retry = async () => {
     try {
       if (project?.last_error_kind === "transcribe" || !project?.language) await api.transcribe(id);
@@ -381,6 +413,12 @@ export default function ProjectPage({ id }: { id: string }) {
               </span>
             )}
             {project.resolution && <span className="chip chip-outline mono">{project.resolution}</span>}
+            {project.chat?.status === "ok" && (
+              <span className="chip chip-outline" title={project.chat.source}>
+                <Icon name="hash" size={12} />
+                {t("project.chat_count", { n: project.chat.count })}
+              </span>
+            )}
             {src &&
               (project.source.type === "url" && project.source.value ? (
                 <a className="chip chip-outline" href={project.source.value} target="_blank" rel="noreferrer">
@@ -414,6 +452,26 @@ export default function ProjectPage({ id }: { id: string }) {
               <Icon name="refresh" />
               {project.highlights ? t("project.reanalyze") : t("project.analyze")}
             </button>
+            {project.highlights && meta?.llm.available && (
+              <button className="btn btn-sm" onClick={analyzeAI} disabled={!!pipelineJob || !!llmJob}>
+                <Icon name="sparkles" />
+                {t("project.ai")}
+              </button>
+            )}
+            <button className="btn btn-sm btn-ghost" onClick={() => chatInput.current?.click()} title={t("project.chat_hint")}>
+              <Icon name="upload" />
+              {t("project.chat_import")}
+            </button>
+            <input
+              ref={chatInput}
+              type="file"
+              hidden
+              accept=".json,.txt,.log,.csv"
+              onChange={(e) => {
+                importChat(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
           </div>
         )}
       </div>
@@ -553,7 +611,7 @@ export default function ProjectPage({ id }: { id: string }) {
 
             <div className="lower-grid">
               <SignalStats cand={selected} project={project} />
-              <PublishPanel cand={selected} projectId={id} />
+              <PublishPanel cand={selected} projectId={id} llmAvailable={!!meta?.llm.available} llmJob={llmJob} />
             </div>
           </div>
 
@@ -629,6 +687,33 @@ export default function ProjectPage({ id }: { id: string }) {
                       />
                     </div>
                   </div>
+                  <div className="render-row">
+                    <label>{t("render.flash")}</label>
+                    <div className="hook-row">
+                      <Toggle checked={options.hook_flash} onChange={(v) => setOption({ hook_flash: v })} label={t("render.flash")} />
+                      <span className="muted" style={{ fontSize: 12 }}>
+                        {t("render.flash_hint")}
+                      </span>
+                    </div>
+                  </div>
+                  {subLangs.length > 0 && (
+                    <div className="render-row">
+                      <label htmlFor="sublang-sel">{t("render.sub_lang")}</label>
+                      <select
+                        id="sublang-sel"
+                        className="select select-sm"
+                        value={options.subtitle_lang}
+                        onChange={(e) => setOption({ subtitle_lang: e.target.value })}
+                      >
+                        <option value="">{t("render.sub_lang_spoken", { lang: langName ?? "" })}</option>
+                        {subLangs.map((l) => (
+                          <option key={l} value={l}>
+                            {UI_LANGUAGES.find((x) => x.code === l)?.name ?? l}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <div className="facecam-line">
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                       <Icon name="camera" size={14} />

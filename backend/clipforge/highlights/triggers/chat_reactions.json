@@ -1,0 +1,14 @@
+{
+  "_comment": "Chat reaction patterns (regex, case-insensitive). 'whole' must match the entire message, 'contains' anywhere. All languages are used together, because chat language often differs from the streamer's.",
+  "universal": {
+    "whole": ["w+", "l+", "f", "gg+", "ez+", "\\?{2,}", "!{2,}", "\\.{3,}", "[0-9]{3,}", "o+", "x+d+", "\\+1+"],
+    "contains": ["kekw", "\\blul\\w*", "omegalul", "pepelaugh", "lmf?ao+", "\\brofl\\b", "\\blo+l\\b", "\\bx+d+\\b", "\\bpog\\w*", "kappa", "monkas", "pausechamp", "pepega", "sadge", "copium", "\\bclip ?it\\b", "\\?{3,}", "!{3,}", "😂|🤣|😭|💀|😱|🔥|👀|😳|🤯|😮|👏", "(?:ha){3,}|(?:ah){3,}|(?:he){3,}", "\\bwtf\\b", "\\bomg\\b", "\\bbruh\\b"]
+  },
+  "tr": {"whole": ["a+", "of+"], "contains": ["(?:a?sj){2,}|(?:as[dj]){2,}|ajs|sjsj|asdasd|ahah", "\\bklip", "aşırı", "efsane", "\\boha+\\b", "yok artık", "helal", "ağla", "kral"]},
+  "en": {"whole": [], "contains": ["no way", "let'?s go+", "insane", "\\bclutch\\b", "holy"]},
+  "ru": {"whole": ["\\+"], "contains": ["(?:ха){2,}|(?:ах){2,}", "\\bлол\\b", "\\bкек\\b", "имба", "жесть", "\\bору\\b", "клип"]},
+  "de": {"whole": [], "contains": ["krass", "digga", "\\balter\\b", "geil", "clip"]},
+  "hu": {"whole": [], "contains": ["úristen", "durva", "\\bkl[ií]p"]},
+  "ar": {"whole": [], "contains": ["(?:ه){3,}", "(?:خ){3,}", "والله", "يا رجل", "كليب"]},
+  "zh": {"whole": [], "contains": ["哈{2,}", "笑死", "草+", "(?:6){3,}", "牛", "卧槽", "绝了", "w{3,}"]}
+}

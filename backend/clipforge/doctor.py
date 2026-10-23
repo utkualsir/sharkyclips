@@ -118,6 +118,7 @@ class Doctor:
         plan = self._smoke_and_plan(hw)
         self._check_highlight_deps()
         self._check_encoder()
+        self._check_llm()
 
         ws = config.workspace_dir()
         try:
@@ -156,6 +157,60 @@ class Doctor:
                      f"{laughter.model_dir()}")
         else:
             self.add("Laughter model", WARN, "not downloaded yet; run doctor without --no-fix")
+
+    def _check_llm(self) -> None:
+        """Ollama + the local LLM. Optional: without it, analysis/titles are skipped (WARN)."""
+        from . import llm
+
+        if config.get("llm_enabled") is False:
+            self.add("Local LLM", INFO, "disabled in config (llm_enabled: false)")
+            return
+        exe = llm.ollama_exe()
+        if exe is None and self.fix:
+            cmd = llm.install_command()
+            if cmd:
+                console.print(f"Installing Ollama (free local LLM runner): [dim]$ {' '.join(cmd)}[/]")
+                subprocess.run(cmd)
+                exe = llm.ollama_exe()
+        if exe is None:
+            self.add("Ollama", WARN, f"not installed - LLM titles/scores disabled. Install: {llm.install_hint()}")
+            return
+        try:
+            version = llm.ensure_server()
+        except Exception as exc:  # noqa: BLE001
+            self.add("Ollama", WARN, f"installed ({exe}) but the server won't start: {exc}")
+            return
+        self.add("Ollama", OK, f"{version} ({exe})")
+        model = llm.choose_model()
+        if not llm.has_model(model):
+            if not self.fix:
+                self.add("LLM model", WARN, f"{model} not downloaded - run doctor without --no-fix")
+                return
+            try:
+                llm.ensure_model(model)
+            except Exception as exc:  # noqa: BLE001
+                self.add("LLM model", WARN, f"{model} download failed: {str(exc)[:200]}")
+                return
+        # Real test: load, answer a JSON question, unload (the GPU is free again afterwards).
+        import time
+
+        schema = {"type": "object", "properties": {"answer": {"type": "integer"}}, "required": ["answer"]}
+        try:
+            t0 = time.perf_counter()
+            with llm.session(model) as m:
+                load = time.perf_counter() - t0
+                t1 = time.perf_counter()
+                out = m.json("Answer with JSON.", "What is 17 + 25?", schema, temperature=0.1, num_predict=40)
+                answer_s = time.perf_counter() - t1
+            ok = out.get("answer") == 42
+            where = ", ".join(llm.loaded_models()) or "unloaded after the test"
+            self.add("LLM model", OK if ok else WARN,
+                     f"{model}: loaded in {load:.1f}s, JSON answer in {answer_s:.1f}s"
+                     + ("" if ok else f" (wrong answer {out})") + f"; {where}")
+        except Exception as exc:  # noqa: BLE001
+            fb = config.get("llm_fallback_model") or llm.SMALL_MODEL
+            self.add("LLM model", WARN, f"{model} test failed ({str(exc)[:160]}). For weaker PCs set "
+                                         f"\"llm_model\": \"{fb}\" in {config.config_path()}")
 
     def _check_encoder(self) -> None:
         if not shutil.which("ffmpeg"):

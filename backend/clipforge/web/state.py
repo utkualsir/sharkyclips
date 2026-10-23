@@ -19,8 +19,9 @@ DEFAULT_OPTIONS = ClipOptions().to_dict()
 DEFAULT_OPTIONS.pop("hook_text")
 
 # Phase 3 fills these (viral score, titles, hashtags, cover prompt) per candidate.
-EMPTY_PUBLISH = {"available": False, "viral_score": None, "viral_label": None, "titles": [],
-                 "hashtags": [], "cover_prompt": None}
+EMPTY_PUBLISH = {"available": False, "viral_score": None, "viral_label": None, "sub_scores": None,
+                 "titles": [], "hashtags": [], "cover_prompt": None, "hook_text": None,
+                 "language": None}
 
 
 def now_iso() -> str:
@@ -30,13 +31,9 @@ def now_iso() -> str:
 def viral_label(score: float | None) -> str | None:
     if score is None:
         return None
-    if score >= 80:
-        return "very_high"
-    if score >= 60:
-        return "high"
-    if score >= 40:
-        return "medium"
-    return "low"
+    from ..analyze import viral_label as label
+
+    return label(int(score))
 
 
 def load_highlights(project: Project) -> dict | None:
@@ -118,8 +115,14 @@ def candidate_view(c: dict) -> dict:
     if publish.get("viral_score") is not None:
         publish["available"] = True
         publish["viral_label"] = publish.get("viral_label") or viral_label(publish["viral_score"])
+    llm = c.get("llm") or {}
     return {k: c.get(k) for k in ("id", "rank", "start", "end", "duration", "peak", "hype_score",
-                                  "reasons", "signal_scores", "text")} | {"publish": publish}
+                                  "reasons", "signal_scores", "text")} | {
+        "publish": {k: publish.get(k) for k in (*EMPTY_PUBLISH, "title_styles", "cover_text")},
+        "llm": {k: llm.get(k) for k in ("what_happens", "self_contained", "moment_type", "game_or_topic",
+                                         "refined", "original")} if llm else None,
+        "subtitle_languages": sorted((c.get("translations") or {}).keys()),
+    }
 
 
 def project_summary(project: Project, active_job: dict | None, last_job: dict | None) -> dict:

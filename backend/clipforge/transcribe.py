@@ -227,6 +227,9 @@ def _load_from(chain: list[BackendPlan], start: int):
     for i in range(start, len(chain)):
         p = chain[i]
         memory.release_current()
+        from .llm import unload_all
+
+        unload_all()  # an LLM loaded by another ClipForge process must not share the GPU either
         console.print(f"Loading model [bold]{p.model}[/] ({p.label}) ...")
         mlx = p.backend == "mlx-whisper"
         if not is_cached(MLX_REPOS[p.model] if mlx else p.model, mlx=mlx):
