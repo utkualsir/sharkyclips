@@ -5,6 +5,7 @@
     python cli.py ingest <url-or-path> [--mode gaming|study|music]
     python cli.py transcribe <id> [--lang auto|tr|en|ru|hu|de|ar|zh] [--model auto|large-v3-turbo|medium|small]
     python cli.py highlights <id> [--mode gaming|study|music] [--top N]
+    python cli.py cut <id> <rank> | --all
     python cli.py list
     python cli.py languages
 """
@@ -115,6 +116,59 @@ def cmd_highlights(args) -> int:
     return 0
 
 
+def cmd_cut(args) -> int:
+    from rich.table import Table
+
+    from clipforge.errors import ClipForgeError
+    from clipforge.project import get_project, read_json
+    from clipforge.render import export_preview, pick_encoder, preview_name
+    from clipforge.ui import time_progress
+
+    project = get_project(args.id)
+    hl_path = project.dir / "highlights.json"
+    if not hl_path.is_file():
+        raise ClipForgeError("No highlights yet for this project.",
+                             f"Run: python cli.py highlights {project.id}")
+    cands = read_json(hl_path)["candidates"]
+    if args.all:
+        chosen = cands
+    elif args.rank is not None:
+        chosen = [c for c in cands if c["rank"] == args.rank]
+        if not chosen:
+            raise ClipForgeError(f"No candidate with rank {args.rank}.",
+                                 f"Ranks available: 1-{len(cands)}")
+    else:
+        raise ClipForgeError("Tell me which clip to cut.", "Pass a rank (e.g. 1) or --all.")
+    source = project.source_path
+    if source is None:
+        raise ClipForgeError("The project's source video is missing.",
+                             "Re-run: python cli.py ingest <url-or-path>")
+
+    enc, notes = pick_encoder()
+    for note in notes:
+        console.print(f"[dim]{note}[/]")
+    console.print(f"Encoder: [bold]{enc.label}[/]")
+    out_dir = project.dir / "previews"
+    t = Table(title=f"Previews -> {out_dir}")
+    for col in ("#", "file", "length", "size", "render", "speed", "encoder"):
+        t.add_column(col)
+    total = 0.0
+    for c in chosen:
+        dest = out_dir / preview_name(c["rank"], c["hype_score"], c["start"])
+        with time_progress() as prog:
+            task = prog.add_task(f"Clip {c['rank']:02d}", total=c["duration"])
+            r = export_preview(source, c["start"], c["end"], dest,
+                               on_progress=lambda s: prog.update(task, completed=s))
+            prog.update(task, completed=c["duration"])
+        total += r.seconds
+        t.add_row(str(c["rank"]), dest.name, f"{c['duration']:.1f}s",
+                  f"{r.size_bytes / 1024**2:.1f} MB", f"{r.seconds:.1f}s",
+                  f"{c['duration'] / r.seconds:.0f}x", r.encoder)
+    console.print(t)
+    console.print(f"[green]Done:[/] {len(chosen)} preview(s) in {total:.1f}s")
+    return 0
+
+
 def cmd_list(args) -> int:
     from rich.table import Table
 
@@ -179,6 +233,12 @@ def build_parser() -> argparse.ArgumentParser:
     h.add_argument("--top", type=int, help="max number of clips (default: ~1 per 4 minutes)")
     h.add_argument("--force", action="store_true", help="recompute cached signals")
     h.set_defaults(func=cmd_highlights)
+
+    c = sub.add_parser("cut", help="export quick preview MP4s of highlight candidates")
+    c.add_argument("id", help="project id (a unique prefix is enough)")
+    c.add_argument("rank", nargs="?", type=int, help="candidate rank from `highlights` (e.g. 1)")
+    c.add_argument("--all", action="store_true", help="export every candidate")
+    c.set_defaults(func=cmd_cut)
 
     sub.add_parser("list", help="list projects").set_defaults(func=cmd_list)
     sub.add_parser("languages", help="show supported languages").set_defaults(func=cmd_languages)

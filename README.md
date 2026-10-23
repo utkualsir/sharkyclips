@@ -106,6 +106,10 @@ python cli.py highlights me-at
 python cli.py highlights me-at --mode study --top 5
 python cli.py highlights me-at --force                       # recompute cached signals
 
+# 4. Check results by eye: quick horizontal 720p previews (NVENC/VideoToolbox/QSV/AMF, else CPU)
+python cli.py cut me-at 1          # one candidate by rank
+python cli.py cut me-at --all      # -> workspace/<id>/previews/01_s94_02-14-37.mp4 ...
+
 # Other
 python cli.py list         # projects in the workspace
 python cli.py languages    # supported languages
@@ -119,7 +123,10 @@ workspace/<id>/
   audio.wav         16 kHz mono audio
   meta.json         title, duration, resolution, fps, source, mode
   transcript.json   language + segments with word-level timestamps
-  highlights.json   clip candidates + the whole-video hype curve
+  highlights.json   clip candidates + the whole-video hype curve (1 value/second)
+  hype_curve.json   small Hype Map file for the UI: combined + per-signal curves (max 1500
+                    points, values 0-100, peaks kept) + clip markers
+  previews/         quick preview MP4s from `cut` (rank_score_start-time.mp4)
   cache/            per-chunk / per-signal results (lets long runs resume)
 ```
 
@@ -197,7 +204,9 @@ LLM on the same GPU.
 Stored in `~/.clipforge/config.json` (Windows: `C:\Users\<you>\.clipforge\config.json`).
 Set the `CLIPFORGE_HOME` environment variable to use another folder. Useful keys:
 `workspace_dir`, `default_mode`, `transcribe_language`, `transcribe_model`,
-`download_max_height` (default 1080), `ui_language` / `output_language` (default `tr`).
+`download_max_height` (default 1080), `ui_language` / `output_language` (default `tr`),
+`custom_triggers`, `video_encoder` (`auto` or `h264_nvenc`, `h264_videotoolbox`, `h264_qsv`,
+`h264_amf`, `libx264`).
 
 ## Troubleshooting
 

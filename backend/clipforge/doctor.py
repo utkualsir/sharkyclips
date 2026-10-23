@@ -117,6 +117,7 @@ class Doctor:
 
         plan = self._smoke_and_plan(hw)
         self._check_highlight_deps()
+        self._check_encoder()
 
         ws = config.workspace_dir()
         try:
@@ -134,12 +135,12 @@ class Doctor:
     def _check_highlight_deps(self) -> None:
         """Optional highlight signals: missing ones are skipped, never fatal (WARN)."""
         lv = _version("librosa")
-        self.add("Music signal (librosa)", OK if lv else WARN,
+        self.add("librosa (music mode)", OK if lv else WARN,
                  lv or f"music mode chorus detection disabled - {pip_hint('librosa')}")
         from .highlights.signals import laughter
 
         if not laughter.sherpa_installed():
-            self.add("Laughter signal", WARN,
+            self.add("Laughter model", WARN,
                      f"sherpa-onnx missing, signal will be skipped - {pip_hint('sherpa-onnx')}")
             return
         if not laughter.model_ready() and self.fix:
@@ -147,13 +148,30 @@ class Doctor:
                 with console.status("Downloading audio event model (47 MB, one time) ..."):
                     laughter.ensure_model(show_progress=False)
             except Exception as exc:  # noqa: BLE001
-                self.add("Laughter signal", WARN, f"model download failed ({exc}); signal skipped")
+                self.add("Laughter model", WARN, f"model download failed ({exc}); signal skipped")
                 return
         if laughter.model_ready():
-            self.add("Laughter signal", OK,
-                     f"sherpa-onnx {_version('sherpa-onnx')}, CED-mini model (CPU)")
+            self.add("Laughter model", OK,
+                     f"CED-mini via sherpa-onnx {_version('sherpa-onnx')} (CPU), "
+                     f"{laughter.model_dir()}")
         else:
-            self.add("Laughter signal", WARN, "model not downloaded yet; run doctor without --no-fix")
+            self.add("Laughter model", WARN, "not downloaded yet; run doctor without --no-fix")
+
+    def _check_encoder(self) -> None:
+        if not shutil.which("ffmpeg"):
+            return  # already reported as MISSING
+        from .render import pick_encoder
+
+        try:
+            enc, notes = pick_encoder()
+        except Exception as exc:  # noqa: BLE001
+            self.add("Video encoder", MISSING, str(exc)[:300])
+            return
+        detail = f"{enc.label} ({enc.name})"
+        if notes:
+            detail += "  - " + "; ".join(n.split(":")[0] for n in notes)
+        self.add("Video encoder", OK if enc.hardware else WARN,
+                 detail if enc.hardware else detail + " - no hardware encoder, previews use the CPU")
 
     def _check_nvidia_libs(self) -> None:
         libs = hardware.nvidia_libs_installed()

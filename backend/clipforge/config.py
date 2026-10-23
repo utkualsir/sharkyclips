@@ -27,6 +27,9 @@ DEFAULTS: dict[str, Any] = {
     # Extra highlight trigger words per language, merged with the built-in lists.
     # {"tr": ["kral"]} or {"tr": {"reaction": ["kral"], "study": ["ezber"]}}
     "custom_triggers": {},
+    # Preview/clip encoder: "auto" (first working hardware encoder, else CPU) or an ffmpeg
+    # name: h264_nvenc, h264_videotoolbox, h264_qsv, h264_amf, libx264
+    "video_encoder": "auto",
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,

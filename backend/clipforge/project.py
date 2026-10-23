@@ -18,12 +18,17 @@ MODES = ("gaming", "study", "music")
 _PARTIAL_SUFFIXES = {".part", ".ytdl", ".tmp", ".temp"}
 
 
-def write_json_atomic(path: Path, data: Any) -> None:
-    """Write JSON so a crash never leaves a half-written file behind."""
+def write_json_atomic(path: Path, data: Any, compact: bool = False) -> None:
+    """Write JSON so a crash never leaves a half-written file behind.
+
+    compact=True for files the web UI loads (no indentation, smaller/faster)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+        if compact:
+            json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
+        else:
+            json.dump(data, f, ensure_ascii=False, indent=2)
     os.replace(tmp, path)
 
 
