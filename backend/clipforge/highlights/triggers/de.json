@@ -1,0 +1,39 @@
+{
+  "language": "de",
+  "reaction": {
+    "oh mein gott": 1.0,
+    "ach du scheiße": 1.0,
+    "krass": 0.9,
+    "alter schwede": 0.9,
+    "auf keinen fall": 0.9,
+    "nicht dein ernst": 0.9,
+    "was zur hölle": 0.9,
+    "wie geil": 0.9,
+    "los geht's": 0.9,
+    "unglaublich": 0.9,
+    "wahnsinn": 0.9,
+    "boah": 0.8,
+    "heftig": 0.8,
+    "jawoll": 0.8,
+    "geil": 0.7,
+    "alter": 0.5,
+    "nein": 0.4,
+    "digga": 0.4
+  },
+  "study": {
+    "wichtig": 1.0,
+    "sehr wichtig": 1.0,
+    "der trick ist": 1.0,
+    "in der prüfung": 1.0,
+    "merkt euch": 0.9,
+    "formel": 0.9,
+    "achtung": 0.8,
+    "entscheidend": 0.8,
+    "zusammenfassend": 0.8,
+    "klausur": 0.7,
+    "prüfung": 0.6,
+    "merken": 0.6,
+    "regel": 0.5,
+    "zum beispiel": 0.5
+  }
+}

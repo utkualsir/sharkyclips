@@ -4,16 +4,16 @@
 Point it at a Twitch/Kick/YouTube VOD or a video file and it finds the best moments for you.
 Everything runs on your own computer: no paid APIs, no cloud, no account.
 
-> Status: **Phase 1** (foundation, ingest, multilingual transcription). The CLI works today;
-> a web UI comes in a later phase.
+> Status: **Phase 2** (ingest, multilingual transcription, signal-based highlight engine).
+> The CLI works today; a web UI comes in a later phase.
 
 ## Features & roadmap
 
 | Phase | What | Status |
 |---|---|---|
 | 1 | Hardware detection, `doctor`, ingest from URL or file, 16 kHz audio, multilingual transcription with word timestamps, resumable for 3-6 h streams | ✅ done |
-| 2 | Highlight detection (audio energy, chat/keywords, per-mode rules: gaming / study / music) | planned |
-| 3 | Local LLM (on the same GPU, never loaded at the same time as Whisper) to rank and title clips | planned |
+| 2 | Highlight engine: pluggable signals (loudness, keywords, laughter/shouting, speech rhythm, music chorus/drop) → hype curve → non-overlapping clip candidates with reasons | ✅ done |
+| 3 | Chat activity + local LLM as extra signals (LLM on the same GPU, never loaded at the same time as Whisper) to rank and title clips | planned |
 | 4 | Clip rendering: vertical 9:16 crops, burned-in subtitles (incl. RTL Arabic), export presets | planned |
 | 5 | FastAPI web UI (Turkish by default, all 7 languages) | planned |
 
@@ -101,6 +101,11 @@ python cli.py transcribe me-at-the-zoo-829e083e
 python cli.py transcribe me-at --lang tr --model medium      # a unique id prefix is enough
 python cli.py transcribe me-at --force                       # redo from scratch
 
+# 3. Find highlights (uses the project's mode unless you pass --mode)
+python cli.py highlights me-at
+python cli.py highlights me-at --mode study --top 5
+python cli.py highlights me-at --force                       # recompute cached signals
+
 # Other
 python cli.py list         # projects in the workspace
 python cli.py languages    # supported languages
@@ -114,7 +119,8 @@ workspace/<id>/
   audio.wav         16 kHz mono audio
   meta.json         title, duration, resolution, fps, source, mode
   transcript.json   language + segments with word-level timestamps
-  cache/            per-chunk results (lets long runs resume)
+  highlights.json   clip candidates + the whole-video hype curve
+  cache/            per-chunk / per-signal results (lets long runs resume)
 ```
 
 `transcript.json` (shortened):
@@ -129,6 +135,54 @@ workspace/<id>/
   ]
 }
 ```
+
+### Highlight engine
+
+Each **signal** scores every second of the video from 0 to 1 and records *reason events*.
+The **scorer** combines them with mode-specific weights into a hype curve; **candidates**
+are picked from its peaks, with boundaries snapped to word timestamps (never mid-word,
+sentence edges preferred) and no overlaps.
+
+| Signal | What it detects |
+|---|---|
+| `loudness` | Volume jumps against a rolling 60 s baseline (works for loud and quiet streamers) |
+| `keywords` | Reaction / study trigger phrases per language (`highlights/triggers/*.json`) + your own |
+| `laughter` | Laughter, shouting, cheering, using a free 10 MB AudioSet model (CED-mini via sherpa-onnx, CPU) |
+| `speech` | Excited fast talk, and a pause followed by a burst (setup → punchline) |
+| `steady_speech` | Calm, continuous explanation (study mode) |
+| `music` | Repeated chorus (chroma self-similarity) and drops (energy rise); first strong chorus preferred |
+
+| Mode | Main signals | Clip length |
+|---|---|---|
+| gaming | loudness, laughter, keywords, speech | 15-60 s (ideal ~38 s), 6-10 s pre-roll |
+| study | study keywords, steady speech; loud/laugh nearly off | 30-60 s, sentence-complete |
+| music | music | 15-30 s around the chorus/drop |
+
+A candidate in `highlights.json`:
+
+```json
+{"rank": 1, "start": 1027.7, "end": 1056.65, "duration": 28.95, "peak": 1035.0,
+ "hype_score": 100, "hype_raw": 0.2158,
+ "reasons": [{"code": "keyword", "value": "allah allah", "t": 1035.2, "strength": 0.6, "signal": "keywords"},
+             {"code": "laughter", "t": 1040.0, "strength": 0.71, "signal": "laughter"}],
+ "signal_scores": {"loudness": 0.4, "laughter": 0.71, "keywords": 0.8, "speech": 0.14},
+ "text": "..."}
+```
+
+`hype_score` is relative within the video (best clip = 100); `hype_raw` is the absolute value,
+kept for later calibration. Reason `code`s are stable identifiers (`loudness_spike`, `keyword`,
+`laughter`, `shouting`, `cheering`, `fast_speech`, `pause_then_burst`, `steady_explanation`,
+`chorus`, `drop`) so the UI can translate them.
+
+**Your own trigger words** go in `~/.clipforge/config.json`:
+
+```json
+"custom_triggers": {"tr": ["kral", "efsane an"], "en": {"reaction": ["poggers"], "study": ["mnemonic"]}}
+```
+
+**Adding a signal** (e.g. chat activity): subclass `Signal` in `highlights/signals/`, decorate it
+with `@register`, import it in `signals/__init__.py`, and give it a weight in `modes.py`.
+The scorer and candidate picker don't change.
 
 ### Long streams (3-6 hours)
 

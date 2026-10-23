@@ -1,0 +1,246 @@
+"""Turn the hype curve into clip candidates.
+
+1. Peak picking on the smoothed curve (min distance between peaks).
+2. A window per peak: pre-roll for the setup, the reaction, a short tail.
+3. Boundaries snapped to WORD timestamps: never mid-word, prefer sentence edges.
+4. Non-maximum suppression: clips never overlap.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+import numpy as np
+from scipy.signal import find_peaks
+
+from .context import AnalysisContext, Word
+from .modes import ModePreset
+from .scorer import HypeCurve
+
+MAX_REASONS = 6
+# Reasons whose value names *what* happened stay separate per value ("keyword: oha",
+# "keyword: nasıl ya"); for the rest one entry per code is enough (strongest + count).
+DISTINCT_BY_VALUE = {"keyword"}
+
+
+@dataclass
+class Candidate:
+    peak: float
+    start: float
+    end: float
+    raw: float  # smoothed hype at the peak (absolute, 0..1)
+    raw_unsmoothed: float
+    hype_score: int = 0  # 0..100, relative within this video
+    reasons: list[dict] = field(default_factory=list)
+    signal_scores: dict[str, float] = field(default_factory=dict)
+    text: str = ""
+
+    @property
+    def duration(self) -> float:
+        return self.end - self.start
+
+
+# --------------------------------------------------------------- windows
+
+
+def _initial_window(curve: np.ndarray, p: int, mode: ModePreset, duration: float) -> tuple[float, float]:
+    n = len(curve)
+    thr = curve[p] * 0.5
+    left = p
+    while left > 0 and curve[left - 1] >= thr and p - left < mode.clip_max:
+        left -= 1
+    right = p
+    while right < n - 1 and curve[right + 1] >= thr and right - p < mode.clip_max:
+        right += 1
+
+    pre_min, pre_max = mode.pre_roll
+    if mode.boundary == "music":
+        start = left - 1.0
+        end = start + mode.clip_ideal
+    elif mode.boundary == "sentence":
+        start = min(left - pre_min, p - pre_max)
+        end = right + 1 + mode.post_roll
+    else:  # reaction
+        start = float(np.clip(left - 2, p - pre_max, p - pre_min))
+        end = right + 1 + mode.post_roll
+
+    length = end - start
+    if length < mode.clip_min:
+        extra = (mode.clip_min + mode.clip_ideal) / 2 - length
+        before = 0.0 if mode.boundary == "reaction" else 0.35
+        start -= extra * before
+        end += extra * (1 - before)
+    if end - start > mode.clip_max:
+        end = start + mode.clip_max
+        if end < p + 2:  # always keep the peak itself
+            end = p + 2
+            start = end - mode.clip_max
+
+    # Keep inside the video, preserving length where possible.
+    if start < 0:
+        end, start = min(duration, end - start), 0.0
+    if end > duration:
+        start, end = max(0.0, start - (end - duration)), duration
+    return start, end
+
+
+# ----------------------------------------------------------- word snapping
+
+
+def _inside_word(words: list[Word], starts: np.ndarray, t: float) -> int | None:
+    i = int(np.searchsorted(starts, t, side="right")) - 1
+    if 0 <= i < len(words) and words[i].start < t < words[i].end:
+        return i
+    return None
+
+
+def _snap_start(words, starts, t: float, back: float, fwd: float, latest: float) -> float:
+    lo, hi = t - back, min(t + fwd, latest)
+    i0, i1 = int(np.searchsorted(starts, lo)), int(np.searchsorted(starts, hi, side="right"))
+    best, best_q = None, -1e9
+    for i in range(i0, i1):
+        prev = words[i - 1] if i > 0 else None
+        gap = words[i].start - prev.end if prev else 99.0
+        q = 0.0
+        if prev is None or prev.ends_sentence:
+            q += 2.0
+        q += 1.5 if gap >= 0.8 else (0.7 if gap >= 0.3 else 0.0)
+        q -= abs(words[i].start - t) / max(1.0, back + fwd) * 1.5
+        if q > best_q:
+            best, best_q = i, q
+    if best is None:
+        j = _inside_word(words, starts, t)
+        if j is None:
+            return t
+        best = j
+    prev_end = words[best - 1].end + 0.02 if best > 0 else 0.0
+    return max(words[best].start - 0.25, prev_end, 0.0)
+
+
+def _snap_end(words, starts, t: float, back: float, fwd: float, earliest: float,
+              duration: float) -> float:
+    lo, hi = max(t - back, earliest), t + fwd
+    best, best_q = None, -1e9
+    i0 = max(0, int(np.searchsorted(starts, lo)) - 1)
+    for i in range(i0, len(words)):
+        w = words[i]
+        if w.start > hi:
+            break
+        if not lo <= w.end <= hi:
+            continue
+        nxt = words[i + 1] if i + 1 < len(words) else None
+        gap = nxt.start - w.end if nxt else 99.0
+        q = 0.0
+        if w.ends_sentence:
+            q += 2.0
+        q += 1.5 if gap >= 0.8 else (0.7 if gap >= 0.3 else 0.0)
+        q -= abs(w.end - t) / max(1.0, back + fwd) * 1.5
+        if q > best_q:
+            best, best_q = i, q
+    if best is None:
+        j = _inside_word(words, starts, t)
+        if j is None:
+            return t
+        best = j
+    nxt_start = words[best + 1].start - 0.02 if best + 1 < len(words) else duration
+    return min(words[best].end + 0.35, nxt_start, duration)
+
+
+def refine(ctx: AnalysisContext, start: float, end: float, peak: float) -> tuple[float, float]:
+    words = ctx.words
+    if not words:
+        return start, end
+    starts = ctx.word_starts
+    mode = ctx.mode
+    if mode.boundary == "sentence":
+        sb, sf, eb, ef = 8.0, 3.0, 4.0, 8.0
+    elif mode.boundary == "music":
+        sb, sf, eb, ef = 2.0, 2.0, 2.0, 2.0
+    else:
+        sb, sf, eb, ef = 3.0, 2.0, 3.0, 4.0
+    latest_start = peak - mode.pre_roll[0] if mode.boundary == "reaction" else peak
+    s = _snap_start(words, starts, start, sb, sf, latest_start)
+    e = _snap_end(words, starts, end, eb, ef, peak + 1, ctx.duration)
+    if e - s > mode.clip_max:  # too long: look for an earlier word end only
+        e = _snap_end(words, starts, s + mode.clip_max - 0.4, eb, 0.0, peak + 1, ctx.duration)
+        if e - s > mode.clip_max:  # last word that still fits, else a hard cut
+            limit = s + mode.clip_max
+            window = words[int(np.searchsorted(starts, s)):int(np.searchsorted(starts, limit))]
+            fits = [w.end for w in window if w.end <= limit][-1:]
+            e = min(fits[0] + 0.1, limit) if fits and fits[0] > peak else limit
+    elif e - s < mode.clip_min and ctx.duration >= mode.clip_min:  # too short: later end only
+        e = _snap_end(words, starts, s + mode.clip_min + 0.4, 0.0, ef, s + mode.clip_min,
+                      ctx.duration)
+    return round(max(0.0, s), 2), round(min(ctx.duration, e), 2)
+
+
+# ---------------------------------------------------------------- reasons
+
+
+def _reasons(hype: HypeCurve, start: float, end: float) -> list[dict]:
+    best: dict[tuple, dict] = {}
+    counts: dict[tuple, int] = {}
+    for name, res in hype.results.items():
+        share = hype.shares[name]
+        for ev in res.events:
+            if not start <= ev.t <= end:
+                continue
+            key = (ev.code, ev.value if ev.code in DISTINCT_BY_VALUE else None)
+            counts[key] = counts.get(key, 0) + 1
+            rank = ev.strength * share
+            if key not in best or rank > best[key]["_rank"]:
+                best[key] = {**ev.to_dict(), "signal": name, "_rank": rank, "_key": key}
+    out = sorted(best.values(), key=lambda r: -r["_rank"])[:MAX_REASONS]
+    for r in out:
+        if counts[r["_key"]] > 1:
+            r["count"] = counts[r["_key"]]
+        del r["_rank"], r["_key"]
+    return out
+
+
+# ------------------------------------------------------------------- main
+
+
+def default_count(duration: float) -> int:
+    return int(np.clip(round(duration / 240), 3, 40))  # ~1 per 4 minutes, 3..40
+
+
+def pick_candidates(ctx: AnalysisContext, hype: HypeCurve, top: int | None = None) -> list[Candidate]:
+    curve = hype.smoothed
+    mode = ctx.mode
+    top = top or default_count(ctx.duration)
+    if len(curve) < 3 or curve.max() <= 0:
+        return []
+    floor = float(np.median(curve))
+    threshold = floor + 0.1 * (float(curve.max()) - floor)
+    peaks, _ = find_peaks(np.concatenate([[0.0], curve, [0.0]]), height=threshold,
+                          distance=max(1, int(mode.min_gap / 3)), prominence=0.01)
+    peaks = sorted((int(p) - 1 for p in peaks), key=lambda p: -curve[p])
+
+    chosen: list[Candidate] = []
+    for p in peaks:
+        if len(chosen) >= top:
+            break
+        if any(abs(p - c.peak) < mode.min_gap for c in chosen):
+            continue
+        s, e = _initial_window(curve, p, mode, ctx.duration)
+        s, e = refine(ctx, s, e, p)
+        if e - s < min(mode.clip_min * 0.5, ctx.duration * 0.5):
+            continue
+        if any(s < c.end + 1.0 and e > c.start - 1.0 for c in chosen):  # NMS: no overlap
+            continue
+        chosen.append(Candidate(peak=float(p), start=s, end=e, raw=float(curve[p]),
+                                raw_unsmoothed=float(hype.combined[p])))
+
+    if not chosen:
+        return []
+    top_raw = max(c.raw for c in chosen)
+    for c in chosen:
+        rel = (c.raw - floor) / (top_raw - floor) if top_raw > floor else 1.0
+        c.hype_score = int(np.clip(round(100 * rel), 1, 100))
+        c.reasons = _reasons(hype, c.start, c.end)
+        a, b = int(c.start), max(int(c.start) + 1, int(np.ceil(c.end)))
+        c.signal_scores = {n: round(float(r.scores[a:b].max()), 3) for n, r in hype.results.items()}
+        c.text = ctx.text_between(c.start, c.end)
+    chosen.sort(key=lambda c: (-c.hype_score, c.start))
+    return chosen

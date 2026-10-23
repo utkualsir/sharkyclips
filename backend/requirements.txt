@@ -5,6 +5,10 @@ yt-dlp[default]>=2025.11.12
 numpy>=1.24
 psutil>=5.9
 rich>=13.7
+# Phase 2 - highlight engine
+scipy>=1.11
+librosa>=0.10            # music mode: chorus / drop detection
+sherpa-onnx>=1.10        # laughter / shouting detection (small ONNX audio-event model)
 
 # Apple Silicon (M1/M2/M3/M4...) only:
 mlx-whisper>=0.4.2; platform_system == "Darwin" and platform_machine == "arm64"

@@ -86,6 +86,8 @@ def _ydl_opts(project_dir: Path, max_height: int) -> dict:
         "no_warnings": False,
         "noprogress": True,
         "ffmpeg_location": str(Path(ffmpeg).parent),
+        "socket_timeout": 30,  # a stalled connection raises and is retried instead of hanging
+        "logger": _YdlLogger(),
         "retries": 10,
         "fragment_retries": 10,
         "continuedl": True,
@@ -97,11 +99,40 @@ def _ydl_opts(project_dir: Path, max_height: int) -> dict:
     return opts
 
 
+_LOGIN_MARKERS = ("sign in", "your age", "age-restricted", "login", "log in", "private video", "members-only",
+                  "subscriber", "cookies")
+
+
+class _YdlLogger:
+    """Keep yt-dlp quiet: ClipForge reports errors itself (once, with a fix hint)."""
+
+    def debug(self, msg: str) -> None:
+        pass
+
+    def info(self, msg: str) -> None:
+        pass
+
+    def warning(self, msg: str) -> None:
+        from rich.markup import escape
+
+        console.print(f"[dim]yt-dlp: {escape(msg)}[/]")
+
+    def error(self, msg: str) -> None:
+        pass
+
+
 def _download_error(exc: Exception, url: str) -> ClipForgeError:
+    text = str(exc).replace("ERROR:", "").strip()
+    first = text.split(". Use --cookies")[0][:300]
+    if any(m in text.lower() for m in _LOGIN_MARKERS):
+        return ClipForgeError(
+            f"This video needs a signed-in account (age-restricted, private or members-only): {first}",
+            "ClipForge doesn't log in to sites. Download the video yourself, then run: "
+            'python cli.py ingest "path/to/video.mp4"')
     hint = "Update yt-dlp (sites change often): " + pip_hint("yt-dlp[default]")
     if "youtu" in url and not js_runtimes():
         hint += "\nYouTube also needs a JavaScript runtime: install Deno or Node.js."
-    return ClipForgeError(f"Download failed: {str(exc).strip()[:500]}", hint)
+    return ClipForgeError(f"Download failed: {text[:500]}", hint)
 
 
 def _ingest_url(url: str) -> tuple[Project, dict]:
@@ -110,6 +141,7 @@ def _ingest_url(url: str) -> tuple[Project, dict]:
     console.print(f"Looking up [cyan]{url}[/] ...")
     try:
         with yt_dlp.YoutubeDL({"quiet": True, "noplaylist": True, "skip_download": True,
+                               "socket_timeout": 30, "retries": 5, "logger": _YdlLogger(),
                                **({"js_runtimes": js_runtimes()} if js_runtimes() else {})}) as ydl:
             info = ydl.extract_info(url, download=False)
     except Exception as exc:

@@ -24,6 +24,9 @@ DEFAULTS: dict[str, Any] = {
     "transcribe_language": "auto",
     "transcribe_model": "auto",
     "download_max_height": 1080,
+    # Extra highlight trigger words per language, merged with the built-in lists.
+    # {"tr": ["kral"]} or {"tr": {"reaction": ["kral"], "study": ["ezber"]}}
+    "custom_triggers": {},
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,
@@ -46,7 +49,8 @@ def load() -> dict[str, Any]:
     path = config_path()
     if path.is_file():
         try:
-            data = json.loads(path.read_text(encoding="utf-8"))
+            # utf-8-sig: Windows editors sometimes save JSON with a BOM.
+            data = json.loads(path.read_text(encoding="utf-8-sig"))
             if isinstance(data, dict):
                 cfg.update(data)
         except (OSError, json.JSONDecodeError):

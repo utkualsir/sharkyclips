@@ -4,6 +4,7 @@
     python cli.py doctor
     python cli.py ingest <url-or-path> [--mode gaming|study|music]
     python cli.py transcribe <id> [--lang auto|tr|en|ru|hu|de|ar|zh] [--model auto|large-v3-turbo|medium|small]
+    python cli.py highlights <id> [--mode gaming|study|music] [--top N]
     python cli.py list
     python cli.py languages
 """
@@ -82,6 +83,38 @@ def cmd_transcribe(args) -> int:
     return 0
 
 
+def cmd_highlights(args) -> int:
+    from rich.table import Table
+
+    from clipforge.highlights import run_highlights
+    from clipforge.project import get_project
+
+    project = get_project(args.id)
+    res = run_highlights(project, mode=args.mode, top=args.top, force=args.force)
+    cands = res["candidates"]
+    if not cands:
+        console.print("[yellow]No highlight candidates found.[/]")
+        return 0
+    t = Table(title=f"Highlights - {res['mode']} mode - clips: {len(cands)}")
+    t.add_column("#", justify="right")
+    t.add_column("time")
+    t.add_column("len", justify="right")
+    t.add_column("hype", justify="right")
+    t.add_column("reasons")
+    t.add_column("text", overflow="fold", max_width=48)
+    for c in cands:
+        reasons = ", ".join(r["code"] + (f" {r['value']}" if r.get("value") else "")
+                            for r in c["reasons"][:4])
+        t.add_row(str(c["rank"]), f"{fmt_time(c['start'])}-{fmt_time(c['end'])}",
+                  f"{c['duration']:.0f}s", str(c["hype_score"]), reasons, c["text"][:120])
+    console.print(t)
+    skipped = [f"{k} ({v['reason']})" for k, v in res["signals"].items() if v["status"] != "ok"]
+    if skipped:
+        console.print(f"[yellow]Skipped signals:[/] {'; '.join(skipped)}")
+    console.print(f"Done in {res['elapsed_seconds']}s -> {project.dir / 'highlights.json'}")
+    return 0
+
+
 def cmd_list(args) -> int:
     from rich.table import Table
 
@@ -140,6 +173,13 @@ def build_parser() -> argparse.ArgumentParser:
     t.add_argument("--force", action="store_true", help="redo even if a transcript exists")
     t.set_defaults(func=cmd_transcribe)
 
+    h = sub.add_parser("highlights", help="find the best moments (clip candidates)")
+    h.add_argument("id", help="project id (a unique prefix is enough)")
+    h.add_argument("--mode", choices=MODES, help="override the project's mode")
+    h.add_argument("--top", type=int, help="max number of clips (default: ~1 per 4 minutes)")
+    h.add_argument("--force", action="store_true", help="recompute cached signals")
+    h.set_defaults(func=cmd_highlights)
+
     sub.add_parser("list", help="list projects").set_defaults(func=cmd_list)
     sub.add_parser("languages", help="show supported languages").set_defaults(func=cmd_languages)
     return p
@@ -150,9 +190,11 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return args.func(args)
     except ClipForgeError as exc:
-        console.print(f"[bold red]Error:[/] {exc.message}")
+        from rich.markup import escape  # messages may contain [brackets], e.g. "yt-dlp[default]"
+
+        console.print(f"[bold red]Error:[/] {escape(exc.message)}")
         if exc.hint:
-            console.print(f"[yellow]Fix:[/] {exc.hint}")
+            console.print(f"[yellow]Fix:[/] {escape(exc.hint)}")
         return 1
     except KeyboardInterrupt:
         console.print("\n[yellow]Interrupted.[/] Finished work is saved - run the same command "

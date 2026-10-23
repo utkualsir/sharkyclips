@@ -93,7 +93,7 @@ class Doctor:
             v = _version(dist)
             found = v and importlib.util.find_spec(module) is not None
             self.add(f"python: {dist}", OK if found else MISSING,
-                     v if found else f"install: python -m pip install -r backend/requirements.txt")
+                     v if found else "install: python -m pip install -r backend/requirements.txt")
 
         # GPU ------------------------------------------------------------
         gpu = hw.best_nvidia
@@ -116,6 +116,7 @@ class Doctor:
             self.add("VRAM", INFO, "n/a")
 
         plan = self._smoke_and_plan(hw)
+        self._check_highlight_deps()
 
         ws = config.workspace_dir()
         try:
@@ -129,6 +130,30 @@ class Doctor:
 
         self._print(plan)
         return 1 if any(s in (MISSING, FAIL) for _, s, _ in self.rows) else 0
+
+    def _check_highlight_deps(self) -> None:
+        """Optional highlight signals: missing ones are skipped, never fatal (WARN)."""
+        lv = _version("librosa")
+        self.add("Music signal (librosa)", OK if lv else WARN,
+                 lv or f"music mode chorus detection disabled - {pip_hint('librosa')}")
+        from .highlights.signals import laughter
+
+        if not laughter.sherpa_installed():
+            self.add("Laughter signal", WARN,
+                     f"sherpa-onnx missing, signal will be skipped - {pip_hint('sherpa-onnx')}")
+            return
+        if not laughter.model_ready() and self.fix:
+            try:
+                with console.status("Downloading audio event model (47 MB, one time) ..."):
+                    laughter.ensure_model(show_progress=False)
+            except Exception as exc:  # noqa: BLE001
+                self.add("Laughter signal", WARN, f"model download failed ({exc}); signal skipped")
+                return
+        if laughter.model_ready():
+            self.add("Laughter signal", OK,
+                     f"sherpa-onnx {_version('sherpa-onnx')}, CED-mini model (CPU)")
+        else:
+            self.add("Laughter signal", WARN, "model not downloaded yet; run doctor without --no-fix")
 
     def _check_nvidia_libs(self) -> None:
         libs = hardware.nvidia_libs_installed()

@@ -320,7 +320,7 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
         src = project.source_path
         if src is None:
             raise ClipForgeError(f"Project '{project.id}' has no audio.wav and no source video.",
-                                 f"Re-run: python cli.py ingest <url-or-path>")
+                                 "Re-run: python cli.py ingest <url-or-path>")
         console.print("audio.wav missing - extracting it again ...")
         audio.extract_audio(src, project.audio_path)
     duration = audio.wav_duration(project.audio_path)

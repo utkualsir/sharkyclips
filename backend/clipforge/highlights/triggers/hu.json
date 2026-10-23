@@ -1,0 +1,37 @@
+{
+  "language": "hu",
+  "reaction": {
+    "úristen": 1.0,
+    "te jó ég": 1.0,
+    "nem hiszem el": 1.0,
+    "azta": 1.0,
+    "ne már": 0.9,
+    "jézusom": 0.9,
+    "atyaég": 0.9,
+    "gyerünk": 0.9,
+    "basszus": 0.8,
+    "hűha": 0.8,
+    "durva": 0.8,
+    "na ne": 0.8,
+    "őrület": 0.8,
+    "hajrá": 0.7,
+    "király": 0.6,
+    "mi a": 0.5,
+    "tesó": 0.3
+  },
+  "study": {
+    "fontos": 1.0,
+    "nagyon fontos": 1.0,
+    "a lényeg": 1.0,
+    "a trükk": 1.0,
+    "vizsgán": 1.0,
+    "figyeljetek": 0.9,
+    "jegyezd meg": 0.9,
+    "képlet": 0.9,
+    "figyelem": 0.8,
+    "összefoglalva": 0.8,
+    "vizsga": 0.6,
+    "szabály": 0.6,
+    "például": 0.5
+  }
+}
