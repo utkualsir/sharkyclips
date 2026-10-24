@@ -290,12 +290,13 @@ $n++; Step $n $total 'ClipForge'
 if ($Bootstrap) {
     if (-not $git) { Fail (T 'ClipForge''u indirmek için Git gerekli.' 'Git is needed to download ClipForge.') }
     if (Test-Path -LiteralPath (Join-Path $AppDir '.git')) {
-        & $git -C $AppDir pull --ff-only
+        & $git -C $AppDir pull --ff-only --quiet
         if ($LASTEXITCODE -ne 0) { Warn (T 'Güncelleme alınamadı, mevcut sürümle devam ediliyor.' 'Could not pull updates, continuing with the current version.') }
     } elseif ((Test-Path -LiteralPath $AppDir) -and (Get-ChildItem -LiteralPath $AppDir -Force | Select-Object -First 1)) {
         Fail ((T '{0} klasörü dolu. Başka bir klasör seçin: -InstallDir <klasör>' 'The folder {0} is not empty. Pick another one: -InstallDir <folder>') -f $AppDir)
     } else {
-        & $git clone $RepoUrl $AppDir
+        Say (T '  İndiriliyor (git clone)...' '  Downloading (git clone)...') 'DarkGray'
+        & $git clone --quiet $RepoUrl $AppDir
         if ($LASTEXITCODE -ne 0) { Fail (T 'ClipForge indirilemedi (git clone).' 'Could not download ClipForge (git clone).') }
     }
     # Continue with the installer that came with this version.

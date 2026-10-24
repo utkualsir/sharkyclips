@@ -162,11 +162,11 @@ step 2 $TOTAL ClipForge
 if [ "$BOOTSTRAP" = 1 ]; then
   have git || fail "$(t "ClipForge'u indirmek için Git gerekli." 'Git is needed to download ClipForge.')"
   if [ -d "$APP_DIR/.git" ]; then
-    git -C "$APP_DIR" pull --ff-only || warn "$(t 'Güncelleme alınamadı.' 'Could not pull updates.')"
+    git -C "$APP_DIR" pull --ff-only --quiet || warn "$(t 'Güncelleme alınamadı.' 'Could not pull updates.')"
   elif [ -d "$APP_DIR" ] && [ -n "$(ls -A "$APP_DIR" 2>/dev/null)" ]; then
     fail "$(t "$APP_DIR klasörü dolu. Başka bir klasör seçin: --install-dir <klasör>" "The folder $APP_DIR is not empty. Pick another one: --install-dir <folder>")"
   else
-    git clone "$REPO_URL" "$APP_DIR" || fail "$(t 'ClipForge indirilemedi (git clone).' 'Could not download ClipForge (git clone).')"
+    git clone --quiet "$REPO_URL" "$APP_DIR" || fail "$(t 'ClipForge indirilemedi (git clone).' 'Could not download ClipForge (git clone).')"
   fi
   ok "$APP_DIR"
   args=(--yes --lang "$LANG_CHOICE")
