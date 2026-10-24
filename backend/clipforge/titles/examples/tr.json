@@ -1,0 +1,45 @@
+{
+  "language": "tr",
+  "_note": "Style references for the title prompt: casual, natural, how Turkish creators write Shorts titles. Most titles have no '!'. Edit freely; the LLM copies the tone, not the content.",
+  "gaming": [
+    {"text": "Kanka bu adam nereden çıktı?", "style": "question"},
+    {"text": "Son mermiyle 1v3, kalbim duracaktı", "style": "story"},
+    {"text": "Takım arkadaşım beni yine sattı", "style": "funny"},
+    {"text": "Bu maçın en sevdiğim anı buydu", "style": "calm"},
+    {"text": "Ekipçe hiç bu kadar gülmemiştik", "style": "funny"},
+    {"text": "Çıkışa 10 saniye kala gelen sürpriz", "style": "curiosity"},
+    {"text": "Neden hep bana denk geliyor?", "style": "question"},
+    {"text": "Sessizce arkasına dolandım ve...", "style": "curiosity"},
+    {"text": "Kamp atanlara küçük bir ders", "style": "punchy"},
+    {"text": "Bu silahı kimse kullanmıyor, peki neden?", "style": "question"},
+    {"text": "Tek canım kaldı, maç resmen bende", "style": "story"},
+    {"text": "Bu haritada ilk maçım, sonu böyle bitti", "style": "story"},
+    {"text": "Mikrofon açıkken yapılmayacak şeyler", "style": "funny"},
+    {"text": "Revive atarken üstüme 3 kişi geldi", "style": "story"},
+    {"text": "Bunu hiç planlamamıştık!", "style": "hype"}
+  ],
+  "study": [
+    {"text": "Türev aslında bu kadar basit", "style": "calm"},
+    {"text": "Bunu okulda neden böyle anlatmıyorlar?", "style": "question"},
+    {"text": "Bir dakikada asal sayılar", "style": "punchy"},
+    {"text": "Sınavdan önce bilmen gereken tek formül", "style": "curiosity"},
+    {"text": "Ezberlemeden öğrenmenin yolu", "style": "calm"},
+    {"text": "Bu soruyu çoğu kişi yanlış çözüyor", "style": "curiosity"},
+    {"text": "Hocamın bana öğrettiği en iyi taktik", "style": "story"},
+    {"text": "Gökyüzü neden mavi, kısaca anlatıyorum", "style": "calm"},
+    {"text": "Kesirlerle aran kötüyse bunu izle", "style": "punchy"},
+    {"text": "Not alırken yaptığın en büyük hata ne?", "style": "question"}
+  ],
+  "music": [
+    {"text": "Nakarat gelince tüylerim diken diken oldu", "style": "story"},
+    {"text": "Bu kısmı canlı söylemek hiç kolay değil", "style": "calm"},
+    {"text": "Seyirci sözleri benden önce söyledi", "style": "story"},
+    {"text": "Gece 3'te stüdyoda çıkan melodi", "style": "curiosity"},
+    {"text": "Bu drop'u beklemiyordun", "style": "punchy"},
+    {"text": "Sesim bu notaya çıkar mı?", "style": "question"},
+    {"text": "Bu şarkıyı ilk kez akustik çalıyorum", "style": "calm"},
+    {"text": "Gitar solosu başlayınca herkes sustu", "style": "story"},
+    {"text": "Bu beat'i 10 dakikada yaptım", "style": "punchy"},
+    {"text": "Bu şarkının hikayesini biliyor musun?", "style": "question"}
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "language": "ru",
+  "_note": "Style references for the title prompt: casual, natural Shorts titles. Most titles have no '!'. Edit freely; the LLM copies the tone, not the content.",
+  "gaming": [
+    {"text": "Откуда он вообще взялся?", "style": "question"},
+    {"text": "Последний патрон и 1 против 3", "style": "story"},
+    {"text": "Тиммейт снова меня слил", "style": "funny"},
+    {"text": "Мой любимый момент со стрима", "style": "calm"},
+    {"text": "Мы так ещё никогда не смеялись", "style": "funny"},
+    {"text": "За 10 секунд до эвакуации случилось это", "style": "curiosity"},
+    {"text": "Почему это всегда происходит со мной?", "style": "question"},
+    {"text": "Тихо зашёл ему за спину и...", "style": "curiosity"},
+    {"text": "Небольшой урок для кемперов", "style": "punchy"},
+    {"text": "Этим оружием никто не играет, а зря?", "style": "question"},
+    {"text": "Одна жизнь, и весь раунд на мне", "style": "story"},
+    {"text": "Первая игра на этой карте, и вот итог", "style": "story"},
+    {"text": "Чего не стоит делать с включённым микрофоном", "style": "funny"},
+    {"text": "Поднимаю друга, а на меня бегут трое", "style": "story"},
+    {"text": "Такого мы точно не планировали!", "style": "hype"}
+  ],
+  "study": [
+    {"text": "Производная на самом деле очень простая", "style": "calm"},
+    {"text": "Почему в школе так не объясняют?", "style": "question"},
+    {"text": "Простые числа за одну минуту", "style": "punchy"},
+    {"text": "Одна формула, которую надо знать перед экзаменом", "style": "curiosity"},
+    {"text": "Как выучить это без зубрёжки", "style": "calm"},
+    {"text": "Большинство решает эту задачу неправильно", "style": "curiosity"},
+    {"text": "Лучший приём, который показал мне учитель", "style": "story"},
+    {"text": "Почему небо голубое, коротко", "style": "calm"},
+    {"text": "Не дружишь с дробями? Посмотри это", "style": "punchy"},
+    {"text": "Какая главная ошибка в конспектах?", "style": "question"}
+  ],
+  "music": [
+    {"text": "Начался припев, и у меня мурашки", "style": "story"},
+    {"text": "Эту часть непросто спеть вживую", "style": "calm"},
+    {"text": "Зал спел это раньше меня", "style": "story"},
+    {"text": "Мелодия, которая родилась в студии в 3 ночи", "style": "curiosity"},
+    {"text": "Этого дропа ты не ждал", "style": "punchy"},
+    {"text": "Смогу ли я взять эту ноту?", "style": "question"},
+    {"text": "Впервые играю эту песню под акустику", "style": "calm"},
+    {"text": "Началось гитарное соло, и все замолчали", "style": "story"},
+    {"text": "Сделал этот бит за 10 минут", "style": "punchy"},
+    {"text": "Ты знаешь историю этой песни?", "style": "question"}
+  ]
+}

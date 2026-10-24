@@ -1,0 +1,45 @@
+{
+  "language": "hu",
+  "_note": "Style references for the title prompt: casual, natural Shorts titles. Most titles have no '!'. Edit freely; the LLM copies the tone, not the content.",
+  "gaming": [
+    {"text": "Ez meg honnan jött elő?", "style": "question"},
+    {"text": "Utolsó golyó, 1v3", "style": "story"},
+    {"text": "A csapattársam megint cserben hagyott", "style": "funny"},
+    {"text": "A kedvenc pillanatom a streamből", "style": "calm"},
+    {"text": "Ennyit még sosem nevettünk", "style": "funny"},
+    {"text": "10 másodperccel a kimenekítés előtt jött ez", "style": "curiosity"},
+    {"text": "Miért mindig velem történik ez?", "style": "question"},
+    {"text": "Csendben mögé lopakodtam, és...", "style": "curiosity"},
+    {"text": "Egy kis lecke a kempereknek", "style": "punchy"},
+    {"text": "Ezt a fegyvert senki sem használja, de miért?", "style": "question"},
+    {"text": "Egy életem maradt, rajtam múlt a kör", "style": "story"},
+    {"text": "Első meccsem ezen a pályán, így ért véget", "style": "story"},
+    {"text": "Amit bekapcsolt mikrofonnal jobb nem csinálni", "style": "funny"},
+    {"text": "Élesztem a barátomat, közben hárman jönnek rám", "style": "story"},
+    {"text": "Ezt egyáltalán nem így terveztük!", "style": "hype"}
+  ],
+  "study": [
+    {"text": "A deriválás valójában ennyire egyszerű", "style": "calm"},
+    {"text": "Miért nem így tanítják az iskolában?", "style": "question"},
+    {"text": "Prímszámok egy perc alatt", "style": "punchy"},
+    {"text": "Az az egy képlet, amit a vizsga előtt tudnod kell", "style": "curiosity"},
+    {"text": "Így tanulhatod meg magolás nélkül", "style": "calm"},
+    {"text": "Ezt a feladatot a legtöbben elrontják", "style": "curiosity"},
+    {"text": "A legjobb trükk, amit a tanárom mutatott", "style": "story"},
+    {"text": "Miért kék az ég, röviden", "style": "calm"},
+    {"text": "Nem megy a törtekkel? Nézd meg ezt", "style": "punchy"},
+    {"text": "Mi a legnagyobb hiba jegyzeteléskor?", "style": "question"}
+  ],
+  "music": [
+    {"text": "Jött a refrén, és libabőrös lettem", "style": "story"},
+    {"text": "Ezt a részt élőben nem könnyű elénekelni", "style": "calm"},
+    {"text": "A közönség előbb énekelte, mint én", "style": "story"},
+    {"text": "Egy dallam hajnali 3-kor a stúdióból", "style": "curiosity"},
+    {"text": "Erre a dropra nem számítottál", "style": "punchy"},
+    {"text": "Kiénekli a hangom ezt a hangot?", "style": "question"},
+    {"text": "Először játszom akusztikusan ezt a dalt", "style": "calm"},
+    {"text": "Elkezdődött a gitárszóló, és mindenki elhallgatott", "style": "story"},
+    {"text": "Ezt az alapot 10 perc alatt raktam össze", "style": "punchy"},
+    {"text": "Ismered ennek a dalnak a történetét?", "style": "question"}
+  ]
+}

@@ -4,8 +4,9 @@
 Point it at a Twitch/Kick/YouTube VOD or a video file and it finds the best moments for you.
 Everything runs on your own computer: no paid APIs, no cloud, no account.
 
-> Status: phases 1, 2, 3A and 5 done: transcription, highlight engine, chat signal, local LLM
-> (viral score, titles, hashtags, cover prompt, subtitle translation), 9:16 rendering, web UI.
+> Status: phases 1, 2, 3A, 3B and 5 done: transcription, highlight engine, chat signal, local LLM
+> (viral score, natural titles that learn your style, hashtags, cover prompt, subtitle translation),
+> 9:16 rendering, web UI.
 
 ## Features & roadmap
 
@@ -14,6 +15,7 @@ Everything runs on your own computer: no paid APIs, no cloud, no account.
 | 1 | Hardware detection, `doctor`, ingest from URL or file, 16 kHz audio, multilingual transcription with word timestamps, resumable for 3-6 h streams | ✅ done |
 | 2 | Highlight engine: pluggable signals (loudness, keywords, laughter/shouting, speech rhythm, music chorus/drop) → hype curve → non-overlapping clip candidates with reasons | ✅ done |
 | 3A | Chat replay signal (YouTube, Twitch, or a log file) + local LLM via Ollama: judges clips, refines cuts, viral score, titles, hashtags, cover prompt, hook text, subtitle translation, study-mode explanations | ✅ done |
+| 3B | Title quality (few-shot examples per language, glossary, proofread pass, dictionary check, variety rules, thumbs up/down that teach your style) + UI: viral score on cards, output language, model picker, chat stats, hook modes | ✅ done |
 | 4 | Clip rendering: vertical 9:16 (facecam + game / fit / fill), burned-in word-timed subtitles (incl. RTL Arabic), hook text + peak flash, facecam detection | ✅ core done |
 | 5 | Local web UI: library, timeline with Hype Map, review & render, 7 languages, dark/light | ✅ done |
 
@@ -100,9 +102,21 @@ What you can do in the browser:
   hook), the Hype Map (click to jump), per-clip signal stats, the candidate list with
   translated reasons and Accept toggles, render options and "Render N clips". Finished clips
   play inline and download as MP4 (1080x1920, H.264/AAC).
+  - Candidate cards show the **viral score /100** with its label (Low / Medium / High / Very
+    high); the hype score is the smaller bar underneath.
+  - **Analyze with AI**: pick the output language (7 languages) for titles, hashtags and
+    subtitles next to the button; progress shows live ("AI analysis 3/15"). It also runs by
+    itself after highlights are found (switch it off in Settings).
+  - **Publish package**: titles with thumbs up / down (liked titles become examples for the
+    next run, so titles learn your style), "New suggestions", hashtags, cover prompt.
+  - **Chat** (when the stream has a chat replay): messages, people, messages per minute
+    compared with the usual rate, "Chat exploded 5.2x" spikes and the most spammed reaction.
+  - **Hook**: Off / Text / Flash / Both. The text is the AI hook, prefilled and editable
+    (reset button brings the AI text back).
 - **Facecam editor**: drag/resize the detected webcam box on a real frame.
 - **Settings**: UI language (Turkish default, English, Russian, Hungarian, German, Arabic RTL,
-  Chinese), custom trigger words per language, video encoder, default mode.
+  Chinese), local AI (model picker with the installed Ollama models, auto-analyze switch,
+  glossary), custom trigger words per language, video encoder, default mode.
 - Keyboard: up/down (or j/k) moves through candidates, `a` accepts/unaccepts.
 
 Heavy work (transcription, analysis, rendering) runs one job at a time on the GPU lane;
@@ -256,8 +270,7 @@ files directly from the same registry over IPv4 and resumes where it stopped.
 - The LLM and Whisper are **never on the GPU at the same time**: loading one unloads the other,
   and the LLM is unloaded (`keep_alive 0`) when a batch ends.
 - Answers use Ollama's structured JSON output with a schema, are validated, and retried with the
-  problems listed. Titles that swear, repeat each other or reuse phrases from other clips of the
-  same video are sent back; leftovers are dropped.
+  problems listed.
 - Results are cached per clip in `cache/llm/`, so re-running is instant and an interrupted run
   resumes.
 
@@ -285,9 +298,40 @@ files directly from the same registry over IPv4 and resumes where it stopped.
 - **Cover prompt**: English, describes what really happens in the clip, always in the same style
   (dramatic, high contrast, navy & gold grade, short bold text, no logos/watermarks).
 
-Measured on an RTX 5070 Laptop (8 GB), qwen3.5:9b, 15 clips of a 19 min stream: 266 s in total
-(model load 7 s, ~12 s per clip, ~40 tokens/s with ~85% of the model on the GPU, peak VRAM 7.0 GB,
-unloaded afterwards). A 7 min study video: the LLM reads the transcript in ~30 s.
+#### Titles (`clipforge/titles/`)
+
+Small local models like to write generic, over-hyped titles ("İnanılmaz Bir Durum!") and make
+spelling mistakes. Titles are therefore written in their own steps:
+
+1. **Draft**: the LLM writes 9 ideas, shown 10-15 natural example titles for the language and
+   content type (`titles/examples/<lang>.json`, casual, mostly without "!"; edit them freely),
+   your liked titles, and the glossary.
+2. **Local checks**: emoji and Title Case removed, accents repaired ("olmasin" -> "olmasın",
+   "schoner" -> "schöner"), Turkish question particles follow vowel harmony ("pompalı mi" ->
+   "pompalı mı"), names spelled the glossary way. Words that are neither in the transcript, the
+   glossary nor the offline dictionary ([wordfreq](https://github.com/rspeer/wordfreq), with
+   suffix stripping for Turkish and Hungarian) are flagged.
+3. **Proofread**: a second, short LLM pass fixes spelling and grammar in the output language,
+   gets the flagged words, and drops duplicates and repeated patterns.
+4. **Pick**: titles that still contain unknown words, swearing or rude fillers ("lan"), copy an
+   example, or repeat another clip's title are rejected (see `title_checks` in
+   `highlights.json`). Six are picked: at most 2 with "!", at least one question, at least one
+   calm statement, and the streamer's own words in at most two.
+
+**Glossary**: the game is detected from the video title / topic; its built-in names
+(`titles/games.json`: Delta Force, LoL, Valorant, CS2, ...) are used only when the streamer
+actually says them (fuzzy match, so Whisper's misspellings still count). Add your own in
+Settings or in the config: `"glossary": ["Zero Dam", "kanka"]` (or `{"all": [...], "tr": [...]}`).
+Words the streamer says far more often than usual ("kanka", nicknames) are added automatically.
+
+**Your style**: thumbs up / down in the web UI are saved in `~/.clipforge/title_feedback.json`.
+The next "Analyze with AI" rewrites the titles with your liked ones as examples (the scores and
+cuts stay cached).
+
+Measured on an RTX 5070 Laptop (8 GB), qwen3.5:9b, 15 clips of a 19 min stream: ~10 min in total
+(~40 s per clip: ~12 s judging, the rest drafting + proofreading titles; ~37 tokens/s with ~85% of the model on the GPU, unloaded
+afterwards). Re-running after a thumbs up only redoes the titles. A 7 min study video: the LLM
+reads the transcript in ~30 s.
 
 **Your own trigger words** go in `~/.clipforge/config.json`:
 
@@ -315,7 +359,8 @@ Set the `CLIPFORGE_HOME` environment variable to use another folder. Useful keys
 `download_max_height` (default 1080), `ui_language` / `output_language` (default `tr`),
 `custom_triggers`, `video_encoder` (`auto` or `h264_nvenc`, `h264_videotoolbox`, `h264_qsv`,
 `h264_amf`, `libx264`), `llm_enabled`, `llm_model` (`auto` or an Ollama tag),
-`llm_fallback_model` (`qwen3.5:4b`), `llm_num_ctx` (8192), `ollama_url`, `chat_delay` (5 s).
+`llm_fallback_model` (`qwen3.5:4b`), `llm_num_ctx` (8192), `ollama_url`, `chat_delay` (5 s),
+`auto_analyze` (true), `glossary` (names AI titles must spell exactly).
 
 ## Troubleshooting
 
@@ -328,6 +373,7 @@ Set the `CLIPFORGE_HOME` environment variable to use another folder. Useful keys
 | First run is slow | The Whisper model (~1.6 GB) is downloaded once and cached in `~/.cache/huggingface` |
 | LLM is slow or runs out of memory | Set `"llm_model": "qwen3.5:4b"` in the config (or any smaller Ollama model) |
 | No titles / viral score | Ollama isn't installed or running: `python cli.py doctor` |
+| Titles misspell a name | Add it to the glossary in Settings, then "Analyze with AI" again |
 
 ## License
 

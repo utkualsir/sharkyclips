@@ -1,0 +1,47 @@
+{
+  "_note": "Built-in name spellings per game. A term is only given to the LLM when the streamer actually says it (fuzzy match against the transcript) or it is in the video title, so titles never name a map or operator that isn't in the video. Add your own words in config.json -> \"glossary\".",
+  "Delta Force": {
+    "aliases": ["delta force", "deltaforce"],
+    "terms": ["Zero Dam", "Layali Grove", "Space City", "Brakkesh", "Tide Prison", "Ascension", "Cracked",
+              "Knife Edge", "Threshold", "Trench Lines", "Operations", "Warfare", "Black Hawk Down",
+              "D-Wolf", "Vyron", "Stinger", "Shepherd", "Uluru", "Luna", "Hackclaw", "Toxik", "Sineva", "Nox",
+              "M4A1", "AKM", "AK-12", "SCAR-H", "QBZ95-1", "ASh-12", "Vector", "P90", "MP5", "SR-25", "M14",
+              "M250", "PKM", "AUG", "G3"]
+  },
+  "League of Legends": {
+    "aliases": ["league of legends", "lol"],
+    "terms": ["Aatrox", "Ahri", "Akali", "Amumu", "Ashe", "Darius", "Draven", "Ekko", "Ezreal", "Fiora", "Garen",
+              "Jax", "Jinx", "Kai'Sa", "Katarina", "Lee Sin", "Lux", "Malphite", "Master Yi", "Mordekaiser",
+              "Morgana", "Nasus", "Pyke", "Riven", "Sett", "Teemo", "Thresh", "Vayne", "Viego", "Yasuo", "Yone",
+              "Zed", "Baron", "Drake", "Elder Drake", "Rift Herald", "Nexus", "Flash", "Ignite", "Pentakill"]
+  },
+  "Valorant": {
+    "aliases": ["valorant"],
+    "terms": ["Jett", "Phoenix", "Sage", "Sova", "Reyna", "Raze", "Omen", "Brimstone", "Viper", "Cypher",
+              "Killjoy", "Breach", "Skye", "Yoru", "Astra", "KAY/O", "Chamber", "Neon", "Fade", "Harbor", "Gekko",
+              "Deadlock", "Iso", "Clove", "Ascent", "Bind", "Haven", "Split", "Icebox", "Breeze", "Fracture",
+              "Pearl", "Lotus", "Sunset", "Abyss", "Vandal", "Phantom", "Operator", "Sheriff", "Spectre", "Odin"]
+  },
+  "Counter-Strike 2": {
+    "aliases": ["counter-strike", "counter strike", "cs2", "cs:go", "csgo"],
+    "terms": ["Mirage", "Inferno", "Dust II", "Nuke", "Overpass", "Vertigo", "Ancient", "Anubis", "AK-47",
+              "M4A4", "M4A1-S", "AWP", "Desert Eagle", "USP-S", "Glock"]
+  },
+  "Fortnite": {
+    "aliases": ["fortnite"],
+    "terms": ["Victory Royale", "Battle Bus", "Zero Build"]
+  },
+  "Minecraft": {
+    "aliases": ["minecraft"],
+    "terms": ["Creeper", "Enderman", "Nether", "Ender Dragon", "Redstone", "Wither", "Elytra"]
+  },
+  "Apex Legends": {
+    "aliases": ["apex legends", "apex"],
+    "terms": ["Wraith", "Bloodhound", "Pathfinder", "Octane", "Lifeline", "Wattson", "Caustic", "Gibraltar",
+              "Horizon", "Valkyrie", "Kings Canyon", "World's Edge", "Olympus", "Storm Point"]
+  },
+  "PUBG": {
+    "aliases": ["pubg", "battlegrounds"],
+    "terms": ["Erangel", "Miramar", "Sanhok", "Vikendi", "Taego", "Chicken Dinner"]
+  }
+}

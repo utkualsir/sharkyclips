@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { api, type Mode, type Settings as SettingsT } from "../api";
+import { api, type LlmInfo, type Mode, type Settings as SettingsT } from "../api";
 import { Icon } from "../components/Icons";
-import { CopyButton, Segmented } from "../components/ui";
+import { CopyButton, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { chooseLanguage, useMeta } from "../meta";
 import { useTheme } from "../theme";
@@ -25,13 +25,19 @@ export default function Settings() {
   const [trigLang, setTrigLang] = useState(lang);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [savingTriggers, setSavingTriggers] = useState(false);
+  const [llmInfo, setLlmInfo] = useState<LlmInfo | null>(null);
+  const [glossary, setGlossary] = useState("");
 
   useEffect(() => {
     api.settings().then((s) => {
       setSettings(s);
       setDrafts(Object.fromEntries(UI_LANGUAGES.map((l) => [l.code, (s.custom_triggers[l.code] ?? []).join("\n")])));
+      setGlossary(s.glossary.join("\n"));
     });
+    api.llm().then(setLlmInfo).catch(() => setLlmInfo(null));
   }, []);
+
+  const glossaryDirty = settings && parseWords(glossary).join("\n") !== settings.glossary.join("\n");
 
   const save = async (patch: Partial<SettingsT>) => {
     try {
@@ -122,6 +128,78 @@ export default function Settings() {
                   </option>
                 ))}
               </select>
+            </div>
+          </section>
+
+          <section className="card setting" id="ai">
+            <div>
+              <h3>{t("settings.ai")}</h3>
+              <p>{t("settings.ai_desc")}</p>
+            </div>
+            <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
+              <div>
+                <label className="field-label" htmlFor="llm-model" style={{ display: "block", marginBottom: 6 }}>
+                  {t("settings.llm_model")}
+                </label>
+                <select
+                  id="llm-model"
+                  className="select"
+                  value={settings.llm_model}
+                  disabled={!llmInfo?.server}
+                  onChange={(e) => save({ llm_model: e.target.value })}
+                >
+                  <option value="auto">{t("settings.llm_auto", { model: llmInfo?.auto ?? "…" })}</option>
+                  {llmInfo?.installed.map((m) => (
+                    <option key={m.name} value={m.name}>
+                      {m.name}
+                      {m.params ? ` · ${m.params}` : ""}
+                      {m.size_gb ? ` · ${m.size_gb} GB` : ""}
+                    </option>
+                  ))}
+                  {settings.llm_model !== "auto" && !llmInfo?.installed.some((m) => m.name === settings.llm_model) && (
+                    <option value={settings.llm_model}>{settings.llm_model}</option>
+                  )}
+                </select>
+                {llmInfo && !llmInfo.server && (
+                  <div className="field-hint" style={{ marginTop: 6 }}>
+                    {t("settings.llm_offline")}
+                  </div>
+                )}
+              </div>
+              <div className="toggle-line">
+                <Toggle
+                  checked={settings.auto_analyze}
+                  onChange={(v) => save({ auto_analyze: v })}
+                  label={t("settings.auto_analyze")}
+                />
+                <span>{t("settings.auto_analyze")}</span>
+              </div>
+              <div>
+                <label className="field-label" htmlFor="glossary" style={{ display: "block", marginBottom: 4 }}>
+                  {t("settings.glossary")}
+                </label>
+                <div className="field-hint" style={{ marginBottom: 8 }}>
+                  {t("settings.glossary_desc")}
+                </div>
+                <textarea
+                  id="glossary"
+                  className="textarea"
+                  dir="auto"
+                  value={glossary}
+                  placeholder={t("settings.glossary_placeholder")}
+                  onChange={(e) => setGlossary(e.target.value)}
+                />
+                <div className="save-line">
+                  <span className="muted">{t("settings.glossary_note")}</span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    disabled={!glossaryDirty}
+                    onClick={() => save({ glossary: parseWords(glossary) })}
+                  >
+                    {t("common.save")}
+                  </button>
+                </div>
+              </div>
             </div>
           </section>
 

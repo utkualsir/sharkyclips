@@ -1,4 +1,5 @@
-import { api, type Candidate, type Job, type ProjectDetail } from "../api";
+import { useEffect, useState } from "react";
+import { api, type Candidate, type ChatStats, type Job, type ProjectDetail } from "../api";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
@@ -49,6 +50,7 @@ export function SignalStats({ cand, project }: { cand: Candidate | null; project
             <dt>{t("signals.length")}</dt>
             <dd className="tc">{num(Math.round(cand.duration))} s</dd>
           </dl>
+          {project.chat?.status === "ok" && cand.chat && <ChatSection chat={cand.chat} clipStart={cand.start} />}
           {keywords.length > 0 && (
             <>
               <div className="divider" />
@@ -71,6 +73,72 @@ export function SignalStats({ cand, project }: { cand: Candidate | null; project
         <p className="muted">—</p>
       )}
     </section>
+  );
+}
+
+/** "5.2x" from the chat signal -> "5,2×" in the UI language's number format. */
+export function fmtRatio(value: string, num: (n: number, digits?: number) => string): string {
+  const x = parseFloat(value);
+  return Number.isFinite(x) ? `${num(x, 1)}×` : value;
+}
+
+function ChatSection({ chat, clipStart }: { chat: ChatStats; clipStart: number }) {
+  const { t, num } = useI18n();
+  const hot = chat.ratio != null && chat.ratio >= 2;
+  return (
+    <>
+      <div className="divider" />
+      <div className="chat-stats">
+        <span className="field-label chat-head">
+          <Icon name="message" size={13} />
+          {t("chat.title")}
+        </span>
+        {chat.messages === 0 ? (
+          <span className="muted" style={{ fontSize: 12.5 }}>
+            {t("chat.quiet")}
+          </span>
+        ) : (
+          <>
+            <dl className="kv">
+              <dt>{t("chat.messages")}</dt>
+              <dd className="mono">{num(chat.messages)}</dd>
+              <dt>{t("chat.people")}</dt>
+              <dd className="mono">{num(chat.authors)}</dd>
+              <dt>{t("chat.per_minute")}</dt>
+              <dd>
+                <span className="mono">{num(chat.per_minute, 1)}</span>
+                {chat.ratio != null && (
+                  <span className={hot ? "gold" : "muted"} style={{ fontSize: 12 }}>
+                    {" · "}
+                    {t("chat.vs_usual", { x: num(chat.ratio, 1) })}
+                  </span>
+                )}
+              </dd>
+            </dl>
+          </>
+        )}
+        {(chat.spikes.length > 0 || chat.reactions.length > 0) && (
+          <div className="cand-reasons">
+            {chat.spikes.map((s) => (
+              <span key={`s${s.t}`} className="chip chip-gold">
+                {t("reason.chat_spike")}
+                {s.value && (
+                  <span className="mono" dir="ltr">
+                    {" "}
+                    {t("chat.spike_at", { value: fmtRatio(s.value, num), time: fmtTime(Math.max(0, s.t - clipStart)) })}
+                  </span>
+                )}
+              </span>
+            ))}
+            {chat.reactions.map((r) => (
+              <span key={`r${r}`} className="chip" title={t("reason.chat_reactions")} dir="auto">
+                {t("chat.reactions")}: “{r}”
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -124,6 +192,22 @@ export function PublishPanel({
   const ready = !!pub?.available;
   const working = !!llmJob;
   const writingTitles = llmJob?.kind === "titles" && llmJob.params?.clip_id === cand?.id;
+  const [votes, setVotes] = useState<Record<string, number>>({});
+  useEffect(() => setVotes(pub?.title_votes ?? {}), [cand?.id, pub?.title_votes]);
+
+  const vote = async (title: string, v: 1 | -1) => {
+    if (!cand) return;
+    const next = votes[title] === v ? 0 : v;
+    const before = votes;
+    setVotes({ ...votes, [title]: next });
+    try {
+      await api.voteTitle(projectId, cand.id, title, next as -1 | 0 | 1);
+      if (next) toast({ kind: "ok", text: t("publish.vote_saved") });
+    } catch (e: any) {
+      setVotes(before);
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
 
   const run = async (fn: () => Promise<unknown>) => {
     try {
@@ -211,6 +295,26 @@ export function PublishPanel({
               ? pub!.titles.map((title) => (
                   <div className="sugg" key={title} style={writingTitles ? { opacity: 0.5 } : undefined}>
                     <span dir="auto">{title}</span>
+                    <button
+                      type="button"
+                      className={`btn btn-sm btn-ghost icon-btn vote vote-up`}
+                      aria-pressed={votes[title] === 1}
+                      aria-label={t("publish.like")}
+                      title={t("publish.like")}
+                      onClick={() => vote(title, 1)}
+                    >
+                      <Icon name="thumb-up" size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      className={`btn btn-sm btn-ghost icon-btn vote vote-down`}
+                      aria-pressed={votes[title] === -1}
+                      aria-label={t("publish.dislike")}
+                      title={t("publish.dislike")}
+                      onClick={() => vote(title, -1)}
+                    >
+                      <Icon name="thumb-down" size={14} />
+                    </button>
                     <CopyButton text={title} />
                   </div>
                 ))

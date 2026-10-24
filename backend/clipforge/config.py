@@ -35,6 +35,11 @@ DEFAULTS: dict[str, Any] = {
     "llm_model": "auto",
     "llm_fallback_model": "qwen3.5:4b",
     "llm_num_ctx": 8192,
+    # Run the AI analysis (titles, viral score, ...) by itself after highlights are found.
+    "auto_analyze": True,
+    # Names and words AI titles must spell exactly like this (game maps, operators, nicknames,
+    # your own words). A list, or per output language: {"all": [...], "tr": [...]}.
+    "glossary": [],
     "ollama_url": "http://127.0.0.1:11434",
     # Chat reacts a few seconds after the moment; the chat curve is shifted back by this much.
     "chat_delay": 5,

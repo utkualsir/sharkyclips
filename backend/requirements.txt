@@ -17,3 +17,5 @@ fastapi>=0.115
 uvicorn>=0.30
 opencv-python-headless>=4.9,<5   # facecam detection (5.x dropped the bundled face model)
 requests>=2.31            # Ollama API, Twitch chat
+# Phase 3B - title quality: offline dictionary for the spelling check (all 7 languages)
+wordfreq>=3.1

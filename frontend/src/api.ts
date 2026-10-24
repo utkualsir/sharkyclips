@@ -81,6 +81,27 @@ export interface Publish {
   cover_text: string | null;
   hook_text: string | null;
   language: string | null;
+  /** title text -> 1 (liked) / -1 (disliked) */
+  title_votes?: Record<string, number>;
+}
+
+export interface ChatStats {
+  messages: number;
+  authors: number;
+  per_minute: number;
+  average_per_minute: number;
+  ratio: number | null;
+  spikes: { t: number; value: string | null; strength: number | null }[];
+  reactions: string[];
+  score: number;
+}
+
+export interface LlmInfo {
+  available: boolean;
+  server: string | null;
+  installed: { name: string; size_gb: number; params: string | null; family: string | null; quant: string | null }[];
+  selected: string;
+  auto: string;
 }
 
 export interface Candidate {
@@ -105,6 +126,7 @@ export interface Candidate {
     original: { start: number; end: number };
   };
   subtitle_languages: string[];
+  chat?: ChatStats | null;
 }
 
 export interface ClipOptions {
@@ -160,7 +182,8 @@ export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
   clips: Record<string, RenderedClip>;
   jobs: Job[];
   chat: null | { status: "ok" | "none"; source: string; reason: string | null; count: number; authors: number };
-  analysis: null | { language: string; model: string; analyzed_at: string };
+  analysis: null | { language: string; model: string; analyzed_at: string; glossary?: string[] };
+  output_language: string;
 }
 
 export interface HypeCurve {
@@ -183,6 +206,9 @@ export interface Settings {
   video_encoder: string;
   output_language: string;
   custom_triggers: Record<string, string[]>;
+  llm_model: string;
+  auto_analyze: boolean;
+  glossary: string[];
 }
 
 export class ApiError extends Error {
@@ -239,6 +265,9 @@ export const api = {
     req<Job>("POST", `${P(id)}/render`, { clip_ids, options, hooks }),
   regeneratePublish: (id: string, cid: string) => req<Job>("POST", `${P(id)}/candidates/${cid}/publish`),
   analyze: (id: string, lang?: string, force = false) => req<Job>("POST", `${P(id)}/analyze`, { lang, force }),
+  voteTitle: (id: string, cid: string, text: string, vote: -1 | 0 | 1) =>
+    req<{ text: string; vote: number }>("POST", `${P(id)}/candidates/${cid}/titles/vote`, { text, vote }),
+  llm: () => req<LlmInfo>("GET", "/api/llm"),
   importChat: async (id: string, file: File) => {
     const res = await fetch(`${P(id)}/chat?filename=${encodeURIComponent(file.name)}`, { method: "PUT", body: file });
     const data = await res.json();

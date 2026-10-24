@@ -29,7 +29,8 @@ from .jobs import Job, JobManager
 
 FRONTEND_DIST = config.REPO_ROOT / "frontend" / "dist"
 REASON_CODES = ["loudness_spike", "keyword", "laughter", "shouting", "cheering", "fast_speech",
-                "pause_then_burst", "steady_explanation", "chorus", "drop"]
+                "pause_then_burst", "steady_explanation", "chorus", "drop", "chat_spike", "chat_reactions",
+                "llm_explanation"]
 BROWSER_CODECS = {"h264", "av1", "vp9", "vp8"}
 BROWSER_CONTAINERS = {".mp4", ".webm", ".m4v", ".mov"}
 
@@ -106,7 +107,7 @@ def submit_highlights(project_id: str, mode: str | None = None, force: bool = Fa
         review = state.load_review(get_project(project_id))
         if not review["facecam_checked"]:
             submit_facecam(project_id)
-        if llm_available():
+        if llm_available() and config.get("auto_analyze") is not False:
             submit_analyze(project_id)  # titles, viral score, ... (cached per clip)
 
     return jobs.submit("highlights", "gpu", project_id, {"mode": mode, "force": force}, run, then)
@@ -286,11 +287,17 @@ def _settings_view() -> dict:
             triggers[lang] = words
         elif isinstance(val, list):
             triggers[lang] = [str(w) for w in val]
+    glossary = cfg.get("glossary") or []
+    if isinstance(glossary, dict):  # per-language form: the UI edits the shared list
+        glossary = list(glossary.get("all") or [])
     return {"ui_language": cfg.get("ui_language") or languages.DEFAULT_UI_LANGUAGE,
             "default_mode": cfg.get("default_mode") or "gaming",
             "video_encoder": cfg.get("video_encoder") or "auto",
             "output_language": cfg.get("output_language") or languages.DEFAULT_OUTPUT_LANGUAGE,
-            "custom_triggers": triggers}
+            "custom_triggers": triggers,
+            "llm_model": str(cfg.get("llm_model") or "auto"),
+            "auto_analyze": cfg.get("auto_analyze") is not False,
+            "glossary": [str(t) for t in glossary]}
 
 
 @app.get("/api/settings")
@@ -326,11 +333,63 @@ def api_settings_put(body: dict) -> dict:
             if clean:
                 triggers[lang] = clean[:300]
         changes["custom_triggers"] = triggers
+    if "llm_model" in body:
+        from .. import llm
+
+        name = str(body["llm_model"]).strip()
+        if name != "auto" and name not in llm.installed_models():
+            raise ClipForgeError(f"The model '{name}' isn't installed in Ollama.",
+                                 f"Install it with: ollama pull {name}")
+        changes["llm_model"] = name
+    if "auto_analyze" in body:
+        changes["auto_analyze"] = bool(body["auto_analyze"])
+    if "glossary" in body:
+        terms: list[str] = []
+        for t in body["glossary"] if isinstance(body["glossary"], list) else []:
+            t = " ".join(str(t).split())[:60]
+            if t and t not in terms:
+                terms.append(t)
+        old = config.get("glossary")
+        changes["glossary"] = {**old, "all": terms[:500]} if isinstance(old, dict) else terms[:500]
     if changes:
         config.update(**changes)
         if "video_encoder" in changes:
             pick_encoder.cache_clear()
     return _settings_view()
+
+
+@app.get("/api/llm")
+def api_llm() -> dict:
+    """Installed Ollama models for the Settings picker."""
+    from .. import llm
+
+    version = llm.server_version(1.0)
+    models = []
+    if version:
+        try:
+            import requests
+
+            r = requests.get(f"{llm.base_url()}/api/tags", timeout=5)
+            for m in r.json().get("models", []):
+                details = m.get("details") or {}
+                models.append({"name": m["name"], "size_gb": round((m.get("size") or 0) / 1e9, 1),
+                               "params": details.get("parameter_size"),
+                               "family": details.get("family"), "quant": details.get("quantization_level")})
+        except Exception:
+            pass
+    models.sort(key=lambda m: m["name"])
+    try:
+        auto = llm.choose_model() if str(config.get("llm_model") or "auto") == "auto" else None
+    except Exception:
+        auto = None
+    if auto is None:
+        from .. import hardware
+
+        hw = hardware.detect_hardware()
+        big = (hw.best_nvidia and hw.best_nvidia.vram_gb >= 7.5) or (hw.apple_silicon and hw.ram_total_gb >= 15)
+        auto = llm.DEFAULT_MODEL if big else str(config.get("llm_fallback_model") or llm.SMALL_MODEL)
+    return {"available": llm_available(), "server": version, "installed": models,
+            "selected": str(config.get("llm_model") or "auto"), "auto": auto}
 
 
 # ------------------------------------------------------------------ jobs
@@ -457,8 +516,14 @@ def api_project(project_id: str) -> dict:
     review = state.load_review(project, hl)
     transcript_lang = (meta.get("transcript") or {}).get("language")
     cands = [state.candidate_view(c) for c in (hl or {}).get("candidates", [])]
+    from ..titles import feedback
+
+    votes = feedback.votes_for([t for c in cands for t in c["publish"]["titles"]], None)
+    chat_stats = state.chat_stats(project, (hl or {}).get("candidates", []))
     for c in cands:
         c["default_hook"] = c["publish"].get("hook_text") or first_sentence(c.get("text") or "")
+        c["publish"]["title_votes"] = {t: votes[t] for t in c["publish"]["titles"] if t in votes}
+        c["chat"] = chat_stats.get(c["id"])
     signals = {k: {"status": v.get("status"), "weight": v.get("weight"), "share": v.get("share"),
                    "reason": v.get("reason")}
                for k, v in ((hl or {}).get("signals") or {}).items()}
@@ -475,6 +540,8 @@ def api_project(project_id: str) -> dict:
         "clips": state.load_clips(project),
         "chat": _chat_summary(project),
         "analysis": (hl or {}).get("analysis"),
+        "output_language": ((hl or {}).get("analysis") or {}).get("language")
+                           or config.get("output_language") or languages.DEFAULT_OUTPUT_LANGUAGE,
         "jobs": [j.to_dict() for j in jobs.for_project(project.id)][-10:],
     }
 
@@ -550,6 +617,25 @@ def api_publish_regenerate(project_id: str, cid: str) -> dict:
     if not llm_available():
         raise ClipForgeError("The local LLM isn't installed.", "Run: python cli.py doctor")
     return submit_titles(project.id, cid).to_dict()
+
+
+@app.post("/api/projects/{project_id}/candidates/{cid}/titles/vote")
+def api_title_vote(project_id: str, cid: str, body: dict) -> dict:
+    """Thumbs up / down on one title. Liked titles become few-shot examples next time."""
+    from ..titles import feedback
+
+    project = _project(project_id)
+    hl = state.load_highlights(project) or {}
+    c = next((x for x in hl.get("candidates", []) if x["id"] == cid), None)
+    pub = (c or {}).get("publish") or {}
+    text = str(body.get("text") or "")
+    if c is None or text not in (pub.get("titles") or []):
+        raise HTTPException(404, "No such title")
+    value = int(body.get("vote") or 0)
+    feedback.vote(text, pub.get("language") or "tr", max(-1, min(1, value)),
+                  mode=hl.get("mode") or "", topic=(c.get("llm") or {}).get("game_or_topic") or "",
+                  project=project.id, clip=cid)
+    return {"text": text, "vote": max(-1, min(1, value))}
 
 
 @app.post("/api/projects/{project_id}/analyze")

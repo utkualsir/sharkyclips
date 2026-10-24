@@ -203,7 +203,7 @@ def cmd_analyze(args) -> int:
     def progress(i: int, n: int, c: dict) -> None:
         p = c["publish"]
         console.print(f"[dim]{i}/{n}[/] #{c['rank']:02d} viral [bold]{p['viral_score']}[/] "
-                      f"({p['viral_label']})  {escape(p['titles'][0])}")
+                      f"({p['viral_label']})  {escape((p['titles'] or ['-'])[0])}")
 
     res = analyze_project(project, out_lang=args.lang, force=args.force, refine=not args.no_refine,
                           ranks=args.ranks, translate=not args.no_translate, on_progress=progress)
@@ -219,7 +219,7 @@ def cmd_analyze(args) -> int:
         x = tm[c["rank"]]
         t.add_row(str(c["rank"]), f"{p['viral_score']} {p['viral_label']}",
                   f"{ss['hook']}/{ss['retention']}/{ss['trend_fit']}/{ss['length_fit']}", cut,
-                  escape(p["titles"][0]), escape(p["hook_text"]),
+                  escape((p["titles"] or ["-"])[0]), escape(p["hook_text"]),
                   "cache" if x["cached"] else f"{x['seconds']:.1f}")
     console.print(t)
     console.print(f"{len(res['candidates'])} clips in {res['total_seconds']}s "

@@ -106,6 +106,66 @@ def save_clip(project: Project, cid: str, entry: dict) -> None:
         write_json_atomic(project.dir / "clips.json", {"version": 1, "clips": clips})
 
 
+# -------------------------------------------------------------------- chat
+
+_chat_cache: dict[str, tuple[float, dict]] = {}
+
+
+def _chat_index(project: Project) -> dict | None:
+    """Message times (sorted) + texts, cached until chat.json changes."""
+    from ..chat import chat_path
+
+    path = chat_path(project)
+    if not path.is_file():
+        return None
+    mtime = path.stat().st_mtime
+    hit = _chat_cache.get(str(path))
+    if hit and hit[0] == mtime:
+        return hit[1]
+    data = read_json(path)
+    if data.get("status") != "ok" or not data.get("messages"):
+        idx = None
+    else:
+        msgs = data["messages"]
+        idx = {"times": [m[0] for m in msgs], "texts": [m[1] for m in msgs], "authors": [m[2] for m in msgs],
+               "count": len(msgs)}
+    _chat_cache[str(path)] = (mtime, idx)
+    return idx
+
+
+def chat_stats(project: Project, candidates: list[dict]) -> dict[str, dict]:
+    """Per clip: chat messages in the clip (shifted by chat_delay), per minute, compared with
+    the video's average, plus the chat_spike / chat_reactions reasons."""
+    import bisect
+
+    from .. import config
+
+    idx = _chat_index(project)
+    if not idx or not candidates:
+        return {}
+    delay = float(config.get("chat_delay") or 5)
+    times = idx["times"]
+    duration = max(float(project.load_meta().get("duration") or 0), times[-1], 1.0)
+    avg = idx["count"] / (duration / 60)
+    out = {}
+    for c in candidates:
+        a = bisect.bisect_left(times, c["start"] + delay)
+        b = bisect.bisect_right(times, c["end"] + delay)
+        n = b - a
+        per_min = n / max(c["end"] - c["start"], 1) * 60
+        spikes = [{"t": r["t"], "value": r.get("value"), "strength": r.get("strength")}
+                  for r in c.get("reasons", []) if r.get("code") == "chat_spike"]
+        reactions = []
+        for r in c.get("reasons", []):
+            if r.get("code") == "chat_reactions" and r.get("value") and r["value"] not in reactions:
+                reactions.append(r["value"])
+        out[c["id"]] = {"messages": n, "authors": len(set(idx["authors"][a:b])), "per_minute": round(per_min, 1),
+                        "average_per_minute": round(avg, 1), "ratio": round(per_min / avg, 2) if avg else None,
+                        "spikes": spikes, "reactions": reactions[:5],
+                        "score": round(float((c.get("signal_scores") or {}).get("chat", 0)), 3)}
+    return out
+
+
 # ------------------------------------------------------------------ status
 
 

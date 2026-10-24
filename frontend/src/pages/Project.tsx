@@ -16,7 +16,7 @@ import {
 import FacecamEditor from "../components/FacecamEditor";
 import HypeMap from "../components/HypeMap";
 import { Icon } from "../components/Icons";
-import { PublishPanel, SignalStats } from "../components/Panels";
+import { fmtRatio, PublishPanel, SignalStats } from "../components/Panels";
 import { JobLine, Segmented, Toggle } from "../components/ui";
 import VerticalPreview, { resolveLayout } from "../components/VerticalPreview";
 import { fmtBytes, fmtTime, sourceLabel } from "../format";
@@ -29,6 +29,8 @@ import { useToast } from "../toast";
 const MODES: Mode[] = ["gaming", "study", "music"];
 const SUBS: SubtitleStyle[] = ["bold", "clean", "minimal", "none"];
 const LAYOUTS: Layout[] = ["auto", "split", "fit", "crop"];
+type HookMode = "off" | "text" | "flash" | "both";
+const HOOK_MODES: HookMode[] = ["off", "text", "flash", "both"];
 
 // ------------------------------------------------------------------ candidate row
 
@@ -48,6 +50,11 @@ function CandidateRow({
   const { t, num } = useI18n();
   const codes = [...new Set(c.reasons.map((r) => r.code))].slice(0, 4);
   const title = c.publish.titles[0] || c.text;
+  const viral = c.publish.available && c.publish.viral_score != null ? c.publish.viral_score : null;
+  const label = c.publish.viral_label;
+  const chatSpike = c.reasons
+    .filter((r) => r.code === "chat_spike" && r.value)
+    .sort((a, b) => b.strength - a.strength)[0]?.value;
   return (
     <div
       className="cand"
@@ -63,19 +70,24 @@ function CandidateRow({
         <p className="cand-title" dir="auto">
           {title}
         </p>
+        {viral != null && (
+          <div className="cand-viral" title={`${t("publish.viral")}: ${viral}/100`}>
+            <span className="v-num">
+              <Icon name="sparkles" size={12} />
+              {num(viral)}
+              <span className="v-den">/100</span>
+            </span>
+            {label && <span className={`v-pill v-${label}`}>{t(`publish.label.${label}`)}</span>}
+          </div>
+        )}
         <div className="cand-line">
           <div className="cand-meta">
             <span className="tc">{fmtTime(c.start)}</span>
             <span aria-hidden="true">·</span>
             <span className="tc">{num(Math.round(c.duration))} s</span>
-            {c.publish.available && c.publish.viral_score != null && (
-              <span className="chip chip-gold" title={t("publish.viral")}>
-                <Icon name="sparkles" size={11} />
-                {num(c.publish.viral_score)}
-              </span>
-            )}
           </div>
-          <div className="cand-score" title={`${t("signals.score")}: ${c.hype_score}/100`}>
+          <div className={`cand-score${viral != null ? " secondary" : ""}`} title={`${t("signals.score")}: ${c.hype_score}/100`}>
+            <span className="lbl">{t("cands.hype_short")}</span>
             <div className="bar">
               <span style={{ width: `${c.hype_score}%` }} />
             </div>
@@ -84,8 +96,9 @@ function CandidateRow({
         </div>
         <div className="cand-reasons">
           {codes.map((code) => (
-            <span key={code} className="chip">
+            <span key={code} className={`chip${code === "chat_spike" ? " chip-gold" : ""}`}>
               {t(`reason.${code}`)}
+              {code === "chat_spike" && chatSpike && <span className="mono"> {fmtRatio(chatSpike, num)}</span>}
             </span>
           ))}
         </div>
@@ -116,6 +129,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const [tab, setTab] = useState<"cands" | "clips">("cands");
   const [facecamOpen, setFacecamOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("gaming");
+  const [outLang, setOutLang] = useState<string | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const playerBox = useRef<HTMLDivElement>(null);
   const [previewH, setPreviewH] = useState<number | null>(null);
@@ -126,6 +140,7 @@ export default function ProjectPage({ id }: { id: string }) {
       const p = await api.project(id);
       setProject(p);
       setMode(p.highlights?.mode ?? p.mode ?? "gaming");
+      setOutLang((cur) => cur ?? p.output_language);
       if (p.highlights) api.hype(id).then(setCurve).catch(() => setCurve(null));
       setSelectedId((cur) =>
         cur && p.highlights?.candidates.some((c) => c.id === cur) ? cur : p.highlights?.candidates[0]?.id ?? null,
@@ -170,6 +185,9 @@ export default function ProjectPage({ id }: { id: string }) {
   };
   const subLangs = [...new Set(cands.flatMap((c) => c.subtitle_languages ?? []))].filter((l) => l !== project?.language);
   const hookText = selected ? review?.hooks[selected.id] ?? selected.default_hook : "";
+  const hookEdited = !!(selected && review?.hooks[selected.id] != null);
+  const aiHook = !!selected?.publish.hook_text;
+  const hookMode: HookMode = options.hook ? (options.hook_flash ? "both" : "text") : options.hook_flash ? "flash" : "off";
 
   // Words of the selected clip (for the live subtitle preview)
   useEffect(() => {
@@ -185,7 +203,14 @@ export default function ProjectPage({ id }: { id: string }) {
   useEffect(() => {
     const el = playerBox.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setPreviewH(window.innerWidth > 720 ? el.clientHeight : null));
+    // The preview's width feeds back into the player's size; ignore the 1-3 px ripple that
+    // would otherwise make the two resize each other forever.
+    const ro = new ResizeObserver(() =>
+      setPreviewH((cur) => {
+        const next = window.innerWidth > 720 ? el.clientHeight : null;
+        return cur != null && next != null && Math.abs(cur - next) < 3 ? cur : next;
+      }),
+    );
     ro.observe(el);
     return () => ro.disconnect();
   }, [project?.highlights]);
@@ -321,7 +346,7 @@ export default function ProjectPage({ id }: { id: string }) {
 
   const analyzeAI = async () => {
     try {
-      await api.analyze(id);
+      await api.analyze(id, outLang ?? undefined);
     } catch (e: any) {
       toast({ kind: "err", text: e.message, hint: e.hint });
     }
@@ -453,10 +478,25 @@ export default function ProjectPage({ id }: { id: string }) {
               {project.highlights ? t("project.reanalyze") : t("project.analyze")}
             </button>
             {project.highlights && meta?.llm.available && (
-              <button className="btn btn-sm" onClick={analyzeAI} disabled={!!pipelineJob || !!llmJob}>
-                <Icon name="sparkles" />
-                {t("project.ai")}
-              </button>
+              <div className="ai-group">
+                <select
+                  className="select select-sm"
+                  value={outLang ?? project.output_language}
+                  onChange={(e) => setOutLang(e.target.value)}
+                  aria-label={t("project.out_lang")}
+                  title={t("project.out_lang")}
+                >
+                  {UI_LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.name}
+                    </option>
+                  ))}
+                </select>
+                <button className="btn btn-sm btn-gold" onClick={analyzeAI} disabled={!!pipelineJob || !!llmJob}>
+                  <Icon name="sparkles" />
+                  {project.analysis ? t("project.ai_again") : t("publish.analyze")}
+                </button>
+              </div>
             )}
             <button className="btn btn-sm btn-ghost" onClick={() => chatInput.current?.click()} title={t("project.chat_hint")}>
               <Icon name="upload" />
@@ -672,30 +712,58 @@ export default function ProjectPage({ id }: { id: string }) {
                   </div>
                   <div className="render-row">
                     <label>{t("render.hook")}</label>
-                    <div className="hook-row">
-                      <Toggle checked={options.hook} onChange={(v) => setOption({ hook: v })} label={t("render.hook")} />
-                      <input
-                        className="input"
-                        style={{ height: 32, fontSize: 13 }}
-                        dir="auto"
-                        disabled={!options.hook || !selected}
-                        value={hookText}
-                        maxLength={120}
-                        placeholder={t("render.hook_placeholder")}
-                        onChange={(e) => setHook(e.target.value)}
-                        aria-label={t("render.hook_placeholder")}
-                      />
-                    </div>
+                    <Segmented<HookMode>
+                      value={hookMode}
+                      options={HOOK_MODES.map((m) => ({ value: m, label: t(`hook.${m}`) }))}
+                      onChange={(m) => setOption({ hook: m === "text" || m === "both", hook_flash: m === "flash" || m === "both" })}
+                      label={t("render.hook")}
+                    />
                   </div>
-                  <div className="render-row">
-                    <label>{t("render.flash")}</label>
-                    <div className="hook-row">
-                      <Toggle checked={options.hook_flash} onChange={(v) => setOption({ hook_flash: v })} label={t("render.flash")} />
-                      <span className="muted" style={{ fontSize: 12 }}>
-                        {t("render.flash_hint")}
-                      </span>
+                  {options.hook && (
+                    <div className="render-row">
+                      <label htmlFor="hook-text">
+                        {hookEdited ? (
+                          <span className="hook-badge">{t("render.hook_edited")}</span>
+                        ) : (
+                          aiHook && (
+                            <span className="hook-badge ai">
+                              <Icon name="sparkles" size={11} />
+                              {t("render.hook_ai")}
+                            </span>
+                          )
+                        )}
+                      </label>
+                      <div className="hook-row">
+                        <input
+                          id="hook-text"
+                          className="input"
+                          style={{ height: 32, fontSize: 13 }}
+                          dir="auto"
+                          disabled={!selected}
+                          value={hookText}
+                          maxLength={120}
+                          placeholder={t("render.hook_placeholder")}
+                          onChange={(e) => setHook(e.target.value)}
+                          aria-label={t("render.hook_placeholder")}
+                        />
+                        {hookEdited && (
+                          <button
+                            className="btn btn-sm btn-ghost icon-btn"
+                            onClick={() => setHook("")}
+                            aria-label={t("render.hook_reset")}
+                            title={t("render.hook_reset")}
+                          >
+                            <Icon name="refresh" />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
+                  {options.hook_flash && (
+                    <p className="muted render-note">
+                      <Icon name="sparkles" size={12} /> {t("render.flash")}: {t("render.flash_hint")}
+                    </p>
+                  )}
                   {subLangs.length > 0 && (
                     <div className="render-row">
                       <label htmlFor="sublang-sel">{t("render.sub_lang")}</label>

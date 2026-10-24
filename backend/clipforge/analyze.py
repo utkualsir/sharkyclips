@@ -1,9 +1,14 @@
 """LLM analysis of highlight candidates (`python cli.py analyze <id>`).
 
-Per candidate, one structured LLM call judges the moment and writes the publish
-package; a second call translates the subtitles when the output language differs
-from the spoken one. Results are cached per candidate (cache/llm/), so re-running
-is instant and an interrupted run resumes.
+Per candidate:
+  1. judge      one structured LLM call: scores, what happens, cut changes, hashtags, hook
+                text, cover prompt (cache/llm/judge_*.json)
+  2. titles     titles.write(): few-shot draft + local checks + proofread pass + variety pick
+                (cache/llm/titles_*.json; the key includes the example titles, the creator's
+                liked titles and the glossary, so likes change the next run's titles)
+  3. translate  subtitles, when the output language differs from the spoken one
+The titles prompt starts with the same text as the judge prompt, so Ollama reuses its prompt
+cache. Results are cached per candidate, so re-running is instant and an interrupted run resumes.
 
 Written into highlights.json, per candidate:
   publish  viral_score + label + sub-scores, 6 titles, hashtags, cover prompt, hook text
@@ -23,17 +28,17 @@ from datetime import datetime, timezone
 from typing import Callable
 
 from . import config, languages
+from . import titles as titles_mod
 from .errors import ClipForgeError
 from .highlights.modes import get_mode
 from .project import Project, read_json, write_json_atomic
-from .textutil import NO_SPACE_LANGS, mmss, sentences, words_between
+from .textutil import NO_SPACE_LANGS, sentences, words_between
 from .ui import console
 
-PROMPT_VERSION = 7
+PROMPT_VERSION = 8
 MAX_SHIFT = 10.0
 # Short-form sweet spot per mode (seconds): full length-fit score inside this range.
 SWEET_SPOT = {"gaming": (18, 40), "study": (30, 55), "music": (15, 30)}
-TITLE_STYLES = ["question", "shock", "story", "punchy", "curiosity", "emotional"]
 
 REASON_TEXT = {
     "loudness_spike": "sudden loud moment", "keyword": "reaction word", "laughter": "laughter",
@@ -60,7 +65,7 @@ SYSTEM = (
 # Word roots that make a title/hashtag/hook not advertiser-friendly. Matched against
 # has_profanity()'s normalized text: lowercase, accents removed (ş->s, ç->c), dotless ı kept.
 PROFANITY = re.compile(
-    r"\b(?:s[i1]k(?:im|iyim|eyim|ey[iı]m|tir|tim|t[iı]g|is|ik|er|me|ecek)\w*|amk|aq|amina|orospu\w*|"
+    r"\b(?:s[i1]k(?:im|iyim|eyim|ey[iı]m|tir|tim|t[iı]g|is|ik|er|me|ecek)\w*|amk|aq|am[iı]n[aı]\w*|ann?en[iı]n am\w*|orospu\w*|"
     r"pic\b|pici\w*|yarra\w*|kaha?pe\w*|anas[iı]n[iı]|fuck\w*|shit\w*|bitch\w*|cunt|dick\w*|asshole|"
     r"бля\w*|сука|сук[иу]\w*|хуй\w*|пизд\w*|scheisse|fick\w*|kurva\w*|bazdmeg)\b")
 
@@ -88,11 +93,6 @@ def _schema(lang_name: str) -> dict:
             "hook_score": s100, "retention_score": s100, "trend_fit_score": s100,
             "start_shift_s": {"type": "number", "minimum": -MAX_SHIFT, "maximum": MAX_SHIFT},
             "end_shift_s": {"type": "number", "minimum": -MAX_SHIFT, "maximum": MAX_SHIFT},
-            "titles": {"type": "array", "minItems": 6, "maxItems": 6, "items": {
-                "type": "object",
-                "properties": {"style": {"type": "string", "enum": TITLE_STYLES},
-                               "text": {"type": "string", "minLength": 3, "maxLength": 100}},
-                "required": ["style", "text"]}},
             "hashtags": {"type": "array", "minItems": 6, "maxItems": 10,
                          "items": {"type": "string", "minLength": 2, "maxLength": 40}},
             "hook_text": {"type": "string", "minLength": 2, "maxLength": 60},
@@ -101,7 +101,7 @@ def _schema(lang_name: str) -> dict:
         },
         "required": ["game_or_topic", "what_happens", "self_contained", "moment_type", "funny", "exciting",
                      "useful", "hook_score", "retention_score", "trend_fit_score", "start_shift_s",
-                     "end_shift_s", "titles", "hashtags", "hook_text", "cover_scene", "cover_text"],
+                     "end_shift_s", "hashtags", "hook_text", "cover_scene", "cover_text"],
     }
 
 
@@ -112,12 +112,6 @@ TRANSLATE_SCHEMA = {
         "properties": {"i": {"type": "integer", "minimum": 1}, "text": {"type": "string"}},
         "required": ["i", "text"]}}},
     "required": ["lines"],
-}
-
-TITLES_SCHEMA = {
-    "type": "object",
-    "properties": {"titles": _schema("")["properties"]["titles"]},
-    "required": ["titles"],
 }
 
 # Characters that prove a text is written in the right script.
@@ -269,9 +263,9 @@ def _signals_text(c: dict) -> str:
     return f"Signal strengths: {sig}\nDetected: {'; '.join(reasons[:8]) or 'nothing specific'}"
 
 
-def _prompt(meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, used_titles: list[str]) -> str:
+def _context_block(meta: dict, mode: str, c: dict, transcript: dict) -> str:
+    """Shared start of the judge and the titles prompt (Ollama reuses the cached prefix)."""
     spoken = transcript.get("language") or "unknown"
-    used = "\n".join(f"- {t}" for t in used_titles[-30:]) or "(none yet)"
     return f"""Video title: {meta.get('title', '')}
 Channel: {(meta.get('source') or {}).get('uploader') or 'unknown'}
 Content type: {mode}
@@ -280,20 +274,27 @@ Clip: {c['duration']:.1f} s long (hype rank #{c['rank']}, hype {c['hype_score']}
 {_signals_text(c)}
 
 Transcript around the clip (times are relative to the clip start; CLIP lines are inside the clip, ctx lines are context before/after):
-{_context(transcript, c['start'], c['end'])}
+{_context(transcript, c['start'], c['end'])}"""
 
-Tasks:
+
+def _prompt(meta: dict, mode: str, c: dict, transcript: dict, out_lang: str) -> str:
+    return _context_block(meta, mode, c, transcript) + f"""
+
+TASK: judge this clip and write its publish package.
 1. game_or_topic: the game or topic, from the video title and transcript (e.g. "Delta Force").
-2. what_happens (English): what actually happens in the CLIP lines, 1-2 sentences. Not the whole video.
+2. what_happens (English): what actually happens in the CLIP lines, 1-2 sentences. Not the whole video. Mention names, places and items only as they are said.
 3. Judge it: self_contained (understandable without the rest of the video?), moment_type, funny/exciting/useful 0-10.
 4. hook_score: how strong the first 3 seconds are. retention_score: will people watch to the end. trend_fit_score: how well it fits what does well on Shorts/TikTok for this game/topic right now. Use the full 0-100 range honestly.
 5. start_shift_s / end_shift_s (-10..10): move the start earlier (negative) to include needed setup, or later to cut dead air; move the end so the clip ends right after the payoff/reaction. 0 if the cut is already good.
-6. titles: 6 titles in {lang_name(out_lang)}, each a different style from {TITLE_STYLES}, ordered from strongest to weakest. Short (max ~60 characters), correct spelling, normal capitalization (not ALL CAPS), natural, how a real creator in that language would write. Each title must be about what happens in THIS clip; do not copy claims from the video title. No hashtags, no swearing. Do NOT reuse words, phrases or patterns from the titles below - they belong to OTHER, different moments of the video, so never describe their content:
-{used}
-7. hashtags: 6-10 hashtags: a few general ones (the game/topic, gaming or study, etc.), the rest specific to this clip; mix {lang_name(out_lang)} and universal English tags. No channel or person names.
-8. hook_text: max 6 words in {lang_name(out_lang)}, correct spelling, shown on screen in the first seconds to make people stay. About this clip, no swearing.
-9. cover_scene (English): describe one striking image for the thumbnail based on what really happens (subject, action, emotion, setting). cover_text: 1-4 punchy words in {lang_name(out_lang)} for the thumbnail.
+6. hashtags: 6-10 hashtags: a few general ones (the game/topic, gaming or study, etc.), the rest specific to this clip; mix {lang_name(out_lang)} and universal English tags. No channel or person names.
+7. hook_text: max 6 words in {lang_name(out_lang)}, correct spelling, shown on screen in the first seconds to make people stay. Casual, about this clip, no swearing, no emojis.
+8. cover_scene (English): describe one striking image for the thumbnail based on what really happens (subject, action, emotion, setting). cover_text: 1-4 punchy words in {lang_name(out_lang)} for the thumbnail.
 """
+
+
+def _script_ok(out_lang: str, texts: list[str], need: int) -> bool:
+    script = SCRIPT.get(out_lang)
+    return not script or sum(bool(script.search(t)) for t in texts) >= need
 
 
 def _hard_checker(out_lang: str) -> Callable[[dict], list[str]]:
@@ -302,40 +303,34 @@ def _hard_checker(out_lang: str) -> Callable[[dict], list[str]]:
 
     def check(d: dict) -> list[str]:
         errs = []
-        titles = [t["text"] for t in d.get("titles", [])]
         if len(d.get("hook_text", "").split()) > 8:
             errs.append("hook_text must be at most 6 words")
         if script:
             for field in ("hook_text", "cover_text"):
                 if not script.search(d.get(field, "")):
                     errs.append(f"{field} must be written in {lang_name(out_lang)}")
-            if sum(bool(script.search(t)) for t in titles) < 5:
-                errs.append(f"titles must be written in {lang_name(out_lang)}")
         return errs
 
     return check
 
 
-def _checker(out_lang: str, used_titles: list[str]) -> Callable[[dict], list[str]]:
-    """Soft problems: repetition and swearing (fixed by dropping titles if retries run out)."""
+def _titles_script_checker(out_lang: str) -> Callable[[dict], list[str]]:
+    def check(d: dict) -> list[str]:
+        texts = [t["text"] for t in d.get("titles", [])]
+        if not _script_ok(out_lang, texts, max(1, len(texts) - 1)):
+            return [f"titles must be written in {lang_name(out_lang)}"]
+        return []
+
+    return check
+
+
+def _checker(out_lang: str) -> Callable[[dict], list[str]]:
+    """Soft problems: swearing (fixed by dropping it if retries run out)."""
 
     def check(d: dict) -> list[str]:
         errs = []
-        titles = [t["text"] for t in d.get("titles", [])]
-        styles = {t["style"] for t in d.get("titles", [])}
-        if len(styles) < 4:
-            errs.append("titles: use at least 4 different styles")
-        for t in titles:
-            for u in used_titles:
-                if too_similar(t, u):
-                    errs.append(f"title '{t}' is too similar to an already used title '{u}'")
-                    break
-        for i, a in enumerate(titles):
-            for b in titles[i + 1:]:
-                if too_similar(a, b, phrases=False):
-                    errs.append(f"titles '{a}' and '{b}' are too similar")
-        for field, texts in (("titles", titles), ("hashtags", d.get("hashtags", [])),
-                             ("hook_text", [d.get("hook_text", "")]), ("cover_text", [d.get("cover_text", "")])):
+        for field, texts in (("hashtags", d.get("hashtags", [])), ("hook_text", [d.get("hook_text", "")]),
+                             ("cover_text", [d.get("cover_text", "")])):
             bad = [t for t in texts if has_profanity(t)]
             if bad:
                 errs.append(f"{field} contains swearing, rewrite without it: {bad[:3]}")
@@ -399,6 +394,16 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
     timings = []
     failed: list[dict] = []
     used_titles: list[str] = []
+    glossaries: dict = {}
+
+    def glossary_for(topic: str):
+        game = titles_mod.glossary.detect_game(meta.get("title", ""), topic) or ""
+        if game not in glossaries:
+            glossaries[game] = titles_mod.glossary.build(transcript, out_lang, meta.get("title", ""), topic)
+        return glossaries[game]
+
+    style = titles_mod.style_digest(out_lang, mode)
+    gl = None
     with llm.lazy_session() as model:
         for i, c in enumerate(todo):
             t0 = time.perf_counter()
@@ -408,23 +413,34 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
             c["start"], c["end"] = orig["start"], orig["end"]
             c["duration"] = round(c["end"] - c["start"], 2)
             key = _cache_key(model.model, out_lang, c, mode, transcript)
-            cache_file = cache_dir / f"analyze_{key}.json"
-            if cache_file.is_file() and not force:
-                j = read_json(cache_file)
-                cached = True
-            else:
-                try:
-                    j = model.json(SYSTEM, _prompt(meta, mode, c, transcript, out_lang, used_titles),
+            cache_file = cache_dir / f"judge_{key}.json"
+            cached = True
+            try:
+                if cache_file.is_file() and not force:
+                    j = read_json(cache_file)
+                else:
+                    j = model.json(SYSTEM, _prompt(meta, mode, c, transcript, out_lang),
                                    _schema(lang_name(out_lang)), check=_hard_checker(out_lang),
-                                   soft=_checker(out_lang, used_titles))
-                except ClipForgeError as exc:  # one bad clip must not stop the batch
-                    console.print(f"[yellow]#{c['rank']}: skipped ({exc.message[:160]})[/]")
-                    failed.append({"rank": c["rank"], "error": exc.message})
-                    continue
-                j = _repair(j, used_titles)
-                write_json_atomic(cache_file, j)
-                cached = False
-            used_titles += [t["text"] for t in j["titles"]]
+                                   soft=_checker(out_lang))
+                    j = _repair(j)
+                    write_json_atomic(cache_file, j)
+                    cached = False
+                gl = glossary_for(j["game_or_topic"])
+                gdig = hashlib.sha1(gl.digest().encode()).hexdigest()[:10]
+                tkey = _cache_key(model.model, out_lang, c, mode, transcript, extra=f"titles:{style}:{gdig}")
+                tfile = cache_dir / f"titles_{tkey}.json"
+                if tfile.is_file() and not force:
+                    tw = read_json(tfile)
+                else:
+                    tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, used_titles)
+                    write_json_atomic(tfile, tw)
+                    cached = False
+                tw = titles_mod.refilter(tw, out_lang, has_profanity)  # cached answers meet today's filters
+            except ClipForgeError as exc:  # one bad clip must not stop the batch
+                console.print(f"[yellow]#{c['rank']}: skipped ({exc.message[:160]})[/]")
+                failed.append({"rank": c["rank"], "error": exc.message})
+                continue
+            used_titles += [t["text"] for t in tw["titles"]]
 
             # neighbours limit how far the boundaries may move (no overlaps)
             others = [o for o in cands if o is not c]
@@ -450,13 +466,14 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 "viral_score": score, "viral_label": viral_label(score),
                 "sub_scores": {"hook": calibrate(j["hook_score"]), "retention": calibrate(j["retention_score"]),
                                "trend_fit": calibrate(j["trend_fit_score"]), "length_fit": lf},
-                "titles": [t["text"].strip() for t in j["titles"]],
-                "title_styles": [t["style"] for t in j["titles"]],
+                "titles": [t["text"] for t in tw["titles"]],
+                "title_styles": [t["style"] for t in tw["titles"]],
+                "title_checks": tw.get("checks"),
                 "hashtags": clean_hashtags(j["hashtags"], j["game_or_topic"]),
-                "hook_text": " ".join(j["hook_text"].split()[:6]),
-                "cover_text": j["cover_text"].strip(),
+                "hook_text": tw["hook_text"] or " ".join(j["hook_text"].split()[:6]),
+                "cover_text": tw["cover_text"] or j["cover_text"].strip(),
                 "cover_prompt": f"{j['cover_scene'].strip().rstrip('.')}. "
-                                + COVER_STYLE.format(text=j["cover_text"].strip()),
+                                + COVER_STYLE.format(text=tw["cover_text"] or j["cover_text"].strip()),
                 "analyzed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             }
             c["llm"] = {"game_or_topic": j["game_or_topic"], "what_happens": j["what_happens"],
@@ -477,6 +494,7 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 c.setdefault("translations", {})[out_lang] = tr_lines
 
             hl["analysis"] = {"language": out_lang, "model": model.model, "prompt_version": PROMPT_VERSION,
+                              "titles_version": titles_mod.TITLES_VERSION, "glossary": gl.terms if gl else [],
                               "analyzed_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
             write_json_atomic(hl_path, hl)  # after every clip: an interrupted run keeps its work
             took = time.perf_counter() - t0
@@ -497,25 +515,31 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
             "total_seconds": round(time.perf_counter() - t_start, 1)}
 
 
-def _repair(j: dict, used_titles: list[str]) -> dict:
-    """Answer with leftover soft problems: drop sweary / repeated titles and tags."""
-    soft = j.pop("_soft_errors", None)
-    if not soft:
+def _repair(j: dict) -> dict:
+    """Answer with leftover soft problems: drop sweary tags / texts."""
+    if not j.pop("_soft_errors", None):
         return j
-    keep: list[dict] = []
-    for t in j["titles"]:
-        txt = t["text"]
-        if has_profanity(txt) or any(too_similar(txt, u) for u in used_titles) \
-                or any(too_similar(txt, k["text"], phrases=False) for k in keep):
-            continue
-        keep.append(t)
-    j["titles"] = keep or j["titles"][:1]
     j["hashtags"] = [h for h in j["hashtags"] if not has_profanity(h)]
     if has_profanity(j["hook_text"]):
         j["hook_text"] = ""
     if has_profanity(j["cover_text"]):
         j["cover_text"] = ""
     return j
+
+
+def _clip_lines(transcript: dict, c: dict) -> str:
+    return "\n".join(x["text"] for x in sentences(transcript, c["start"], c["end"]))[:2500] or "(no speech)"
+
+
+def _write_titles(model, meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict, gl,
+                  used_titles: list[str], avoid: list[str] | None = None, temperature: float = 0.75) -> dict:
+    return titles_mod.write(
+        model, system=SYSTEM, context=_context_block(meta, mode, c, transcript), lang=out_lang,
+        lang_label=lang_name(out_lang), mode=mode, what_happens=j["what_happens"], topic=j["game_or_topic"],
+        glossary=gl, used_titles=used_titles, hook_text=j.get("hook_text") or "",
+        cover_text=j.get("cover_text") or "", clip_lines=_clip_lines(transcript, c),
+        too_similar=too_similar, has_profanity=has_profanity, avoid=avoid, temperature=temperature,
+        script_check=_titles_script_checker(out_lang))
 
 
 def _sync_hype_curve(project: Project, hl: dict) -> None:
@@ -539,26 +563,23 @@ def regenerate_titles(project: Project, cid: str) -> dict:
     hl_path = project.dir / "highlights.json"
     hl = read_json(hl_path)
     c = next((x for x in hl["candidates"] if x["id"] == cid), None)
-    if c is None or not (c.get("publish") or {}).get("available"):
+    if c is None or not (c.get("publish") or {}).get("available") or not c.get("llm"):
         raise ClipForgeError("Analyze this clip with the LLM first.", f"python cli.py analyze {project.id}")
-    out_lang = c["publish"]["language"]
+    pub = c["publish"]
+    out_lang = pub["language"]
     transcript = read_json(project.transcript_path)
-    avoid = list(c["publish"]["titles"]) + [t for o in hl["candidates"] if o is not c
-                                            for t in (o.get("publish") or {}).get("titles", [])]
-    prompt = (f"Video title: {project.load_meta().get('title')}\nWhat happens: {c['llm']['what_happens']}\n"
-              f"Transcript:\n{_context(transcript, c['start'], c['end'])}\n\n"
-              f"Write 6 NEW short titles in {lang_name(out_lang)}, each a different style from "
-              f"{TITLE_STYLES}. They must not repeat phrases from these existing titles:\n"
-              + "\n".join(f"- {t}" for t in avoid[-40:]))
-    check = _checker(out_lang, avoid)
-
-    def titles_only(d: dict) -> list[str]:
-        return check({**d, "hook_text": c["publish"]["hook_text"], "cover_text": c["publish"]["cover_text"]})
-
+    meta = project.load_meta()
+    mode = hl.get("mode") or meta.get("mode") or "gaming"
+    others = [t for o in hl["candidates"] if o is not c for t in (o.get("publish") or {}).get("titles", [])]
+    gl = titles_mod.glossary.build(transcript, out_lang, meta.get("title", ""), c["llm"].get("game_or_topic", ""))
+    j = {"what_happens": c["llm"]["what_happens"], "game_or_topic": c["llm"].get("game_or_topic", ""),
+         "hook_text": pub.get("hook_text") or "", "cover_text": pub.get("cover_text") or ""}
     with llm.session() as model:
-        data = model.json(SYSTEM, prompt, TITLES_SCHEMA, temperature=0.9, soft=titles_only, num_predict=600)
-    data = _repair({**data, "hashtags": [], "hook_text": "", "cover_text": ""}, avoid)
-    c["publish"]["titles"] = [t["text"].strip() for t in data["titles"]]
-    c["publish"]["title_styles"] = [t["style"] for t in data["titles"]]
+        tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, others,
+                           avoid=list(pub["titles"]), temperature=0.95)
+    if tw["titles"]:
+        pub["titles"] = [t["text"] for t in tw["titles"]]
+        pub["title_styles"] = [t["style"] for t in tw["titles"]]
+        pub["title_checks"] = tw["checks"]
     write_json_atomic(hl_path, hl)
-    return c["publish"]
+    return pub
