@@ -23,3 +23,15 @@ desktop.ini
 # Partial downloads
 *.part
 *.ytdl
+
+# Models and personal config (never commit)
+models/
+*.gguf
+*.safetensors
+*.pt
+*.ckpt
+*.onnx
+.clipforge/
+config.local.json
+.env
+.env.*
