@@ -1,11 +1,63 @@
 import { useEffect, useState } from "react";
 import { api, type LlmInfo, type Mode, type Settings as SettingsT } from "../api";
 import { Icon } from "../components/Icons";
-import { CopyButton, Segmented, Toggle } from "../components/ui";
+import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
+import { isActive, useJobs } from "../jobs";
 import { chooseLanguage, useMeta } from "../meta";
 import { useTheme } from "../theme";
 import { useToast } from "../toast";
+
+function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
+  const { t, num } = useI18n();
+  const toast = useToast();
+  const { jobs } = useJobs();
+  const job = jobs.find((j) => j.kind === "benchmark" && isActive(j));
+  const normal = info.speed.normal;
+  const quick = info.speed.fast;
+  const rows = [
+    { key: "normal", label: t("speed.normal"), model: info.normal_model, s: normal?.seconds_per_clip, on: !fast },
+    { key: "fast", label: t("speed.fast"), model: info.fast_model, s: quick?.seconds_per_clip, on: fast },
+  ];
+  const max = Math.max(1, ...rows.map((r) => r.s ?? 0));
+  const ratio = normal && quick && quick.seconds_per_clip > 0 ? normal.seconds_per_clip / quick.seconds_per_clip : null;
+  const run = () => api.benchmark().catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
+  return (
+    <div className="speed-box">
+      <div className="pub-row">
+        <span className="field-label">{t("speed.title")}</span>
+        {ratio != null && <span className="chip chip-gold">{t("speed.faster", { x: num(ratio, 1) })}</span>}
+      </div>
+      <ul className="bars">
+        {rows.map((r) => (
+          <li key={r.key}>
+            <div className="bar-top">
+              <span>
+                {r.label} <span className="muted mono">· {r.model}</span>
+                {r.on && <span className="chip chip-outline best-chip">{t("speed.active")}</span>}
+              </span>
+              <span className="mono">{r.s != null ? t("speed.per_clip", { s: num(r.s, r.s < 10 ? 1 : 0) }) : t("speed.unknown")}</span>
+            </div>
+            <div className="sig-bar">
+              <span style={{ width: `${r.s != null ? Math.max(2, (r.s / max) * 100) : 0}%` }} />
+            </div>
+          </li>
+        ))}
+      </ul>
+      {job ? (
+        <JobLine job={job} onCancel={() => api.cancelJob(job.id)} />
+      ) : (
+        <div className="save-line" style={{ marginTop: 10 }}>
+          <span className="muted">{t("speed.note")}</span>
+          <button className="btn btn-sm" onClick={run} disabled={!info.server}>
+            <Icon name="clock" />
+            {t("speed.run")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function parseWords(text: string): string[] {
   const out: string[] = [];
@@ -27,6 +79,11 @@ export default function Settings() {
   const [savingTriggers, setSavingTriggers] = useState(false);
   const [llmInfo, setLlmInfo] = useState<LlmInfo | null>(null);
   const [glossary, setGlossary] = useState("");
+  const { finishedTick, lastFinished } = useJobs();
+
+  useEffect(() => {
+    if (lastFinished?.kind === "benchmark") api.llm().then(setLlmInfo).catch(() => {});
+  }, [finishedTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     api.settings().then((s) => {
@@ -160,6 +217,11 @@ export default function Settings() {
                     <option value={settings.llm_model}>{settings.llm_model}</option>
                   )}
                 </select>
+                {settings.fast_analysis && (
+                  <div className="field-hint" style={{ marginTop: 6 }}>
+                    {t("settings.fast_overrides", { model: llmInfo?.fast_model ?? "qwen3.5:4b" })}
+                  </div>
+                )}
                 {llmInfo && !llmInfo.server && (
                   <div className="field-hint" style={{ marginTop: 6 }}>
                     {t("settings.llm_offline")}
@@ -173,6 +235,23 @@ export default function Settings() {
                   label={t("settings.auto_analyze")}
                 />
                 <span>{t("settings.auto_analyze")}</span>
+              </div>
+              <div className="fast-box">
+                <div className="toggle-line" style={{ alignItems: "flex-start" }}>
+                  <Toggle
+                    checked={settings.fast_analysis}
+                    onChange={(v) => save({ fast_analysis: v })}
+                    label={t("settings.fast")}
+                  />
+                  <div>
+                    <div style={{ fontWeight: 550 }}>{t("settings.fast")}</div>
+                    <div className="field-hint">
+                      {t("settings.fast_desc", { model: llmInfo?.fast_model ?? "qwen3.5:4b" })}
+                      {llmInfo && !llmInfo.fast_installed && llmInfo.server && <> {t("settings.fast_download")}</>}
+                    </div>
+                  </div>
+                </div>
+                {llmInfo && <SpeedCompare info={llmInfo} fast={settings.fast_analysis} />}
               </div>
               <div>
                 <label className="field-label" htmlFor="glossary" style={{ display: "block", marginBottom: 4 }}>

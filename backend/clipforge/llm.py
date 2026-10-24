@@ -112,8 +112,18 @@ def ensure_server(start_timeout: float = 30.0) -> str:
 # ------------------------------------------------------------------ models
 
 
-def choose_model() -> str:
-    """config llm_model ("auto" = by hardware)."""
+def fast_analysis() -> bool:
+    return bool(config.get("fast_analysis"))
+
+
+def fast_model() -> str:
+    return str(config.get("llm_fallback_model") or SMALL_MODEL)
+
+
+def choose_model(ignore_fast: bool = False) -> str:
+    """config llm_model ("auto" = by hardware); "Fast analysis" always uses the small model."""
+    if fast_analysis() and not ignore_fast:
+        return fast_model()
     wanted = str(config.get("llm_model") or "auto")
     if wanted != "auto":
         return wanted

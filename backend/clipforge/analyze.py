@@ -403,6 +403,8 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
         return glossaries[game]
 
     style = titles_mod.style_digest(out_lang, mode)
+    fast = llm.fast_analysis()
+    profile = "fast" if fast else "normal"
     gl = None
     with llm.lazy_session() as model:
         for i, c in enumerate(todo):
@@ -427,14 +429,17 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                     cached = False
                 gl = glossary_for(j["game_or_topic"])
                 gdig = hashlib.sha1(gl.digest().encode()).hexdigest()[:10]
-                tkey = _cache_key(model.model, out_lang, c, mode, transcript, extra=f"titles:{style}:{gdig}")
+                tkey = _cache_key(model.model, out_lang, c, mode, transcript,
+                                  extra=f"titles:{style}:{gdig}" + (":fast" if fast else ""))
                 tfile = cache_dir / f"titles_{tkey}.json"
                 if tfile.is_file() and not force:
                     tw = read_json(tfile)
                 else:
-                    tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, used_titles)
+                    tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, used_titles, fast=fast)
                     write_json_atomic(tfile, tw)
                     cached = False
+                if not cached:
+                    record_speed(profile, model.model, time.perf_counter() - t0, "analysis")
                 tw = titles_mod.refilter(tw, out_lang, has_profanity)  # cached answers meet today's filters
             except ClipForgeError as exc:  # one bad clip must not stop the batch
                 console.print(f"[yellow]#{c['rank']}: skipped ({exc.message[:160]})[/]")
@@ -493,7 +498,8 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                     write_json_atomic(tfile, tr_lines)
                 c.setdefault("translations", {})[out_lang] = tr_lines
 
-            hl["analysis"] = {"language": out_lang, "model": model.model, "prompt_version": PROMPT_VERSION,
+            hl["analysis"] = {"language": out_lang, "model": model.model, "fast": fast,
+                              "prompt_version": PROMPT_VERSION,
                               "titles_version": titles_mod.TITLES_VERSION, "glossary": gl.terms if gl else [],
                               "analyzed_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
             write_json_atomic(hl_path, hl)  # after every clip: an interrupted run keeps its work
@@ -532,9 +538,10 @@ def _clip_lines(transcript: dict, c: dict) -> str:
 
 
 def _write_titles(model, meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict, gl,
-                  used_titles: list[str], avoid: list[str] | None = None, temperature: float = 0.75) -> dict:
+                  used_titles: list[str], avoid: list[str] | None = None, temperature: float = 0.75,
+                  fast: bool = False) -> dict:
     return titles_mod.write(
-        model, system=SYSTEM, context=_context_block(meta, mode, c, transcript), lang=out_lang,
+        model, fast=fast, system=SYSTEM, context=_context_block(meta, mode, c, transcript), lang=out_lang,
         lang_label=lang_name(out_lang), mode=mode, what_happens=j["what_happens"], topic=j["game_or_topic"],
         glossary=gl, used_titles=used_titles, hook_text=j.get("hook_text") or "",
         cover_text=j.get("cover_text") or "", clip_lines=_clip_lines(transcript, c),
@@ -576,10 +583,79 @@ def regenerate_titles(project: Project, cid: str) -> dict:
          "hook_text": pub.get("hook_text") or "", "cover_text": pub.get("cover_text") or ""}
     with llm.session() as model:
         tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, others,
-                           avoid=list(pub["titles"]), temperature=0.95)
+                           avoid=list(pub["titles"]), temperature=0.95, fast=llm.fast_analysis())
     if tw["titles"]:
         pub["titles"] = [t["text"] for t in tw["titles"]]
         pub["title_styles"] = [t["style"] for t in tw["titles"]]
         pub["title_checks"] = tw["checks"]
     write_json_atomic(hl_path, hl)
     return pub
+
+
+# ------------------------------------------------------------------ speed (Settings: "Fast analysis")
+
+
+def _speed_path():
+    return config.config_dir() / "llm_speed.json"
+
+
+def speed_stats() -> dict:
+    path = _speed_path()
+    try:
+        return read_json(path) if path.is_file() else {}
+    except Exception:  # noqa: BLE001 - a broken stats file is just reset
+        return {}
+
+
+def record_speed(profile: str, model: str, seconds: float, source: str) -> None:
+    """Seconds per clip (judge + titles, LLM already loaded) per profile ("normal" / "fast").
+    Kept as a moving average so the Settings page can show the measured difference."""
+    data = speed_stats()
+    old = data.get(profile) or {}
+    if old.get("model") != model:
+        old = {}
+    n = int(old.get("samples") or 0)
+    avg = float(old.get("seconds_per_clip") or seconds)
+    avg = seconds if n == 0 else avg + (seconds - avg) / min(n + 1, 8)
+    data[profile] = {"model": model, "seconds_per_clip": round(avg, 1), "samples": n + 1, "source": source,
+                     "updated": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    try:
+        write_json_atomic(_speed_path(), data)
+    except OSError:
+        pass
+
+
+def benchmark(project: Project, on_progress: Callable[[str, int, int], None] | None = None) -> dict:
+    """Speed test: analyze the best clip once with the normal and once with the fast setup
+    (nothing is cached or written to the project)."""
+    from . import llm
+
+    hl = read_json(project.dir / "highlights.json")
+    transcript = read_json(project.transcript_path)
+    meta = project.load_meta()
+    mode = hl.get("mode") or meta.get("mode") or "gaming"
+    out_lang = languages.require(config.get("output_language") or "tr").code
+    c = dict(min(hl["candidates"], key=lambda x: x["rank"]))
+    orig = (c.get("llm") or {}).get("original") or {"start": c["start"], "end": c["end"]}
+    c["start"], c["end"] = orig["start"], orig["end"]
+    c["duration"] = round(c["end"] - c["start"], 2)
+    profiles = [("normal", llm.choose_model(ignore_fast=True), False), ("fast", llm.fast_model(), True)]
+    out = {}
+    for i, (profile, name, fast) in enumerate(profiles):
+        if on_progress:
+            on_progress(profile, i, len(profiles))
+        with llm.session(name) as model:
+            t0 = time.perf_counter()
+            j = model.json(SYSTEM, _prompt(meta, mode, c, transcript, out_lang), _schema(lang_name(out_lang)),
+                           check=_hard_checker(out_lang), soft=_checker(out_lang))
+            j = _repair(j)
+            gl = titles_mod.glossary.build(transcript, out_lang, meta.get("title", ""), j["game_or_topic"])
+            tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, [], fast=fast)
+            took = time.perf_counter() - t0
+            record_speed(profile, name, took, "benchmark")
+            out[profile] = {"model": name, "seconds": round(took, 1), "titles": len(tw["titles"]),
+                            "load_seconds": round(model.load_seconds or 0.0, 1),
+                            "tokens_per_second": round(model.tokens_per_second, 1)}
+    if on_progress:
+        on_progress("done", len(profiles), len(profiles))
+    return out

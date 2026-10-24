@@ -25,7 +25,8 @@ from ..highlights.modes import MODES as MODE_PRESETS
 from ..project import MODES, Project, get_project, list_projects, read_json, slugify
 from ..render import ENCODERS, _flags, pick_encoder
 from . import state
-from .jobs import Job, JobManager
+from .jobs import ACTIVE, Job, JobManager
+from .power import ShutdownTimer
 
 FRONTEND_DIST = config.REPO_ROOT / "frontend" / "dist"
 REASON_CODES = ["loudness_spike", "keyword", "laughter", "shouting", "cheering", "fast_speech",
@@ -34,7 +35,9 @@ REASON_CODES = ["loudness_spike", "keyword", "laughter", "shouting", "cheering",
 BROWSER_CODECS = {"h264", "av1", "vp9", "vp8"}
 BROWSER_CONTAINERS = {".mp4", ".webm", ".m4v", ".mov"}
 
-jobs = JobManager()
+jobs = JobManager(store=config.workspace_dir() / "_queue.json")
+power = ShutdownTimer(busy=jobs.busy, changed=jobs.bump)
+jobs.on_finished.append(lambda _job: power.job_finished())
 app = FastAPI(title="ClipForge", version=__version__, docs_url="/api/docs", redoc_url=None)
 app.state.lan_url = None
 
@@ -143,7 +146,8 @@ def submit_titles(project_id: str, cid: str) -> Job:
         jobs.update(job, stage="writing_titles", progress=None)
         return {"titles": regenerate_titles(get_project(project_id), cid)["titles"], "clip_id": cid}
 
-    return jobs.submit("titles", "gpu", project_id, {"clip_id": cid}, run)
+    # interactive: goes ahead of a long render batch (it doesn't interrupt the running job)
+    return jobs.submit("titles", "gpu", project_id, {"clip_id": cid}, run, front=True)
 
 
 def submit_facecam(project_id: str) -> Job:
@@ -215,40 +219,209 @@ def submit_import(source: str, mode: str, language: str, title: str,
                        run, then, dedupe=False)
 
 
-def submit_render(project_id: str, clip_ids: list[str], options: ClipOptions,
-                  hooks: dict[str, str]) -> Job:
+def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
+                       batch: dict | None = None, job_id: str | None = None, attempt: int = 1) -> Job:
+    """One 9:16 clip = one queue entry (so the queue can be reordered / retried per clip)."""
+    project = get_project(project_id)
+    hl = state.load_highlights(project) or {}
+    cand = next((c for c in hl.get("candidates", []) if c["id"] == cid), None)
+    if cand is None:
+        raise ClipForgeError(f"Clip {cid} doesn't exist any more.", "Re-run the highlight analysis.")
+    opts = ClipOptions.from_dict({**options, "hook_text": hook})
+
     def run(job: Job):
         project = get_project(project_id)
         hl = state.load_highlights(project) or {}
-        by_id = {c["id"]: c for c in hl.get("candidates", [])}
-        chosen = [by_id[c] for c in clip_ids if c in by_id]
-        if not chosen:
-            raise ClipForgeError("None of the selected clips exist any more.",
+        cand = next((c for c in hl.get("candidates", []) if c["id"] == cid), None)
+        if cand is None:
+            raise ClipForgeError("This clip doesn't exist any more.",
                                  "Re-run the highlight analysis and pick clips again.")
         review = state.load_review(project, hl)
         facecam = Facecam.from_dict(review.get("facecam"))
-        total = sum(c["duration"] for c in chosen)
-        done = 0.0
-        out = []
-        for i, cand in enumerate(chosen):
-            name = f"{cand['rank']:02d}_{cand['id']}.mp4"
-            opts = ClipOptions.from_dict({**options.to_dict(), "hook_text": hooks.get(cand["id"], "")})
-            detail = {"index": i + 1, "count": len(chosen), "clip_id": cand["id"]}
-            jobs.update(job, stage="rendering", progress=done / total, detail=detail)
-            res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
-                              on_progress=lambda s, d=done: jobs.update(job, progress=(d + s) / total))
-            done += cand["duration"]
-            entry = {"file": name, "id": cand["id"], "rank": cand["rank"], "start": cand["start"],
-                     "end": cand["end"], "duration": cand["duration"], "options": opts.to_dict(),
-                     "facecam": facecam.to_dict() if facecam else None,
-                     "rendered_at": state.now_iso(), "size_bytes": res.size_bytes,
-                     "render_seconds": round(res.seconds, 2), "encoder": res.encoder}
-            state.save_clip(project, cand["id"], entry)
-            out.append(entry)
-        return {"clips": [c["id"] for c in out]}
+        name = f"{cand['rank']:02d}_{cand['id']}.mp4"
+        jobs.update(job, stage="rendering", progress=0.0)
+        res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
+                          on_progress=lambda s: jobs.update(job, progress=s / max(cand["duration"], 0.1)))
+        entry = {"file": name, "id": cand["id"], "rank": cand["rank"], "start": cand["start"],
+                 "end": cand["end"], "duration": cand["duration"], "options": opts.to_dict(),
+                 "facecam": facecam.to_dict() if facecam else None,
+                 "rendered_at": state.now_iso(), "size_bytes": res.size_bytes,
+                 "render_seconds": round(res.seconds, 2), "encoder": res.encoder}
+        state.save_clip(project, cand["id"], entry)
+        speeds.record("render", res.seconds, cand["duration"])
+        return {"clips": [cand["id"]], "encoder": res.encoder, "seconds": round(res.seconds, 1)}
 
-    return jobs.submit("render", "gpu", project_id,
-                       {"clip_ids": clip_ids, "options": options.to_dict()}, run)
+    pub = cand.get("publish") or {}
+    params = {"clip_id": cid, "rank": cand["rank"], "options": options, "hook": hook,
+              "duration": cand["duration"], "title": (pub.get("titles") or [None])[0] or cand.get("text", "")[:90],
+              "project_title": project.load_meta().get("title") or project_id, **(batch or {})}
+    return jobs.submit("render", "gpu", project_id, params, run, key=f"render:{project_id}:{cid}",
+                       persist=True, job_id=job_id, attempt=attempt)
+
+
+def submit_render(project_id: str, clip_ids: list[str], options: ClipOptions,
+                  hooks: dict[str, str]) -> list[Job]:
+    opts = options.to_dict()
+    opts.pop("hook_text", None)
+    batch = f"b{int(time.time() * 1000)}"
+    out = []
+    for i, cid in enumerate(clip_ids):
+        out.append(submit_render_clip(project_id, cid, opts, hooks.get(cid, ""),
+                                      {"batch": batch, "batch_index": i + 1, "batch_count": len(clip_ids)}))
+    return out
+
+
+def submit_montage(project_id: str, clip_ids: list[str], intro: bool = True, outro: bool = True,
+                   cards: bool = True, lang: str | None = None, job_id: str | None = None,
+                   attempt: int = 1) -> Job:
+    from .. import montage
+
+    project = get_project(project_id)
+    hl = state.load_highlights(project) or {}
+    by_id = {c["id"]: c for c in hl.get("candidates", [])}
+    ids = [c for c in clip_ids if c in by_id][: montage.MAX_CLIPS]
+    if len(ids) < 2:
+        raise ClipForgeError("Pick at least two clips for a best-of video.")
+    video_s = (sum(by_id[c]["duration"] for c in ids) + len(ids) * montage.CARD_S * cards
+               + montage.INTRO_S * intro + montage.OUTRO_S * outro)
+
+    def run(job: Job):
+        def progress(stage: str, frac: float | None) -> None:
+            jobs.update(job, stage=stage, progress=frac)
+
+        info = montage.render_montage(get_project(project_id), ids, lang=lang, intro=intro, outro=outro,
+                                      cards=cards, on_progress=progress)
+        speeds.record("montage", info["render_seconds"], info["duration"])
+        return {"export": info["name"], "duration": info["duration"], "encoder": info["encoder"]}
+
+    params = {"clip_ids": ids, "intro": intro, "outro": outro, "cards": cards, "lang": lang,
+              "count": len(ids), "duration": round(video_s, 1),
+              "project_title": project.load_meta().get("title") or project_id}
+    return jobs.submit("montage", "gpu", project_id, params, run, dedupe=False, persist=True,
+                       job_id=job_id, attempt=attempt)
+
+
+def submit_benchmark() -> Job:
+    def run(job: Job):
+        from ..analyze import benchmark
+
+        project = next((p for p in sorted(list_projects(), key=lambda p: p.load_meta().get("updated_at") or "",
+                                          reverse=True)
+                        if (p.dir / "highlights.json").is_file() and p.transcript_path.is_file()), None)
+        if project is None:
+            raise ClipForgeError("Import a video and find its highlights first; the speed test uses its best clip.")
+
+        def progress(profile: str, i: int, n: int) -> None:
+            jobs.update(job, stage=f"benchmark_{profile}", progress=i / n)
+
+        return benchmark(project, progress)
+
+    return jobs.submit("benchmark", "gpu", None, {}, run, key="benchmark")
+
+
+# ------------------------------------------------------------- queue helpers
+
+
+class Speeds:
+    """Measured render speed (seconds of work per second of video) for the queue's ETA."""
+    DEFAULTS = {"render": 0.3, "montage": 0.4}
+
+    def __init__(self):
+        self.path: Path | None = None
+        self.data: dict[str, dict] = {}
+
+    def load(self, path: Path) -> None:
+        self.path = path
+        try:
+            self.data = read_json(path) if path.is_file() else {}
+        except Exception:  # noqa: BLE001
+            self.data = {}
+
+    def get(self, kind: str) -> float:
+        return float((self.data.get(kind) or {}).get("per_second") or self.DEFAULTS.get(kind, 0.4))
+
+    def record(self, kind: str, seconds: float, video_seconds: float) -> None:
+        if video_seconds <= 0:
+            return
+        old = self.data.get(kind) or {}
+        n = int(old.get("samples") or 0)
+        rate = seconds / video_seconds
+        avg = rate if n == 0 else float(old["per_second"]) + (rate - float(old["per_second"])) / min(n + 1, 10)
+        self.data[kind] = {"per_second": round(avg, 4), "samples": n + 1}
+        if self.path:
+            try:
+                from ..project import write_json_atomic
+
+                write_json_atomic(self.path, self.data)
+            except OSError:
+                pass
+
+
+speeds = Speeds()
+
+
+def estimate(job: dict) -> float | None:
+    """Expected total seconds for a job (None = unknown)."""
+    p = job.get("params") or {}
+    if job["kind"] == "render":
+        return 2.0 + float(p.get("duration") or 25) * speeds.get("render")
+    if job["kind"] == "montage":
+        return 25.0 + float(p.get("duration") or 120) * speeds.get("montage")
+    if job["kind"] == "titles":
+        return 30.0
+    return None
+
+
+def remaining(job: dict, now: float) -> float | None:
+    est = estimate(job)
+    if job["status"] == "running" and job.get("started"):
+        elapsed = now - job["started"]
+        prog = job.get("progress")
+        if prog and prog > 0.03:
+            measured = elapsed / prog - elapsed
+            if est is None:
+                return max(0.0, measured)
+            w = min(1.0, prog * 2)  # trust the measured rate more as the job advances
+            return max(0.0, w * measured + (1 - w) * (est - elapsed))
+        return None if est is None else max(1.0, est - elapsed)
+    return est
+
+
+def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
+    """Re-submit a job from its saved dict (queue restore after a restart, and Retry)."""
+    kind, pid, p = saved["kind"], saved.get("project_id"), saved.get("params") or {}
+    keep_id = saved["id"] if attempt is None else None
+    attempt = attempt or saved.get("attempt") or 1
+    if kind == "render":
+        batch = {k: p[k] for k in ("batch", "batch_index", "batch_count") if k in p}
+        return submit_render_clip(pid, p["clip_id"], p.get("options") or {}, p.get("hook") or "", batch,
+                                  job_id=keep_id, attempt=attempt)
+    if kind == "montage":
+        return submit_montage(pid, p.get("clip_ids") or [], bool(p.get("intro", True)), bool(p.get("outro", True)),
+                              bool(p.get("cards", True)), p.get("lang"), job_id=keep_id, attempt=attempt)
+    if kind == "transcribe":
+        return submit_transcribe(pid, p.get("language") or "auto", bool(p.get("force")))
+    if kind == "highlights":
+        return submit_highlights(pid, p.get("mode"), bool(p.get("force")))
+    if kind == "analyze":
+        return submit_analyze(pid, p.get("lang"), bool(p.get("force")))
+    if kind == "titles":
+        return submit_titles(pid, p["clip_id"])
+    if kind == "facecam":
+        return submit_facecam(pid)
+    if kind == "proxy":
+        return submit_proxy(pid)
+    if kind == "chat":
+        return submit_chat(pid, bool(p.get("force")))
+    if kind == "benchmark":
+        return submit_benchmark()
+    if kind == "import":
+        from ..ingest import is_url
+
+        if is_url(p.get("source") or ""):
+            return submit_import(p["source"], p.get("mode") or "gaming", p.get("language") or "auto",
+                                 p.get("title") or p["source"])
+    return None
 
 
 # ========================================================================= API
@@ -297,6 +470,7 @@ def _settings_view() -> dict:
             "custom_triggers": triggers,
             "llm_model": str(cfg.get("llm_model") or "auto"),
             "auto_analyze": cfg.get("auto_analyze") is not False,
+            "fast_analysis": bool(cfg.get("fast_analysis")),
             "glossary": [str(t) for t in glossary]}
 
 
@@ -343,6 +517,8 @@ def api_settings_put(body: dict) -> dict:
         changes["llm_model"] = name
     if "auto_analyze" in body:
         changes["auto_analyze"] = bool(body["auto_analyze"])
+    if "fast_analysis" in body:
+        changes["fast_analysis"] = bool(body["fast_analysis"])
     if "glossary" in body:
         terms: list[str] = []
         for t in body["glossary"] if isinstance(body["glossary"], list) else []:
@@ -379,7 +555,7 @@ def api_llm() -> dict:
             pass
     models.sort(key=lambda m: m["name"])
     try:
-        auto = llm.choose_model() if str(config.get("llm_model") or "auto") == "auto" else None
+        auto = llm.choose_model(ignore_fast=True) if str(config.get("llm_model") or "auto") == "auto" else None
     except Exception:
         auto = None
     if auto is None:
@@ -388,8 +564,21 @@ def api_llm() -> dict:
         hw = hardware.detect_hardware()
         big = (hw.best_nvidia and hw.best_nvidia.vram_gb >= 7.5) or (hw.apple_silicon and hw.ram_total_gb >= 15)
         auto = llm.DEFAULT_MODEL if big else str(config.get("llm_fallback_model") or llm.SMALL_MODEL)
+    from ..analyze import speed_stats
+
+    normal = str(config.get("llm_model") or "auto")
     return {"available": llm_available(), "server": version, "installed": models,
-            "selected": str(config.get("llm_model") or "auto"), "auto": auto}
+            "selected": normal, "auto": auto, "normal_model": auto if normal == "auto" else normal,
+            "fast_model": llm.fast_model(), "fast_installed": llm.fast_model() in {m["name"] for m in models},
+            "speed": speed_stats()}
+
+
+@app.post("/api/llm/benchmark")
+def api_llm_benchmark() -> dict:
+    """Speed test: the best clip of the latest project, once normal and once fast."""
+    if not llm_available():
+        raise ClipForgeError("The local LLM isn't installed.", "Run: python cli.py doctor")
+    return submit_benchmark().to_dict()
 
 
 # ------------------------------------------------------------------ jobs
@@ -408,6 +597,158 @@ def api_job_cancel(job_id: str) -> dict:
     return job.to_dict()
 
 
+@app.post("/api/jobs/{job_id}/move")
+def api_job_move(job_id: str, body: dict) -> dict:
+    job = jobs.move(job_id, int(body.get("to") or 0))
+    if not job:
+        raise HTTPException(404, "No such job")
+    return job.to_dict()
+
+
+@app.post("/api/jobs/{job_id}/retry")
+def api_job_retry(job_id: str) -> dict:
+    job = jobs.get(job_id)
+    if not job:
+        raise HTTPException(404, "No such job")
+    if job.status in ACTIVE:
+        return job.to_dict()
+    new = rebuild_job(job.to_dict(), attempt=job.attempt + 1)
+    if new is None:
+        raise ClipForgeError("This task can't be retried.")
+    jobs.forget(job_id)
+    return new.to_dict()
+
+
+@app.delete("/api/jobs/{job_id}")
+def api_job_forget(job_id: str) -> dict:
+    return {"removed": jobs.forget(job_id)}
+
+
+def _queue_view() -> dict:
+    now = time.time()
+    lanes = {}
+    for lane in ("gpu", "io"):
+        t = 0.0
+        known = True
+        out = []
+        for j in jobs.lane_order(lane):
+            d = j.to_dict()
+            left = remaining(d, now)
+            d["eta_seconds"] = None if left is None else round(left, 1)
+            if left is None:
+                known = False
+            else:
+                t += left
+            d["eta_finish_seconds"] = round(t, 1) if known else None
+            out.append(d)
+        lanes[lane] = out
+    history = sorted((j.to_dict() for j in jobs.jobs() if j.status not in ACTIVE),
+                     key=lambda d: d["finished"] or 0, reverse=True)
+    gpu = lanes["gpu"]
+    return {"lanes": lanes, "history": history[:60],
+            "eta_total_seconds": gpu[-1]["eta_finish_seconds"] if gpu else 0,
+            "shutdown": power.state(), "speeds": {k: speeds.get(k) for k in Speeds.DEFAULTS}}
+
+
+@app.get("/api/queue")
+def api_queue() -> dict:
+    return _queue_view()
+
+
+def _render_is_current(clip: dict | None, cand: dict, options: dict, hook: str) -> bool:
+    """Already rendered with the same cut and the same settings?"""
+    if not clip:
+        return False
+    old = dict(clip.get("options") or {})
+    want = {**options, "hook_text": hook}
+    same_opts = all(old.get(k) == v for k, v in want.items() if k in ClipOptions().to_dict())
+    return same_opts and abs(clip["start"] - cand["start"]) < 0.05 and abs(clip["end"] - cand["end"]) < 0.05
+
+
+def _accepted_overview(project: Project) -> dict | None:
+    hl = state.load_highlights(project)
+    if not hl:
+        return None
+    review = state.load_review(project, hl)
+    by_id = {c["id"]: c for c in hl.get("candidates", [])}
+    clips = state.load_clips(project)
+    opts = dict(review["options"])
+    accepted = [c for c in review["accepted"] if c in by_id]
+    current = [c for c in accepted if _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, ""))]
+    return {"project_id": project.id, "title": project.load_meta().get("title") or project.id,
+            "accepted": len(accepted), "rendered": len(current), "to_render": len(accepted) - len(current),
+            "seconds": round(sum(by_id[c]["duration"] for c in accepted if c not in current), 1)}
+
+
+@app.get("/api/queue/accepted")
+def api_queue_accepted() -> list[dict]:
+    """Per project: accepted clips and how many still need rendering ("Render all accepted")."""
+    out = [o for p in list_projects() if (o := _accepted_overview(p)) and o["accepted"]]
+    return out
+
+
+@app.post("/api/queue/render")
+def api_queue_render(body: dict) -> dict:
+    """Render all accepted clips of these projects (one queue entry per clip)."""
+    ids = [str(x) for x in body.get("project_ids") or []]
+    include_current = bool(body.get("rerender"))
+    if not ids:
+        raise ClipForgeError("Choose at least one project.")
+    out: list[Job] = []
+    for pid in ids:
+        project = _project(pid)
+        hl = state.load_highlights(project)
+        if not hl:
+            continue
+        review = state.load_review(project, hl)
+        by_id = {c["id"]: c for c in hl.get("candidates", [])}
+        clips = state.load_clips(project)
+        opts = dict(review["options"])
+        todo = [c for c in review["accepted"] if c in by_id and
+                (include_current or not _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, "")))]
+        if todo:
+            out += submit_render(project.id, todo, ClipOptions.from_dict(opts), review["hooks"])
+    return {"queued": len(out), "jobs": [j.to_dict() for j in out]}
+
+
+@app.post("/api/queue/cancel")
+def api_queue_cancel(body: dict | None = None) -> dict:
+    """Cancel every active job, or only those of one project / kind / batch."""
+    body = body or {}
+    n = 0
+    for j in jobs.jobs():
+        if j.status not in ACTIVE:
+            continue
+        if body.get("project_id") and j.project_id != body["project_id"]:
+            continue
+        if body.get("kind") and j.kind != body["kind"]:
+            continue
+        if body.get("batch") and j.params.get("batch") != body["batch"]:
+            continue
+        jobs.cancel(j.id)
+        n += 1
+    return {"cancelled": n}
+
+
+@app.post("/api/queue/clear")
+def api_queue_clear() -> dict:
+    n = sum(jobs.forget(j.id) for j in jobs.jobs() if j.status not in ACTIVE)
+    return {"removed": n}
+
+
+@app.put("/api/queue/shutdown")
+def api_shutdown(body: dict, request: Request) -> dict:
+    enabled = bool(body.get("enabled"))
+    if enabled and not _is_local(request):
+        raise ClipForgeError("Only the computer running ClipForge can turn on automatic shutdown.")
+    return power.set_enabled(enabled)
+
+
+@app.post("/api/queue/shutdown/cancel")
+def api_shutdown_cancel() -> dict:
+    return power.cancel()
+
+
 @app.get("/api/events")
 async def api_events(request: Request):
     """Server-sent events: the full job list whenever anything changes."""
@@ -423,6 +764,7 @@ async def api_events(request: Request):
                 last = jobs.rev
                 idle = 0.0
                 yield f"event: jobs\ndata: {json.dumps(jobs.list(), ensure_ascii=False)}\n\n"
+                yield f"event: shutdown\ndata: {json.dumps(power.state())}\n\n"
             elif idle > 15:
                 idle = 0.0
                 yield ": keep-alive\n\n"
@@ -518,12 +860,24 @@ def api_project(project_id: str) -> dict:
     cands = [state.candidate_view(c) for c in (hl or {}).get("candidates", [])]
     from ..titles import feedback
 
+    from .. import calibration
+    from ..montage import list_exports
+
     votes = feedback.votes_for([t for c in cands for t in c["publish"]["titles"]], None)
     chat_stats = state.chat_stats(project, (hl or {}).get("candidates", []))
+    cal_model = calibration.load().get("model")
+    raw = {c["id"]: c for c in (hl or {}).get("candidates", [])}
     for c in cands:
         c["default_hook"] = c["publish"].get("hook_text") or first_sentence(c.get("text") or "")
         c["publish"]["title_votes"] = {t: votes[t] for t in c["publish"]["titles"] if t in votes}
+        c["publish"]["calibrated"] = calibration.adjust(raw[c["id"]], cal_model) if cal_model else None
         c["chat"] = chat_stats.get(c["id"])
+    performance = calibration.entries_for(project.id)
+    clips = state.load_clips(project)
+    for cid, clip in clips.items():
+        e = performance.get(cid)
+        clip["performance"] = None if not e else {k: e.get(k) for k in ("views", "likes", "published_at",
+                                                                         "updated_at")}
     signals = {k: {"status": v.get("status"), "weight": v.get("weight"), "share": v.get("share"),
                    "reason": v.get("reason")}
                for k, v in ((hl or {}).get("signals") or {}).items()}
@@ -537,7 +891,9 @@ def api_project(project_id: str) -> dict:
             "mode": hl.get("mode"), "created_at": hl.get("created_at"), "signals": signals,
             "settings": hl.get("settings"), "candidates": cands},
         "review": review,
-        "clips": state.load_clips(project),
+        "clips": clips,
+        "calibration": calibration.status(),
+        "exports": len(list_exports(project)),
         "chat": _chat_summary(project),
         "analysis": (hl or {}).get("analysis"),
         "output_language": ((hl or {}).get("analysis") or {}).get("language")
@@ -607,7 +963,7 @@ def api_render(project_id: str, body: dict) -> dict:
     review = state.load_review(project)
     options = ClipOptions.from_dict({**review["options"], **(body.get("options") or {})})
     hooks = {**review["hooks"], **(body.get("hooks") or {})}
-    return submit_render(project.id, clip_ids, options, hooks).to_dict()
+    return {"jobs": [j.to_dict() for j in submit_render(project.id, clip_ids, options, hooks)]}
 
 
 @app.post("/api/projects/{project_id}/candidates/{cid}/publish")
@@ -650,6 +1006,134 @@ def api_analyze(project_id: str, body: dict | None = None) -> dict:
     if not llm_available():
         raise ClipForgeError("The local LLM isn't installed.", "Run: python cli.py doctor")
     return submit_analyze(project.id, lang, bool(body.get("force"))).to_dict()
+
+
+# ------------------------------------------------------------------ best-of video
+
+
+@app.post("/api/projects/{project_id}/montage")
+def api_montage(project_id: str, body: dict) -> dict:
+    project = _project(project_id)
+    lang = body.get("lang") or None
+    if lang:
+        languages.require(lang)
+    return submit_montage(project.id, [str(c) for c in body.get("clip_ids") or []],
+                          intro=bool(body.get("intro", True)), outro=bool(body.get("outro", True)),
+                          cards=bool(body.get("cards", True)), lang=lang).to_dict()
+
+
+@app.get("/api/projects/{project_id}/exports")
+def api_exports(project_id: str) -> list[dict]:
+    from ..montage import list_exports
+
+    return list_exports(_project(project_id))
+
+
+def _export_file(project: Project, name: str) -> Path:
+    from ..montage import exports_dir
+
+    if not re.fullmatch(r"bestof_[0-9-]+", name):
+        raise HTTPException(404, "No such export")
+    path = exports_dir(project) / f"{name}.mp4"
+    if not path.is_file():
+        raise HTTPException(404, "No such export")
+    return path
+
+
+@app.get("/api/projects/{project_id}/exports/{name}/video")
+def api_export_video(project_id: str, name: str, download: bool = False):
+    project = _project(project_id)
+    path = _export_file(project, name)
+    title = slugify(project.load_meta().get("title") or project.id, 50)
+    return FileResponse(path, media_type="video/mp4", filename=f"{title}-{name}.mp4" if download else None,
+                        content_disposition_type="attachment" if download else "inline")
+
+
+@app.get("/api/projects/{project_id}/exports/{name}/poster.jpg")
+def api_export_poster(project_id: str, name: str):
+    project = _project(project_id)
+    path = _export_file(project, name)
+    dest = project.cache_dir / "frames" / f"{name}_poster.jpg"
+    if not dest.is_file():
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        cmd = [require_tool("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error", "-ss", "1.6", "-i", str(path),
+               "-frames:v", "1", "-vf", "scale=640:-2", "-q:v", "4", str(dest)]
+        subprocess.run(cmd, capture_output=True, timeout=60, creationflags=_flags())
+    if not dest.is_file():
+        raise HTTPException(500, "Could not extract a frame")
+    return FileResponse(dest, media_type="image/jpeg", headers={"Cache-Control": "max-age=86400"})
+
+
+@app.delete("/api/projects/{project_id}/exports/{name}")
+def api_export_delete(project_id: str, name: str) -> dict:
+    from ..montage import delete_export
+
+    return {"removed": delete_export(_project(project_id), name)}
+
+
+# ------------------------------------------------------------------ calibration
+
+
+@app.put("/api/projects/{project_id}/clips/{cid}/performance")
+def api_performance(project_id: str, cid: str, body: dict) -> dict:
+    """Real YouTube numbers for a published clip (calibrates the viral score)."""
+    from .. import calibration
+
+    project = _project(project_id)
+    if cid not in state.load_clips(project):
+        raise ClipForgeError("Render this clip first; views can only be added to rendered clips.")
+    hl = state.load_highlights(project) or {}
+    cand = next((c for c in hl.get("candidates", []) if c["id"] == cid), None)
+    if cand is None:
+        raise HTTPException(404, "No such clip")
+    try:
+        views = int(str(body.get("views")).replace(",", "").replace(".", "").strip())
+        likes = body.get("likes")
+        likes = None if likes in (None, "") else int(str(likes).replace(",", "").replace(".", "").strip())
+    except ValueError:
+        raise ClipForgeError("Views and likes must be whole numbers.") from None
+    if views < 0 or views > 10_000_000_000 or (likes is not None and likes < 0):
+        raise ClipForgeError("That view count doesn't look right.")
+    published = str(body.get("published_at") or "").strip() or None
+    if published:
+        from datetime import datetime
+
+        try:
+            datetime.fromisoformat(published)
+        except ValueError:
+            raise ClipForgeError("Unknown date format for 'published'.") from None
+    entry = calibration.set_entry(project, cand, views, likes, published)
+    return {"entry": entry, "calibration": calibration.status()}
+
+
+@app.delete("/api/projects/{project_id}/clips/{cid}/performance")
+def api_performance_delete(project_id: str, cid: str) -> dict:
+    from .. import calibration
+
+    project = _project(project_id)
+    return {"removed": calibration.delete_entry(calibration.entry_key(project.id, cid)),
+            "calibration": calibration.status()}
+
+
+@app.get("/api/calibration")
+def api_calibration() -> dict:
+    from .. import calibration
+
+    return calibration.stats()
+
+
+@app.delete("/api/calibration")
+def api_calibration_clear() -> dict:
+    from .. import calibration
+
+    return {"removed": calibration.clear(), "calibration": calibration.status()}
+
+
+@app.delete("/api/calibration/{key}")
+def api_calibration_delete(key: str) -> dict:
+    from .. import calibration
+
+    return {"removed": calibration.delete_entry(key), "calibration": calibration.status()}
 
 
 def _chat_summary(project: Project) -> dict | None:
@@ -784,3 +1268,14 @@ def _cleanup_uploads() -> None:
 
 
 _cleanup_uploads()
+
+
+@app.on_event("startup")
+def _restore_queue() -> None:
+    """Unfinished renders / best-of videos from the last run go back into the queue."""
+    speeds.load(config.workspace_dir() / "_speeds.json")
+    n = jobs.restore(rebuild_job)
+    if n:
+        from ..ui import console
+
+        console.print(f"Resumed [bold]{n}[/] queued job(s) from the last run.")

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { api, type Job } from "./api";
+import { api, type Job, type ShutdownState } from "./api";
 
 interface JobsState {
   jobs: Job[];
@@ -7,13 +7,17 @@ interface JobsState {
   /** Increments whenever a job finishes (done/error/cancelled): pages refetch on it. */
   finishedTick: number;
   lastFinished: Job | null;
+  shutdown: ShutdownState | null;
+  /** performance.now() when `shutdown` arrived (the countdown runs locally from there) */
+  shutdownAt: number;
 }
 
-const Ctx = createContext<JobsState>({ jobs: [], connected: false, finishedTick: 0, lastFinished: null });
+const EMPTY: JobsState = { jobs: [], connected: false, finishedTick: 0, lastFinished: null, shutdown: null, shutdownAt: 0 };
+const Ctx = createContext<JobsState>(EMPTY);
 
 /** Live job list over Server-Sent Events (auto-reconnects). */
 export function JobsProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<JobsState>({ jobs: [], connected: false, finishedTick: 0, lastFinished: null });
+  const [state, setState] = useState<JobsState>(EMPTY);
   const prev = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
@@ -34,6 +38,7 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       }
       prev.current = new Map(jobs.map((j) => [j.id, j.status]));
       setState((s) => ({
+        ...s,
         jobs,
         connected: true,
         finishedTick: s.finishedTick + tick,
@@ -44,6 +49,9 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     const connect = () => {
       es = new EventSource("/api/events");
       es.addEventListener("jobs", (e) => apply(JSON.parse((e as MessageEvent).data)));
+      es.addEventListener("shutdown", (e) =>
+        setState((s) => ({ ...s, shutdown: JSON.parse((e as MessageEvent).data), shutdownAt: performance.now() })),
+      );
       es.onerror = () => {
         setState((s) => ({ ...s, connected: false }));
         es?.close();

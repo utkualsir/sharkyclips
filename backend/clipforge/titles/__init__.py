@@ -27,6 +27,7 @@ EXAMPLES_DIR = Path(__file__).resolve().parent / "examples"
 TITLES_VERSION = 1
 N_TITLES = 6
 N_DRAFT = 9
+N_DRAFT_FAST = 6  # "Fast analysis": fewer drafts, and a second round only when too few survive
 MAX_BANG = 2
 STYLES = ["question", "story", "calm", "punchy", "funny", "curiosity", "hype"]
 QUESTION_END = ("?", "؟", "？")
@@ -44,9 +45,9 @@ GRAMMAR_HINTS = {
 }
 
 
-def draft_schema() -> dict:
+def draft_schema(n: int = N_DRAFT) -> dict:
     return {"type": "object", "properties": {"titles": {
-        "type": "array", "minItems": N_DRAFT - 2, "maxItems": N_DRAFT + 1, "items": {
+        "type": "array", "minItems": n - 2, "maxItems": n + 1, "items": {
             "type": "object",
             "properties": {"style": {"type": "string", "enum": STYLES},
                            "text": {"type": "string", "minLength": 3, "maxLength": 90}},
@@ -218,7 +219,7 @@ def _bullets(items: list[str]) -> str:
 
 def draft_task(*, lang: str, lang_label: str, mode: str, what_happens: str, topic: str,
                glossary: Glossary, used_titles: list[str], avoid: list[str] | None = None,
-               problems: list[str] | None = None) -> str:
+               problems: list[str] | None = None, n_draft: int = N_DRAFT) -> str:
     ex = examples(lang, mode)
     liked, disliked = feedback.examples(lang, mode)
     parts = [
@@ -243,7 +244,7 @@ def draft_task(*, lang: str, lang_label: str, mode: str, what_happens: str, topi
     others = (avoid or []) + used_titles[-30:]
     parts += [
         "",
-        f"Write {N_DRAFT} different titles in {lang_label}, ordered from strongest to weakest:",
+        f"Write {n_draft} different titles in {lang_label}, ordered from strongest to weakest:",
         "- casual and natural, how a real creator in this language writes; mostly 25-55 characters, never over 65",
         "- tell viewers who haven't seen the stream what the moment is; don't just quote the streamer's sentences",
         "- about what really happens in the CLIP lines; never name a map, weapon, character or person "
@@ -315,9 +316,11 @@ def refilter(tw: dict, lang: str, has_profanity) -> dict:
 def write(model, *, system: str, context: str, lang: str, lang_label: str, mode: str, what_happens: str,
           topic: str, glossary: Glossary, used_titles: list[str], hook_text: str, cover_text: str,
           clip_lines: str, too_similar, has_profanity, avoid: list[str] | None = None,
-          temperature: float = 0.75, script_check=None) -> dict:
+          temperature: float = 0.75, script_check=None, fast: bool = False) -> dict:
     """One clip's titles. `context` is the same prompt prefix the judge call used (so Ollama
-    can reuse its prompt cache); returns {titles, hook_text, cover_text, checks}."""
+    can reuse its prompt cache); returns {titles, hook_text, cover_text, checks}.
+    fast=True: fewer drafts and usually a single draft + proofread round."""
+    n_draft = N_DRAFT_FAST if fast else N_DRAFT
     avoid = list(avoid or [])
     example_texts = [e["text"] for e in examples(lang, mode)] + feedback.examples(lang, mode)[0]
     checks: dict = {"rejected": [], "fixed": [], "rounds": 0}
@@ -340,8 +343,8 @@ def write(model, *, system: str, context: str, lang: str, lang_label: str, mode:
         prompt = context + "\n\n" + draft_task(lang=lang, lang_label=lang_label, mode=mode,
                                                 what_happens=what_happens, topic=topic, glossary=glossary,
                                                 used_titles=used_titles, avoid=avoid + [p["text"] for p in pool],
-                                                problems=problems)
-        d = model.json(system, prompt, draft_schema(), temperature=temperature, check=script_check,
+                                                problems=problems, n_draft=n_draft)
+        d = model.json(system, prompt, draft_schema(n_draft), temperature=temperature, check=script_check,
                        soft=draft_soft, num_predict=900)
         d.pop("_soft_errors", None)
         drafts = _polish_all(d["titles"], lang, glossary)
@@ -389,7 +392,7 @@ def write(model, *, system: str, context: str, lang: str, lang_label: str, mode:
                 problems.append(f"'{final['text']}': {reason}")
                 continue
             pool.append(final)
-        if len(pool) >= N_TITLES - 1:
+        if len(pool) >= (3 if fast else N_TITLES - 1):
             break
 
     titles = pick(pool, slang={w.casefold() for w in glossary.streamer_words}) if pool else []

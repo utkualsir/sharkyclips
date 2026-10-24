@@ -300,7 +300,8 @@ def sentence_case(text: str, lang: str, keep: set[str] | frozenset[str] = frozen
     Only for Title Case / ALL CAPS titles; German nouns are capitalized on purpose, so not de."""
     if lang in ("de", "zh", "ja", "ar"):
         return text
-    ws = [w for w in re.findall(r"[^\W\d_]+", text) if len(w) >= 2]
+    # suffixes after an apostrophe ("Force'de") are lowercase by rule: they don't count
+    ws = [w for w in re.findall(r"(?<!['’])[^\W\d_]+", text) if len(w) >= 2]
     if len(ws) < 3:
         return text
     caps = sum(w[0].isupper() for w in ws)
@@ -309,15 +310,31 @@ def sentence_case(text: str, lang: str, keep: set[str] | frozenset[str] = frozen
         return text
     first = True
 
+    def low(w: str) -> str:
+        out = lower(w, lang)
+        # Turkish: a model's "If..." is often "İf..." written with the wrong capital I.
+        if lang == "tr" and w[:1] == "I":
+            alt = "i" + out[1:]
+            if zipf(alt, lang) > zipf(out, lang) + 0.5 or (
+                    zipf(out, lang) == 0 and known_score(alt, lang) > known_score(out, lang)):
+                return alt
+        return out
+
     def sub(m: re.Match) -> str:
         nonlocal first
         w = m.group(0)
-        if first:
+        before = text[: m.start()].rstrip()
+        if first or (before and before[-1] in ".!?…؟"):  # a new sentence starts capitalized
             first = False
-            return w[0] + lower(w[1:], lang) if all_caps and lower(w, lang) not in keep else w
+            if all_caps and lower(w, lang) not in keep:
+                return w[0] + lower(w[1:], lang)
+            if w[:1] == "I" and lang == "tr":
+                lw = low(w)
+                return upper_char(lw[0], lang) + lw[1:]
+            return w
         if lower(w, lang) in keep or (not all_caps and w.isupper() and len(w) <= 5):
             return w
-        return lower(w, lang)
+        return low(w)
 
     return re.sub(r"[^\W\d_]+", sub, text)
 

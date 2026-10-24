@@ -142,8 +142,8 @@ export function jobLabel(job: Job, t: ReturnType<typeof useI18n>["t"], num: (n: 
   if (job.kind === "analyze" && job.detail?.count) {
     return `${t("stage.llm_analyzing")} ${job.detail.index}/${job.detail.count}`;
   }
-  if (job.kind === "render" && job.detail?.count) {
-    const base = t("render.progress", { i: job.detail.index, n: job.detail.count });
+  if (job.kind === "render" && (job.params?.batch_count ?? 0) > 1) {
+    const base = t("render.progress", { i: job.params.batch_index, n: job.params.batch_count });
     return job.progress != null ? `${base} · ${num(Math.round(job.progress * 100))}%` : base;
   }
   const stage = job.stage ? t(`stage.${job.stage}`) : t(`kind.${job.kind}`);

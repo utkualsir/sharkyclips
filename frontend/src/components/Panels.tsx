@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, type Candidate, type ChatStats, type Job, type ProjectDetail } from "../api";
-import { fmtTime } from "../format";
+import { fmtCompact, fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { CopyButton, jobLabel } from "./ui";
@@ -186,7 +186,7 @@ export function PublishPanel({
   llmAvailable: boolean;
   llmJob: Job | null;
 }) {
-  const { t, num } = useI18n();
+  const { t, num, lang } = useI18n();
   const toast = useToast();
   const pub = cand?.publish;
   const ready = !!pub?.available;
@@ -256,7 +256,19 @@ export function PublishPanel({
 
       <div className="pub-grid">
         <div style={{ display: "grid", gap: 14, justifyItems: "center", alignContent: "start" }}>
-          <ScoreRing score={ready ? pub!.viral_score : null} label={ready ? pub!.viral_label : null} />
+          <ScoreRing
+            score={ready ? pub!.calibrated?.score ?? pub!.viral_score : null}
+            label={ready && !pub!.calibrated ? pub!.viral_label : null}
+          />
+          {ready && pub!.calibrated && (
+            <div className="cal-box" title={t("cal.tooltip", { score: pub!.calibrated.score, def: pub!.calibrated.default, n: pub!.calibrated.n })}>
+              <span className="chip chip-gold">{t("cal.badge")}</span>
+              <span className="muted">
+                {t("cal.default_was", { def: num(pub!.calibrated.default) })}
+              </span>
+              <span className="muted">{t("cal.predicted_views", { v: fmtCompact(pub!.calibrated.predicted_views, lang) })}</span>
+            </div>
+          )}
           {ready && pub!.sub_scores && (
             <div className="sig-list" style={{ width: "100%", gap: 8 }}>
               {SUBS.map((k) => (

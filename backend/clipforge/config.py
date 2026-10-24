@@ -35,6 +35,8 @@ DEFAULTS: dict[str, Any] = {
     "llm_model": "auto",
     "llm_fallback_model": "qwen3.5:4b",
     "llm_num_ctx": 8192,
+    # "Fast analysis": the small model (llm_fallback_model) and fewer title drafts.
+    "fast_analysis": False,
     # Run the AI analysis (titles, viral score, ...) by itself after highlights are found.
     "auto_analyze": True,
     # Names and words AI titles must spell exactly like this (game maps, operators, nicknames,

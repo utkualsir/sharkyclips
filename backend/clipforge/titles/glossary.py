@@ -56,6 +56,10 @@ class Glossary:
                 for i in range(len(toks) - n + 1):
                     a, b = toks[i].start(), toks[i + n - 1].end()
                     chunk = text[a:b]
+                    # keep a suffix after an apostrophe: "Delta Force'ta" stays "...'ta"
+                    m = re.search(r"'[^\W_]{1,5}$", chunk)
+                    if m:
+                        chunk, b = chunk[: m.start()], a + m.start()
                     if chunk != term and _similar(chunk, term):
                         text = text[:a] + term + text[b:]
                         break

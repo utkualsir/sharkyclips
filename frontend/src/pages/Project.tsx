@@ -10,6 +10,7 @@ import {
   type Layout,
   type Mode,
   type ProjectDetail,
+  type RenderedClip,
   type SubtitleStyle,
   type Word,
 } from "../api";
@@ -19,7 +20,7 @@ import { Icon } from "../components/Icons";
 import { fmtRatio, PublishPanel, SignalStats } from "../components/Panels";
 import { JobLine, Segmented, Toggle } from "../components/ui";
 import VerticalPreview, { resolveLayout } from "../components/VerticalPreview";
-import { fmtBytes, fmtTime, sourceLabel } from "../format";
+import { fmtBytes, fmtCompact, fmtTime, sourceLabel } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { useMeta } from "../meta";
@@ -50,7 +51,8 @@ function CandidateRow({
   const { t, num } = useI18n();
   const codes = [...new Set(c.reasons.map((r) => r.code))].slice(0, 4);
   const title = c.publish.titles[0] || c.text;
-  const viral = c.publish.available && c.publish.viral_score != null ? c.publish.viral_score : null;
+  const cal = c.publish.calibrated ?? null;
+  const viral = c.publish.available && c.publish.viral_score != null ? cal?.score ?? c.publish.viral_score : null;
   const label = c.publish.viral_label;
   const chatSpike = c.reasons
     .filter((r) => r.code === "chat_spike" && r.value)
@@ -71,13 +73,21 @@ function CandidateRow({
           {title}
         </p>
         {viral != null && (
-          <div className="cand-viral" title={`${t("publish.viral")}: ${viral}/100`}>
+          <div
+            className="cand-viral"
+            title={
+              cal
+                ? t("cal.tooltip", { score: cal.score, def: cal.default, n: cal.n })
+                : `${t("publish.viral")}: ${viral}/100`
+            }
+          >
             <span className="v-num">
               <Icon name="sparkles" size={12} />
               {num(viral)}
               <span className="v-den">/100</span>
             </span>
-            {label && <span className={`v-pill v-${label}`}>{t(`publish.label.${label}`)}</span>}
+            {label && !cal && <span className={`v-pill v-${label}`}>{t(`publish.label.${label}`)}</span>}
+            {cal && <span className="v-pill v-cal">{t("cal.badge")}</span>}
           </div>
         )}
         <div className="cand-line">
@@ -108,6 +118,132 @@ function CandidateRow({
         <span className={accepted ? "ok" : ""}>{accepted ? <Icon name="check" size={13} /> : t("cands.accept")}</span>
       </div>
     </div>
+  );
+}
+
+// ------------------------------------------------------------------ real views (calibration)
+
+function PerformanceForm({ projectId, clip, onSaved }: { projectId: string; clip: RenderedClip; onSaved: () => void }) {
+  const { t, lang } = useI18n();
+  const toast = useToast();
+  const perf = clip.performance ?? null;
+  const [open, setOpen] = useState(false);
+  const [views, setViews] = useState("");
+  const [likes, setLikes] = useState("");
+  const [published, setPublished] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    setViews(perf ? String(perf.views) : "");
+    setLikes(perf?.likes != null ? String(perf.likes) : "");
+    setPublished(perf?.published_at?.slice(0, 16) ?? "");
+  }, [perf?.views, perf?.likes, perf?.published_at, open]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const digits = (v: string) => v.replace(/[^0-9]/g, "");
+  const save = async () => {
+    if (!digits(views)) return;
+    setBusy(true);
+    try {
+      const r = await api.setPerformance(projectId, clip.id, {
+        views: Number(digits(views)),
+        likes: digits(likes) ? Number(digits(likes)) : null,
+        published_at: published || null,
+      });
+      const st = r.calibration;
+      toast({
+        kind: "ok",
+        text: st.calibrated
+          ? t("cal.saved_calibrated", { n: st.model_points })
+          : t("cal.saved_progress", { n: st.n, need: st.needed }),
+      });
+      setOpen(false);
+      onSaved();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+    setBusy(false);
+  };
+  const remove = async () => {
+    setBusy(true);
+    try {
+      await api.deletePerformance(projectId, clip.id);
+      setOpen(false);
+      onSaved();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message });
+    }
+    setBusy(false);
+  };
+
+  if (!open) {
+    return (
+      <button className={`perf-line${perf ? " has" : ""}`} onClick={() => setOpen(true)} data-perf={clip.id}>
+        <Icon name="eye" size={13} />
+        {perf ? (
+          <span>
+            <b className="mono">{fmtCompact(perf.views, lang)}</b> {t("cal.views")}
+            {perf.likes != null && (
+              <>
+                {" · "}
+                <b className="mono">{fmtCompact(perf.likes, lang)}</b> {t("cal.likes")}
+              </>
+            )}
+          </span>
+        ) : (
+          <span>{t("cal.add_views")}</span>
+        )}
+      </button>
+    );
+  }
+  return (
+    <form
+      className="perf-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        save();
+      }}
+    >
+      <label>
+        <span>{t("cal.views_label")}</span>
+        <input
+          className="input"
+          inputMode="numeric"
+          autoFocus
+          value={views}
+          onChange={(e) => setViews(e.target.value)}
+          placeholder="12500"
+          name="views"
+        />
+      </label>
+      <label>
+        <span>{t("cal.likes_label")}</span>
+        <input
+          className="input"
+          inputMode="numeric"
+          value={likes}
+          onChange={(e) => setLikes(e.target.value)}
+          placeholder={t("cal.optional")}
+          name="likes"
+        />
+      </label>
+      <label>
+        <span>{t("cal.published_label")}</span>
+        <input className="input" type="datetime-local" value={published} onChange={(e) => setPublished(e.target.value)} />
+      </label>
+      <div className="perf-actions">
+        {perf && (
+          <button type="button" className="btn btn-sm btn-ghost danger-text" onClick={remove} disabled={busy}>
+            {t("cal.remove")}
+          </button>
+        )}
+        <span style={{ flex: 1 }} />
+        <button type="button" className="btn btn-sm btn-ghost" onClick={() => setOpen(false)}>
+          {t("common.cancel")}
+        </button>
+        <button type="submit" className="btn btn-sm btn-primary" disabled={busy || !digits(views)}>
+          {t("common.save")}
+        </button>
+      </div>
+    </form>
   );
 }
 
@@ -158,8 +294,9 @@ export default function ProjectPage({ id }: { id: string }) {
   useEffect(() => {
     if (!lastFinished || lastFinished.project_id !== id) return;
     load();
-    if (lastFinished.kind === "render" && lastFinished.status === "done") {
-      const n = lastFinished.result?.clips?.length ?? 0;
+    const stillRendering = jobs.some((j) => j.kind === "render" && j.project_id === id && isActive(j));
+    if (lastFinished.kind === "render" && lastFinished.status === "done" && !stillRendering) {
+      const n = lastFinished.params?.batch_count ?? 1;
       toast({ kind: "ok", text: t("render.done", { n }), action: { label: t("render.view"), run: () => setTab("clips") } });
       setTab("clips");
     }
@@ -171,8 +308,9 @@ export default function ProjectPage({ id }: { id: string }) {
 
   const projectJobs = jobs.filter((j) => j.project_id === id);
   const activeJobs = projectJobs.filter(isActive);
-  const renderJob = activeJobs.find((j) => j.kind === "render");
-  const pipelineJob = activeJobs.find((j) => !["render", "facecam", "titles"].includes(j.kind)) ?? null;
+  const renderJobs = activeJobs.filter((j) => j.kind === "render");
+  const renderJob = renderJobs.find((j) => j.status === "running") ?? renderJobs[0];
+  const pipelineJob = activeJobs.find((j) => !["render", "facecam", "titles", "montage"].includes(j.kind)) ?? null;
   const llmJob = activeJobs.find((j) => j.kind === "analyze" || j.kind === "titles") ?? null;
   const facecamJob = activeJobs.find((j) => j.kind === "facecam");
 
@@ -498,6 +636,13 @@ export default function ProjectPage({ id }: { id: string }) {
                 </button>
               </div>
             )}
+            {project.highlights && (
+              <a className="btn btn-sm" href={href.bestof(id)}>
+                <Icon name="layers" />
+                {t("bestof.button")}
+                {project.exports > 0 && <span className="count mono">{project.exports}</span>}
+              </a>
+            )}
             <button className="btn btn-sm btn-ghost" onClick={() => chatInput.current?.click()} title={t("project.chat_hint")}>
               <Icon name="upload" />
               {t("project.chat_import")}
@@ -802,7 +947,12 @@ export default function ProjectPage({ id }: { id: string }) {
                     </button>
                   </div>
                   {renderJob ? (
-                    <JobLine job={renderJob} onCancel={() => api.cancelJob(renderJob.id)} />
+                    <div style={{ display: "grid", gap: 6 }}>
+                      <JobLine job={renderJob} onCancel={() => api.queueCancel({ project_id: id, kind: "render" })} />
+                      <a className="muted render-note" href={href.queue}>
+                        {renderJobs.length > 1 ? t("render.in_queue", { n: renderJobs.length }) : t("bestof.see_queue")}
+                      </a>
+                    </div>
                   ) : (
                     <button className="btn btn-primary btn-lg btn-block" disabled={!accepted.size} onClick={render}>
                       <Icon name="film" />
@@ -813,6 +963,17 @@ export default function ProjectPage({ id }: { id: string }) {
               </>
             ) : (
               <div className="side-scroll">
+                {clips.length > 0 && (
+                  <div className="cal-hint">
+                    <Icon name="chart" size={14} />
+                    {project.calibration.calibrated ? (
+                      <span>{t("cal.calibrated_n", { n: project.calibration.model_points })}</span>
+                    ) : (
+                      <span>{t("cal.progress", { n: project.calibration.n, need: project.calibration.needed })}</span>
+                    )}
+                    <a href={href.stats}>{t("nav.stats")}</a>
+                  </div>
+                )}
                 {clips.length === 0 ? (
                   <p className="muted" style={{ padding: 16 }}>
                     {t("clips.empty")}
@@ -841,6 +1002,7 @@ export default function ProjectPage({ id }: { id: string }) {
                             <Icon name="download" />
                           </a>
                         </div>
+                        <PerformanceForm projectId={id} clip={c} onSaved={load} />
                       </div>
                     ))}
                   </div>

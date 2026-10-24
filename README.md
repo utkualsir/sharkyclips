@@ -18,6 +18,7 @@ Everything runs on your own computer: no paid APIs, no cloud, no account.
 | 3B | Title quality (few-shot examples per language, glossary, proofread pass, dictionary check, variety rules, thumbs up/down that teach your style) + UI: viral score on cards, output language, model picker, chat stats, hook modes | ✅ done |
 | 4 | Clip rendering: vertical 9:16 (facecam + game / fit / fill), burned-in word-timed subtitles (incl. RTL Arabic), hook text + peak flash, facecam detection | ✅ core done |
 | 5 | Local web UI: library, timeline with Hype Map, review & render, 7 languages, dark/light | ✅ done |
+| 6 | Batch render queue (reorder, ETA, retry, survives restarts, optional shutdown), 16:9 best-of video (title cards, crossfades, loudness, AI titles/description/chapters), channel calibration from real YouTube views, Fast analysis | ✅ done |
 
 **Languages:** Turkish (tr, default), English (en), Russian (ru), Hungarian (hu), German (de),
 Arabic (ar, right-to-left), Chinese (zh). Run `python cli.py languages` to see the registry.
@@ -343,6 +344,30 @@ reads the transcript in ~30 s.
 with `@register`, import it in `signals/__init__.py`, and give it a weight in `modes.py`.
 The scorer and candidate picker don't change.
 
+### Queue, best-of videos and calibration (Phase 6)
+
+* **Queue** (top bar → Queue): renders and best-of videos run one at a time on the GPU. Each clip is
+  its own entry, so you can drag to reorder, cancel or retry it. "Render all accepted" queues every
+  accepted clip of the projects you tick (already rendered clips with the same settings are
+  skipped). The queue is saved in `<workspace>/_queue.json`: after a restart unfinished jobs
+  continue. "Shut down the PC when the queue is finished" (Windows/macOS) shows a 60 s countdown
+  with a Cancel button first; set `CLIPFORGE_DRY_SHUTDOWN=1` to test it without shutting down.
+* **Best-of video** (project page → Best-of video): pick clips (default: best accepted by viral
+  score, calibrated score once available), drag to order, optional intro/outro cards. Output is
+  1920x1080 at 60 fps with Instrument Serif title cards (navy/gold), 0.5 s crossfades and every
+  clip normalized to -14 LUFS, saved in `workspace/<id>/exports/`. The local LLM writes title
+  options, a description and chapter names; chapter timestamps follow YouTube's rules (first at
+  00:00, each at least 10 s; a short intro is merged into the first clip).
+* **Calibration** (Clips tab → "Add YouTube views", overview under Stats): after 10 clips with real
+  views a ridge regression on log views (numpy, penalty chosen by leave-one-out) learns how the
+  clip's signals and scores relate to your channel's views. Calibrated score =
+  default + n/(n+10) × (model score − default). Stats shows predicted vs real views (leave-one-out),
+  and the best content type, publish time, length and kind of moment. Data:
+  `~/.clipforge/calibration.json`.
+* **Fast analysis** (Settings → Local AI): `llm_fallback_model` (qwen3.5:4b) and 6 instead of 9
+  title drafts. "Run speed test" measures both setups on your newest project's best clip
+  (RTX 5070 Laptop: 28 s vs 15 s per clip).
+
 ### Long streams (3-6 hours)
 
 Audio is processed in ~10-minute chunks, split at quiet moments so words aren't cut. Only one
@@ -360,7 +385,7 @@ Set the `CLIPFORGE_HOME` environment variable to use another folder. Useful keys
 `custom_triggers`, `video_encoder` (`auto` or `h264_nvenc`, `h264_videotoolbox`, `h264_qsv`,
 `h264_amf`, `libx264`), `llm_enabled`, `llm_model` (`auto` or an Ollama tag),
 `llm_fallback_model` (`qwen3.5:4b`), `llm_num_ctx` (8192), `ollama_url`, `chat_delay` (5 s),
-`auto_analyze` (true), `glossary` (names AI titles must spell exactly).
+`auto_analyze` (true), `glossary` (names AI titles must spell exactly), `fast_analysis` (false).
 
 ## Troubleshooting
 

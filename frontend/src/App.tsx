@@ -1,10 +1,15 @@
+import { useEffect, useState } from "react";
+import { api } from "./api";
 import { BrandMark, Icon } from "./components/Icons";
 import { jobLabel } from "./components/ui";
 import { UI_LANGUAGES, useI18n } from "./i18n";
 import { isActive, useJobs } from "./jobs";
 import { chooseLanguage } from "./meta";
 import Library from "./pages/Library";
+import BestOf from "./pages/BestOf";
 import ProjectPage from "./pages/Project";
+import Queue from "./pages/Queue";
+import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
@@ -26,8 +31,18 @@ function TopBar() {
         <span className="brand-name">ClipForge</span>
       </a>
       <nav className="nav">
-        <a href={href.library} aria-current={route.name !== "settings" ? "page" : undefined}>
+        <a
+          href={href.library}
+          aria-current={["library", "project", "bestof"].includes(route.name) ? "page" : undefined}
+        >
           {t("nav.library")}
+        </a>
+        <a href={href.queue} aria-current={route.name === "queue" ? "page" : undefined}>
+          {t("nav.queue")}
+          {active.length > 0 && <span className="nav-count mono">{active.length}</span>}
+        </a>
+        <a href={href.stats} aria-current={route.name === "stats" ? "page" : undefined}>
+          {t("nav.stats")}
         </a>
         <a href={href.settings} aria-current={route.name === "settings" ? "page" : undefined}>
           {t("nav.settings")}
@@ -44,7 +59,7 @@ function TopBar() {
         {running && (
           <a
             className="job-pill"
-            href={running.project_id ? href.project(running.project_id) : href.library}
+            href={href.queue}
             title={t("jobs.running", { n: active.length })}
           >
             <span className="spinner" style={{ width: 12, height: 12 }} />
@@ -78,14 +93,53 @@ function TopBar() {
   );
 }
 
+/** "Shutting down in 42 s" - visible on every page while the countdown runs. */
+function ShutdownBanner() {
+  const { t, num } = useI18n();
+  const { shutdown, shutdownAt } = useJobs();
+  const [, tick] = useState(0);
+  const counting = shutdown?.countdown != null;
+  useEffect(() => {
+    if (!counting) return;
+    const id = window.setInterval(() => tick((n) => n + 1), 250);
+    return () => window.clearInterval(id);
+  }, [counting]);
+  if (!shutdown) return null;
+  if (shutdown.countdown == null) {
+    return shutdown.fired_at && shutdown.dry_run && Date.now() / 1000 - shutdown.fired_at < 20 ? (
+      <div className="shutdown-banner" role="status">
+        <Icon name="power" size={18} />
+        <span>{t("shutdown.dry_fired")}</span>
+      </div>
+    ) : null;
+  }
+  const left = Math.max(0, Math.ceil(shutdown.countdown - (performance.now() - shutdownAt) / 1000));
+  return (
+    <div className="shutdown-banner" role="alert">
+      <Icon name="power" size={18} />
+      <span>
+        <b>{t("shutdown.title")}</b> {t("shutdown.in", { s: num(left) })}
+        {shutdown.dry_run && <span className="muted"> · {t("queue.shutdown_dry")}</span>}
+      </span>
+      <button className="btn btn-primary btn-sm" onClick={() => api.cancelShutdown()} autoFocus>
+        {t("shutdown.cancel")}
+      </button>
+    </div>
+  );
+}
+
 export default function App() {
   const route = useRoute();
   return (
     <>
       <TopBar />
+      <ShutdownBanner />
       {route.name === "library" && <Library />}
       {route.name === "settings" && <Settings />}
       {route.name === "project" && <ProjectPage key={route.id} id={route.id} />}
+      {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
+      {route.name === "queue" && <Queue />}
+      {route.name === "stats" && <Stats />}
     </>
   );
 }

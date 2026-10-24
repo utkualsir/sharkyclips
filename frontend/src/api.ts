@@ -29,7 +29,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -42,6 +42,126 @@ export interface Job {
   created: number;
   started: number | null;
   finished: number | null;
+  persist?: boolean;
+  attempt?: number;
+  /** /api/queue only: seconds left for this job / until it is done (with the jobs before it) */
+  eta_seconds?: number | null;
+  eta_finish_seconds?: number | null;
+}
+
+export interface ShutdownState {
+  enabled: boolean;
+  supported: boolean;
+  countdown: number | null;
+  seconds: number;
+  dry_run: boolean;
+  fired_at: number | null;
+  error: string | null;
+}
+
+export interface QueueView {
+  lanes: { gpu: Job[]; io: Job[] };
+  history: Job[];
+  eta_total_seconds: number | null;
+  shutdown: ShutdownState;
+  speeds: Record<string, number>;
+}
+
+export interface AcceptedOverview {
+  project_id: string;
+  title: string;
+  accepted: number;
+  rendered: number;
+  to_render: number;
+  seconds: number;
+}
+
+export interface Calibrated {
+  score: number;
+  default: number;
+  model_score: number;
+  predicted_views: number;
+  weight: number;
+  n: number;
+}
+
+export interface CalibrationStatus {
+  calibrated: boolean;
+  n: number;
+  needed: number;
+  model_points: number;
+  r2_loo: number | null;
+  weight: number;
+  top_features: { name: string; effect: number }[];
+  fitted_at: string | null;
+}
+
+export interface Performance {
+  views: number;
+  likes: number | null;
+  published_at: string | null;
+  updated_at?: string;
+}
+
+export interface CalibrationGroup {
+  key: string;
+  count: number;
+  median_views: number;
+  mean_views: number;
+}
+
+export interface CalibrationStats {
+  status: CalibrationStatus;
+  points: {
+    key: string;
+    project_id: string;
+    clip_id: string;
+    title: string | null;
+    project_title: string | null;
+    views: number;
+    likes: number | null;
+    published_at: string | null;
+    predicted: number | null;
+    viral_score: number | null;
+    mode: string | null;
+    duration: number | null;
+  }[];
+  best: {
+    mode: CalibrationGroup[];
+    length: CalibrationGroup[];
+    moment: CalibrationGroup[];
+    time: CalibrationGroup[];
+    time_basis: "published" | "stream";
+  };
+}
+
+export interface MontageExport {
+  file: string;
+  name: string;
+  created_at: string;
+  duration: number;
+  width: number;
+  height: number;
+  fps: number;
+  size_bytes: number;
+  render_seconds: number;
+  encoder: string;
+  language: string;
+  model: string | null;
+  settings: { intro: boolean; outro: boolean; cards: boolean; crossfade: number; loudness_lufs: number };
+  items: { clip_id: string; rank: number; start: number; end: number; label: string | null; viral_score: number | null }[];
+  titles: string[];
+  description: string;
+  chapters: { t: number; label: string; clip: number | null }[];
+  chapters_text: string;
+}
+
+export interface SpeedEntry {
+  model: string;
+  seconds_per_clip: number;
+  samples: number;
+  source: "benchmark" | "analysis";
+  updated: string;
 }
 
 export interface ProjectSummary {
@@ -83,6 +203,8 @@ export interface Publish {
   language: string | null;
   /** title text -> 1 (liked) / -1 (disliked) */
   title_votes?: Record<string, number>;
+  /** viral score adjusted to this channel's real views (null until calibrated) */
+  calibrated?: Calibrated | null;
 }
 
 export interface ChatStats {
@@ -102,6 +224,10 @@ export interface LlmInfo {
   installed: { name: string; size_gb: number; params: string | null; family: string | null; quant: string | null }[];
   selected: string;
   auto: string;
+  normal_model: string;
+  fast_model: string;
+  fast_installed: boolean;
+  speed: { normal?: SpeedEntry; fast?: SpeedEntry };
 }
 
 export interface Candidate {
@@ -166,6 +292,7 @@ export interface RenderedClip {
   size_bytes: number;
   render_seconds: number;
   encoder: string;
+  performance?: Performance | null;
 }
 
 export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
@@ -180,6 +307,8 @@ export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
   };
   review: Review;
   clips: Record<string, RenderedClip>;
+  calibration: CalibrationStatus;
+  exports: number;
   jobs: Job[];
   chat: null | { status: "ok" | "none"; source: string; reason: string | null; count: number; authors: number };
   analysis: null | { language: string; model: string; analyzed_at: string; glossary?: string[] };
@@ -208,6 +337,7 @@ export interface Settings {
   custom_triggers: Record<string, string[]>;
   llm_model: string;
   auto_analyze: boolean;
+  fast_analysis: boolean;
   glossary: string[];
 }
 
@@ -262,7 +392,7 @@ export const api = {
   saveReview: (id: string, changes: Partial<Review>) => req<Review>("PUT", `${P(id)}/review`, changes),
   detectFacecam: (id: string) => req<Job>("POST", `${P(id)}/facecam/detect`),
   render: (id: string, clip_ids: string[], options: ClipOptions, hooks: Record<string, string>) =>
-    req<Job>("POST", `${P(id)}/render`, { clip_ids, options, hooks }),
+    req<{ jobs: Job[] }>("POST", `${P(id)}/render`, { clip_ids, options, hooks }),
   regeneratePublish: (id: string, cid: string) => req<Job>("POST", `${P(id)}/candidates/${cid}/publish`),
   analyze: (id: string, lang?: string, force = false) => req<Job>("POST", `${P(id)}/analyze`, { lang, force }),
   voteTitle: (id: string, cid: string, text: string, vote: -1 | 0 | 1) =>
@@ -275,6 +405,31 @@ export const api = {
     return data as NonNullable<ProjectDetail["chat"]>;
   },
   cancelJob: (jobId: string) => req<Job>("POST", `/api/jobs/${jobId}/cancel`),
+  moveJob: (jobId: string, to: number) => req<Job>("POST", `/api/jobs/${jobId}/move`, { to }),
+  retryJob: (jobId: string) => req<Job>("POST", `/api/jobs/${jobId}/retry`),
+  forgetJob: (jobId: string) => req<{ removed: boolean }>("DELETE", `/api/jobs/${jobId}`),
+  queue: () => req<QueueView>("GET", "/api/queue"),
+  queueAccepted: () => req<AcceptedOverview[]>("GET", "/api/queue/accepted"),
+  queueRender: (project_ids: string[], rerender = false) =>
+    req<{ queued: number; jobs: Job[] }>("POST", "/api/queue/render", { project_ids, rerender }),
+  queueCancel: (filter: { project_id?: string; kind?: string; batch?: string } = {}) =>
+    req<{ cancelled: number }>("POST", "/api/queue/cancel", filter),
+  queueClear: () => req<{ removed: number }>("POST", "/api/queue/clear"),
+  setShutdown: (enabled: boolean) => req<ShutdownState>("PUT", "/api/queue/shutdown", { enabled }),
+  cancelShutdown: () => req<ShutdownState>("POST", "/api/queue/shutdown/cancel"),
+  montage: (id: string, body: { clip_ids: string[]; intro: boolean; outro: boolean; cards: boolean; lang?: string }) =>
+    req<Job>("POST", `${P(id)}/montage`, body),
+  exports: (id: string) => req<MontageExport[]>("GET", `${P(id)}/exports`),
+  deleteExport: (id: string, name: string) => req<{ removed: boolean }>("DELETE", `${P(id)}/exports/${name}`),
+  setPerformance: (id: string, cid: string, body: { views: number; likes?: number | null; published_at?: string | null }) =>
+    req<{ entry: any; calibration: CalibrationStatus }>("PUT", `${P(id)}/clips/${cid}/performance`, body),
+  deletePerformance: (id: string, cid: string) =>
+    req<{ removed: boolean; calibration: CalibrationStatus }>("DELETE", `${P(id)}/clips/${cid}/performance`),
+  calibration: () => req<CalibrationStats>("GET", "/api/calibration"),
+  clearCalibration: () => req<{ removed: number }>("DELETE", "/api/calibration"),
+  deleteCalibrationEntry: (key: string) =>
+    req<{ removed: boolean }>("DELETE", `/api/calibration/${encodeURIComponent(key)}`),
+  benchmark: () => req<Job>("POST", "/api/llm/benchmark"),
   jobs: () => req<Job[]>("GET", "/api/jobs"),
 };
 
@@ -284,6 +439,9 @@ export const urls = {
   frame: (id: string, t: number, w = 1280) => `${P(id)}/frame.jpg?t=${t.toFixed(1)}&w=${w}`,
   clip: (id: string, cid: string, stamp: string) => `${P(id)}/clips/${cid}/video?v=${encodeURIComponent(stamp)}`,
   clipDownload: (id: string, cid: string) => `${P(id)}/clips/${cid}/video?download=true`,
+  export: (id: string, name: string) => `${P(id)}/exports/${name}/video`,
+  exportDownload: (id: string, name: string) => `${P(id)}/exports/${name}/video?download=true`,
+  exportPoster: (id: string, name: string) => `${P(id)}/exports/${name}/poster.jpg`,
 };
 
 /** Upload a file with progress (streamed to disk by the server). */
