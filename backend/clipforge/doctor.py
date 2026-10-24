@@ -52,8 +52,9 @@ def _pip_install(packages: list[str]) -> bool:
 
 
 class Doctor:
-    def __init__(self, fix: bool = True):
+    def __init__(self, fix: bool = True, download_models: bool = False):
         self.fix = fix
+        self.download_models = download_models
         self.rows: list[tuple[str, str, str]] = []
         self.notes: list[str] = []
 
@@ -116,6 +117,7 @@ class Doctor:
             self.add("VRAM", INFO, "n/a")
 
         plan = self._smoke_and_plan(hw)
+        self._check_whisper_model(plan)
         self._check_highlight_deps()
         self._check_encoder()
         self._check_llm()
@@ -132,6 +134,26 @@ class Doctor:
 
         self._print(plan)
         return 1 if any(s in (MISSING, FAIL) for _, s, _ in self.rows) else 0
+
+    def _check_whisper_model(self, plan: BackendPlan) -> None:
+        """The transcription model is big (large-v3-turbo ~1.6 GB): fetch it now if asked."""
+        from . import models
+
+        mlx = plan.device == "mlx"
+        name = hardware.MLX_REPOS.get(plan.model, plan.model) if mlx else plan.model
+        if models.is_cached(name, mlx=mlx):
+            self.add("Whisper model", OK, f"{plan.model} (downloaded)")
+            return
+        if not (self.download_models and self.fix):
+            self.add("Whisper model", INFO, f"{plan.model} - downloads on the first transcription")
+            return
+        console.print(f"Downloading the Whisper model [bold]{plan.model}[/] (one time, up to 1.6 GB) ...")
+        try:
+            (models.mlx_model_path if mlx else models.faster_whisper_model_path)(name)
+            self.add("Whisper model", OK, f"{plan.model} (downloaded)")
+        except Exception as exc:  # noqa: BLE001 - retried on the first transcription
+            self.add("Whisper model", WARN, f"{plan.model} download failed: {str(exc)[:200]} "
+                                            "(it is retried on the first transcription)")
 
     def _check_highlight_deps(self) -> None:
         """Optional highlight signals: missing ones are skipped, never fatal (WARN)."""
@@ -311,5 +333,5 @@ class Doctor:
             console.print(f"[bold green]Ready![/] Transcription will use {plan.label}.")
 
 
-def run_doctor(fix: bool = True) -> int:
-    return Doctor(fix=fix).run()
+def run_doctor(fix: bool = True, download_models: bool = False) -> int:
+    return Doctor(fix=fix, download_models=download_models).run()

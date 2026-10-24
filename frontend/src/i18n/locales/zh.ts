@@ -435,6 +435,23 @@ const zh: Record<string, string> = {
   "unit.sec": "{n} 秒",
   "unit.min": "{n} 分钟",
   "unit.hour_min": "{h} 小时 {m} 分钟",
+  "settings.updates": "更新",
+  "settings.updates_desc": "当前版本 ClipForge {v}。新版本来自 GitHub，项目和设置都会保留。",
+  "update.check": "检查更新",
+  "update.checking": "正在检查…",
+  "update.current": "已是最新版本（{v}）。",
+  "update.available": "有新版本 {v}。",
+  "update.changes_other": "{n} 项更改",
+  "update.install": "立即更新",
+  "update.restarting": "正在重启 ClipForge…",
+  "update.done_manual": "已更新。关闭 ClipForge 后重新打开即可使用新版本。",
+  "update.no_git": "此副本不是用安装程序安装的，无法自动更新。请从 GitHub 下载新版本。",
+  "update.fetch_failed": "无法连接 GitHub。请检查网络连接后重试。",
+  "update.open_releases": "打开发布页",
+  "update.failed": "更新失败。",
+  "kind.update": "正在更新 ClipForge",
+  "stage.update_download": "正在下载新版本",
+  "stage.update_packages": "正在安装新组件",
 };
 
 export default zh;

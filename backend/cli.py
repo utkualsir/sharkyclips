@@ -12,6 +12,7 @@
     python cli.py list
     python cli.py languages
     python cli.py serve [--lan] [--port 8000]
+    python cli.py launch                 (desktop shortcut: reuse a running server or start one)
 """
 
 from __future__ import annotations
@@ -47,7 +48,7 @@ except ImportError as exc:  # dependencies not installed yet
 def cmd_doctor(args) -> int:
     from clipforge.doctor import run_doctor
 
-    return run_doctor(fix=not args.no_fix)
+    return run_doctor(fix=not args.no_fix, download_models=args.download_models)
 
 
 def cmd_ingest(args) -> int:
@@ -348,32 +349,155 @@ def _ensure_frontend() -> None:
     subprocess.run([npm, "run", "build"], cwd=root, check=True)
 
 
-def cmd_serve(args) -> int:
+def _clipforge_version_at(port: int, timeout: float = 0.8) -> str | None:
+    """Version of the ClipForge server answering on this port, or None."""
+    import json
+    import urllib.request
+
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/meta", timeout=timeout) as r:
+            data = json.loads(r.read().decode("utf-8"))
+        return str(data["version"]) if isinstance(data, dict) and "reason_codes" in data else None
+    except Exception:  # noqa: BLE001 - nothing there, or another app
+        return None
+
+
+def _port_free(port: int) -> bool:
+    import socket
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(0.3)
+        if s.connect_ex(("127.0.0.1", port)) == 0:
+            return False  # something is listening
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(("127.0.0.1", port))
+            return True
+        except OSError:
+            return False
+
+
+def _open_browser_when_ready(url: str, port: int, timeout: float = 90) -> None:
     import threading
     import webbrowser
 
+    def wait() -> None:
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            if _clipforge_version_at(port):
+                webbrowser.open(url)
+                return
+            time.sleep(0.4)
+
+    threading.Thread(target=wait, daemon=True).start()
+
+
+def _run_server(args) -> int:
+    """The real web server (a child process of `serve`, which restarts it after updates)."""
     import uvicorn
 
-    _ensure_frontend()
     from clipforge.web.app import app
 
-    host = "0.0.0.0" if args.lan else "127.0.0.1"
+    app.state.lan_url = os.environ.get("CLIPFORGE_LAN_URL") or None
+    uvicorn.run(app, host="0.0.0.0" if args.lan else "127.0.0.1", port=args.port, log_level="warning")
+    return 0
+
+
+def cmd_serve(args) -> int:
+    import subprocess
+
+    from clipforge.updater import RESTART_CODE
+
+    if os.environ.get("CLIPFORGE_SUPERVISED") == "1":
+        return _run_server(args)
+
     local_url = f"http://localhost:{args.port}"
-    console.print(f"[bold]ClipForge[/] web UI: [cyan]{local_url}[/]")
+    running = _clipforge_version_at(args.port)
+    if running:
+        console.print(f"ClipForge {running} is already running: [cyan]{local_url}[/]")
+        if not args.no_browser:
+            import webbrowser
+
+            webbrowser.open(local_url)
+        return 0
+    if not _port_free(args.port):
+        raise ClipForgeError(f"Port {args.port} is used by another program.",
+                             f"Pick another one, e.g. python cli.py serve --port {args.port + 1} "
+                             "(or use `python cli.py launch`, which finds a free port).")
+    _ensure_frontend()
+
+    lan_url = ""
+    console.print(f"[bold]ClipForge {__version__}[/] web UI: [cyan]{local_url}[/]")
     if args.lan:
         ip = _lan_ip()
         if ip:
-            app.state.lan_url = f"http://{ip}:{args.port}"
-            console.print(f"On your phone / other computers (same Wi-Fi): [cyan]{app.state.lan_url}[/]")
+            lan_url = f"http://{ip}:{args.port}"
+            console.print(f"On your phone / other computers (same Wi-Fi): [cyan]{lan_url}[/]")
             console.print("[dim]Anyone on this network can open it. Windows may ask to allow "
                           "Python through the firewall: allow it for private networks.[/]")
         else:
             console.print("[yellow]Couldn't find this computer's network address.[/]")
-    console.print("[dim]Press Ctrl+C to stop.[/]")
+    console.print(f"[dim]{_launch_text('stop')}[/]")
     if not args.no_browser:
-        threading.Timer(1.2, lambda: webbrowser.open(local_url)).start()
-    uvicorn.run(app, host=host, port=args.port, log_level="warning")
-    return 0
+        _open_browser_when_ready(local_url, args.port)
+
+    # The server runs in a child process so an update can restart it (exit code RESTART_CODE).
+    env = {**os.environ, "CLIPFORGE_SUPERVISED": "1", "CLIPFORGE_LAN_URL": lan_url}
+    cmd = [sys.executable, str(Path(__file__).resolve()), "serve", "--port", str(args.port), "--no-browser"]
+    if args.lan:
+        cmd.append("--lan")
+    while True:
+        proc = subprocess.Popen(cmd, env=env)
+        try:
+            rc = proc.wait()
+        except KeyboardInterrupt:  # Ctrl+C reaches the child too; give it time to stop cleanly
+            try:
+                proc.wait(timeout=10)
+            except (subprocess.TimeoutExpired, KeyboardInterrupt):
+                proc.kill()
+            console.print("ClipForge stopped.")
+            return 0
+        if rc != RESTART_CODE:
+            return rc
+        console.print("[green]ClipForge was updated.[/] Restarting ...")
+        for _ in range(50):  # wait until the old server has released the port
+            if _port_free(args.port):
+                break
+            time.sleep(0.2)
+
+
+_LAUNCH_TEXT = {
+    "tr": {"running": "ClipForge çalışıyor: {url}",
+           "already": "ClipForge zaten açık, tarayıcıda açılıyor: {url}",
+           "stop": "Bu pencere açık kaldığı sürece ClipForge çalışır. Kapatmak için pencereyi kapatın "
+                   "(veya Ctrl+C)."},
+    "en": {"running": "ClipForge is running: {url}",
+           "already": "ClipForge is already running, opening it in your browser: {url}",
+           "stop": "ClipForge runs while this window is open. Close the window (or press Ctrl+C) to stop it."},
+}
+
+
+def _launch_text(key: str, **kw) -> str:
+    lang = str(config.get("ui_language") or "en")
+    return _LAUNCH_TEXT.get(lang, _LAUNCH_TEXT["en"])[key].format(**kw)
+
+
+def cmd_launch(args) -> int:
+    """What the desktop shortcut runs: reuse a running ClipForge, else start one on a free port."""
+    import webbrowser
+
+    for port in range(8000, 8011):
+        if _clipforge_version_at(port, timeout=0.5):
+            url = f"http://localhost:{port}"
+            console.print(_launch_text("already", url=url))
+            webbrowser.open(url)
+            return 0
+    port = next((p for p in range(8000, 8100) if _port_free(p)), None)
+    if port is None:
+        raise ClipForgeError("No free network port between 8000 and 8099.")
+    console.print(f"[bold]{_launch_text('running', url=f'http://localhost:{port}')}[/]")
+    args.port, args.lan, args.no_browser = port, False, False
+    return cmd_serve(args)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -384,6 +508,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     d = sub.add_parser("doctor", help="check dependencies, GPU and run a real smoke test")
     d.add_argument("--no-fix", action="store_true", help="don't install/upgrade anything")
+    d.add_argument("--download-models", action="store_true",
+                   help="also download the Whisper model now (else on the first transcription)")
     d.set_defaults(func=cmd_doctor)
 
     i = sub.add_parser("ingest", help="import a video from a URL or a local file")
@@ -446,6 +572,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--port", type=int, default=8000)
     s.add_argument("--no-browser", action="store_true", help="don't open the browser")
     s.set_defaults(func=cmd_serve)
+
+    sub.add_parser("launch", help="open ClipForge (what the desktop shortcut runs): reuses a running "
+                                  "server or starts one on a free port").set_defaults(func=cmd_launch)
 
     sub.add_parser("list", help="list projects").set_defaults(func=cmd_list)
     sub.add_parser("languages", help="show supported languages").set_defaults(func=cmd_languages)

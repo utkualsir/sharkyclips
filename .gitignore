@@ -35,3 +35,8 @@ models/
 config.local.json
 .env
 .env.*
+
+# Installer state, release build output, capture temp files
+.install-state.json
+installer/dist/
+docs/.video/

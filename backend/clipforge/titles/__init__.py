@@ -195,7 +195,7 @@ def pick(titles: list[dict], n: int = N_TITLES, slang: set[str] | None = None) -
             continue
         chosen.append(i)
         firsts[fw] = firsts.get(fw, 0) + 1
-    for i, t in enumerate(titles):  # still short: relax the opening-word rule
+    for i, _t in enumerate(titles):  # still short: relax the opening-word rule
         if len(chosen) >= n:
             break
         if i not in chosen:

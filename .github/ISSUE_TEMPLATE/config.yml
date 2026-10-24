@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Troubleshooting guide
+    url: https://github.com/utkualsir/clipforge#troubleshooting
+    about: Most install and GPU problems are covered here.

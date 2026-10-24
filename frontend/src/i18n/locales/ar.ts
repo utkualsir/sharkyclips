@@ -436,6 +436,23 @@ const ar: Record<string, string> = {
   "unit.sec": "{n} ث",
   "unit.min": "{n} د",
   "unit.hour_min": "{h} س {m} د",
+  "settings.updates": "التحديثات",
+  "settings.updates_desc": "لديك ClipForge {v}. تأتي الإصدارات الجديدة من GitHub، وتبقى مشاريعك وإعداداتك كما هي.",
+  "update.check": "البحث عن تحديثات",
+  "update.checking": "جارٍ البحث…",
+  "update.current": "لديك أحدث إصدار ({v}).",
+  "update.available": "الإصدار {v} متاح.",
+  "update.changes_other": "التغييرات: {n}",
+  "update.install": "حدّث الآن",
+  "update.restarting": "جارٍ إعادة تشغيل ClipForge…",
+  "update.done_manual": "تم التحديث. أغلق ClipForge وافتحه مرة أخرى لاستخدام الإصدار الجديد.",
+  "update.no_git": "لم تُثبَّت هذه النسخة بأداة التثبيت، لذلك لا يمكنها تحديث نفسها. نزّل الإصدار الجديد من GitHub.",
+  "update.fetch_failed": "تعذّر الوصول إلى GitHub. تحقّق من اتصالك بالإنترنت ثم حاول مرة أخرى.",
+  "update.open_releases": "فتح الإصدارات",
+  "update.failed": "فشل التحديث.",
+  "kind.update": "تحديث ClipForge",
+  "stage.update_download": "تنزيل الإصدار الجديد",
+  "stage.update_packages": "تثبيت الحزم الجديدة",
 };
 
 export default ar;

@@ -1,0 +1,14 @@
+# Lint settings for `ruff check backend` (also run in CI).
+target-version = "py311"
+line-length = 120
+
+[lint]
+select = ["E4", "E7", "E9", "F", "W", "B", "PLE"]
+ignore = [
+  "B008",   # FastAPI-style defaults
+  "B023",   # closures over loop variables are used on purpose (progress callbacks)
+  "B904",   # `raise ... from` everywhere would add noise to user-facing errors
+  "B905",   # zip(strict=) is noise here
+  "E731",
+  "PLE2502", # Arabic text in strings is intended
+]

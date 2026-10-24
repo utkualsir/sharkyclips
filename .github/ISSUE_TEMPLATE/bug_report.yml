@@ -1,0 +1,53 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please don't attach private videos; a short description of the video is enough.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Import a 2 h Twitch VOD
+        2. Click "Analyze with AI"
+        3. ...
+  - type: input
+    id: version
+    attributes:
+      label: ClipForge version
+      description: Shown at the bottom of Settings (e.g. 1.0.0)
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options: [Windows 11, Windows 10, macOS (Apple Silicon), macOS (Intel), Linux, Other]
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: GPU / RAM
+      placeholder: e.g. RTX 3060 12 GB, 16 GB RAM
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `python cli.py doctor`
+      description: Run it in the `backend` folder with the venv active, then paste the table.
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error messages / terminal output
+      render: text

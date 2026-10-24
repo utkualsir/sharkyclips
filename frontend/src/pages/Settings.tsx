@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, type LlmInfo, type Mode, type Settings as SettingsT } from "../api";
+import { api, type LlmInfo, type Mode, type Settings as SettingsT, type UpdateStatus } from "../api";
 import { Icon } from "../components/Icons";
 import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
@@ -56,6 +56,128 @@ function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** Waits until the restarted server answers again, then reloads the page. */
+async function reloadWhenBack() {
+  await new Promise((r) => setTimeout(r, 1500));
+  for (let i = 0; i < 120; i++) {
+    try {
+      const res = await fetch("/api/meta", { cache: "no-store" });
+      if (res.ok) {
+        window.location.reload();
+        return;
+      }
+    } catch {
+      // still restarting
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+}
+
+function UpdatesCard() {
+  const { t } = useI18n();
+  const toast = useToast();
+  const meta = useMeta();
+  const { jobs } = useJobs();
+  const [status, setStatus] = useState<UpdateStatus | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [phase, setPhase] = useState<"idle" | "restarting" | "manual">("idle");
+  const job = jobs.find((j) => j.kind === "update" && (j.id === jobId || isActive(j)));
+
+  const check = () => {
+    setChecking(true);
+    api
+      .updateStatus()
+      .then(setStatus)
+      .catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }))
+      .finally(() => setChecking(false));
+  };
+
+  const install = () =>
+    api
+      .updateApply()
+      .then((j) => setJobId(j.id))
+      .catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
+
+  useEffect(() => {
+    if (!job || job.id !== jobId || phase !== "idle") return;
+    if (job.status === "done") {
+      if (status?.can_restart) {
+        setPhase("restarting");
+        api
+          .updateRestart()
+          .then((r) => (r.restarting ? reloadWhenBack() : setPhase("manual")))
+          .catch(() => reloadWhenBack());
+      } else setPhase("manual");
+    } else if (job.status === "error") {
+      toast({ kind: "err", text: job.error?.message ?? t("update.failed"), hint: job.error?.hint });
+      setJobId(null);
+    }
+  }, [job, jobId, phase, status, t, toast]);
+
+  let body: React.ReactNode = null;
+  if (phase === "restarting") body = <span className="status status-running"><span className="dot" />{t("update.restarting")}</span>;
+  else if (phase === "manual") body = <p>{t("update.done_manual")}</p>;
+  else if (job && isActive(job)) body = <JobLine job={job} />;
+  else if (status) {
+    if (status.reason === "fetch_failed") body = <p className="muted">{t("update.fetch_failed")}</p>;
+    else if (status.reason)
+      body = (
+        <p className="muted">
+          {t("update.no_git")}{" "}
+          <a href={status.releases_url} target="_blank" rel="noreferrer">
+            {t("update.open_releases")}
+          </a>
+        </p>
+      );
+    else if (!status.available) body = <p className="muted">{t("update.current", { v: status.current })}</p>;
+    else
+      body = (
+        <div style={{ display: "grid", gap: 10 }}>
+          <div className="pub-row">
+            <strong>{t("update.available", { v: status.latest ?? "" })}</strong>
+            <span className="chip chip-gold">{t("update.changes", { n: status.behind })}</span>
+          </div>
+          {status.changes.length > 0 && (
+            <ul className="muted" style={{ margin: 0, paddingInlineStart: 18, fontSize: 13 }}>
+              {status.changes.slice(0, 6).map((c, i) => (
+                <li key={i} dir="ltr">
+                  {c}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div>
+            <button className="btn btn-primary btn-sm" onClick={install} disabled={!meta?.is_local}>
+              <Icon name="download" />
+              {t("update.install")}
+            </button>
+          </div>
+        </div>
+      );
+  }
+
+  return (
+    <section className="card setting" id="updates">
+      <div>
+        <h3>{t("settings.updates")}</h3>
+        <p>{t("settings.updates_desc", { v: meta?.version ?? "" })}</p>
+      </div>
+      <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+        {body}
+        {phase === "idle" && !(job && isActive(job)) && (
+          <div>
+            <button className="btn btn-sm" onClick={check} disabled={checking}>
+              <Icon name="refresh" />
+              {checking ? t("update.checking") : t("update.check")}
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -382,6 +504,8 @@ export default function Settings() {
               )}
             </div>
           </section>
+
+          <UpdatesCard />
 
           <p className="muted mono" style={{ textAlign: "center", fontSize: 12 }}>
             {t("settings.version", { v: meta?.version ?? "" })}

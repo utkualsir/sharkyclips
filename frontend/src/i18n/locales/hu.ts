@@ -447,6 +447,23 @@ const hu: Record<string, string> = {
   "unit.sec": "{n} mp",
   "unit.min": "{n} perc",
   "unit.hour_min": "{h} óra {m} perc",
+  "settings.updates": "Frissítések",
+  "settings.updates_desc": "A ClipForge {v} verzióját használod. Az új verziók a GitHubról jönnek; a projektjeid és beállításaid megmaradnak.",
+  "update.check": "Frissítések keresése",
+  "update.checking": "Keresés…",
+  "update.current": "A legújabb verziót használod ({v}).",
+  "update.available": "Elérhető a(z) {v} verzió.",
+  "update.changes_other": "{n} változás",
+  "update.install": "Frissítés most",
+  "update.restarting": "A ClipForge újraindul…",
+  "update.done_manual": "Frissítve. Zárd be a ClipForge-ot, majd nyisd meg újra az új verzióhoz.",
+  "update.no_git": "Ez a példány nem a telepítővel készült, ezért nem tudja frissíteni magát. Töltsd le az új verziót a GitHubról.",
+  "update.fetch_failed": "A GitHub nem érhető el. Ellenőrizd az internetkapcsolatot, és próbáld újra.",
+  "update.open_releases": "Kiadások megnyitása",
+  "update.failed": "A frissítés nem sikerült.",
+  "kind.update": "ClipForge frissítése",
+  "stage.update_download": "Új verzió letöltése",
+  "stage.update_packages": "Új csomagok telepítése",
 };
 
 export default hu;

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import re
 import subprocess
 import time
@@ -1235,6 +1236,51 @@ def api_frame(project_id: str, t: float = 0.0, w: int = 1280):
 
 
 # ------------------------------------------------------------------ frontend
+
+
+# ------------------------------------------------------------------ updates
+
+
+def _supervised() -> bool:
+    """True when `cli.py serve` watches this process and starts it again after an update."""
+    return os.environ.get("CLIPFORGE_SUPERVISED") == "1"
+
+
+@app.get("/api/update")
+def api_update_status(fetch: bool = True) -> dict:
+    from .. import updater
+
+    return {**updater.status(fetch=fetch), "can_restart": _supervised()}
+
+
+@app.post("/api/update")
+def api_update_apply(request: Request) -> dict:
+    from .. import updater
+
+    if not _is_local(request):
+        raise ClipForgeError("Updates can only be started on the computer running ClipForge.")
+    if any(j.kind != "update" for j in jobs.jobs() if j.status in ACTIVE):
+        raise ClipForgeError("ClipForge is busy.", "Wait until the running jobs are finished (or cancel them), "
+                                                   "then update.")
+
+    def run(job: Job):
+        return updater.apply(lambda s: jobs.update(job, stage=s, progress=None))
+
+    return jobs.submit("update", "io", None, {}, run, key="update").to_dict()
+
+
+@app.post("/api/update/restart")
+def api_update_restart(request: Request) -> dict:
+    import threading
+
+    from .. import updater
+
+    if not _is_local(request):
+        raise ClipForgeError("Only the computer running ClipForge can restart it.")
+    if not _supervised():
+        return {"restarting": False}
+    threading.Timer(0.4, lambda: os._exit(updater.RESTART_CODE)).start()
+    return {"restarting": True}
 
 
 @app.get("/api/{rest:path}")

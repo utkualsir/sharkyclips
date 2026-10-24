@@ -29,7 +29,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -431,7 +431,23 @@ export const api = {
     req<{ removed: boolean }>("DELETE", `/api/calibration/${encodeURIComponent(key)}`),
   benchmark: () => req<Job>("POST", "/api/llm/benchmark"),
   jobs: () => req<Job[]>("GET", "/api/jobs"),
+  updateStatus: () => req<UpdateStatus>("GET", "/api/update"),
+  updateApply: () => req<Job>("POST", "/api/update"),
+  updateRestart: () => req<{ restarting: boolean }>("POST", "/api/update/restart"),
 };
+
+export interface UpdateStatus {
+  current: string;
+  latest: string | null;
+  available: boolean;
+  behind: number;
+  changes: string[];
+  supported: boolean;
+  reason: null | "no_git" | "not_git_checkout" | "no_upstream" | "fetch_failed";
+  error?: string;
+  releases_url: string;
+  can_restart: boolean;
+}
 
 export const urls = {
   source: (id: string) => `${P(id)}/media/source`,

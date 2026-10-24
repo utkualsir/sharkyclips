@@ -57,7 +57,7 @@ class Signal(ABC):
     version: int = 1  # bump to invalidate cached results
     cacheable: bool = False  # cache results on disk (for expensive signals)
 
-    def check(self, ctx: AnalysisContext) -> None:
+    def check(self, ctx: AnalysisContext) -> None:  # noqa: B027 - optional hook
         """Raise SignalUnavailable if this signal can't run. Default: always available."""
 
     @abstractmethod
