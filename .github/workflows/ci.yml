@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - name: Install dependencies (without the big NVIDIA libraries)
+        run: |
+          grep -v nvidia backend/requirements.txt > "$RUNNER_TEMP/requirements-ci.txt"
+          python -m pip install --upgrade pip
+          python -m pip install -r "$RUNNER_TEMP/requirements-ci.txt" -r backend/requirements-dev.txt
+      - name: Lint (ruff)
+        run: python -m ruff check backend installer
+      - name: Tests (pytest)
+        run: python -m pytest
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Translations complete (7 languages)
+        run: node scripts/check-i18n.mjs
+      - name: Build
+        run: npm run build
+
+  installers:
+    name: Installer scripts
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PowerShell scripts parse
+        shell: pwsh
+        run: |
+          $bad = 0
+          foreach ($f in Get-ChildItem installer/windows/*.ps1) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$errors)
+            foreach ($e in $errors) { Write-Host "$($f.Name):$($e.Extent.StartLineNumber): $($e.Message)"; $bad++ }
+          }
+          if ($bad) { exit 1 }
+      - name: Installer dry run (Windows PowerShell 5.1)
+        shell: powershell
+        run: ./installer/windows/install.ps1 -DryRun -Lang en
+      - name: Shell scripts (shellcheck)
+        shell: bash
+        run: |
+          python -m pip install shellcheck-py
+          shellcheck -S warning install.sh installer/macos/uninstall.sh installer/macos/ClipForge.command
