@@ -183,6 +183,52 @@ kept for later calibration. Reason `code`s are stable identifiers (`loudness_spi
 
 No chat replay is fine: the signal is skipped. Twitch only keeps the chat of VODs that still exist.
 
+### Game awareness (Delta Force, League of Legends)
+
+The `game` signal (`backend/clipforge/game/`, weight 0.6 in gaming mode) reads the game's HUD.
+The game comes from the video title, from game words in the transcript ("lane", "minyon", champion
+names...), or from the per-project picker (Auto / Delta Force / League of Legends / Other).
+
+**Sampling.** ffmpeg decodes only reference frames (`-skip_frame noref`) at 2 fps, on NVDEC when there
+is an NVIDIA GPU, in 3 parallel segments, and hands over raw NV12 (luma = free grayscale, chroma =
+colour tests). Measured on an RTX 5070 Laptop: decoding alone ~35x realtime for 1080p60; a full scan
+20-45x realtime depending on how much text there is to read, so a 4 h stream takes roughly 6-12 min.
+Without NVDEC (CPU decode) expect about 6-10x.
+
+**Reading.** Each HUD box (1920x1080 coordinates, scaled; presets in `game/presets.py`) has a cheap
+pixel test, and OCR (PaddleOCR PP-OCR models via RapidOCR/onnxruntime, CPU, in worker processes) runs
+only when that test fires:
+
+| Game | Box | Test -> reading | Events |
+|---|---|---|---|
+| LoL | Team score, K/D/A (top right) | pixels changed -> one-line OCR | kills, deaths, assists; multikills from kill timing (10 s, 30 s for the 5th); first blood |
+| LoL | Announcements (top centre) | after a kill or a bright-text jump -> line OCR | shutdown ("Buraya kadar!"), ace, baron/dragon (steal or secure, not the enemy's, not "spawned") |
+| LoL | Ability bar | edges vanish -> read the result box for 8 s | victory / defeat ("ZAFER" / "BOZGUN") |
+| LoL | Champion portrait | template match vs Data Dragon icons | champion, only used when its name is also said or in the title (skins fool the match) |
+| DF | Icons above the score counter | template match: skull / revive / assist | kills, revives, assists; multikills (kills within 10 s) |
+| DF | Score lines | while a skull shows -> line OCR | how many kills at once ("Öldürme" x2, "Çifte Öldürme"), revenge ("İntikam", "Göze Göz") |
+| DF | Killer card | after the screen turns grey -> red "ÖLDÜREN" label | own death (being downed is not a death) |
+| DF | Result box | still screen after a cut -> OCR | extraction success / failure (unverified texts, Operations mode) |
+
+English and Turkish client texts are in `TEXT_RULES`; matching is accent-free and fuzzy (OCR noise).
+Banners the game shows for everyone (first blood, shutdown, multikills) only count when the
+streamer's own K/D/A shows a kill at that moment.
+
+**Scoring.** Event strengths are in `game/events.py` (pentakill 1.0, quadra 0.9, triple 0.75, double
+0.55, kill 0.4...; DF multikill x2 0.65, x3 0.85, x4 0.95). The curve ramps up 6 s before an event and
+stays high over its whole span. Events of strength >= 0.8 always become a candidate, and
+`candidates.fit_spans` grows a clip so the whole event (every kill of a multikill) plus 4 s of
+build-up fits. The LLM prompt gets the events as facts ("3 kills in a row (multikill) at +11s").
+
+**Sounds.** Optional reference clips in `~/.clipforge/game_sounds/<lol|delta_force>/<event>.mp3`
+(e.g. `lol_pentakill.mp3`, several per event allowed) are found in the audio with log-mel
+cross-correlation; a hit confirms a screen event or adds one.
+
+**Calibration.** The project's "Game detection" page (gamepad button) shows sampled frames with the
+boxes drawn on them, every event, the OCR text around each moment and "Read this frame". Boxes can be
+edited; they are saved per computer in `~/.clipforge/game_regions.json`, then "Read the HUD again".
+The scan is cached in `<project>/cache/game/scan.json` (rules can change without a rescan).
+
 ### Local LLM (Ollama)
 
 `python cli.py doctor` installs [Ollama](https://ollama.com) (winget / brew) and downloads the model.

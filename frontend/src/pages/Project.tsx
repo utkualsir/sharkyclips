@@ -6,6 +6,8 @@ import {
   type Candidate,
   type ClipOptions,
   type Facecam,
+  type GameChoice,
+  type GameId,
   type HypeCurve,
   type Layout,
   type Mode,
@@ -26,8 +28,11 @@ import { isActive, useJobs } from "../jobs";
 import { useMeta } from "../meta";
 import { href } from "../router";
 import { useToast } from "../toast";
+import { gameReasonLabel, whyText } from "./GameDebug";
 
 const MODES: Mode[] = ["gaming", "study", "music"];
+const GAME_NAMES: Record<GameId, string> = { delta_force: "Delta Force", lol: "League of Legends" };
+const GAME_CODE = /^(lol|df)_/;
 const SUBS: SubtitleStyle[] = ["bold", "clean", "minimal", "none"];
 const LAYOUTS: Layout[] = ["auto", "split", "fit", "crop"];
 type HookMode = "off" | "text" | "flash" | "both";
@@ -50,6 +55,7 @@ function CandidateRow({
 }) {
   const { t, num } = useI18n();
   const codes = [...new Set(c.reasons.map((r) => r.code))].slice(0, 4);
+  const valueOf = (code: string) => c.reasons.find((r) => r.code === code && r.value)?.value;
   const title = c.publish.titles[0] || c.text;
   const cal = c.publish.calibrated ?? null;
   const viral = c.publish.available && c.publish.viral_score != null ? cal?.score ?? c.publish.viral_score : null;
@@ -106,8 +112,11 @@ function CandidateRow({
         </div>
         <div className="cand-reasons">
           {codes.map((code) => (
-            <span key={code} className={`chip${code === "chat_spike" ? " chip-gold" : ""}`}>
-              {t(`reason.${code}`)}
+            <span
+              key={code}
+              className={`chip${code === "chat_spike" ? " chip-gold" : ""}${GAME_CODE.test(code) ? " chip-game" : ""}`}
+            >
+              {GAME_CODE.test(code) ? gameReasonLabel(t, code, code === "df_multikill" ? valueOf(code) : null) : t(`reason.${code}`)}
               {code === "chat_spike" && chatSpike && <span className="mono"> {fmtRatio(chatSpike, num)}</span>}
             </span>
           ))}
@@ -482,6 +491,15 @@ export default function ProjectPage({ id }: { id: string }) {
     }
   };
 
+  const chooseGame = async (choice: GameChoice) => {
+    try {
+      await api.setGame(id, choice); // re-runs the highlight analysis
+      load();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+
   const analyzeAI = async () => {
     try {
       await api.analyze(id, outLang ?? undefined);
@@ -611,6 +629,28 @@ export default function ProjectPage({ id }: { id: string }) {
                 </option>
               ))}
             </select>
+            {mode === "gaming" && project.game && (
+              <div className="ai-group">
+                <select
+                  className="select select-sm game-select"
+                  value={project.game.choice}
+                  onChange={(e) => chooseGame(e.target.value as GameChoice)}
+                  aria-label={t("game.label")}
+                  title={whyText(t, project.game.why, project.game.detected)}
+                  disabled={!!pipelineJob}
+                >
+                  <option value="auto">
+                    {project.game.detected ? t("game.auto_detected", { name: GAME_NAMES[project.game.detected] }) : t("game.auto_none")}
+                  </option>
+                  <option value="delta_force">{GAME_NAMES.delta_force}</option>
+                  <option value="lol">{GAME_NAMES.lol}</option>
+                  <option value="other">{t("game.other")}</option>
+                </select>
+                <a className="btn btn-sm btn-ghost icon-btn" href={href.game(id)} title={t("game.title")} aria-label={t("game.title")}>
+                  <Icon name="gamepad" />
+                </a>
+              </div>
+            )}
             <button className="btn btn-sm" onClick={reanalyze} disabled={!!pipelineJob}>
               <Icon name="refresh" />
               {project.highlights ? t("project.reanalyze") : t("project.analyze")}

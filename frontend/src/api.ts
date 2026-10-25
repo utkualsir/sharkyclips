@@ -311,8 +311,70 @@ export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
   exports: number;
   jobs: Job[];
   chat: null | { status: "ok" | "none"; source: string; reason: string | null; count: number; authors: number };
+  game: null | GameSummary;
   analysis: null | { language: string; model: string; analyzed_at: string; glossary?: string[] };
   output_language: string;
+}
+
+export type GameId = "delta_force" | "lol";
+export type GameChoice = "auto" | GameId | "other";
+
+export interface GameSummary {
+  choice: GameChoice;
+  game: GameId | null;
+  detected: GameId | null;
+  why: string;
+  name: string | null;
+  scanned?: boolean;
+  champion?: string | null;
+}
+
+export interface GameEvent {
+  t: number;
+  code: string;
+  value?: string;
+  strength: number;
+  start: number;
+  end: number;
+  source: string;
+  champion?: string;
+}
+
+export interface GameRegion {
+  box: [number, number, number, number]; // x, y, w, h on a 1920x1080 frame
+  label: string;
+  custom?: boolean;
+}
+
+export interface GameRead {
+  t: number;
+  region: string;
+  text: string;
+  how: string;
+}
+
+export interface GameView extends GameSummary {
+  choices: GameChoice[];
+  games: Record<GameId, string>;
+  base_size: [number, number];
+  regions: Record<string, GameRegion>;
+  scan: null | {
+    game: GameId;
+    current: boolean;
+    champion: null | { name: string; confidence: number };
+    frame_size: [number, number];
+    boxes: Record<string, [number, number, number, number]>;
+    stats: { decoder: string; seconds: number; speed: number; frames: number; ocr_calls: number; ocr_seconds?: number };
+  };
+  events: GameEvent[];
+  sounds: { folder?: string; clips?: string[]; ignored?: string[] };
+  event_codes: string[];
+  reads?: GameRead[];
+}
+
+export interface GameProbe {
+  t: number;
+  regions: Record<string, { text: string; events: string[] }>;
 }
 
 export interface HypeCurve {
@@ -390,6 +452,13 @@ export const api = {
   highlights: (id: string, mode?: Mode, force = false) =>
     req<Job>("POST", `${P(id)}/highlights`, { mode, force }),
   saveReview: (id: string, changes: Partial<Review>) => req<Review>("PUT", `${P(id)}/review`, changes),
+  game: (id: string, reads = false) => req<GameView>("GET", `${P(id)}/game${reads ? "?reads=true" : ""}`),
+  setGame: (id: string, choice: GameChoice) =>
+    req<{ game: GameSummary; job: Job | null }>("PUT", `${P(id)}/game`, { choice }),
+  rescanGame: (id: string) => req<Job>("POST", `${P(id)}/game/rescan`),
+  probeGame: (id: string, t: number, game?: GameId) => req<GameProbe>("POST", `${P(id)}/game/probe`, { t, game }),
+  saveGameRegion: (game: GameId, region: string, box: [number, number, number, number] | null) =>
+    req<Record<string, GameRegion>>("PUT", "/api/game/regions", { game, region, box }),
   detectFacecam: (id: string) => req<Job>("POST", `${P(id)}/facecam/detect`),
   render: (id: string, clip_ids: string[], options: ClipOptions, hooks: Record<string, string>) =>
     req<{ jobs: Job[] }>("POST", `${P(id)}/render`, { clip_ids, options, hooks }),

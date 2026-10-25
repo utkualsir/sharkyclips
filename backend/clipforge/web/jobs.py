@@ -39,6 +39,7 @@ STAGES = {
     "LLM reading": "llm_reading",
     "Downloading LLM": "downloading_llm",
     "Downloading chat": "downloading_chat",
+    "Reading the game HUD": "reading_hud",
 }
 
 ACTIVE = ("queued", "running")

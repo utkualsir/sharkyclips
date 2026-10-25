@@ -47,6 +47,35 @@ REASON_TEXT = {
     "chorus": "music chorus", "drop": "music drop", "chat_spike": "chat exploded",
     "chat_reactions": "chat spammed reactions", "llm_explanation": "self-contained explanation",
 }
+# Game events read from the game screen (game signal). These are facts, not guesses.
+GAME_EVENT_TEXT = {
+    "lol_pentakill": "Pentakill", "lol_quadrakill": "Quadra kill", "lol_triplekill": "Triple kill",
+    "lol_doublekill": "Double kill", "lol_kill": "kill", "lol_assist": "assist", "lol_death": "the streamer died",
+    "lol_first_blood": "First blood", "lol_shutdown": "Shutdown", "lol_ace": "Ace (whole enemy team dead)",
+    "lol_baron_steal": "Baron steal", "lol_dragon_steal": "Dragon steal", "lol_baron": "Baron secured",
+    "lol_dragon": "Dragon secured", "lol_victory": "Victory screen", "lol_defeat": "Defeat screen",
+    "df_multikill": "{n} kills in a row (multikill)", "df_kill": "kill", "df_revenge": "revenge kill",
+    "df_knock": "knocked an enemy down", "df_revive": "revived a teammate", "df_assist": "assist",
+    "df_death": "the streamer died", "df_extracted": "extracted successfully", "df_extract_failed": "extraction failed",
+}
+
+
+def game_events_text(c: dict) -> str:
+    """'Game events (read from the game screen): Quadra kill with Yasuo at +12s; ...'"""
+    out = []
+    for r in sorted(c.get("reasons", []), key=lambda r: r["t"]):
+        tmpl = GAME_EVENT_TEXT.get(r["code"])
+        if not tmpl or r["code"] in ("lol_assist", "df_assist"):
+            continue
+        if r["code"] == "df_multikill":
+            txt = tmpl.format(n=r.get("value") or "several")
+        elif r["code"].startswith("lol_") and r.get("value") and r["code"] not in ("lol_victory", "lol_defeat",
+                                                                                     "lol_death"):
+            txt = f"{tmpl} with {r['value']}"
+        else:
+            txt = tmpl
+        out.append(f"{txt} at {r['t'] - c['start']:+.0f}s")
+    return "; ".join(out)
 
 COVER_STYLE = ("vertical 9:16 thumbnail, cinematic and dramatic, high contrast, deep navy and gold "
                "color grade, sharp focus on the subject, bold short overlay text \"{text}\", "
@@ -235,6 +264,9 @@ def _cache_key(model: str, out_lang: str, c: dict, mode: str, transcript: dict, 
     words = " ".join(x["text"] for x in sentences(transcript, base["start"], base["end"]))
     payload = [PROMPT_VERSION, model, out_lang, mode, round(base["start"], 1), round(base["end"], 1),
                hashlib.sha1(words.encode()).hexdigest()[:10], extra]
+    game = sorted(f"{r['code']}:{r.get('value') or ''}" for r in c.get("reasons", []) if r["code"] in GAME_EVENT_TEXT)
+    if game:  # new game events -> new judgement and titles (other projects keep their cache)
+        payload.append(game)
     return hashlib.sha1(json.dumps(payload).encode()).hexdigest()[:20]
 
 
@@ -256,11 +288,18 @@ def _signals_text(c: dict) -> str:
                                                               key=lambda kv: -kv[1]))
     seen, reasons = set(), []
     for r in c.get("reasons", []):
+        if r["code"] in GAME_EVENT_TEXT:
+            continue  # listed separately below, as facts
         txt = REASON_TEXT.get(r["code"], r["code"]) + (f" \"{r['value']}\"" if r.get("value") else "")
         if txt not in seen:
             seen.add(txt)
             reasons.append(f"{txt} at {r['t'] - c['start']:+.0f}s")
-    return f"Signal strengths: {sig}\nDetected: {'; '.join(reasons[:8]) or 'nothing specific'}"
+    out = f"Signal strengths: {sig}\nDetected: {'; '.join(reasons[:8]) or 'nothing specific'}"
+    game = game_events_text(c)
+    if game:
+        out += (f"\nGame events (read from the game screen, reliable; use them in what_happens and titles): "
+                f"{game}")
+    return out
 
 
 def _context_block(meta: dict, mode: str, c: dict, transcript: dict) -> str:

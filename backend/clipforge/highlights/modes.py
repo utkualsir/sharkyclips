@@ -31,8 +31,11 @@ class ModePreset:
 MODES: dict[str, ModePreset] = {
     "gaming": ModePreset(
         name="gaming",
-        # "chat" only runs when there's a chat replay; missing signals are re-normalized away.
-        weights={"loudness": 0.30, "laughter": 0.25, "keywords": 0.25, "speech": 0.20, "chat": 0.30},
+        # "chat" only runs when there's a chat replay, "game" only for games with a HUD preset
+        # (Delta Force, League of Legends); missing signals are re-normalized away. "game" is 0
+        # most of the time and high at kills/objectives, so it lifts exactly those moments.
+        weights={"loudness": 0.30, "laughter": 0.25, "keywords": 0.25, "speech": 0.20, "chat": 0.30,
+                 "game": 0.6},
         keyword_categories=("reaction",),
         clip_min=15, clip_ideal=38, clip_max=60,
         pre_roll=(6, 10), post_roll=3, min_gap=45, smooth_sigma=2.0,

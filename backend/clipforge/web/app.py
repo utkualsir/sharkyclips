@@ -896,6 +896,7 @@ def api_project(project_id: str) -> dict:
         "calibration": calibration.status(),
         "exports": len(list_exports(project)),
         "chat": _chat_summary(project),
+        "game": _game_summary(project),
         "analysis": (hl or {}).get("analysis"),
         "output_language": ((hl or {}).get("analysis") or {}).get("language")
                            or config.get("output_language") or languages.DEFAULT_OUTPUT_LANGUAGE,
@@ -943,6 +944,109 @@ def api_highlights(project_id: str, body: dict | None = None) -> dict:
     if not project.transcript_path.is_file():
         raise ClipForgeError("Transcribe the video first.")
     return submit_highlights(project.id, mode, bool(body.get("force"))).to_dict()
+
+
+# ------------------------------------------------------------------ game awareness
+
+
+@app.get("/api/projects/{project_id}/game")
+def api_game(project_id: str, reads: bool = False) -> dict:
+    """Which game, its HUD regions, and what the last scan found (debug / calibration view)."""
+    from .. import game as game_mod
+    from ..game import presets
+
+    project = _project(project_id)
+    info = game_mod.resolve(project)
+    sc = game_mod.load_scan(project)
+    gid = info["game"] or (sc or {}).get("game")
+    ev = game_mod.game_events(project) if sc else None
+    out = {
+        **info,
+        "choices": list(game_mod.CHOICES),
+        "games": presets.GAMES,
+        "base_size": [presets.BASE_W, presets.BASE_H],
+        "regions": presets.regions(gid) if gid else {},
+        "scan": None if not sc else {
+            "game": sc["game"], "stats": sc.get("stats"), "champion": sc.get("champion"),
+            "frame_size": sc.get("frame_size"), "boxes": sc.get("boxes"),
+            "current": sc.get("key") == (game_mod.scan_key(project, sc["game"]) if project.source_path else None),
+        },
+        "events": (ev or {}).get("events", []),
+        "sounds": (ev or {}).get("sounds") or _sounds_info(gid),
+        "event_codes": game_mod.known_codes(),
+    }
+    if reads and sc:
+        out["reads"] = sc.get("reads", [])[-4000:]
+    return out
+
+
+def _sounds_info(gid: str | None) -> dict:
+    if not gid:
+        return {}
+    from ..game import events as game_events
+    from ..game import sounds
+
+    files = sounds.reference_files(gid)
+    known = set(game_events.STRENGTH)
+    return {"folder": str(sounds.sounds_dir(gid)),
+            "clips": [p.name for p in files if sounds.event_code(p, known)],
+            "ignored": [p.name for p in files if not sounds.event_code(p, known)]}
+
+
+@app.put("/api/projects/{project_id}/game")
+def api_game_set(project_id: str, body: dict) -> dict:
+    """Pick the game (auto / delta_force / lol / other) and re-run the highlight analysis."""
+    from .. import game as game_mod
+
+    project = _project(project_id)
+    choice = body.get("choice")
+    if choice not in game_mod.CHOICES:
+        raise ClipForgeError(f"Unknown game '{choice}'.", f"Use one of: {', '.join(game_mod.CHOICES)}")
+    game_mod.save_choice(project, choice)
+    job = None
+    if project.transcript_path.is_file() and body.get("reanalyze", True):
+        job = submit_highlights(project.id, None, False).to_dict()
+    return {"game": game_mod.resolve(project), "job": job}
+
+
+@app.post("/api/projects/{project_id}/game/rescan")
+def api_game_rescan(project_id: str) -> dict:
+    """Read the HUD again (after fixing a region) and re-run the analysis."""
+    project = _project(project_id)
+    (project.cache_dir / "game" / "scan.json").unlink(missing_ok=True)
+    if not project.transcript_path.is_file():
+        raise ClipForgeError("Transcribe the video first.")
+    return submit_highlights(project.id, None, False).to_dict()
+
+
+@app.post("/api/projects/{project_id}/game/probe")
+def api_game_probe(project_id: str, body: dict) -> dict:
+    """Read every HUD region of one frame, to check a region box."""
+    from .. import game as game_mod
+
+    project = _project(project_id)
+    gid = body.get("game") or game_mod.resolve(project)["game"]
+    if gid not in game_mod.presets.GAMES:
+        raise ClipForgeError("Pick the game first (Delta Force or League of Legends).")
+    if project.source_path is None:
+        raise ClipForgeError("This project has no video file.")
+    try:
+        return game_mod.probe(project, float(body.get("t") or 0), gid)
+    except RuntimeError as exc:
+        raise ClipForgeError(str(exc)) from None
+
+
+@app.put("/api/game/regions")
+def api_game_region(body: dict) -> dict:
+    """Move a HUD region (1920x1080 pixel box) on this computer; null resets it."""
+    from ..game import presets
+
+    try:
+        return presets.save_override(body.get("game", ""), body.get("region", ""), body.get("box"))
+    except KeyError:
+        raise ClipForgeError("Unknown game or region.") from None
+    except ValueError as exc:
+        raise ClipForgeError(f"Invalid box: {exc}") from None
 
 
 @app.put("/api/projects/{project_id}/review")
@@ -1142,6 +1246,17 @@ def _chat_summary(project: Project) -> dict | None:
 
     c = load_chat(project)
     return None if c is None else {k: c.get(k) for k in ("status", "source", "reason", "count", "authors")}
+
+
+def _game_summary(project: Project) -> dict | None:
+    from .. import game as game_mod
+
+    try:
+        info = game_mod.resolve(project)
+    except Exception:
+        return None
+    sc = game_mod.load_scan(project)
+    return {**info, "scanned": bool(sc), "champion": game_mod.champion_name(sc) if sc else None}
 
 
 @app.post("/api/projects/{project_id}/chat/download")

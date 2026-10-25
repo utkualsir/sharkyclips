@@ -7,6 +7,7 @@ import { isActive, useJobs } from "./jobs";
 import { chooseLanguage } from "./meta";
 import Library from "./pages/Library";
 import BestOf from "./pages/BestOf";
+import GameDebug from "./pages/GameDebug";
 import ProjectPage from "./pages/Project";
 import Queue from "./pages/Queue";
 import Stats from "./pages/Stats";
@@ -33,7 +34,7 @@ function TopBar() {
       <nav className="nav">
         <a
           href={href.library}
-          aria-current={["library", "project", "bestof"].includes(route.name) ? "page" : undefined}
+          aria-current={["library", "project", "bestof", "game"].includes(route.name) ? "page" : undefined}
         >
           {t("nav.library")}
         </a>
@@ -138,6 +139,7 @@ export default function App() {
       {route.name === "settings" && <Settings />}
       {route.name === "project" && <ProjectPage key={route.id} id={route.id} />}
       {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
+      {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
       {route.name === "queue" && <Queue />}
       {route.name === "stats" && <Stats />}
     </>

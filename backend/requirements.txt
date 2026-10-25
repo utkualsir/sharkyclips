@@ -19,3 +19,5 @@ opencv-python-headless>=4.9,<5   # facecam detection (5.x dropped the bundled fa
 requests>=2.31            # Ollama API, Twitch chat
 # Phase 3B - title quality: offline dictionary for the spelling check (all 7 languages)
 wordfreq>=3.1
+# Phase 7 - game awareness: reads the game HUD (PaddleOCR models on onnxruntime, ~15 MB, CPU)
+rapidocr>=3.4,<4

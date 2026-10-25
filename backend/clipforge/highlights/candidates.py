@@ -84,6 +84,39 @@ def _initial_window(curve: np.ndarray, p: int, mode: ModePreset, duration: float
     return start, end
 
 
+MUST_HAVE_STRENGTH = 0.8  # game events this big always become a candidate
+SPAN_BUILD_UP = 4.0  # seconds of build-up kept before a game event
+SPAN_AFTER = 2.0  # and after its last moment (the reaction)
+
+
+def fit_spans(start: float, end: float, peak: int, spans: list[tuple], mode: ModePreset,
+              duration: float) -> tuple[float, float, tuple[float, float] | None]:
+    """Grow the window so every game event it touches fits whole (all kills of a multikill),
+    with build-up before it. Returns (start, end, must) where must = (latest start, earliest
+    end) for word snapping, or None when no event is involved."""
+    hits = [(a, b) for a, b, *_ in spans if a <= end and b >= start]
+    if not hits:
+        return start, end, None
+    a = min(x for x, _ in hits)
+    b = max(y for _, y in hits)
+    need_s, need_e = max(0.0, a - SPAN_BUILD_UP), min(duration, b + SPAN_AFTER)
+    if need_e - need_s > mode.clip_max:
+        # Events too far apart for one clip: keep the ones around the peak.
+        near = [(x, y) for x, y in hits if x - SPAN_BUILD_UP <= peak <= y + SPAN_AFTER + mode.clip_max / 2]
+        a = min((x for x, _ in near), default=peak)
+        b = max((y for _, y in near), default=peak)
+        need_s, need_e = max(0.0, a - SPAN_BUILD_UP), min(duration, b + SPAN_AFTER)
+        if need_e - need_s > mode.clip_max:
+            need_e = need_s + mode.clip_max
+    s, e = min(start, need_s), max(end, need_e)
+    if e - s > mode.clip_max:  # trim the extra context, never the event
+        extra = (e - s) - mode.clip_max
+        cut_front = min(extra, need_s - s)
+        s += cut_front
+        e -= extra - cut_front
+    return round(s, 2), round(e, 2), (round(need_s + 1.0, 2), round(min(need_e, s + mode.clip_max), 2))
+
+
 # ----------------------------------------------------------- word snapping
 
 
@@ -146,7 +179,10 @@ def _snap_end(words, starts, t: float, back: float, fwd: float, earliest: float,
     return min(words[best].end + 0.35, nxt_start, duration)
 
 
-def refine(ctx: AnalysisContext, start: float, end: float, peak: float) -> tuple[float, float]:
+def refine(ctx: AnalysisContext, start: float, end: float, peak: float,
+           must: tuple[float, float] | None = None) -> tuple[float, float]:
+    """Snap to word boundaries. `must` = (latest start, earliest end) that keep a whole game
+    event (e.g. every kill of a multikill) inside the clip."""
     words = ctx.words
     if not words:
         return start, end
@@ -159,10 +195,15 @@ def refine(ctx: AnalysisContext, start: float, end: float, peak: float) -> tuple
     else:
         sb, sf, eb, ef = 3.0, 2.0, 3.0, 4.0
     latest_start = peak - mode.pre_roll[0] if mode.boundary == "reaction" else peak
+    earliest_end = peak + 1
+    if must:
+        latest_start = min(latest_start, must[0])
+        earliest_end = max(earliest_end, must[1])
     s = _snap_start(words, starts, start, sb, sf, latest_start)
-    e = _snap_end(words, starts, end, eb, ef, peak + 1, ctx.duration)
+    e = _snap_end(words, starts, end, eb, ef, earliest_end, ctx.duration)
     if e - s > mode.clip_max:  # too long: look for an earlier word end only
-        e = _snap_end(words, starts, s + mode.clip_max - 0.4, eb, 0.0, peak + 1, ctx.duration)
+        e = _snap_end(words, starts, s + mode.clip_max - 0.4, eb, 0.0, min(earliest_end, s + mode.clip_max),
+                      ctx.duration)
         if e - s > mode.clip_max:  # last word that still fits, else a hard cut
             limit = s + mode.clip_max
             window = words[int(np.searchsorted(starts, s)):int(np.searchsorted(starts, limit))]
@@ -216,6 +257,7 @@ def pick_candidates(ctx: AnalysisContext, hype: HypeCurve, top: int | None = Non
     peaks, _ = find_peaks(np.concatenate([[0.0], curve, [0.0]]), height=threshold,
                           distance=max(1, int(mode.min_gap / 3)), prominence=0.01)
     peaks = sorted((int(p) - 1 for p in peaks), key=lambda p: -curve[p])
+    spans = [tuple(x) for r in hype.results.values() for x in (r.meta or {}).get("spans", [])]
 
     chosen: list[Candidate] = []
     for p in peaks:
@@ -224,10 +266,25 @@ def pick_candidates(ctx: AnalysisContext, hype: HypeCurve, top: int | None = Non
         if any(abs(p - c.peak) < mode.min_gap for c in chosen):
             continue
         s, e = _initial_window(curve, p, mode, ctx.duration)
-        s, e = refine(ctx, s, e, p)
+        s, e, must = fit_spans(s, e, p, spans, mode, ctx.duration)
+        s, e = refine(ctx, s, e, p, must)
         if e - s < min(mode.clip_min * 0.5, ctx.duration * 0.5):
             continue
         if any(s < c.end + 1.0 and e > c.start - 1.0 for c in chosen):  # NMS: no overlap
+            continue
+        chosen.append(Candidate(peak=float(p), start=s, end=e, raw=float(curve[p]),
+                                raw_unsmoothed=float(hype.combined[p])))
+
+    # Big game moments (triple kill and up, steals, extractions) are always offered, even when
+    # nobody reacted loudly enough to put them in the top N.
+    for a, b, strength in sorted(spans, key=lambda x: -x[2]):
+        if strength < MUST_HAVE_STRENGTH or any(c.start <= a and b <= c.end for c in chosen):
+            continue
+        p = int(min(len(curve) - 1, max(0, round(b))))
+        s, e = _initial_window(curve, p, mode, ctx.duration)
+        s, e, must = fit_spans(s, e, p, spans, mode, ctx.duration)
+        s, e = refine(ctx, s, e, p, must)
+        if any(s < c.end + 1.0 and e > c.start - 1.0 for c in chosen):
             continue
         chosen.append(Candidate(peak=float(p), start=s, end=e, raw=float(curve[p]),
                                 raw_unsmoothed=float(hype.combined[p])))

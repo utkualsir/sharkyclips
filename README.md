@@ -42,6 +42,12 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
 - **Finds the moments worth posting.** Volume spikes, laughter and shouting, reaction words
   ("NO WAY", "allah allah", "KEKW"), fast talk, chat explosions from the chat replay and, in study
   mode, self-contained explanations. All of it goes into one **Hype Map** with ranked clip candidates.
+- **Knows the game.** For **Delta Force** and **League of Legends** it reads the game's HUD: kills,
+  multikills (pentakill >> double kill), first blood, objectives, own deaths, victory/defeat and
+  extraction screens, in English and Turkish clients. Clips always contain the whole multikill, and
+  the AI writes titles from these events ("Quadra kill with Teemo"). The game is recognized from the title or what's said, or
+  picked per project; a **Game detection** page shows what was read, so the HUD boxes can be fixed
+  after a game update. Optional: your own short sound clips (announcer lines) are found in the audio.
 - **Cuts that make sense.** Clip edges snap to word boundaries (never mid-word), and the local AI
   can move them a few seconds to include the setup or the payoff.
 - **A viral score and titles that sound like you.** A local language model rates every clip
@@ -282,6 +288,7 @@ Bug reports, translations and pull requests are welcome.
 [mlx-whisper](https://github.com/ml-explore/mlx-examples), [Ollama](https://ollama.com),
 [Qwen](https://github.com/QwenLM), [yt-dlp](https://github.com/yt-dlp/yt-dlp),
 [FFmpeg](https://ffmpeg.org), [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx),
+[RapidOCR](https://github.com/RapidAI/RapidOCR) / [PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR) models,
 [FastAPI](https://fastapi.tiangolo.com) and [React](https://react.dev). Thank you!
 
 ---
@@ -296,6 +303,9 @@ başlıkları yazar ve paylaşmaya hazır 9:16 klipler oluşturur. Hepsi kendi b
 
 - Ses patlamalarını, kahkaha ve bağırmaları, "allah allah", "NO WAY" gibi tepkileri, sohbetin
   coştuğu anları bulur ve hepsini **Hype Haritası**'nda sıralı klip adayları olarak gösterir.
+- **Delta Force** ve **League of Legends** için oyunun arayüzünü okur: kill, çoklu kill (pentakill,
+  quadra...), ilk kan, hedefler, ölümler, zafer/bozgun ve tahliye ekranları (Türkçe ve İngilizce
+  istemci). Çoklu kill'in tamamı klibe girer; yapay zekâ başlıkları bu olaylarla yazar.
 - Kesimler kelimenin ortasına denk gelmez. Yapay zekâ gerekirse girişi veya sonucu da klibe katar.
 - Her klibe **viral puan** verir; **başlık**, hashtag, kanca metni ve kapak fikri yazar. Beğendiğiniz
   başlıklardan sizin tarzınızı öğrenir.
