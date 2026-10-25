@@ -24,7 +24,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
+from .. import governor
 from ..errors import ClipForgeError
+from ..governor import JobCancelled  # noqa: F401 - re-exported, raised from governor checkpoints
 from ..ui import console, set_progress_sink
 
 # Progress bar descriptions in the pipeline -> stable stage keys the UI translates.
@@ -43,11 +45,19 @@ STAGES = {
 }
 
 ACTIVE = ("queued", "running")
+
+
+def _release_gpu() -> None:
+    """After a GPU job: no model may stay in VRAM (Ollama keep_alive 0)."""
+    try:
+        from .. import llm, memory
+
+        memory.release_current()
+        if governor.get() is not None:  # the web server; tests run without one
+            llm.unload_all()
+    except Exception:  # noqa: BLE001
+        pass
 HISTORY_KEEP = 40  # finished persistent jobs kept in _queue.json (the Queue screen's history)
-
-
-class JobCancelled(Exception):
-    pass
 
 
 @dataclass
@@ -72,6 +82,14 @@ class Job:
     finished: float | None = None
     cancel_requested: bool = False
     attempt: int = 1
+    paused: bool = False  # waiting at a governor checkpoint right now
+    pause_base: float = 0.0  # governor.paused_total() when the job started
+
+    def paused_seconds(self) -> float:
+        g = governor.get()
+        if g is None or self.status != "running":
+            return 0.0
+        return max(0.0, g.paused_total() - self.pause_base)
 
     def to_dict(self) -> dict:
         return {"id": self.id, "kind": self.kind, "lane": self.lane, "project_id": self.project_id,
@@ -79,7 +97,16 @@ class Job:
                 "progress": None if self.progress is None else round(self.progress, 4),
                 "detail": self.detail, "error": self.error, "result": self.result,
                 "created": self.created, "started": self.started, "finished": self.finished,
-                "persist": self.persist, "attempt": self.attempt}
+                "persist": self.persist, "attempt": self.attempt,
+                **self._pause_view()}
+
+    def _pause_view(self) -> dict:
+        g = governor.get()
+        if g is None or self.status != "running":
+            return {"paused": None, "paused_seconds": 0}
+        # Running jobs stop at their next safe point while the governor pauses.
+        reason = (g.decision.reason or "paused") if (g.paused or self.paused) else None
+        return {"paused": reason, "paused_seconds": round(self.paused_seconds(), 1)}
 
 
 class JobManager:
@@ -135,6 +162,9 @@ class JobManager:
             job = self._jobs.get(job_id)
             if job and job.status in ACTIVE:
                 job.cancel_requested = True
+                g = governor.get()
+                if g is not None and job.status == "running":
+                    g.job_cancelled()
                 if job.status == "queued":
                     job.status = "cancelled"
                     job.finished = time.time()
@@ -302,8 +332,7 @@ class JobManager:
         last = {"t": 0.0, "stage": None}
 
         def sink(description: str, completed: float, total: float | None) -> None:
-            if job.cancel_requested:
-                raise JobCancelled()
+            governor.checkpoint()  # raises JobCancelled; waits here while the governor pauses
             stage = STAGES.get(description, description)
             now = time.monotonic()
             # Throttle: progress bars can fire hundreds of times a second.
@@ -331,9 +360,13 @@ class JobManager:
         while True:
             job = self._next(lane)
             set_progress_sink(self._sink_for(job))
+            governor.set_current_job(job)
+            g = governor.get()
+            job.pause_base = g.paused_total() if g else 0.0
             try:
                 if job.fn is None:
                     raise ClipForgeError("This job can't run any more.")
+                governor.checkpoint()  # don't even start while the governor pauses
                 job.result = job.fn(job)
                 job.status = "done"
                 job.progress = 1.0
@@ -351,6 +384,10 @@ class JobManager:
                     console.print(f"[red]Job {job.kind} failed:[/]\n{traceback.format_exc()}")
             finally:
                 set_progress_sink(None)
+                governor.set_current_job(None)
+                job.paused = False
+                if lane == "gpu":  # after every GPU job: no model stays in VRAM (keep_alive 0)
+                    _release_gpu()
                 with self._lock:
                     job.finished = time.time()
                     self._remove_from_lane(job)

@@ -11,6 +11,7 @@ import json
 import os
 import re
 import subprocess
+import threading
 import time
 from pathlib import Path
 from typing import Any
@@ -19,7 +20,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .. import __version__, config, languages
+from .. import __version__, config, governor, languages, startup
 from ..clips import LAYOUTS, SUBTITLE_STYLES, ClipOptions, Facecam, clip_words, first_sentence, render_clip
 from ..errors import ClipForgeError, require_tool
 from ..highlights.modes import MODES as MODE_PRESETS
@@ -376,7 +377,7 @@ def estimate(job: dict) -> float | None:
 def remaining(job: dict, now: float) -> float | None:
     est = estimate(job)
     if job["status"] == "running" and job.get("started"):
-        elapsed = now - job["started"]
+        elapsed = max(0.0, now - job["started"] - float(job.get("paused_seconds") or 0))  # work time only
         prog = job.get("progress")
         if prog and prog > 0.03:
             measured = elapsed / prog - elapsed
@@ -472,7 +473,53 @@ def _settings_view() -> dict:
             "llm_model": str(cfg.get("llm_model") or "auto"),
             "auto_analyze": cfg.get("auto_analyze") is not False,
             "fast_analysis": bool(cfg.get("fast_analysis")),
-            "glossary": [str(t) for t in glossary]}
+            "glossary": [str(t) for t in glossary],
+            **_perf_view(cfg)}
+
+
+PERF_BOOLS = ("perf_pause_fullscreen", "perf_pause_video", "perf_pause_busy", "perf_idle_only")
+
+
+def _perf_view(cfg: dict) -> dict:
+    mode = str(cfg.get("performance_mode") or "silent")
+    out = {"performance_mode": mode if mode in governor.MODES else "silent",
+           "ollama_autostart": startup.ollama_autostart_enabled(),
+           "perf_idle_minutes": float(cfg.get("perf_idle_minutes") or 3),
+           "perf_gpu_temp_limit": float(cfg.get("perf_gpu_temp_limit") or 85),
+           "perf_vram_headroom_mb": int(cfg.get("perf_vram_headroom_mb") or 0),
+           "perf_games": list(cfg.get("perf_games") or governor.DEFAULT_GAMES),
+           "perf_games_default": governor.DEFAULT_GAMES}
+    for k in PERF_BOOLS:
+        out[k] = bool(cfg.get(k, config.DEFAULTS[k]))
+    return out
+
+
+def _perf_changes(body: dict) -> dict:
+    changes: dict[str, Any] = {}
+    if "performance_mode" in body:
+        mode = str(body["performance_mode"])
+        if mode not in governor.MODES:
+            raise ClipForgeError(f"Unknown performance mode '{mode}'.")
+        changes["performance_mode"] = mode
+    if "perf_idle_minutes" in body:
+        changes["perf_idle_minutes"] = max(0.5, min(120.0, float(body["perf_idle_minutes"])))
+    if "perf_gpu_temp_limit" in body:
+        changes["perf_gpu_temp_limit"] = max(60.0, min(100.0, float(body["perf_gpu_temp_limit"])))
+    if "perf_vram_headroom_mb" in body:
+        changes["perf_vram_headroom_mb"] = max(0, min(32768, int(body["perf_vram_headroom_mb"])))
+    for k in PERF_BOOLS:
+        if k in body:
+            changes[k] = bool(body[k])
+    if "ollama_autostart" in body:
+        changes["ollama_autostart"] = bool(body["ollama_autostart"])
+    if "perf_games" in body:
+        names: list[str] = []
+        for n in body["perf_games"] if isinstance(body["perf_games"], list) else []:
+            n = str(n).strip().lower().removesuffix(".exe")[:80]
+            if n and n not in names:
+                names.append(n)
+        changes["perf_games"] = None if names == governor.DEFAULT_GAMES else names[:300]
+    return changes
 
 
 @app.get("/api/settings")
@@ -528,11 +575,90 @@ def api_settings_put(body: dict) -> dict:
                 terms.append(t)
         old = config.get("glossary")
         changes["glossary"] = {**old, "all": terms[:500]} if isinstance(old, dict) else terms[:500]
+    changes.update(_perf_changes(body))
     if changes:
         config.update(**changes)
         if "video_encoder" in changes:
             pick_encoder.cache_clear()
+        g = governor.get()
+        if g is not None and any(k.startswith("perf") for k in changes):
+            g.tick()  # apply a new mode right away
+        if "ollama_autostart" in changes:
+            startup.apply_ollama_autostart(changes["ollama_autostart"])
     return _settings_view()
+
+
+# ------------------------------------------------------------------ governor
+
+
+def _governor_view(history: bool = False) -> dict:
+    g = governor.get()
+    if g is None:
+        return {"mode": _perf_view(config.load())["performance_mode"], "state": "off", "sample": None}
+    if history:  # the UI just opened
+        g.watched()
+    return g.view(history=history)
+
+
+@app.get("/api/governor")
+def api_governor(history: bool = False) -> dict:
+    """Governor state + the latest resource sample (history=true: the last 5 minutes)."""
+    return _governor_view(history)
+
+
+@app.post("/api/governor/watch")
+def api_governor_watch() -> dict:
+    """Heartbeat from a visible UI tab: live sensor samples every 2 s while someone looks.
+    Without it (and without a job) the governor samples only CPU / RAM every 10 s."""
+    g = governor.get()
+    if g is not None:
+        g.watched()
+    return {"ok": True}
+
+
+@app.put("/api/governor")
+def api_governor_put(body: dict) -> dict:
+    """Quick mode switch from the top bar: {"mode": "silent" | "balanced" | "turbo"}."""
+    config.update(**_perf_changes({"performance_mode": body.get("mode")}))
+    g = governor.get()
+    if g is not None:
+        g.tick()
+    return _governor_view()
+
+
+@app.post("/api/quit")
+def api_quit(request: Request) -> dict:
+    """Tray icon "Quit ClipForge" (this computer only): unload the AI model, then exit.
+    Child processes (ffmpeg, Ollama started by us) die with the server's job object."""
+    host = request.client.host if request.client else ""
+    # The custom header can't be sent by other web pages (CORS preflight), only by the tray.
+    if host not in ("127.0.0.1", "::1", "localhost", "testclient") or request.headers.get("x-clipforge") != "quit":
+        raise HTTPException(403, "Only this computer can quit ClipForge.")
+    if jobs.busy():
+        try:
+            from .. import llm
+
+            llm.unload_all()
+        except Exception:  # noqa: BLE001
+            pass
+
+    def bye() -> None:
+        from .. import procs
+
+        procs.kill_children()
+        os._exit(0)
+
+    threading.Timer(0.3, bye).start()
+    return {"ok": True}
+
+
+@app.post("/api/governor/resume")
+def api_governor_resume() -> dict:
+    """'Resume anyway': ignore the current pause reason until it goes away."""
+    g = governor.get()
+    if g is not None:
+        g.resume_anyway()
+    return _governor_view()
 
 
 @app.get("/api/llm")
@@ -756,6 +882,7 @@ async def api_events(request: Request):
 
     async def stream():
         last = -1
+        last_gov = -1
         idle = 0.0
         yield "retry: 2000\n\n"
         while True:
@@ -766,6 +893,11 @@ async def api_events(request: Request):
                 idle = 0.0
                 yield f"event: jobs\ndata: {json.dumps(jobs.list(), ensure_ascii=False)}\n\n"
                 yield f"event: shutdown\ndata: {json.dumps(power.state())}\n\n"
+            g = governor.get()
+            if g is not None and g.rev != last_gov:  # one sample every ~2 s (the governor's own)
+                last_gov = g.rev
+                idle = 0.0
+                yield f"event: governor\ndata: {json.dumps(g.view(), ensure_ascii=False)}\n\n"
             elif idle > 15:
                 idle = 0.0
                 yield ": keep-alive\n\n"
@@ -1435,6 +1567,17 @@ _cleanup_uploads()
 def _restore_queue() -> None:
     """Unfinished renders / best-of videos from the last run go back into the queue."""
     speeds.load(config.workspace_dir() / "_speeds.json")
+    if os.environ.get("CLIPFORGE_NO_GOVERNOR") != "1":
+        startup.apply_ollama_autostart()  # Ollama's updater puts its Startup shortcut back
+        g = governor.install(busy=jobs.busy)
+        last_state = {"paused": None}
+
+        def _jobs_follow() -> None:  # running jobs show "paused" in the job list
+            if g.paused != last_state["paused"]:
+                last_state["paused"] = g.paused
+                jobs.bump()
+
+        g.on_change.append(_jobs_follow)
     n = jobs.restore(rebuild_job)
     if n:
         from ..ui import console

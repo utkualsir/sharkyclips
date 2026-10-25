@@ -163,7 +163,9 @@ def scan(project: Project, game: str, on_progress: Callable[[float, float], None
     scanners: list[Scanner] = []
     lock = threading.Lock()
     workers = int(os.environ.get("CLIPFORGE_GAME_WORKERS") or 0) or (3 if frames.cuda_decode_available() else 2)
-    cores = os.cpu_count() or 4
+    from .. import governor
+
+    cores = governor.cpu_threads(os.cpu_count() or 4)  # half the cores unless full speed
     processes = max(1, min(4, cores // 4))
 
     def load_reader():

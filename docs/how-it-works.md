@@ -345,6 +345,41 @@ chunk is in memory at a time, and each finished chunk is saved immediately. If y
 After transcription the model is fully unloaded from GPU memory, so later phases can load a local
 LLM on the same GPU.
 
+### Staying out of the way (resource governor)
+
+`clipforge/governor.py` decides every ~2 s how hard ClipForge may work; `sysmon.py` provides the
+measurements in-process (psutil, NVML via `nvml.dll` / `libnvidia-ml`, Windows performance
+counters for per-process GPU load / VRAM / video decode+encode, the foreground window,
+`GetLastInputInfo`, the lock screen). No helper program is started per sample. With no job and
+no visible UI tab (the UI sends a heartbeat only while it's visible) it samples only CPU/RAM every
+10 s and doesn't touch the GPU: idle cost measured at ~0.002 % CPU.
+
+| Mode | Priority | CPU | Pauses for |
+|---|---|---|---|
+| Silent (default) | Windows IDLE, low I/O; macOS background QoS | half the threads + throttling | listed games (in front, or rendering behind other windows), OBS & co. while encoding, fullscreen apps, playing videos, other apps keeping CPU/GPU busy |
+| Balanced | BELOW_NORMAL | half + throttling | nothing |
+| Turbo | normal | all | nothing |
+
+Away (no input for `perf_idle_minutes`, or the screen is locked) = full speed in Silent and
+Balanced, back to the limits on the next tick after you return. Every mode pauses when the GPU
+reaches `perf_gpu_temp_limit` until it's 10 °C cooler. VRAM: `perf_vram_headroom_mb` (auto = 25 %,
+2 GB on an 8 GB card) always stays free: Whisper steps down to a smaller setup or the CPU and
+Ollama gets fewer GPU layers (`num_gpu`) instead. Silent uses `llm_fallback_model` (qwen3.5:4b)
+unless you're away.
+
+How limits reach every process: the server sits in a Windows Job Object (`procs.py`), so priority
+and CPU affinity apply to all its children (ffmpeg, OCR workers, an Ollama server it started) and
+everything dies with it (kill-on-close; macOS/Linux: process group). An Ollama server started by
+the user gets the same priority only while a job runs. Pausing happens at safe points: progress
+updates, between Whisper chunks (the model is unloaded first), before every LLM request (unloaded
+too, right when the pause starts), in frame-decoding and laughter loops; long ffmpeg processes are
+suspended and resumed. Nothing is redone. After every GPU job Ollama gets `keep_alive 0`.
+
+Windows: the shortcut runs `pythonw.exe cli.py launch --tray` (no console; log in
+`~/.clipforge/logs/clipforge.log`), every child process is started with `CREATE_NO_WINDOW`, and
+the tray icon opens the UI, switches the mode or quits. Ollama's Startup-folder shortcut is moved
+to `~/.clipforge/disabled-startup/` unless `ollama_autostart` is on.
+
 ## Settings
 
 Stored in `~/.clipforge/config.json` (Windows: `C:\Users\<you>\.clipforge\config.json`).

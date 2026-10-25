@@ -115,7 +115,11 @@ class LaughterSignal(Signal):
         d = model_dir()
         # Several single-threaded taggers working on different windows scale much better
         # than one multi-threaded tagger (measured), and leave cores free on small CPUs.
-        workers = max(1, min(6, (psutil.cpu_count(logical=False) or 2) // 2))
+        from ... import governor
+
+        physical = psutil.cpu_count(logical=False) or 2
+        budget = governor.cpu_threads(psutil.cpu_count() or 2) * physical // (psutil.cpu_count() or 2)
+        workers = max(1, min(6, budget // 2))
         taggers = [sherpa_onnx.AudioTagging(sherpa_onnx.AudioTaggingConfig(
             model=sherpa_onnx.AudioTaggingModelConfig(
                 ced=str(d / "model.int8.onnx"), num_threads=1, provider="cpu"),
@@ -129,6 +133,7 @@ class LaughterSignal(Signal):
         def tag(worker: int, x: np.ndarray, offsets: list[int]) -> list[tuple[int, dict]]:
             tagger, out = taggers[worker], []
             for k in offsets[worker::workers]:
+                governor.gate()
                 seg = x[k:k + win]
                 if len(seg) < sr // 2 or float(np.abs(seg).max(initial=0.0)) < 1e-3:
                     continue

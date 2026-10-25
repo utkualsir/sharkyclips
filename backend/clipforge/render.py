@@ -114,10 +114,18 @@ class RenderResult:
 def run_ffmpeg(cmd: list[str], duration: float,
                on_progress: Callable[[float], None] | None = None,
                cwd: Path | None = None) -> tuple[int, str]:
-    """Run ffmpeg with -progress on stdout; report output seconds done."""
+    """Run ffmpeg with -progress on stdout; report output seconds done.
+
+    The process is registered with the governor: it's suspended while ClipForge pauses
+    (game, fullscreen, ...) and the CPU encoder uses only the thread budget."""
+    from . import governor, procs
+
+    if "libx264" in cmd and "-threads" not in cmd:
+        cmd = [*cmd[:-1], "-threads", str(governor.cpu_threads()), cmd[-1]]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                             encoding="utf-8", errors="replace", creationflags=_flags(),
                             cwd=str(cwd) if cwd else None)
+    procs.track(proc)
     assert proc.stdout is not None
     try:
         for line in proc.stdout:
@@ -131,6 +139,8 @@ def run_ffmpeg(cmd: list[str], duration: float,
         proc.kill()
         proc.wait()
         raise
+    finally:
+        procs.untrack(proc)
     err = proc.stderr.read() if proc.stderr else ""
     return proc.wait(), err
 

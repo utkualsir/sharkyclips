@@ -136,8 +136,8 @@ with their timing kept.
 3. The installer lists what it will set up (Python, FFmpeg, Git, Deno, Ollama, the Python packages
    and the AI models, ~12 GB at most). Things you already have are reused. Press **Enter** to start.
 4. When it's done, double-click **ClipForge** on your desktop (or in the Start menu). It opens in
-   your browser. ClipForge keeps running while its small minimized window is open; close that
-   window to stop it.
+   your browser. No console window stays open: the ClipForge icon next to the clock opens it again,
+   switches the performance mode or quits it.
 
 Already cloned the repository? Double-click `install.bat` in the folder instead. Messages are in
 Turkish or English, following your Windows language.
@@ -200,6 +200,15 @@ Optional: **Best-of video** turns your accepted clips into one YouTube video. **
 on published clips lets ClipForge learn your channel. Settings has the UI language, the output
 language for titles and subtitles, the AI model, your own trigger words and a glossary.
 
+**ClipForge stays out of your way.** In the default **Silent** mode it works at idle priority on
+half of your CPU cores, keeps ~2 GB of GPU memory free and **pauses** while a game, OBS, a
+fullscreen app or a video is on (the AI model is unloaded so the game gets the VRAM back). When you
+haven't touched the PC for 3 minutes, or the screen is locked, it runs at full speed and steps back
+the moment you return. **Balanced** never pauses but stays throttled; **Turbo** is full speed for
+when you're away. Switch modes in the top bar or the tray icon; the top bar also shows CPU, GPU,
+VRAM and temperature (click it for 5-minute charts, ClipForge vs. other apps). Paused work continues
+exactly where it stopped. Ollama no longer starts with Windows unless you turn it on in Settings.
+
 To use ClipForge from your phone, start it with `python cli.py serve --lan` (from the `backend`
 folder) and open the address it prints. A command line for every step and the full technical
 details are in **[docs/how-it-works.md](docs/how-it-works.md)**.
@@ -246,7 +255,8 @@ them. Nothing is installed before you confirm the list.
 | Something is missing or broken | Run the installer again (it repairs), or `python cli.py doctor` in the `backend` folder |
 | "winget was not found" (Windows) | Install or update **App Installer** from the Microsoft Store, then run the installer again |
 | Windows blocks the setup file | Right-click → Properties → tick **Unblock**, or SmartScreen → More info → Run anyway |
-| The shortcut opens nothing | Open `installer\windows\ClipForge.bat` directly to see the error; port 8000-8099 must be free |
+| The shortcut opens nothing | Look at `%USERPROFILE%\.clipforge\logs\clipforge.log`, or run `python cli.py launch` in the `backend` folder to see the error; port 8000-8099 must be free |
+| A game or video stutters while ClipForge works | Use **Silent** mode (top bar); add the game's process name in Settings → Performance if it isn't detected |
 | `ffmpeg was not found` | Windows: `winget install --id Gyan.FFmpeg -e`, macOS: `brew install ffmpeg`, then restart ClipForge |
 | YouTube download fails | Update yt-dlp: `python -m pip install -U "yt-dlp[default]"` and make sure Deno or Node.js is installed |
 | GPU test fails | Update the NVIDIA driver, then run `python cli.py doctor` again (it falls back to the CPU meanwhile) |
@@ -329,8 +339,9 @@ kez) ve güncellemeleri indirmek için kullanılır.
 3. Kurulum aracı neleri kuracağını listeler (Python, FFmpeg, Git, Deno, Ollama, Python paketleri,
    yapay zekâ modelleri; en fazla ~12 GB). Bilgisayarınızda olanları yeniden kurmaz. Başlamak için
    **Enter**'a basın.
-4. Bitince masaüstündeki **ClipForge** simgesine çift tıklayın; tarayıcıda açılır. Küçültülmüş
-   pencere açık kaldığı sürece çalışır, kapatmak için o pencereyi kapatın.
+4. Bitince masaüstündeki **ClipForge** simgesine çift tıklayın; tarayıcıda açılır. Açık kalan bir
+   pencere olmaz: saatin yanındaki ClipForge simgesinden tekrar açabilir, performans modunu
+   değiştirebilir veya kapatabilirsiniz.
 
 Kurulum mesajları Windows diliniz Türkçe ise Türkçe gösterilir.
 
@@ -345,6 +356,13 @@ Kurulum mesajları Windows diliniz Türkçe ise Türkçe gösterilir.
    yapar.
 3. Adaylara tıklayıp önizleyin, beğendiklerinizi **Kabul edin**, ardından **Klipleri oluştur**'a basın.
 4. **Klipler** sekmesinden MP4'leri indirin; başlık ve hashtag'leri kopyalayıp paylaşın.
+
+**Bilgisayarınızı yavaşlatmaz.** Varsayılan **Sessiz** modda düşük öncelikle, işlemci çekirdeklerinin
+yarısıyla çalışır, ekran kartında ~2 GB boş bırakır; oyun, OBS, tam ekran uygulama veya video
+açıkken **duraklar** (yapay zekâ modeli bellekten atılır). Bilgisayara 3 dakika dokunmadığınızda ya da
+ekran kilitliyken tam hızla çalışır, döndüğünüz anda geri çekilir. **Dengeli** hiç durmaz ama
+yavaş çalışır; **Turbo** başında değilken tam hızdır. Modu üst çubuktan veya saat yanındaki simgeden
+değiştirin. Ollama, Ayarlar'dan açmadığınız sürece Windows ile başlamaz.
 
 ### Güncelleme ve kaldırma
 

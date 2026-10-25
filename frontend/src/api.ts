@@ -44,6 +44,9 @@ export interface Job {
   finished: number | null;
   persist?: boolean;
   attempt?: number;
+  /** running job waiting for the resource governor: why (game, fullscreen, ...) */
+  paused?: string | null;
+  paused_seconds?: number;
   /** /api/queue only: seconds left for this job / until it is done (with the jobs before it) */
   eta_seconds?: number | null;
   eta_finish_seconds?: number | null;
@@ -401,6 +404,58 @@ export interface Settings {
   auto_analyze: boolean;
   fast_analysis: boolean;
   glossary: string[];
+  performance_mode: PerfMode;
+  perf_idle_minutes: number;
+  perf_pause_fullscreen: boolean;
+  perf_pause_video: boolean;
+  perf_pause_busy: boolean;
+  perf_idle_only: boolean;
+  perf_gpu_temp_limit: number;
+  perf_vram_headroom_mb: number;
+  perf_games: string[];
+  perf_games_default: string[];
+  /** Windows: Ollama starts with Windows (null: not Windows / Ollama not installed) */
+  ollama_autostart: boolean | null;
+}
+
+export type PerfMode = "silent" | "balanced" | "turbo";
+export type GovState = "running" | "throttled" | "paused" | "waiting_idle" | "cooling" | "idle" | "off";
+
+/** One resource sample (every ~2 s). *_ours = ClipForge's own processes. */
+export interface ResourceSample {
+  t: number;
+  cpu: number;
+  cpu_ours: number;
+  ram_used_mb: number;
+  ram_total_mb: number;
+  ram_ours_mb: number;
+  gpu: number | null;
+  gpu_ours: number | null;
+  vram_used_mb: number | null;
+  vram_total_mb: number | null;
+  vram_ours_mb: number | null;
+  gpu_temp: number | null;
+  cpu_temp: number | null;
+  state?: GovState;
+}
+
+export interface GovernorView {
+  mode: PerfMode;
+  state: GovState;
+  reason: string | null;
+  detail: string | null;
+  away?: boolean;
+  throttle?: number;
+  cores?: number | null;
+  cpu_count?: number;
+  override?: boolean;
+  paused?: boolean;
+  busy?: boolean;
+  sample: ResourceSample | null;
+  limits?: { gpu_temp: number; vram_headroom_mb: number | null; vram_budget_mb: number | null };
+  sensors?: { gpu: boolean; per_process_gpu: boolean; gpu_name: string | null };
+  job_object?: boolean;
+  history?: ResourceSample[];
 }
 
 export class ApiError extends Error {
@@ -440,6 +495,10 @@ export const api = {
   meta: () => req<Meta>("GET", "/api/meta"),
   settings: () => req<Settings>("GET", "/api/settings"),
   saveSettings: (s: Partial<Settings>) => req<Settings>("PUT", "/api/settings", s),
+  governor: (history = false) => req<GovernorView>("GET", `/api/governor?history=${history}`),
+  setPerfMode: (mode: PerfMode) => req<GovernorView>("PUT", "/api/governor", { mode }),
+  resumeAnyway: () => req<GovernorView>("POST", "/api/governor/resume"),
+  watchGovernor: () => req<{ ok: boolean }>("POST", "/api/governor/watch"),
   projects: () => req<ProjectSummary[]>("GET", "/api/projects"),
   project: (id: string) => req<ProjectDetail>("GET", P(id)),
   hype: (id: string) => req<HypeCurve>("GET", `${P(id)}/hype`),

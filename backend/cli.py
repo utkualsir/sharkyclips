@@ -12,7 +12,10 @@
     python cli.py list
     python cli.py languages
     python cli.py serve [--lan] [--port 8000]
-    python cli.py launch                 (desktop shortcut: reuse a running server or start one)
+    python cli.py launch [--tray]        (desktop shortcut: reuse a running server or start one)
+
+Started with pythonw.exe (the Windows shortcut), there is no console: output goes to
+~/.clipforge/logs/clipforge.log and a tray icon opens or quits ClipForge.
 """
 
 from __future__ import annotations
@@ -28,6 +31,26 @@ if sys.version_info < (3, 11):
              "Windows: winget install --id Python.Python.3.12 -e\n"
              "macOS:   brew install python@3.12")
 
+
+
+def _log_without_console() -> None:
+    """pythonw has no stdout/stderr: write them to a log file instead of losing them."""
+    if sys.stdout is not None and sys.stderr is not None:
+        return
+    home = Path(os.environ.get("CLIPFORGE_HOME") or Path.home() / ".clipforge")
+    log = home / "logs" / "clipforge.log"
+    try:
+        log.parent.mkdir(parents=True, exist_ok=True)
+        if os.environ.get("CLIPFORGE_SUPERVISED") != "1" and log.is_file() and log.stat().st_size > 5_000_000:
+            log.replace(log.with_suffix(".old.log"))
+        f = open(log, "a", encoding="utf-8", buffering=1)  # noqa: SIM115 - lives as long as the process
+    except OSError:
+        f = open(os.devnull, "w", encoding="utf-8")  # noqa: SIM115
+    sys.stdout = sys.stdout or f
+    sys.stderr = sys.stderr or f
+
+
+_log_without_console()
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("HF_HUB_VERBOSITY", "error")  # hide "unauthenticated requests" notice
@@ -394,6 +417,12 @@ def _open_browser_when_ready(url: str, port: int, timeout: float = 90) -> None:
 
 def _run_server(args) -> int:
     """The real web server (a child process of `serve`, which restarts it after updates)."""
+    from clipforge import governor, procs
+
+    governor.limit_thread_pools()  # before numpy & co. create their thread pools
+    procs.contain_server()  # Windows Job Object: priority/affinity for all children, no orphans
+    procs.hide_child_windows()  # no console window ever flashes up (ffmpeg, ollama, git, ...)
+
     import uvicorn
 
     from clipforge.web.app import app
@@ -401,6 +430,15 @@ def _run_server(args) -> int:
     app.state.lan_url = os.environ.get("CLIPFORGE_LAN_URL") or None
     uvicorn.run(app, host="0.0.0.0" if args.lan else "127.0.0.1", port=args.port, log_level="warning")
     return 0
+
+
+def _signal_group(pgid: int, name: str) -> None:
+    import signal
+
+    try:
+        os.killpg(pgid, getattr(signal, name))
+    except (OSError, AttributeError):
+        pass
 
 
 def cmd_serve(args) -> int:
@@ -437,7 +475,13 @@ def cmd_serve(args) -> int:
                           "Python through the firewall: allow it for private networks.[/]")
         else:
             console.print("[yellow]Couldn't find this computer's network address.[/]")
-    console.print(f"[dim]{_launch_text('stop')}[/]")
+    use_tray = bool(getattr(args, "tray", False))
+    if use_tray:
+        from clipforge import tray
+
+        use_tray = tray.available()
+    if not use_tray:
+        console.print(f"[dim]{_launch_text('stop')}[/]")
     if not args.no_browser:
         _open_browser_when_ready(local_url, args.port)
 
@@ -446,24 +490,95 @@ def cmd_serve(args) -> int:
     cmd = [sys.executable, str(Path(__file__).resolve()), "serve", "--port", str(args.port), "--no-browser"]
     if args.lan:
         cmd.append("--lan")
-    while True:
-        proc = subprocess.Popen(cmd, env=env)
-        try:
-            rc = proc.wait()
-        except KeyboardInterrupt:  # Ctrl+C reaches the child too; give it time to stop cleanly
+    from clipforge import procs
+
+    # Windows: the server and everything below it live in a kill-on-close job held by this
+    # process, so closing the window (or a crash) never leaves a server, ffmpeg or OCR worker
+    # behind. (This process stays outside: the browser it opens must survive ClipForge.)
+    # macOS/Linux: the server gets its own process group, which is killed when it ends.
+    guard = procs.Job(kill_on_close=True)
+    posix = os.name != "nt"
+    state: dict = {"proc": None, "quit": False}
+
+    def supervise() -> int:
+        while True:
+            no_window = procs.popen_flags()  # pythonw parent: the server child gets no console
+            if guard.ok:  # start suspended so even its first child is inside the job
+                proc = subprocess.Popen(cmd, env=env, creationflags=0x4 | no_window)  # CREATE_SUSPENDED
+                guard.assign(proc.pid)
+                procs.resume_pid(proc.pid)
+            else:
+                proc = subprocess.Popen(cmd, env=env, start_new_session=posix)
+            state["proc"] = proc
             try:
-                proc.wait(timeout=10)
-            except (subprocess.TimeoutExpired, KeyboardInterrupt):
-                proc.kill()
-            console.print("ClipForge stopped.")
-            return 0
-        if rc != RESTART_CODE:
-            return rc
-        console.print("[green]ClipForge was updated.[/] Restarting ...")
-        for _ in range(50):  # wait until the old server has released the port
-            if _port_free(args.port):
-                break
-            time.sleep(0.2)
+                rc = proc.wait()
+            except KeyboardInterrupt:  # Ctrl+C reaches the child too; give it time to stop cleanly
+                if posix:
+                    _signal_group(proc.pid, "SIGINT")
+                try:
+                    proc.wait(timeout=10)
+                except (subprocess.TimeoutExpired, KeyboardInterrupt):
+                    proc.kill()
+                if posix:
+                    _signal_group(proc.pid, "SIGKILL")
+                console.print("ClipForge stopped.")
+                return 0
+            if posix:
+                _signal_group(proc.pid, "SIGKILL")  # leftovers of a crashed server
+            if state["quit"]:
+                console.print("ClipForge stopped.")
+                return 0
+            if rc != RESTART_CODE:
+                return rc
+            console.print("[green]ClipForge was updated.[/] Restarting ...")
+            for _ in range(50):  # wait until the old server has released the port
+                if _port_free(args.port):
+                    break
+                time.sleep(0.2)
+
+    if not use_tray:
+        return supervise()
+
+    import threading
+
+    from clipforge import tray
+
+    stopped = threading.Event()
+    result = {"rc": 0}
+
+    def run_supervisor() -> None:
+        try:
+            result["rc"] = supervise()
+        finally:
+            stopped.set()
+
+    def quit_all() -> None:
+        state["quit"] = True
+        _quit_server(args.port, state["proc"])
+
+    threading.Thread(target=run_supervisor, name="clipforge-supervisor", daemon=True).start()
+    tray.run(local_url, quit_all, stopped)  # blocks until Quit (or the server is gone)
+    stopped.wait(15)
+    return result["rc"]
+
+
+def _quit_server(port: int, proc) -> None:
+    """Tray "Quit": let the server unload its models and stop; kill it if it doesn't."""
+    import subprocess
+    import urllib.request
+
+    try:
+        req = urllib.request.Request(f"http://127.0.0.1:{port}/api/quit", data=b"{}", method="POST",
+                                     headers={"Content-Type": "application/json", "X-ClipForge": "quit"})
+        urllib.request.urlopen(req, timeout=10).close()
+    except Exception:  # noqa: BLE001
+        pass
+    if proc is None:
+        return
+    try:
+        proc.wait(timeout=8)
+    except subprocess.TimeoutExpired:
+        proc.kill()  # the job object takes its children with it
 
 
 _LAUNCH_TEXT = {
@@ -482,9 +597,38 @@ def _launch_text(key: str, **kw) -> str:
     return _LAUNCH_TEXT.get(lang, _LAUNCH_TEXT["en"])[key].format(**kw)
 
 
+def _migrate_windows_shortcuts() -> None:
+    """Old installs: the ClipForge shortcuts ran ClipForge.bat (a console window that had to
+    stay open). Point them at pythonw (no window, tray icon) - once."""
+    if os.name != "nt" or config.get("launcher_version") == 2:
+        return
+    import subprocess
+
+    root = Path(__file__).resolve().parents[1]
+    pythonw = Path(sys.executable).with_name("pythonw.exe")
+    if not pythonw.is_file():
+        return
+    script = (
+        "$sh = New-Object -ComObject WScript.Shell; "
+        "foreach ($d in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) { "
+        "$p = Join-Path $d 'ClipForge.lnk'; if (-not (Test-Path $p)) { continue }; "
+        "$s = $sh.CreateShortcut($p); if ($s.TargetPath -notlike '*ClipForge.bat') { continue }; "
+        f"$s.TargetPath = '{pythonw}'; $s.Arguments = '\"{root / 'backend' / 'cli.py'}\" launch --tray'; "
+        f"$s.WorkingDirectory = '{root}'; $s.WindowStyle = 1; $s.Save() }}"
+    )
+    try:
+        subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+                       capture_output=True, timeout=30, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        config.update(launcher_version=2)
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+
 def cmd_launch(args) -> int:
     """What the desktop shortcut runs: reuse a running ClipForge, else start one on a free port."""
     import webbrowser
+
+    _migrate_windows_shortcuts()
 
     for port in range(8000, 8011):
         if _clipforge_version_at(port, timeout=0.5):
@@ -497,6 +641,7 @@ def cmd_launch(args) -> int:
         raise ClipForgeError("No free network port between 8000 and 8099.")
     console.print(f"[bold]{_launch_text('running', url=f'http://localhost:{port}')}[/]")
     args.port, args.lan, args.no_browser = port, False, False
+    args.tray = getattr(args, "tray", False) or sys.stdin is None or not sys.stdout.isatty()
     return cmd_serve(args)
 
 
@@ -571,10 +716,13 @@ def build_parser() -> argparse.ArgumentParser:
                    help="also allow other devices on your network (phone, laptop)")
     s.add_argument("--port", type=int, default=8000)
     s.add_argument("--no-browser", action="store_true", help="don't open the browser")
+    s.add_argument("--tray", action="store_true", help="show a tray icon (Open / mode / Quit)")
     s.set_defaults(func=cmd_serve)
 
-    sub.add_parser("launch", help="open ClipForge (what the desktop shortcut runs): reuses a running "
-                                  "server or starts one on a free port").set_defaults(func=cmd_launch)
+    la = sub.add_parser("launch", help="open ClipForge (what the desktop shortcut runs): reuses a running "
+                                       "server or starts one on a free port")
+    la.add_argument("--tray", action="store_true", help="show a tray icon (automatic without a console)")
+    la.set_defaults(func=cmd_launch)
 
     sub.add_parser("list", help="list projects").set_defaults(func=cmd_list)
     sub.add_parser("languages", help="show supported languages").set_defaults(func=cmd_languages)

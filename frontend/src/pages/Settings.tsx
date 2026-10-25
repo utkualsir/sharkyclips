@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api, type LlmInfo, type Mode, type Settings as SettingsT, type UpdateStatus } from "../api";
+import { api, type LlmInfo, type Mode, type PerfMode, type Settings as SettingsT, type UpdateStatus } from "../api";
 import { Icon } from "../components/Icons";
 import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
@@ -190,6 +190,145 @@ function parseWords(text: string): string[] {
   return out;
 }
 
+function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Partial<SettingsT>) => Promise<void> }) {
+  const { t, num } = useI18n();
+  const { governor } = useJobs();
+  const mode: PerfMode = governor && governor.state !== "off" ? governor.mode : settings.performance_mode;
+  const [games, setGames] = useState(settings.perf_games.join("\n"));
+  useEffect(() => setGames(settings.perf_games.join("\n")), [settings.perf_games]);
+  const gamesDirty = parseWords(games).join("\n") !== settings.perf_games.join("\n");
+  const total = governor?.sample?.vram_total_mb;
+  const pauses: { key: "perf_pause_fullscreen" | "perf_pause_video" | "perf_pause_busy" | "perf_idle_only"; label: string }[] = [
+    { key: "perf_pause_fullscreen", label: t("perf.pause_fullscreen") },
+    { key: "perf_pause_video", label: t("perf.pause_video") },
+    { key: "perf_pause_busy", label: t("perf.pause_busy") },
+    { key: "perf_idle_only", label: t("perf.idle_only") },
+  ];
+  return (
+    <section className="card setting" id="performance">
+      <div>
+        <h3>{t("perf.title")}</h3>
+        <p>{t("perf.desc")}</p>
+      </div>
+      <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
+        <div>
+          <Segmented
+            block
+            label={t("gov.mode_label")}
+            value={mode}
+            options={(["silent", "balanced", "turbo"] as PerfMode[]).map((m) => ({ value: m, label: t(`gov.mode.${m}`) }))}
+            onChange={(m) => save({ performance_mode: m })}
+          />
+          <div className="field-hint" style={{ marginTop: 8 }}>
+            {t(`gov.mode_desc.${mode}`)}
+          </div>
+        </div>
+        <div className="perf-grid">
+          <label>
+            <span className="field-label">{t("perf.idle_minutes")}</span>
+            <select
+              className="select"
+              value={String(settings.perf_idle_minutes)}
+              onChange={(e) => save({ perf_idle_minutes: Number(e.target.value) })}
+            >
+              {[1, 2, 3, 5, 10, 15, 30].concat([settings.perf_idle_minutes]).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b).map((m) => (
+                <option key={m} value={String(m)}>
+                  {t("perf.minutes", { n: num(m) })}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="field-label">{t("perf.temp_limit")}</span>
+            <select
+              className="select"
+              value={String(settings.perf_gpu_temp_limit)}
+              onChange={(e) => save({ perf_gpu_temp_limit: Number(e.target.value) })}
+            >
+              {[75, 80, 83, 85, 87, 90].concat([settings.perf_gpu_temp_limit]).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b).map((c) => (
+                <option key={c} value={String(c)}>
+                  {num(c)} °C
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span className="field-label">{t("perf.headroom")}</span>
+            <select
+              className="select"
+              value={String(settings.perf_vram_headroom_mb)}
+              onChange={(e) => save({ perf_vram_headroom_mb: Number(e.target.value) })}
+            >
+              <option value="0">
+                {t("perf.headroom_auto")}
+                {governor?.limits?.vram_headroom_mb && settings.perf_vram_headroom_mb === 0
+                  ? ` (${num(governor.limits.vram_headroom_mb / 1024, 1)} GB)`
+                  : ""}
+              </option>
+              {[1024, 1536, 2048, 3072, 4096].concat(settings.perf_vram_headroom_mb ? [settings.perf_vram_headroom_mb] : []).filter((v, i, a) => a.indexOf(v) === i && (!total || v < total * 0.6)).sort((a, b) => a - b).map((mb) => (
+                <option key={mb} value={String(mb)}>
+                  {num(mb / 1024, 1)} GB
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {settings.ollama_autostart != null && (
+          <div>
+            <div className="toggle-line">
+              <Toggle
+                checked={settings.ollama_autostart}
+                onChange={(v) => save({ ollama_autostart: v })}
+                label={t("perf.ollama_autostart")}
+              />
+              <span>{t("perf.ollama_autostart")}</span>
+            </div>
+            <div className="field-hint" style={{ marginTop: 4 }}>
+              {t("perf.ollama_autostart_desc")}
+            </div>
+          </div>
+        )}
+        <div style={{ display: "grid", gap: 10 }}>
+          <div className="field-label">{t("perf.silent_pauses")}</div>
+          {pauses.map((p) => (
+            <div className="toggle-line" key={p.key}>
+              <Toggle checked={settings[p.key]} onChange={(v) => save({ [p.key]: v })} label={p.label} />
+              <span>{p.label}</span>
+            </div>
+          ))}
+        </div>
+        <div>
+          <label className="field-label" htmlFor="perf-games" style={{ display: "block", marginBottom: 4 }}>
+            {t("perf.games")}
+          </label>
+          <div className="field-hint" style={{ marginBottom: 8 }}>
+            {t("perf.games_desc")}
+          </div>
+          <textarea
+            id="perf-games"
+            className="textarea mono"
+            spellCheck={false}
+            value={games}
+            onChange={(e) => setGames(e.target.value)}
+          />
+          <div className="save-line">
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => save({ perf_games: settings.perf_games_default })}
+              disabled={settings.perf_games.join("\n") === settings.perf_games_default.join("\n")}
+            >
+              {t("perf.games_reset")}
+            </button>
+            <button className="btn btn-primary btn-sm" disabled={!gamesDirty} onClick={() => save({ perf_games: parseWords(games) })}>
+              {t("common.save")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Settings() {
   const { t, lang, setLang } = useI18n();
   const meta = useMeta();
@@ -310,6 +449,7 @@ export default function Settings() {
             </div>
           </section>
 
+          <PerformanceCard settings={settings} save={save} />
           <section className="card setting" id="ai">
             <div>
               <h3>{t("settings.ai")}</h3>

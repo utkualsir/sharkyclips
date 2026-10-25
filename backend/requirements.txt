@@ -21,3 +21,5 @@ requests>=2.31            # Ollama API, Twitch chat
 wordfreq>=3.1
 # Phase 7 - game awareness: reads the game HUD (PaddleOCR models on onnxruntime, ~15 MB, CPU)
 rapidocr>=3.4,<4
+# Phase 7.5 - tray icon for the window-less launcher (Windows)
+pystray>=0.19; platform_system == "Windows"

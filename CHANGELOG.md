@@ -3,6 +3,36 @@
 All notable changes to ClipForge. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-10-25
+
+ClipForge must never slow down the PC.
+
+### Added
+- **Performance modes**: Silent (default), Balanced and Turbo, in Settings, the top bar and the
+  tray menu. Silent works at idle priority on half the CPU threads, throttled, and pauses while a
+  game (editable list, prefilled with League of Legends + its client, Delta Force, CS2, Valorant
+  and more), OBS/streaming software, a fullscreen app or a video is on, or other apps keep the
+  PC busy. Full speed when you're away (3 min without input, or a locked screen).
+- **Resource governor**: priority, low I/O priority and CPU limits for every child process
+  (Windows Job Object; macOS background QoS); ~2 GB of VRAM always kept free (Whisper and Ollama
+  adapt); thermal guard; pauses resume exactly where they stopped and unload the AI model first.
+- **Resource monitor** in the top bar: CPU, GPU, VRAM, RAM, GPU temperature, mode and state with
+  "Resume anyway"; click for 5-minute charts split into ClipForge vs. other apps.
+- **Tray icon** and a window-less launcher (pythonw): Open, performance mode, Quit. Log file in
+  `~/.clipforge/logs/clipforge.log`. Old shortcuts are switched over on the next start.
+- Setting "Start Ollama with Windows" (off by default).
+
+### Changed
+- Ollama is unloaded (`keep_alive 0`) after every GPU job and as soon as a pause starts; an
+  Ollama server ClipForge starts is stopped with it.
+- Idle cost: with no job and no visible UI tab, ClipForge reads only CPU/RAM every 10 s and never
+  touches the GPU.
+- Every subprocess starts without a console window on Windows.
+
+### Fixed
+- Ollama's installer/updater made it start with Windows; its Startup shortcut is now parked in
+  `~/.clipforge/disabled-startup/` unless you enable autostart.
+
 ## [1.1.0] - 2026-10-25
 
 ### Added

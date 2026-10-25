@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { api, type Job, type ShutdownState } from "./api";
+import { api, type GovernorView, type Job, type ResourceSample, type ShutdownState } from "./api";
 
 interface JobsState {
   jobs: Job[];
@@ -10,9 +10,17 @@ interface JobsState {
   shutdown: ShutdownState | null;
   /** performance.now() when `shutdown` arrived (the countdown runs locally from there) */
   shutdownAt: number;
+  /** resource governor: mode, state and the latest resource sample (every ~2 s) */
+  governor: GovernorView | null;
+  /** last 5 minutes of resource samples, oldest first */
+  history: ResourceSample[];
 }
 
-const EMPTY: JobsState = { jobs: [], connected: false, finishedTick: 0, lastFinished: null, shutdown: null, shutdownAt: 0 };
+const HISTORY = 150;
+const EMPTY: JobsState = {
+  jobs: [], connected: false, finishedTick: 0, lastFinished: null, shutdown: null, shutdownAt: 0,
+  governor: null, history: [],
+};
 const Ctx = createContext<JobsState>(EMPTY);
 
 /** Live job list over Server-Sent Events (auto-reconnects). */
@@ -52,6 +60,14 @@ export function JobsProvider({ children }: { children: ReactNode }) {
       es.addEventListener("shutdown", (e) =>
         setState((s) => ({ ...s, shutdown: JSON.parse((e as MessageEvent).data), shutdownAt: performance.now() })),
       );
+      es.addEventListener("governor", (e) => {
+        const g = JSON.parse((e as MessageEvent).data) as GovernorView;
+        setState((s) => {
+          const last = s.history[s.history.length - 1];
+          const add = g.sample && (!last || g.sample.t > last.t) ? [{ ...g.sample, state: g.state }] : [];
+          return { ...s, governor: g, history: add.length ? [...s.history, ...add].slice(-HISTORY) : s.history };
+        });
+      });
       es.onerror = () => {
         setState((s) => ({ ...s, connected: false }));
         es?.close();
@@ -61,8 +77,19 @@ export function JobsProvider({ children }: { children: ReactNode }) {
     api.jobs().then((jobs) => {
       prev.current = new Map(jobs.map((j) => [j.id, j.status]));
     }).catch(() => {});
+    api.governor(true).then((g) => {
+      const hist = (g.history ?? []).slice(-HISTORY);
+      setState((s) => ({ ...s, governor: s.governor ?? g, history: s.history.length > hist.length ? s.history : hist }));
+    }).catch(() => {});
     connect();
+    const beat = () => {
+      if (document.visibilityState === "visible") api.watchGovernor().catch(() => {});
+    };
+    const heartbeat = window.setInterval(beat, 5000);
+    document.addEventListener("visibilitychange", beat);
     return () => {
+      window.clearInterval(heartbeat);
+      document.removeEventListener("visibilitychange", beat);
       closed = true;
       es?.close();
       window.clearTimeout(retry);

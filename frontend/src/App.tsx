@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import { GovernorWidget } from "./components/Governor";
 import { BrandMark, Icon } from "./components/Icons";
 import { jobLabel } from "./components/ui";
 import { UI_LANGUAGES, useI18n } from "./i18n";
@@ -57,13 +58,14 @@ function TopBar() {
             offline
           </span>
         )}
+        <GovernorWidget />
         {running && (
           <a
             className="job-pill"
             href={href.queue}
             title={t("jobs.running", { n: active.length })}
           >
-            <span className="spinner" style={{ width: 12, height: 12 }} />
+            {running.paused ? <Icon name="pause" size={13} /> : <span className="spinner" style={{ width: 12, height: 12 }} />}
             <b>{jobLabel(running, t, num)}</b>
             {active.length > 1 && <span>+{active.length - 1}</span>}
           </a>

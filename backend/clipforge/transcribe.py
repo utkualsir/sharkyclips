@@ -13,6 +13,7 @@ Backends (picked by hardware.py):
 from __future__ import annotations
 
 import bisect
+import contextlib
 import gc
 import importlib.metadata
 import shutil
@@ -25,7 +26,7 @@ from typing import Callable
 
 import numpy as np
 
-from . import audio, config, hardware, languages, memory
+from . import audio, config, governor, hardware, languages, memory
 from .errors import ClipForgeError, pip_hint
 from .hardware import MLX_REPOS, MODEL_FALLBACK, BackendPlan, HardwareInfo
 from .models import faster_whisper_model_path, is_cached, mlx_model_path
@@ -221,6 +222,35 @@ def fallback_chain(plan: BackendPlan, hw: HardwareInfo) -> list[BackendPlan]:
     return chain
 
 
+# Rough VRAM need of each setup (weights + work memory), measured on CUDA with faster-whisper.
+WHISPER_VRAM_MB = {("large-v3-turbo", "float16"): 2600, ("large-v3-turbo", "int8_float16"): 1500,
+                   ("medium", "float16"): 2400, ("medium", "int8_float16"): 1300,
+                   ("small", "float16"): 1000, ("small", "int8_float16"): 700}
+
+
+def _vram_need(p: BackendPlan) -> float:
+    return WHISPER_VRAM_MB.get((p.model, p.compute_type), 2600) + 60 * p.batch_size
+
+
+def fit_to_budget(plan: BackendPlan, hw: HardwareInfo, budget_mb: float | None,
+                  cpu_threads: int | None = None) -> BackendPlan:
+    """The first setup in the fallback chain that leaves the governor's VRAM headroom free
+    (games / browser keep their memory). None = no budget known."""
+    if plan.device == "cpu" and cpu_threads:
+        return replace(plan, cpu_threads=min(plan.cpu_threads or cpu_threads, cpu_threads))
+    if plan.device != "cuda" or budget_mb is None or _vram_need(plan) <= budget_mb:
+        return plan
+    for cand in fallback_chain(plan, hw)[1:]:
+        if cand.device == "cpu":
+            return replace(cand, cpu_threads=cpu_threads or cand.cpu_threads,
+                           warning=f"Only {budget_mb:.0f} MB of GPU memory is free for ClipForge "
+                                   "(other apps use the rest) - transcribing on the CPU.")
+        if _vram_need(cand) <= budget_mb:
+            return replace(cand, reason=f"{plan.reason}; {cand.model} {cand.compute_type} fits the "
+                                        f"free GPU memory ({budget_mb:.0f} MB)")
+    return plan
+
+
 def _load_from(chain: list[BackendPlan], start: int):
     """Load the first plan in chain[start:] that works. Returns (engine, index)."""
     last_exc: BaseException | None = None
@@ -344,6 +374,12 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
                                 force_cpu_reason=cfg.get("force_cpu_reason"))
     if plan.device == "cuda":
         plan = _verify_gpu_once(hw, plan)
+    if governor.get() is not None:
+        from .llm import unload_all
+
+        unload_all()  # our own LLM must not count as "used by other apps"
+        governor.get().tick()
+        plan = fit_to_budget(plan, hw, governor.vram_budget_mb(), governor.cpu_threads())
     if plan.warning:
         console.print(f"[yellow]{plan.warning}[/]")
     console.print(f"Backend: [bold]{plan.label}[/]  [dim]({plan.reason})[/]")
@@ -364,6 +400,13 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
     processed_audio = 0.0
     vram_before = hardware.gpu_memory_used_mb(plan.device_index) if plan.device == "cuda" else None
 
+    def free_model() -> None:  # the governor pauses: give the GPU memory back while waiting
+        nonlocal engine
+        memory.release_current()
+        engine = None
+        gc.collect()
+
+    on_gpu = plan.device != "cpu"
     try:
         with time_progress() as prog:
             task = prog.add_task("Transcribing", total=duration)
@@ -372,6 +415,9 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
                 if chunk_file.is_file():
                     prog.update(task, completed=c_end)
                     continue
+                # Safe point between chunks: a pause unloads the model first (reloaded below).
+                if governor.checkpoint(release=free_model if on_gpu else None) and engine is None:
+                    console.print("[dim]Resuming transcription ...[/]")
                 if engine is None:
                     prog.stop()
                     engine, chain_idx = _load_from(chain, 0)
@@ -381,9 +427,12 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
                 t0 = time.perf_counter()
                 while True:
                     try:
-                        res = engine.transcribe(
-                            samples, locked,
-                            lambda t, s=c_start: prog.update(task, completed=min(s + t, c_end)))
+                        # On the GPU a chunk runs to its end (pausing mid-chunk would keep the
+                        # model in VRAM); progress updates still throttle.
+                        with governor.deferred() if on_gpu else contextlib.nullcontext():
+                            res = engine.transcribe(
+                                samples, locked,
+                                lambda t, s=c_start: prog.update(task, completed=min(s + t, c_end)))
                         break
                     except Exception as exc:  # noqa: BLE001
                         if not _is_resource_error(exc) or chain_idx + 1 >= len(chain):

@@ -78,8 +78,11 @@ def read_segment(src: str, start: float, length: float, width: int, height: int,
                  cuda: bool, stop: threading.Event | None = None) -> Iterator[Frame]:
     w, h = out_size(width, height)
     size = w * h * 3 // 2
+    from .. import procs
+
     proc = subprocess.Popen(_cmd(src, start, length, w, h, cuda), stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, bufsize=size * 2)
+                            stderr=subprocess.PIPE, bufsize=size * 2, creationflags=procs.popen_flags())
+    procs.track(proc)
     # A pump thread keeps ffmpeg decoding while the caller runs OCR on earlier frames.
     frames: queue.Queue = queue.Queue(maxsize=PREFETCH)
     done = threading.Event()
@@ -107,6 +110,7 @@ def read_segment(src: str, start: float, length: float, width: int, height: int,
             i += 1
     finally:
         done.set()
+        procs.untrack(proc)
         if proc.poll() is None:
             proc.kill()
         while th.is_alive():  # unblock the pump if it waits on a full queue
@@ -132,8 +136,13 @@ def scan_parallel(src: str, duration: float, width: int, height: int,
                   workers: int | None = None) -> dict:
     """Decode the video in parallel segments; each segment gets its own frame handler from
     make_worker(index, start, end) (handlers are called from that segment's thread only)."""
+    from .. import governor
+
     cuda = cuda_decode_available()
-    workers = workers or (3 if cuda else 2)
+    if not workers:
+        workers = 3 if cuda else 2
+        if governor.get() is not None and not governor.get().full_speed():
+            workers = 1 if governor.cpu_threads() < 8 else 2  # throttled: fewer decoders
     segs = segments(duration, workers)
     done = [0.0] * len(segs)
     errors: list[BaseException] = []
@@ -144,6 +153,9 @@ def scan_parallel(src: str, duration: float, width: int, height: int,
         handle = make_worker(i, start, start + length)
         try:
             for fr in read_segment(src, start, length, width, height, cuda, stop):
+                governor.gate(stop)  # waits here while the governor pauses (ffmpeg then blocks too)
+                if stop.is_set():
+                    break
                 handle(fr)
                 with lock:
                     done[i] = fr.t - start
@@ -154,12 +166,18 @@ def scan_parallel(src: str, duration: float, width: int, height: int,
     threads = [threading.Thread(target=run, args=(i, s, n), daemon=True) for i, (s, n) in enumerate(segs)]
     for th in threads:
         th.start()
-    while any(th.is_alive() for th in threads):
+    try:
+        while any(th.is_alive() for th in threads):
+            for th in threads:
+                th.join(timeout=0.5)
+            if on_progress:
+                with lock:
+                    on_progress(sum(done))
+    except BaseException:  # cancelled: stop the decoders instead of leaving them running
+        stop.set()
         for th in threads:
-            th.join(timeout=0.5)
-        if on_progress:
-            with lock:
-                on_progress(sum(done))
+            th.join(timeout=5)
+        raise
     if errors:
         raise errors[0]
     return {"decoder": "nvdec" if cuda else "cpu", "segments": len(segs)}

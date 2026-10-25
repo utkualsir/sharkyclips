@@ -66,3 +66,19 @@ def test_port_helpers():
         busy = s.getsockname()[1]
         assert cli._port_free(busy) is False
         assert cli._clipforge_version_at(busy, timeout=0.3) is None
+
+
+def test_performance_settings():
+    data = client.get("/api/settings").json()
+    assert data["performance_mode"] == "silent" and "deltaforce*" in data["perf_games"]
+    r = client.put("/api/settings", json={"performance_mode": "turbo", "perf_idle_minutes": 0.1,
+                                          "perf_games": ["CS2.exe", "mygame"]})
+    body = r.json()
+    assert body["performance_mode"] == "turbo" and body["perf_idle_minutes"] == 0.5
+    assert body["perf_games"] == ["cs2", "mygame"]
+    assert client.put("/api/settings", json={"performance_mode": "warp"}).status_code >= 400
+    assert client.put("/api/governor", json={"mode": "balanced"}).json()["mode"] == "balanced"
+    client.put("/api/settings", json={"performance_mode": "silent", "perf_idle_minutes": 3,
+                                      "perf_games": data["perf_games_default"]})
+    assert client.get("/api/settings").json()["perf_games"] == data["perf_games_default"]
+    assert client.get("/api/governor").json()["state"] == "off"  # tests run without the governor

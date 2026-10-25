@@ -71,7 +71,11 @@ function QueueRow({
       {...(running ? {} : dragProps)}
     >
       <span className="q-grip" aria-hidden="true">
-        {running ? <span className="spinner" style={{ width: 14, height: 14 }} /> : <span className="mono">{pos}</span>}
+        {running ? (
+          job.paused ? <Icon name="pause" size={14} /> : <span className="spinner" style={{ width: 14, height: 14 }} />
+        ) : (
+          <span className="mono">{pos}</span>
+        )}
       </span>
       <span className="q-icon" aria-hidden="true">
         <Icon name={KIND_ICON[job.kind] ?? "clock"} size={15} />
@@ -81,6 +85,12 @@ function QueueRow({
           {link ? <a href={link}>{title}</a> : title}
           {job.detail?.resumed && <span className="chip chip-outline q-tag">{t("queue.resumed")}</span>}
           {(job.attempt ?? 1) > 1 && <span className="chip chip-outline q-tag">{t("queue.attempt", { n: job.attempt! })}</span>}
+          {running && job.paused && (
+            <span className="chip chip-gold q-tag">
+              <Icon name="pause" size={11} />
+              {t(`gov.paused.${job.paused}`)}
+            </span>
+          )}
         </div>
         {sub && (
           <div className="q-sub" dir="auto">
@@ -96,7 +106,14 @@ function QueueRow({
       </div>
       <div className="q-eta">
         {running ? (
-          job.eta_seconds != null && <span>{t("queue.left", { time: fmtEta(job.eta_seconds, num, t) })}</span>
+          job.paused ? (
+            <span className="muted">
+              {t("queue.paused_eta")}
+              {job.eta_seconds != null && ` · ${t("queue.left", { time: fmtEta(job.eta_seconds, num, t) })}`}
+            </span>
+          ) : (
+            job.eta_seconds != null && <span>{t("queue.left", { time: fmtEta(job.eta_seconds, num, t) })}</span>
+          )
         ) : job.eta_finish_seconds != null ? (
           <span className="muted">{t("queue.done_in", { time: fmtEta(job.eta_finish_seconds, num, t) })}</span>
         ) : (

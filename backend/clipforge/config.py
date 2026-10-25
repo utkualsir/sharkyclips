@@ -45,6 +45,20 @@ DEFAULTS: dict[str, Any] = {
     "ollama_url": "http://127.0.0.1:11434",
     # Chat reacts a few seconds after the moment; the chat curve is shifted back by this much.
     "chat_delay": 5,
+    # Resource governor (governor.py): "silent" (pauses for games / fullscreen / video, full
+    # speed when you're away), "balanced" (throttled, never pauses) or "turbo" (full speed).
+    "performance_mode": "silent",
+    "perf_idle_minutes": 3,  # no keyboard/mouse input this long (or a locked screen) = full speed
+    "perf_pause_fullscreen": True,
+    "perf_pause_video": True,
+    "perf_pause_busy": True,  # other apps keep the CPU / GPU busy
+    "perf_idle_only": False,  # Silent: only work while you're away
+    "perf_gpu_temp_limit": 85,  # degC: pause until 10 degC cooler
+    "perf_vram_headroom_mb": 0,  # VRAM always left free for other apps; 0 = auto (2 GB on 8 GB)
+    "perf_games": None,  # process names that pause Silent mode; None = built-in list
+    # Windows: let Ollama start with Windows (its installer/updater adds a Startup shortcut;
+    # ClipForge moves it away unless this is on - ClipForge starts Ollama itself when needed).
+    "ollama_autostart": False,
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,

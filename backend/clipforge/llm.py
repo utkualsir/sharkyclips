@@ -28,7 +28,7 @@ from .ui import console
 DEFAULT_MODEL = "qwen3.5:9b"
 SMALL_MODEL = "qwen3.5:4b"
 MODEL_SIZES_GB = {"qwen3.5:9b": 6.6, "qwen3.5:4b": 3.3, "qwen3:8b": 5.2, "qwen3:4b": 2.5}
-BATCH_KEEP_ALIVE = "10m"  # while a batch runs; unloaded explicitly afterwards
+BATCH_KEEP_ALIVE = "3m"  # while a batch runs; unloaded explicitly afterwards (and on pause)
 
 
 def base_url() -> str:
@@ -97,8 +97,10 @@ def ensure_server(start_timeout: float = 30.0) -> str:
     flags = 0
     if os.name == "nt":
         flags = subprocess.CREATE_NO_WINDOW | getattr(subprocess, "DETACHED_PROCESS", 0)
+    # A server we start is our child: inside the web server's job / process group, so it gets
+    # the governor's priority and is stopped together with ClipForge (no orphans).
     subprocess.Popen([exe, "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                     stdin=subprocess.DEVNULL, creationflags=flags, start_new_session=os.name != "nt")
+                     stdin=subprocess.DEVNULL, creationflags=flags)
     t0 = time.time()
     while time.time() - t0 < start_timeout:
         time.sleep(0.5)
@@ -121,8 +123,11 @@ def fast_model() -> str:
 
 
 def choose_model(ignore_fast: bool = False) -> str:
-    """config llm_model ("auto" = by hardware); "Fast analysis" always uses the small model."""
-    if fast_analysis() and not ignore_fast:
+    """config llm_model ("auto" = by hardware); "Fast analysis" always uses the small model,
+    and so does Silent mode while you're using the PC (governor)."""
+    from . import governor
+
+    if (fast_analysis() or governor.prefer_small_llm()) and not ignore_fast:
         return fast_model()
     wanted = str(config.get("llm_model") or "auto")
     if wanted != "auto":
@@ -386,9 +391,11 @@ def validate(value: Any, schema: dict, path: str = "$") -> list[str]:
 class LLM:
     """One loaded Ollama model. Use through `session()`."""
 
-    def __init__(self, model: str, num_ctx: int):
+    def __init__(self, model: str, num_ctx: int, auto: bool = False):
         self.model = model
         self.num_ctx = num_ctx
+        self.auto = auto  # picked by choose_model(): may step down to the small model
+        self.placement: dict = {}  # num_gpu / num_thread from the governor's budget
         self.calls = 0
         self.seconds = 0.0
         self.retries = 0
@@ -397,9 +404,10 @@ class LLM:
 
     def warm_up(self) -> None:
         t0 = time.perf_counter()
+        self.placement = placement(self.model, self.num_ctx)
         r = _http().post(f"{base_url()}/api/generate",
                          json={"model": self.model, "prompt": "", "keep_alive": BATCH_KEEP_ALIVE,
-                               "options": {"num_ctx": self.num_ctx}}, timeout=600)
+                               "options": {"num_ctx": self.num_ctx, **self.placement}}, timeout=600)
         if not r.ok:
             raise ClipForgeError(f"Ollama couldn't load '{self.model}': {r.text[:300]}",
                                  "Run `python cli.py doctor`.")
@@ -416,11 +424,12 @@ class LLM:
         messages = [{"role": "system", "content": system}, {"role": "user", "content": prompt}]
         last_errors: list[str] = []
         for attempt in range(retries + 1):
+            self._safe_point()
             t0 = time.perf_counter()
             body = {"model": self.model, "messages": messages, "format": schema, "stream": False,
                     "think": False, "keep_alive": BATCH_KEEP_ALIVE,
                     "options": {"temperature": max(0.1, temperature - 0.15 * attempt),
-                                "num_ctx": self.num_ctx, "num_predict": num_predict}}
+                                "num_ctx": self.num_ctx, "num_predict": num_predict, **self.placement}}
             r = _http().post(f"{base_url()}/api/chat", json=body, timeout=600)
             self.calls += 1
             self.seconds += time.perf_counter() - t0
@@ -457,6 +466,22 @@ class LLM:
                              "Try again, or set a different `llm_model` in the config.")
 
 
+    def _safe_point(self) -> None:
+        """Before every request: wait while the governor pauses (with the model unloaded, so
+        the VRAM is free for the game), and step down to the small model when Silent mode
+        wants it (the user came back)."""
+        from . import governor
+
+        if governor.checkpoint(release=lambda: unload(self.model)):
+            self.placement = placement(self.model, self.num_ctx)  # other apps may use more now
+        if self.auto and governor.prefer_small_llm() and self.model != fast_model():
+            small = fast_model()
+            if has_model(small):
+                console.print(f"[dim]You're using the PC: switching the AI to {small}.[/]")
+                unload(self.model)
+                self.model = small
+                self.placement = placement(small, self.num_ctx)
+
     @property
     def tokens_per_second(self) -> float:
         return self.tokens_out / self.gen_seconds if self.gen_seconds else 0.0
@@ -466,16 +491,58 @@ def _release(llm: LLM) -> None:
     unload(llm.model)
 
 
+def _model_layout(name: str) -> tuple[float | None, int | None]:
+    """(size in MB, number of layers) of an installed model."""
+    size = layers = None
+    try:
+        for m in _http().get(f"{base_url()}/api/tags", timeout=5).json().get("models", []):
+            if m.get("name") == name:
+                size = float(m.get("size") or 0) / 1048576 or None
+        info = _http().post(f"{base_url()}/api/show", json={"model": name}, timeout=10).json()
+        for k, v in (info.get("model_info") or {}).items():
+            if k.endswith(".block_count"):
+                layers = int(v)
+    except Exception:  # noqa: BLE001
+        pass
+    return size, layers
+
+
+def placement(name: str, num_ctx: int) -> dict:
+    """Ollama options that keep the governor's VRAM headroom free: if the whole model doesn't
+    fit the budget, only part of its layers go on the GPU (the rest runs on the CPU, slower)."""
+    from . import governor
+
+    g = governor.get()
+    if g is None:
+        return {}
+    opts: dict = {} if g.full_speed() else {"num_thread": max(1, governor.cpu_threads())}
+    budget = governor.vram_budget_mb()
+    if budget is None or not hardware.detect_hardware().best_nvidia:
+        return opts
+    size, layers = _model_layout(name)
+    if not size or not layers:
+        return opts
+    cache = 600 + num_ctx / 8192 * 500  # KV cache + work buffers (measured roughly)
+    need = size * 1.05 + cache
+    if need > budget:
+        share = max(0.0, (budget - cache) / (size * 1.05))
+        opts["num_gpu"] = int(layers * share)
+        console.print(f"[dim]GPU memory budget {budget:.0f} MB: {opts['num_gpu']}/{layers} layers of "
+                      f"{name} on the GPU, the rest on the CPU.[/]")
+    return opts
+
+
 @contextmanager
-def session(model: str | None = None) -> Iterator[LLM]:
+def session(model: str | None = None, auto: bool | None = None) -> Iterator[LLM]:
     """Load the LLM as the only heavy model (Whisper is unloaded first); unload it afterwards."""
     ensure_server()
     name = model or choose_model()
+    auto = model is None if auto is None else auto
     ensure_model(name)
     num_ctx = int(config.get("llm_num_ctx") or 8192)
 
     def load() -> LLM:
-        llm = LLM(name, num_ctx)
+        llm = LLM(name, num_ctx, auto=auto)
         console.print(f"Loading LLM [bold]{name}[/] ...")
         llm.warm_up()
         share = gpu_share(name)
@@ -494,16 +561,17 @@ class LazyLLM:
     """Like session(), but the model is only loaded when the first question is asked
     (a run where every answer is cached never touches the GPU)."""
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, auto: bool = False):
         from contextlib import ExitStack
 
         self.model = model
+        self.auto = auto
         self._stack = ExitStack()
         self._llm: LLM | None = None
 
     def _get(self) -> LLM:
         if self._llm is None:
-            self._llm = self._stack.enter_context(session(self.model))
+            self._llm = self._stack.enter_context(session(self.model, auto=self.auto))
         return self._llm
 
     def json(self, *args, **kwargs) -> dict:
@@ -520,7 +588,7 @@ class LazyLLM:
 
 @contextmanager
 def lazy_session(model: str | None = None) -> Iterator[LazyLLM]:
-    lz = LazyLLM(model or choose_model())
+    lz = LazyLLM(model or choose_model(), auto=model is None)
     try:
         yield lz
     finally:

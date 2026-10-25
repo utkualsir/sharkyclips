@@ -79,8 +79,11 @@ def extract_audio(source: Path, dest: Path, duration: float | None = None,
     cmd = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-nostats",
            "-i", str(source), "-map", "0:a:0", "-vn", "-ac", "1", "-ar", str(SAMPLE_RATE),
            "-c:a", "pcm_s16le", "-progress", "pipe:1", str(tmp)]
+    from . import procs
+
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                             encoding="utf-8", errors="replace", creationflags=_creationflags())
+    procs.track(proc)  # suspended while the governor pauses
     assert proc.stdout is not None
     try:
         for line in proc.stdout:
@@ -95,6 +98,8 @@ def extract_audio(source: Path, dest: Path, duration: float | None = None,
         proc.wait()
         tmp.unlink(missing_ok=True)
         raise
+    finally:
+        procs.untrack(proc)
     stderr = proc.stderr.read() if proc.stderr else ""
     if proc.wait() != 0:
         tmp.unlink(missing_ok=True)

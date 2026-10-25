@@ -283,6 +283,14 @@ if ($ffmpeg) { Ok 'FFmpeg' } else { Warn (T 'FFmpeg bulunamadı. Yeni bir pencer
 $git = Find-Exe 'git' @("$env:ProgramFiles\Git\cmd\git.exe")
 if ($git) { Ok 'Git' } else { Warn (T 'Git bulunamadı: otomatik güncelleme çalışmaz.' 'Git not found: automatic updates won''t work.') }
 $ollama = Ollama-Path
+# Ollama's installer makes it start with Windows. ClipForge starts it only when needed (Settings
+# can turn autostart back on), so its Startup shortcut is parked in ~/.clipforge.
+$ollamaStartup = Join-Path ([Environment]::GetFolderPath('Startup')) 'Ollama.lnk'
+if (Test-Path $ollamaStartup) {
+    $parked = Join-Path $env:USERPROFILE '.clipforge\disabled-startup'
+    New-Item -ItemType Directory -Force -Path $parked | Out-Null
+    Move-Item -Force $ollamaStartup (Join-Path $parked 'Ollama.lnk')
+}
 if ($ollama) { Ok 'Ollama' } else { Warn (T 'Ollama bulunamadı: yapay zekâ başlıkları kapalı kalır.' 'Ollama not found: AI titles stay off.') }
 
 # 2. ClipForge itself ------------------------------------------------
@@ -353,16 +361,18 @@ if ($LASTEXITCODE -ne 0) {
 
 # 6. Shortcuts --------------------------------------------------------
 $n++; Step $n $total (T 'Kısayollar' 'Shortcuts')
-$launcher = Join-Path $AppDir 'installer\windows\ClipForge.bat'
+# pythonw: no console window; ClipForge shows a tray icon (Open / performance mode / Quit).
+$launcher = Join-Path $AppDir '.venv\Scripts\pythonw.exe'
+$launcherArgs = '"' + (Join-Path $AppDir 'backend\cli.py') + '" launch --tray'
 $icon = Join-Path $AppDir 'assets\icon\clipforge.ico'
 function New-Shortcut([string]$path, [string]$target, [string]$description) {
     $shell = New-Object -ComObject WScript.Shell
     $s = $shell.CreateShortcut($path)
     $s.TargetPath = $target
+    $s.Arguments = $launcherArgs
     $s.WorkingDirectory = $AppDir
     $s.IconLocation = "$icon,0"
     $s.Description = $description
-    $s.WindowStyle = 7  # minimized: the console only keeps the server running
     $s.Save()
 }
 if ($NoShortcuts) {
@@ -410,11 +420,11 @@ try {
 
 Write-Host ''
 Write-Host ((T 'ClipForge {0} hazır!' 'ClipForge {0} is ready!') -f $version) -ForegroundColor Green
-Write-Host (T 'Masaüstündeki "ClipForge" simgesine çift tıklayın: tarayıcıda açılır. Küçültülmüş pencere açık kaldığı sürece çalışır.' 'Double-click "ClipForge" on your desktop: it opens in your browser. It keeps running while its minimized window is open.')
+Write-Host (T 'Masaüstündeki "ClipForge" simgesine çift tıklayın: tarayıcıda açılır. Pencere açılmaz; saatin yanındaki ClipForge simgesinden açabilir veya kapatabilirsiniz.' 'Double-click "ClipForge" on your desktop: it opens in your browser. No window stays open; use the ClipForge icon next to the clock to open or quit it.')
 
 if (-not $NoLaunch -and -not $Yes) {
     if (Ask (T 'ClipForge şimdi açılsın mı?' 'Open ClipForge now?') $true) {
-        Start-Process -FilePath $launcher -WorkingDirectory $AppDir -WindowStyle Minimized
+        Start-Process -FilePath $launcher -ArgumentList $launcherArgs -WorkingDirectory $AppDir
     }
 }
 exit 0

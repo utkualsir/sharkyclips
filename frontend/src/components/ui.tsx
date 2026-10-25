@@ -138,6 +138,11 @@ export function CopyButton({ text, label, small = true }: { text: string; label?
 
 /** "Transcribing 60%", "Waiting for the GPU", ... */
 export function jobLabel(job: Job, t: ReturnType<typeof useI18n>["t"], num: (n: number) => string): string {
+  const base = jobBaseLabel(job, t, num);
+  return job.status === "running" && job.paused ? `${t("job.paused")} · ${base}` : base;
+}
+
+function jobBaseLabel(job: Job, t: ReturnType<typeof useI18n>["t"], num: (n: number) => string): string {
   if (job.status === "queued") return job.lane === "gpu" ? t("job.waiting") : t("status.queued");
   if (job.kind === "analyze" && job.detail?.count) {
     return `${t("stage.llm_analyzing")} ${job.detail.index}/${job.detail.count}`;
