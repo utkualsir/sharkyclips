@@ -9,7 +9,7 @@ import { useMeta } from "../meta";
 import { href } from "../router";
 import { useToast } from "../toast";
 
-// Same timings as backend/clipforge/montage.py (for the length estimate).
+// Same timings as backend/sharkyclips/montage.py (for the length estimate).
 const XFADE = 0.5;
 const CARD_S = 1.8;
 const INTRO_S = 3.2;

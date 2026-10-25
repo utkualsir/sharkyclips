@@ -1,5 +1,5 @@
 # CUDA libraries for NVIDIA GPUs, installed via pip - no CUDA Toolkit or manual cuDNN needed.
-# ClipForge adds their folders to the DLL search path at runtime.
+# SharkyClips adds their folders to the DLL search path at runtime.
 # `python cli.py doctor` installs these automatically when it finds an NVIDIA GPU.
 nvidia-cublas-cu12; platform_system != "Darwin"
 nvidia-cudnn-cu12>=9,<10; platform_system != "Darwin"

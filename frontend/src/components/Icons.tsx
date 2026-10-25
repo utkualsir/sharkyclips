@@ -66,16 +66,3 @@ export function Icon({ name, className, size }: { name: IconName | string; class
   );
 }
 
-export function BrandMark() {
-  // Same gem as the app icon (installer/make_icons.py).
-  return (
-    <svg width="20" height="20" viewBox="10 12 44 42" aria-hidden="true">
-      <path d="M22 15L26 25L13 25Z" fill="#E9CB86" />
-      <path d="M22 15L42 15L38 25L26 25Z" fill="#F6E2AE" />
-      <path d="M42 15L51 25L38 25Z" fill="#D9B56A" />
-      <path d="M13 25L26 25L32 51Z" fill="#C9A257" />
-      <path d="M26 25L38 25L32 51Z" fill="#DDBB72" />
-      <path d="M38 25L51 25L32 51Z" fill="#A9843F" />
-    </svg>
-  );
-}

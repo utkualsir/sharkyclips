@@ -1,4 +1,4 @@
-# ClipForge working data (videos, audio, transcripts)
+# SharkyClips working data (videos, audio, transcripts)
 workspace/*
 !workspace/.gitkeep
 
@@ -31,7 +31,7 @@ models/
 *.pt
 *.ckpt
 *.onnx
-.clipforge/
+.sharkyclips/
 config.local.json
 .env
 .env.*

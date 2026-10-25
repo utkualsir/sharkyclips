@@ -1,16 +1,22 @@
 <p align="center">
-  <img src="assets/icon/clipforge.png" width="96" height="96" alt="ClipForge icon">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/icon/sharkyclips.png">
+    <img src="assets/icon/sharkyclips-light.png" width="104" height="104" alt="SharkyClips logo: a shark fin that is also a play button">
+  </picture>
 </p>
 
-<h1 align="center">ClipForge</h1>
+<h1 align="center">SharkyClips</h1>
+
+<p align="center"><i>Hunt your best moments.</i></p>
 
 <p align="center"><b>Free, local, AI-powered Shorts clipper for streamers.</b><br>
-Point it at a stream VOD or a video file. It finds the best moments, writes the titles and renders
-ready-to-post 9:16 clips, all on your own computer.</p>
+Point it at a stream VOD or a video file. It finds the best moments, writes the titles and the
+YouTube description, and renders ready-to-post 9:16 clips, all on your own computer.<br>
+<sub>Formerly ClipForge: old links redirect, and your settings move over by themselves.</sub></p>
 
 <p align="center">
-  <a href="https://github.com/utkualsir/clipforge/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/clipforge/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/clipforge/releases/latest"><img src="https://img.shields.io/badge/version-1.0.0-D9B56A" alt="Version 1.0.0"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.1-1F6FE5" alt="Version 1.2.1"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -28,7 +34,7 @@ ready-to-post 9:16 clips, all on your own computer.</p>
 
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/project-light.png">
-  <img src="docs/screenshots/project-dark.png" alt="ClipForge project screen: the video with its Hype Map, a live 9:16 preview and the AI-ranked clip candidates">
+  <img src="docs/screenshots/project-dark.png" alt="SharkyClips project screen: the video with its Hype Map, a live 9:16 preview and the AI-ranked clip candidates">
 </picture>
 
 ## See it in action
@@ -51,8 +57,9 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
 - **Cuts that make sense.** Clip edges snap to word boundaries (never mid-word), and the local AI
   can move them a few seconds to include the setup or the payoff.
 - **A viral score and titles that sound like you.** A local language model rates every clip
-  (hook, retention, trend fit), writes titles, hashtags, a hook text and a cover prompt. Thumbs
-  up/down teach it your style; a glossary keeps names spelled right.
+  (hook, retention, trend fit), writes titles, a **YouTube description** (2-3 sentences + hashtags),
+  hashtags, a hook text and a cover prompt, each with a copy button. Thumbs up/down teach it your
+  style; a glossary keeps names spelled right.
 - **Ready-to-post 9:16 clips.** Facecam on top and gameplay below (detected automatically and
   adjustable), burned-in word-timed subtitles (also right-to-left Arabic), an optional hook text and
   a "peak flash" opener. Encodes on NVIDIA, Apple, Intel or AMD hardware when available.
@@ -60,13 +67,14 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
   even loudness, and AI-written titles, description and chapters.
 - **A render queue.** Reorder, cancel and retry jobs. The queue survives restarts and can shut the PC
   down when it's done.
-- **Learns your channel.** Add the real YouTube views of published clips. After 10, ClipForge
+- **Learns your channel.** Add the real YouTube views of published clips. After 10, SharkyClips
   calibrates the score to what works on *your* channel.
 - **Works with what you have.** Twitch, YouTube, Kick and most other sites (via yt-dlp), or any local
   video file. Streams of 3-6 hours are processed in resumable chunks.
 - **A clean web UI in 7 languages**, dark and light, usable from your phone on the same Wi-Fi.
 - **One-click install, one-click update.** A desktop shortcut opens it, and Settings → Updates
-  installs new versions.
+  installs new versions. A short setup on the first start (language, content types, performance
+  mode + a hardware check), and a "What's new" note after every update.
 
 <table>
   <tr>
@@ -90,12 +98,12 @@ More screenshots, in both themes, are in [docs/screenshots](docs/screenshots).
 **Everything runs on your computer. Nothing is uploaded.** There is no account, no cloud service,
 no paid API and no telemetry. Transcription (Whisper), the language model (Qwen 3.5 via Ollama),
 highlight detection and rendering all run locally. Your videos, transcripts and clips stay in
-the `workspace` folder. ClipForge only goes online to download what you ask it to (a VOD, its
+the `workspace` folder. SharkyClips only goes online to download what you ask it to (a VOD, its
 chat replay), the AI models (once), and updates (when you click "Check for updates").
 
 ## Supported hardware
 
-ClipForge checks your hardware every time it starts and picks the fastest setup that works.
+SharkyClips checks your hardware every time it starts and picks the fastest setup that works.
 
 | Your computer | Speech-to-text | Local AI (titles, scores) |
 |---|---|---|
@@ -107,7 +115,7 @@ ClipForge checks your hardware every time it starts and picks the fastest setup 
 - **Minimum:** Windows 10/11 (64-bit) or macOS 13+, 8 GB RAM, ~12 GB free disk space.
   **Recommended:** an NVIDIA RTX GPU with 8 GB VRAM, or an Apple Silicon Mac with 16 GB RAM.
 - No CUDA Toolkit needed: the CUDA libraries come with the Python packages. If a model doesn't fit,
-  ClipForge steps down by itself (float16 → int8 → smaller model → CPU).
+  SharkyClips steps down by itself (float16 → int8 → smaller model → CPU).
 - Measured on an RTX 5070 Laptop (8 GB): AI analysis ~28 s per clip (15 s with *Fast analysis*),
   rendering a 30 s 9:16 clip ~6 s with NVENC.
 
@@ -130,13 +138,13 @@ with their timing kept.
 
 ### Windows 10 / 11: one click
 
-1. Download **`ClipForge-Setup.bat`** from the [latest release](https://github.com/utkualsir/clipforge/releases/latest).
+1. Download **`SharkyClips-Setup.bat`** from the [latest release](https://github.com/utkualsir/sharkyclips/releases/latest).
 2. Double-click it. If Windows warns that the file is from the internet, choose **Run**. If
    SmartScreen says "Windows protected your PC", click **More info → Run anyway**.
 3. The installer lists what it will set up (Python, FFmpeg, Git, Deno, Ollama, the Python packages
    and the AI models, ~12 GB at most). Things you already have are reused. Press **Enter** to start.
-4. When it's done, double-click **ClipForge** on your desktop (or in the Start menu). It opens in
-   your browser. No console window stays open: the ClipForge icon next to the clock opens it again,
+4. When it's done, double-click **SharkyClips** on your desktop (or in the Start menu). It opens in
+   your browser. No console window stays open: the SharkyClips icon next to the clock opens it again,
    switches the performance mode or quits it.
 
 Already cloned the repository? Double-click `install.bat` in the folder instead. Messages are in
@@ -144,22 +152,22 @@ Turkish or English, following your Windows language.
 
 ### macOS: one command
 
-1. Download **`install.sh`** from the [latest release](https://github.com/utkualsir/clipforge/releases/latest).
+1. Download **`install.sh`** from the [latest release](https://github.com/utkualsir/sharkyclips/releases/latest).
 2. Open **Terminal** and run:
    ```bash
    bash ~/Downloads/install.sh
    ```
    It installs Homebrew if needed (asks for your Mac password), then Python, FFmpeg, Git, Deno,
    Ollama, the Python packages and the AI models, after showing you the list.
-3. Open **ClipForge** from Applications, or `ClipForge.command` on your Desktop.
+3. Open **SharkyClips** from Applications, or `SharkyClips.command` on your Desktop.
 
 ### Manual install (developers)
 
 You need Python 3.11-3.13, FFmpeg, Git, and for YouTube downloads Deno or Node.js.
 
 ```bash
-git clone https://github.com/utkualsir/clipforge.git ClipForge
-cd ClipForge
+git clone https://github.com/utkualsir/sharkyclips.git SharkyClips
+cd SharkyClips
 python -m venv .venv
 .venv\Scripts\activate            # macOS: source .venv/bin/activate
 python -m pip install -r backend/requirements.txt
@@ -171,14 +179,14 @@ python cli.py serve                       # opens http://localhost:8000
 
 ### Update
 
-**Settings → Updates → Check for updates.** If a new version exists, click **Update now**: ClipForge
+**Settings → Updates → Check for updates.** If a new version exists, click **Update now**: SharkyClips
 downloads it, installs any new packages and restarts by itself. Your projects and settings are
 kept. (Running the installer again does the same.)
 
 ### Uninstall
 
-- **Windows:** Settings → Apps → **ClipForge** → Uninstall, or run `installer\windows\uninstall.bat`.
-- **macOS:** `bash ~/ClipForge/installer/macos/uninstall.sh` (use your ClipForge folder).
+- **Windows:** Settings → Apps → **SharkyClips** → Uninstall, or run `installer\windows\uninstall.bat`.
+- **macOS:** `bash ~/SharkyClips/installer/macos/uninstall.sh` (use your SharkyClips folder).
 
 The uninstaller removes the app, its Python packages and the shortcuts. It **asks before deleting
 your projects**, your settings and the downloaded AI models, and keeps them unless you say yes.
@@ -188,35 +196,35 @@ Python, FFmpeg, Git and Ollama stay installed, because other programs may use th
 
 1. **New project**: paste a Twitch / YouTube / Kick link or a file path, or drop a video file. Pick
    the mode: *Gaming*, *Study* (lectures, podcasts) or *Music*.
-2. ClipForge downloads it, transcribes it, finds the highlights and runs the AI analysis by itself.
+2. SharkyClips downloads it, transcribes it, finds the highlights and runs the AI analysis by itself.
    The Library shows live progress, and you can close the browser meanwhile.
 3. **Review**: click a candidate to jump to it in the player and see the 9:16 preview. The Hype Map
    shows where the action is. Keyboard: ↑/↓ (or j/k) to move, `a` to accept.
 4. **Accept** the clips you like, choose subtitles, layout and hook, then **Render**.
-5. Download the MP4s from the **Clips** tab, copy a title and hashtags from the publish package, and
+5. Download the MP4s from the **Clips** tab, copy a title and the description from the publish package, and
    post.
 
 Optional: **Best-of video** turns your accepted clips into one YouTube video. **Add YouTube views**
-on published clips lets ClipForge learn your channel. Settings has the UI language, the output
+on published clips lets SharkyClips learn your channel. Settings has the UI language, the output
 language for titles and subtitles, the AI model, your own trigger words and a glossary.
 
-**ClipForge stays out of your way.** In the default **Silent** mode it works at idle priority on
+**SharkyClips stays out of your way.** In the default **Silent** mode it works at idle priority on
 half of your CPU cores, keeps ~2 GB of GPU memory free and **pauses** while a game, OBS, a
 fullscreen app or a video is on (the AI model is unloaded so the game gets the VRAM back). When you
 haven't touched the PC for 3 minutes, or the screen is locked, it runs at full speed and steps back
 the moment you return. **Balanced** never pauses but stays throttled; **Turbo** is full speed for
 when you're away. Switch modes in the top bar or the tray icon; the top bar also shows CPU, GPU,
-VRAM and temperature (click it for 5-minute charts, ClipForge vs. other apps). Paused work continues
+VRAM and temperature (click it for 5-minute charts, SharkyClips vs. other apps). Paused work continues
 exactly where it stopped. Ollama no longer starts with Windows unless you turn it on in Settings.
 
-To use ClipForge from your phone, start it with `python cli.py serve --lan` (from the `backend`
+To use SharkyClips from your phone, start it with `python cli.py serve --lan` (from the `backend`
 folder) and open the address it prints. A command line for every step and the full technical
 details are in **[docs/how-it-works.md](docs/how-it-works.md)**.
 
 ## FAQ
 
 **Is it really free?**
-Yes. ClipForge is MIT-licensed and uses only free, open-source tools and models. There are no
+Yes. SharkyClips is MIT-licensed and uses only free, open-source tools and models. There are no
 subscriptions, credits or watermarks.
 
 **Do I need a gaming PC?**
@@ -226,7 +234,7 @@ just more slowly. The AI titles use the smaller model on weaker machines.
 **How long does a stream take?**
 It depends on your hardware and the stream length. Transcription is the longest step on the CPU.
 On an RTX 5070 Laptop the AI analysis takes ~28 s per clip. Long streams are processed in chunks
-and resume where they stopped if you close ClipForge.
+and resume where they stopped if you close SharkyClips.
 
 **Which sites can I import from?**
 Twitch VODs, YouTube (videos and past live streams), Kick and most sites yt-dlp supports, plus any
@@ -234,11 +242,11 @@ local video file. The chat replay is fetched automatically for Twitch and YouTub
 can import a chat log.
 
 **Does it post to TikTok / YouTube for me?**
-No. ClipForge never uploads anything. You download the clips and post them yourself.
+No. SharkyClips never uploads anything. You download the clips and post them yourself.
 
 **Where are my files?**
-In the `workspace` folder inside the ClipForge folder (each project in its own subfolder, rendered
-clips in `clips/`). Settings and your title preferences are in `~/.clipforge`.
+In the `workspace` folder inside the SharkyClips folder (each project in its own subfolder, rendered
+clips in `clips/`). Settings and your title preferences are in `~/.sharkyclips`.
 
 **Can I use it without the AI part?**
 Yes. Without Ollama, highlight detection, review and rendering still work; you just don't get
@@ -255,9 +263,9 @@ them. Nothing is installed before you confirm the list.
 | Something is missing or broken | Run the installer again (it repairs), or `python cli.py doctor` in the `backend` folder |
 | "winget was not found" (Windows) | Install or update **App Installer** from the Microsoft Store, then run the installer again |
 | Windows blocks the setup file | Right-click → Properties → tick **Unblock**, or SmartScreen → More info → Run anyway |
-| The shortcut opens nothing | Look at `%USERPROFILE%\.clipforge\logs\clipforge.log`, or run `python cli.py launch` in the `backend` folder to see the error; port 8000-8099 must be free |
-| A game or video stutters while ClipForge works | Use **Silent** mode (top bar); add the game's process name in Settings → Performance if it isn't detected |
-| `ffmpeg was not found` | Windows: `winget install --id Gyan.FFmpeg -e`, macOS: `brew install ffmpeg`, then restart ClipForge |
+| The shortcut opens nothing | Look at `%USERPROFILE%\.sharkyclips\logs\sharkyclips.log`, or run `python cli.py launch` in the `backend` folder to see the error; port 8000-8099 must be free |
+| A game or video stutters while SharkyClips works | Use **Silent** mode (top bar); add the game's process name in Settings → Performance if it isn't detected |
+| `ffmpeg was not found` | Windows: `winget install --id Gyan.FFmpeg -e`, macOS: `brew install ffmpeg`, then restart SharkyClips |
 | YouTube download fails | Update yt-dlp: `python -m pip install -U "yt-dlp[default]"` and make sure Deno or Node.js is installed |
 | GPU test fails | Update the NVIDIA driver, then run `python cli.py doctor` again (it falls back to the CPU meanwhile) |
 | Transcription is slow | You're in CPU mode (see `doctor`); on weak PCs choose the *small* model in the config |
@@ -265,7 +273,7 @@ them. Nothing is installed before you confirm the list.
 | No titles or viral score | Ollama isn't running: start Ollama, or run `python cli.py doctor` |
 | Titles misspell a name | Add it to the **glossary** in Settings, then "Analyze again with AI" |
 | "Couldn't reach GitHub" when updating | Check your internet connection; updates need Git (the installer adds it) |
-| The update says files were changed | You edited files inside the ClipForge folder; run `git stash` there, or reinstall |
+| The update says files were changed | You edited files inside the SharkyClips folder; run `git stash` there, or reinstall |
 
 ## Roadmap
 
@@ -276,25 +284,25 @@ them. Nothing is installed before you confirm the list.
 - Smarter facecam tracking when the camera moves
 - Batch import of a whole channel's VODs
 
-Ideas and votes are welcome in [Issues](https://github.com/utkualsir/clipforge/issues).
+Ideas and votes are welcome in [Issues](https://github.com/utkualsir/sharkyclips/issues).
 
 ## Contributing
 
 Bug reports, translations and pull requests are welcome.
 
-- **Bugs:** open an [issue](https://github.com/utkualsir/clipforge/issues/new/choose) with the output of
+- **Bugs:** open an [issue](https://github.com/utkualsir/sharkyclips/issues/new/choose) with the output of
   `python cli.py doctor`. Please don't attach private videos.
 - **Code:** see [Development](docs/how-it-works.md#development) for the setup. Before a pull request run
   `python -m ruff check backend installer`, `python -m pytest` and, for UI changes,
   `npm run build` plus `node scripts/check-i18n.mjs` in `frontend/`. CI runs the same checks.
 - **Translations:** the UI texts are in `frontend/src/i18n/locales/`, and the title examples per
-  language in `backend/clipforge/titles/examples/`.
-- **New highlight signals:** subclass `Signal` in `backend/clipforge/highlights/signals/` and give it a
+  language in `backend/sharkyclips/titles/examples/`.
+- **New highlight signals:** subclass `Signal` in `backend/sharkyclips/highlights/signals/` and give it a
   weight in `modes.py`. Nothing else has to change.
 
 ## License
 
-[MIT](LICENSE). ClipForge builds on [faster-whisper](https://github.com/SYSTRAN/faster-whisper),
+[MIT](LICENSE). SharkyClips builds on [faster-whisper](https://github.com/SYSTRAN/faster-whisper),
 [mlx-whisper](https://github.com/ml-explore/mlx-examples), [Ollama](https://ollama.com),
 [Qwen](https://github.com/QwenLM), [yt-dlp](https://github.com/yt-dlp/yt-dlp),
 [FFmpeg](https://ffmpeg.org), [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx),
@@ -305,9 +313,14 @@ Bug reports, translations and pull requests are welcome.
 
 ## Türkçe
 
-**ClipForge, yayıncılar için ücretsiz, yerel ve yapay zekâ destekli bir Shorts kesicidir.** Bir yayın
-kaydını (Twitch, YouTube, Kick) veya video dosyasını verirsiniz. ClipForge en iyi anları bulur,
-başlıkları yazar ve paylaşmaya hazır 9:16 klipler oluşturur. Hepsi kendi bilgisayarınızda olur.
+*En iyi anların avlanmaya hazır.*
+
+**SharkyClips, yayıncılar için ücretsiz, yerel ve yapay zekâ destekli bir Shorts kesicidir.** Bir yayın
+kaydını (Twitch, YouTube, Kick) veya video dosyasını verirsiniz. SharkyClips en iyi anları bulur,
+başlıkları ve YouTube açıklamasını yazar, paylaşmaya hazır 9:16 klipler oluşturur. Hepsi kendi
+bilgisayarınızda olur.
+
+Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız kendiliğinden taşınır.
 
 ### Neler yapar?
 
@@ -317,12 +330,15 @@ başlıkları yazar ve paylaşmaya hazır 9:16 klipler oluşturur. Hepsi kendi b
   quadra...), ilk kan, hedefler, ölümler, zafer/bozgun ve tahliye ekranları (Türkçe ve İngilizce
   istemci). Çoklu kill'in tamamı klibe girer; yapay zekâ başlıkları bu olaylarla yazar.
 - Kesimler kelimenin ortasına denk gelmez. Yapay zekâ gerekirse girişi veya sonucu da klibe katar.
-- Her klibe **viral puan** verir; **başlık**, hashtag, kanca metni ve kapak fikri yazar. Beğendiğiniz
-  başlıklardan sizin tarzınızı öğrenir.
+- Her klibe **viral puan** verir; **başlık**, **YouTube açıklaması** (2-3 cümle + etiketler),
+  hashtag, kanca metni ve kapak fikri yazar; hepsi tek tıkla kopyalanır. Beğendiğiniz başlıklardan
+  sizin tarzınızı öğrenir.
 - Facecam üstte, oyun altta olacak şekilde **9:16 klip** üretir; kelime kelime altyazı ve kanca
   metni ekler.
 - En iyi kliplerden bölümlü, 16:9 bir **"en iyi anlar" videosu** hazırlar.
 - Arayüzü 7 dildedir (varsayılan Türkçe), koyu ve açık tema vardır, telefondan da kullanılabilir.
+  İlk açılışta kısa bir kurulum (dil, içerik türü, performans modu + donanım kontrolü) ve her
+  güncellemeden sonra "Yenilikler" penceresi gelir.
 
 ### Gizlilik
 
@@ -332,30 +348,30 @@ kez) ve güncellemeleri indirmek için kullanılır.
 
 ### Kurulum (Windows 10 / 11)
 
-1. [Son sürüm](https://github.com/utkualsir/clipforge/releases/latest) sayfasından
-   **`ClipForge-Setup.bat`** dosyasını indirin.
+1. [Son sürüm](https://github.com/utkualsir/sharkyclips/releases/latest) sayfasından
+   **`SharkyClips-Setup.bat`** dosyasını indirin.
 2. Çift tıklayın. Windows uyarı verirse **Çalıştır**'ı, SmartScreen çıkarsa **Ek bilgi → Yine de
    çalıştır**'ı seçin.
 3. Kurulum aracı neleri kuracağını listeler (Python, FFmpeg, Git, Deno, Ollama, Python paketleri,
    yapay zekâ modelleri; en fazla ~12 GB). Bilgisayarınızda olanları yeniden kurmaz. Başlamak için
    **Enter**'a basın.
-4. Bitince masaüstündeki **ClipForge** simgesine çift tıklayın; tarayıcıda açılır. Açık kalan bir
-   pencere olmaz: saatin yanındaki ClipForge simgesinden tekrar açabilir, performans modunu
+4. Bitince masaüstündeki **SharkyClips** simgesine çift tıklayın; tarayıcıda açılır. Açık kalan bir
+   pencere olmaz: saatin yanındaki SharkyClips simgesinden tekrar açabilir, performans modunu
    değiştirebilir veya kapatabilirsiniz.
 
 Kurulum mesajları Windows diliniz Türkçe ise Türkçe gösterilir.
 
 **macOS:** `install.sh` dosyasını indirip Terminal'de `bash ~/Downloads/install.sh` komutunu
-çalıştırın. Ardından Uygulamalar'daki **ClipForge**'u açın.
+çalıştırın. Ardından Uygulamalar'daki **SharkyClips**'u açın.
 
 ### Kullanım
 
 1. **Yeni proje**: bağlantıyı yapıştırın veya videoyu sürükleyip bırakın, modu seçin (Oyun / Ders /
    Müzik).
-2. ClipForge videoyu indirir, yazıya döker, öne çıkan anları bulur ve yapay zekâ analizini kendisi
+2. SharkyClips videoyu indirir, yazıya döker, öne çıkan anları bulur ve yapay zekâ analizini kendisi
    yapar.
 3. Adaylara tıklayıp önizleyin, beğendiklerinizi **Kabul edin**, ardından **Klipleri oluştur**'a basın.
-4. **Klipler** sekmesinden MP4'leri indirin; başlık ve hashtag'leri kopyalayıp paylaşın.
+4. **Klipler** sekmesinden MP4'leri indirin; başlığı ve açıklamayı kopyalayıp paylaşın.
 
 **Bilgisayarınızı yavaşlatmaz.** Varsayılan **Sessiz** modda düşük öncelikle, işlemci çekirdeklerinin
 yarısıyla çalışır, ekran kartında ~2 GB boş bırakır; oyun, OBS, tam ekran uygulama veya video
@@ -367,8 +383,8 @@ değiştirin. Ollama, Ayarlar'dan açmadığınız sürece Windows ile başlamaz
 ### Güncelleme ve kaldırma
 
 - **Güncelleme:** Ayarlar → Güncellemeler → **Güncellemeleri denetle** → **Şimdi güncelle**.
-  ClipForge yeni sürümü indirir ve kendini yeniden başlatır; projeleriniz ve ayarlarınız korunur.
-- **Kaldırma:** Ayarlar → Uygulamalar → **ClipForge** → Kaldır (veya `installer\windows\uninstall.bat`).
+  SharkyClips yeni sürümü indirir ve kendini yeniden başlatır; projeleriniz ve ayarlarınız korunur.
+- **Kaldırma:** Ayarlar → Uygulamalar → **SharkyClips** → Kaldır (veya `installer\windows\uninstall.bat`).
   Projelerinizi silmeden önce **mutlaka sorar**.
 
 ### Sık sorulanlar
@@ -376,7 +392,7 @@ değiştirin. Ollama, Ayarlar'dan açmadığınız sürece Windows ile başlamaz
 - **Ücretsiz mi?** Evet, tamamen ücretsiz ve açık kaynaklıdır (MIT). Filigran veya kredi yoktur.
 - **Güçlü bir bilgisayar gerekir mi?** Şart değil. NVIDIA ekran kartı veya Apple Silicon ile çok daha
   hızlıdır; ekran kartı olmadan da çalışır, sadece daha yavaştır.
-- **Klipleri benim yerime paylaşır mı?** Hayır. ClipForge hiçbir şey yüklemez; klipleri siz indirip
+- **Klipleri benim yerime paylaşır mı?** Hayır. SharkyClips hiçbir şey yüklemez; klipleri siz indirip
   paylaşırsınız.
 - **Bir sorun mu var?** Kurulum aracını tekrar çalıştırın (eksikleri onarır) veya
-  [bir hata kaydı açın](https://github.com/utkualsir/clipforge/issues/new/choose).
+  [bir hata kaydı açın](https://github.com/utkualsir/sharkyclips/issues/new/choose).

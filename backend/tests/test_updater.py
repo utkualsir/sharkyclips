@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from clipforge import __version__, updater
+from sharkyclips import __version__, updater
 
 pytestmark = pytest.mark.skipif(shutil.which("git") is None, reason="git is not installed")
 
@@ -18,9 +18,8 @@ def run(cwd: Path, *args: str) -> str:
 
 
 def commit_version(repo: Path, version: str, message: str) -> None:
-    init = repo / "backend" / "clipforge" / "__init__.py"
-    init.parent.mkdir(parents=True, exist_ok=True)
-    init.write_text(f'"""ClipForge."""\n\n__version__ = "{version}"\n', encoding="utf-8")
+    (repo / "VERSION").write_text(version + "\n", encoding="utf-8")
+    (repo / "backend").mkdir(exist_ok=True)
     (repo / "backend" / "requirements.txt").write_text("rich\n", encoding="utf-8")
     run(repo, "add", "-A")
     run(repo, "-c", "user.name=t", "-c", "user.email=t@example.com", "commit", "-q", "-m", message)
@@ -42,6 +41,7 @@ def repos(tmp_path):
 
 def test_parse_version():
     assert updater.parse_version('__version__ = "1.2.3"') == "1.2.3"
+    assert updater.parse_version("1.2.1\n") == "1.2.1"
     assert updater.parse_version("nothing") is None
     assert updater.version_tuple("1.10.0") > updater.version_tuple("1.9.9")
 
@@ -78,7 +78,7 @@ def test_apply_refuses_conflicting_local_changes(repos):
     author, user = repos
     commit_version(author, "9.9.9", "New version")
     run(author, "push", "-q")
-    (user / "backend" / "clipforge" / "__init__.py").write_text("# edited by hand\n", encoding="utf-8")
+    (user / "VERSION").write_text("# edited by hand\n", encoding="utf-8")
     updater.status(root=user)
-    with pytest.raises(updater.ClipForgeError):
+    with pytest.raises(updater.SharkyClipsError):
         updater.apply(root=user)

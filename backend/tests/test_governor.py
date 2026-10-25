@@ -11,8 +11,8 @@ import time
 import psutil
 import pytest
 
-from clipforge import governor, procs
-from clipforge.sysmon import Sample, UserState
+from sharkyclips import governor, procs
+from sharkyclips.sysmon import Sample, UserState
 
 CFG = {"perf_idle_minutes": 3, "perf_gpu_temp_limit": 85, "perf_pause_fullscreen": True,
        "perf_pause_video": True, "perf_pause_busy": True}
@@ -55,19 +55,19 @@ def test_game_list_is_configurable_and_exact():
     assert decide(s=s, cfg={"perf_games": ["code"]}).reason == "game"
 
 
-def test_fullscreen_and_video_pause_but_not_clipforge_itself():
+def test_fullscreen_and_video_pause_but_not_sharkyclips_itself():
     full = sample(user=UserState(idle_seconds=1, fg_name="vlc", fg_pid=50, fullscreen=True))
     assert decide(s=full).reason == "fullscreen"
     ours = sample(user=UserState(idle_seconds=1, fg_name="msedge", fg_pid=50, fullscreen=True,
-                                 fg_title="ClipForge - Microsoft Edge"))
+                                 fg_title="SharkyClips - Microsoft Edge"))
     assert decide(s=ours).state == "throttled"
     video = sample(video_decode=True, user=UserState(idle_seconds=1, fg_name="chrome", fg_pid=50))
     mem: dict = {}
     assert decide(s=video, mem=mem).state == "throttled"  # one tick could be a thumbnail
     assert decide(s=video, mem=mem).reason == "video"
-    ui = UserState(idle_seconds=1, fg_name="chrome", fg_pid=50, fg_title="ClipForge - Google Chrome")
+    ui = UserState(idle_seconds=1, fg_name="chrome", fg_pid=50, fg_title="SharkyClips - Google Chrome")
     own_player = sample(video_decode=True, video_apps={"chrome"}, user=ui)
-    assert decide(s=own_player, ticks=3).state == "throttled"  # ClipForge's review player
+    assert decide(s=own_player, ticks=3).state == "throttled"  # SharkyClips's review player
     other = sample(video_decode=True, video_apps={"chrome", "msedge"}, user=ui)
     assert decide(s=other, ticks=2).reason == "video"  # a video in another app still pauses
 
@@ -257,7 +257,7 @@ def test_hidden_child_windows(monkeypatch):
 
 
 def test_ollama_autostart_link_is_parked_and_restored(tmp_path, monkeypatch):
-    from clipforge import startup
+    from sharkyclips import startup
 
     start = tmp_path / "Startup"
     start.mkdir()

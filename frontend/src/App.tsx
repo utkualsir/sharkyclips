@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { GovernorWidget } from "./components/Governor";
-import { BrandMark, Icon } from "./components/Icons";
+import { useAppState } from "./appstate";
+import { BrandMark } from "./components/Brand";
+import { Icon } from "./components/Icons";
+import { DevBanner, Footer, WhatsNew } from "./components/Shell";
+import { Onboarding, Splash } from "./components/Welcome";
 import { jobLabel } from "./components/ui";
 import { UI_LANGUAGES, useI18n } from "./i18n";
 import { isActive, useJobs } from "./jobs";
@@ -26,11 +30,11 @@ function TopBar() {
 
   return (
     <header className="topbar">
-      <a className="brand" href={href.library} aria-label="ClipForge">
+      <a className="brand" href={href.library} aria-label="SharkyClips">
         <span className="brand-mark">
           <BrandMark />
         </span>
-        <span className="brand-name">ClipForge</span>
+        <span className="brand-name">SharkyClips</span>
       </a>
       <nav className="nav">
         <a
@@ -133,9 +137,22 @@ function ShutdownBanner() {
 
 export default function App() {
   const route = useRoute();
+  const { state, set } = useAppState();
+  const [splashDone, setSplashDone] = useState(false);
+  const [onboarded, setOnboarded] = useState(false);
+  const [manualWhatsNew, setManualWhatsNew] = useState(false);
+  const [whatsNewClosed, setWhatsNewClosed] = useState(false);
+  const showOnboarding = splashDone && !onboarded && !!state?.onboarding;
+  const autoWhatsNew = splashDone && !showOnboarding && !!state?.whats_new && !whatsNewClosed;
+  const closeWhatsNew = () => {
+    if (autoWhatsNew && state?.whats_new) api.whatsNewSeen(state.whats_new).then(set).catch(() => {});
+    setWhatsNewClosed(true);
+    setManualWhatsNew(false);
+  };
   return (
     <>
       <TopBar />
+      <DevBanner />
       <ShutdownBanner />
       {route.name === "library" && <Library />}
       {route.name === "settings" && <Settings />}
@@ -144,6 +161,12 @@ export default function App() {
       {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
       {route.name === "queue" && <Queue />}
       {route.name === "stats" && <Stats />}
+      <Footer onWhatsNew={() => setManualWhatsNew(true)} />
+      {(autoWhatsNew || manualWhatsNew) && state && (
+        <WhatsNew version={state.whats_new ?? state.version} onClose={closeWhatsNew} />
+      )}
+      {showOnboarding && <Onboarding onDone={() => setOnboarded(true)} />}
+      {!splashDone && <Splash onDone={() => setSplashDone(true)} />}
     </>
   );
 }

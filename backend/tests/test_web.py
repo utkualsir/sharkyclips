@@ -8,8 +8,8 @@ fastapi = pytest.importorskip("fastapi")
 from fastapi.testclient import TestClient  # noqa: E402
 
 import cli  # noqa: E402
-from clipforge import __version__  # noqa: E402
-from clipforge.web.app import app  # noqa: E402
+from sharkyclips import __version__  # noqa: E402
+from sharkyclips.web.app import app  # noqa: E402
 
 client = TestClient(app)
 
@@ -65,7 +65,7 @@ def test_port_helpers():
         s.listen(1)
         busy = s.getsockname()[1]
         assert cli._port_free(busy) is False
-        assert cli._clipforge_version_at(busy, timeout=0.3) is None
+        assert cli._sharkyclips_version_at(busy, timeout=0.3) is None
 
 
 def test_performance_settings():

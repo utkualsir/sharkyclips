@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for ClipForge
+description: Suggest an idea for SharkyClips
 labels: [enhancement]
 body:
   - type: textarea

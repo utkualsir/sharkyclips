@@ -1,7 +1,8 @@
-// Takes the README screenshots (dark + light) and the demo GIF from a running ClipForge.
+// Takes the README screenshots (dark + light) and the demo GIF from a running SharkyClips.
 //
-//   1. Start ClipForge on a COPY of your workspace (the demo accepts and renders clips):
-//        CLIPFORGE_HOME=<copy of ~/.clipforge with workspace_dir set> python backend/cli.py serve --no-browser --port 8130
+//   1. Start SharkyClips on a COPY of your workspace (the demo accepts and renders clips):
+//        SHARKYCLIPS_HOME=<copy of ~/.sharkyclips with workspace_dir set> python backend/cli.py serve --no-browser --port 8130
+//      (leave dev_in_progress.json out of the copy, or the "under construction" banner is in every shot)
 //   2. npm i playwright@1.56.0 (in any folder), then from there:
 //        node <repo>/docs/capture.mjs http://localhost:8130 <project-id> <repo>/docs
 //
@@ -12,7 +13,7 @@ import { mkdirSync, readdirSync, renameSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
 
-// Playwright is loaded from the folder you run this in (it isn't a ClipForge dependency).
+// Playwright is loaded from the folder you run this in (it isn't a SharkyClips dependency).
 const { chromium } = createRequire(join(process.cwd(), "index.js"))("playwright");
 
 const [base = "http://localhost:8130", pid, outDir = "docs"] = process.argv.slice(2);
@@ -31,6 +32,7 @@ async function context(theme, extra = {}) {
   await ctx.addInitScript((t) => {
     localStorage.setItem("cf-theme", t);
     localStorage.setItem("cf-lang", "en");
+    sessionStorage.setItem("sc-splash-shown", "1"); // no start-up splash in the shots
   }, theme);
   return ctx;
 }
@@ -43,6 +45,8 @@ async function settle(page, ms = 1800) {
 }
 
 // ------------------------------------------------------------- screenshots
+const app = await api("GET", "/api/app");
+await api("POST", "/api/app/whats-new-seen", { version: app.version }); // no "What's new" popup
 const project = await api("GET", `/api/projects/${pid}`);
 const firstThree = project.highlights.candidates.slice(0, 3).map((c) => c.id);
 await api("PUT", `/api/projects/${pid}/review`, { accepted: firstThree });

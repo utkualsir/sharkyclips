@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from clipforge.game import detect
-from clipforge.game.events import df_events, lol_events, lol_kda_series
-from clipforge.game.presets import match_rules, multi_count, normalize, save_override, scaled_boxes
-from clipforge.game.sounds import event_code
-from clipforge.highlights.candidates import fit_spans
-from clipforge.highlights.modes import get_mode
+from sharkyclips.game import detect
+from sharkyclips.game.events import df_events, lol_events, lol_kda_series
+from sharkyclips.game.presets import match_rules, multi_count, normalize, save_override, scaled_boxes
+from sharkyclips.game.sounds import event_code
+from sharkyclips.highlights.candidates import fit_spans
+from sharkyclips.highlights.modes import get_mode
 
 
 def test_normalize_turkish():

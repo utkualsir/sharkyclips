@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAppState } from "../appstate";
 import { api, type LlmInfo, type Mode, type PerfMode, type Settings as SettingsT, type UpdateStatus } from "../api";
 import { Icon } from "../components/Icons";
 import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
@@ -167,6 +168,7 @@ function UpdatesCard() {
         <p>{t("settings.updates_desc", { v: meta?.version ?? "" })}</p>
       </div>
       <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+        <StaleDevNote />
         {body}
         {phase === "idle" && !(job && isActive(job)) && (
           <div>
@@ -178,6 +180,32 @@ function UpdatesCard() {
         )}
       </div>
     </section>
+  );
+}
+
+/** An "under construction" flag older than 12 hours: no banner any more, just this note. */
+function StaleDevNote() {
+  const { t, lang } = useI18n();
+  const { state, set } = useAppState();
+  const meta = useMeta();
+  const stale = state?.dev_stale;
+  if (!stale) return null;
+  const time = new Intl.DateTimeFormat(`${lang}-u-nu-latn`, { dateStyle: "medium", timeStyle: "short" }).format(
+    new Date(stale.started_at),
+  );
+  return (
+    <div className="notice" style={{ alignItems: "center", flexWrap: "wrap" }}>
+      <Icon name="clock" />
+      <span style={{ flex: "1 1 240px" }}>
+        {t("dev.stale", { time })}
+        {stale.task && <span className="muted"> ({stale.task})</span>}
+      </span>
+      {meta?.is_local && (
+        <button className="btn btn-sm" onClick={() => api.clearDevFlag().then(set).catch(() => {})}>
+          {t("dev.stale_clear")}
+        </button>
+      )}
+    </div>
   );
 }
 

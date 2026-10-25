@@ -164,7 +164,7 @@ function GovernorPanel({ g, history, onResume }: { g: GovernorView; history: Res
       <div className="gov-legend" aria-hidden>
         <span>
           <i className="sw sw-ours" />
-          ClipForge
+          SharkyClips
         </span>
         <span>
           <i className="sw sw-other" />
@@ -226,7 +226,7 @@ function GovernorPanel({ g, history, onResume }: { g: GovernorView; history: Res
           <span>{t("gov.ram")}</span>
           <span className="mono">
             {gb(s.ram_used_mb)} / {gb(s.ram_total_mb, 0)} GB
-            <span className="muted"> · ClipForge {gb(s.ram_ours_mb)} GB</span>
+            <span className="muted"> · SharkyClips {gb(s.ram_ours_mb)} GB</span>
           </span>
         </div>
       )}
@@ -244,7 +244,7 @@ function GovernorPanel({ g, history, onResume }: { g: GovernorView; history: Res
 const W = 300;
 const H = 64;
 
-/** Stacked area: ClipForge (bottom) + other apps (top) = total; or a single line. */
+/** Stacked area: SharkyClips (bottom) + other apps (top) = total; or a single line. */
 function MiniChart(props: {
   title: string;
   now: string;
@@ -333,7 +333,7 @@ function MiniChart(props: {
               <>
                 <div>
                   <i className="sw sw-ours" />
-                  ClipForge <b className="mono">{fmt(our(h))}</b>
+                  SharkyClips <b className="mono">{fmt(our(h))}</b>
                 </div>
                 <div>
                   <i className="sw sw-other" />

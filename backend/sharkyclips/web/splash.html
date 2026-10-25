@@ -1,0 +1,109 @@
+<!doctype html>
+<!-- SharkyClips start-up splash. The launcher writes a copy to ~/.sharkyclips/splash.html with the
+     app URL and language filled in and opens it at once; it waits for the server, then opens
+     the app (which skips its own splash). Keep the look in sync with Splash in frontend/src. -->
+<html lang="en" dir="__DIR__">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SharkyClips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Instrument+Serif&family=Noto+Sans+Arabic:wght@400..600&display=swap" />
+<style>
+  :root { --navy: #0e1a33; --ocean: #1f6fe5; --muted: #52607d; --wave: #a9c6f3; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #ffffff; color: var(--navy);
+    font-family: "Geist", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif; }
+  body { display: grid; place-items: center; cursor: default; overflow: hidden; }
+  .stage { display: grid; justify-items: center; gap: 22px; padding: 24px; text-align: center; }
+  .mark { width: min(260px, 64vw); height: auto; overflow: visible; }
+  .fin { animation: glide 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .waves { animation: drift 2.4s linear infinite; }
+  .name { font-family: "Instrument Serif", Georgia, serif; font-size: 44px; line-height: 1; letter-spacing: -0.01em;
+    animation: rise 0.6s 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .slogan { margin: -8px 0 0; font-size: 16px; color: var(--muted);
+    animation: rise 0.6s 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .status { position: fixed; bottom: 28px; left: 0; right: 0; text-align: center; font-size: 12.5px; color: var(--muted);
+    opacity: 0; transition: opacity 0.4s; }
+  .status.show { opacity: 1; }
+  .skip { position: fixed; top: 18px; inset-inline-end: 20px; font-size: 12px; color: var(--muted); opacity: 0.7; }
+  @keyframes glide { from { transform: translateX(-46px); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-12px); } }
+  @keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .fin, .name, .slogan { animation: fade 0.3s both; }
+    .waves { animation: none; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  }
+</style>
+</head>
+<body>
+  <main class="stage" role="status" aria-live="polite">
+    <svg class="mark" viewBox="0 0 160 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="fin" x1="0" y1="0" x2="0.35" y2="1">
+          <stop offset="0" stop-color="#1F6FE5" /><stop offset="1" stop-color="#0F3A94" />
+        </linearGradient>
+        <clipPath id="sea"><rect x="0" y="40" width="160" height="24" /></clipPath>
+      </defs>
+      <g clip-path="url(#sea)">
+        <path class="waves" fill="none" stroke="var(--wave)" stroke-width="2.6" stroke-linecap="round"
+          d="M-12 50q3-1.6 6 0t6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0" />
+      </g>
+      <g transform="translate(49 0)">
+        <g class="fin">
+          <path fill-rule="evenodd" fill="url(#fin)" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" />
+        </g>
+      </g>
+    </svg>
+    <div class="name">SharkyClips</div>
+    <p class="slogan" id="slogan"></p>
+  </main>
+  <div class="status" id="status"></div>
+  <script>
+    (function () {
+      var APP = __APP_URL__;
+      var LANG = __LANG__;
+      var T = {
+        tr: ["En iyi anların avlanmaya hazır.", "Başlatılıyor…", "SharkyClips başlamadı. Günlük: ~/.sharkyclips/logs/sharkyclips.log"],
+        en: ["Hunt your best moments.", "Starting…", "SharkyClips didn't start. Log: ~/.sharkyclips/logs/sharkyclips.log"],
+        de: ["Deine besten Momente – bereit für die Jagd.", "Wird gestartet…", "SharkyClips ist nicht gestartet. Protokoll: ~/.sharkyclips/logs/sharkyclips.log"],
+        hu: ["Vadászd le a legjobb pillanataidat.", "Indítás…", "A SharkyClips nem indult el. Napló: ~/.sharkyclips/logs/sharkyclips.log"],
+        ru: ["Охоться за своими лучшими моментами.", "Запуск…", "SharkyClips не запустился. Журнал: ~/.sharkyclips/logs/sharkyclips.log"],
+        ar: ["اصطد أفضل لحظاتك.", "جارٍ التشغيل…", "لم يبدأ SharkyClips. السجل: ~/.sharkyclips/logs/sharkyclips.log"],
+        zh: ["猎取你的高光时刻。", "正在启动…", "SharkyClips 未能启动。日志：~/.sharkyclips/logs/sharkyclips.log"]
+      };
+      var t = T[LANG] || T.en;
+      document.documentElement.lang = LANG;
+      document.getElementById("slogan").textContent = t[0];
+      var status = document.getElementById("status");
+      var started = Date.now(), MIN = 1500, ready = false, skipped = false, gone = false;
+      function go() {
+        if (gone) return;
+        gone = true;
+        location.replace(APP.replace(/\/$/, "") + "/?splash=done");
+      }
+      function maybeGo() { if (ready && (skipped || Date.now() - started >= MIN)) go(); }
+      function ping() {
+        var img = new Image();
+        img.onload = function () { ready = true; maybeGo(); };
+        img.onerror = function () {
+          if (Date.now() - started > 120000) { status.textContent = t[2]; status.className = "status show"; return; }
+          setTimeout(ping, 250);
+        };
+        img.src = APP.replace(/\/$/, "") + "/favicon.svg?ping=" + Date.now();
+      }
+      function skip() {
+        skipped = true;
+        if (!ready) { status.textContent = t[1]; status.className = "status show"; }
+        maybeGo();
+      }
+      ping();
+      setTimeout(function () { if (!ready) { status.textContent = t[1]; status.className = "status show"; } maybeGo(); }, MIN);
+      document.addEventListener("click", skip);
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") skip(); });
+    })();
+  </script>
+</body>
+</html>

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from clipforge import __version__, config, languages
-from clipforge.chat import parse_file
-from clipforge.errors import ClipForgeError
-from clipforge.project import make_project_id, slugify
-from clipforge.textutil import mmss
-from clipforge.titles.lexicon import fix_tr_question_particle, strip_emoji
+from sharkyclips import __version__, config, languages
+from sharkyclips.chat import parse_file
+from sharkyclips.errors import SharkyClipsError
+from sharkyclips.project import make_project_id, slugify
+from sharkyclips.textutil import mmss
+from sharkyclips.titles.lexicon import fix_tr_question_particle, strip_emoji
 
 
 def test_version_is_semver():
@@ -18,12 +18,12 @@ def test_version_is_semver():
 def test_languages_registry():
     assert {"tr", "en", "ru", "hu", "de", "ar", "zh"} <= set(languages.codes())
     assert languages.is_rtl("ar") and not languages.is_rtl("tr")
-    with pytest.raises(ClipForgeError):
+    with pytest.raises(SharkyClipsError):
         languages.require("xx")
 
 
 def test_config_uses_test_home(tmp_path):
-    assert "clipforge-test-home" in str(config.config_dir())
+    assert "sharkyclips-test-home" in str(config.config_dir())
     cfg = config.update(default_mode="study")
     assert cfg["default_mode"] == "study"
     assert config.get("default_mode") == "study"
@@ -63,5 +63,5 @@ def test_chat_text_log(tmp_path):
 def test_chat_unknown_json(tmp_path):
     bad = tmp_path / "chat.json"
     bad.write_text('{"something": 1}', encoding="utf-8")
-    with pytest.raises(ClipForgeError):
+    with pytest.raises(SharkyClipsError):
         parse_file(bad)

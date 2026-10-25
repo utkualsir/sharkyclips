@@ -1,4 +1,4 @@
-// Typed client for the ClipForge REST API (backend/clipforge/web/app.py).
+// Typed client for the SharkyClips REST API (backend/sharkyclips/web/app.py).
 
 export type Mode = "gaming" | "study" | "music";
 export type Layout = "auto" | "split" | "fit" | "crop";
@@ -202,6 +202,8 @@ export interface Publish {
   hashtags: string[];
   cover_prompt: string | null;
   cover_text: string | null;
+  /** YouTube description: 2-3 sentences + the hashtags at the end */
+  description: string | null;
   hook_text: string | null;
   language: string | null;
   /** title text -> 1 (liked) / -1 (disliked) */
@@ -421,7 +423,7 @@ export interface Settings {
 export type PerfMode = "silent" | "balanced" | "turbo";
 export type GovState = "running" | "throttled" | "paused" | "waiting_idle" | "cooling" | "idle" | "off";
 
-/** One resource sample (every ~2 s). *_ours = ClipForge's own processes. */
+/** One resource sample (every ~2 s). *_ours = SharkyClips's own processes. */
 export interface ResourceSample {
   t: number;
   cpu: number;
@@ -468,7 +470,27 @@ export class ApiError extends Error {
   }
 }
 
+// Heavy jobs (GPU / long CPU work). While an update is being built ("under construction"
+// banner), starting one asks first; DevBanner registers the dialog.
+const HEAVY: [string, RegExp][] = [
+  ["POST", /^\/api\/projects$/],
+  ["POST", /\/(transcribe|highlights|analyze|render|montage)$/],
+  ["POST", /\/game\/rescan$/],
+  ["PUT", /\/game$/],
+  ["POST", /^\/api\/(llm\/benchmark|queue\/render|update)$/],
+  ["PUT", /^\/api\/uploads/],
+];
+let heavyGuard: (() => Promise<void>) | null = null;
+export function setHeavyGuard(guard: (() => Promise<void>) | null) {
+  heavyGuard = guard;
+}
+async function guardHeavy(method: string, path: string) {
+  const p = path.split("?")[0];
+  if (heavyGuard && HEAVY.some(([m, re]) => m === method && re.test(p))) await heavyGuard();
+}
+
 async function req<T>(method: string, path: string, body?: unknown): Promise<T> {
+  await guardHeavy(method, path);
   const res = await fetch(path, {
     method,
     headers: body !== undefined ? { "Content-Type": "application/json" } : undefined,
@@ -491,7 +513,55 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 
 const P = (id: string) => `/api/projects/${encodeURIComponent(id)}`;
 
+export interface DevState {
+  task: string;
+  started_at: string;
+  hours: number;
+  stale: boolean;
+}
+
+export interface AppState {
+  version: string;
+  /** first launch: show the 3-step onboarding */
+  onboarding: boolean;
+  /** version whose "What's new" should be shown once */
+  whats_new: string | null;
+  /** "under construction" banner (fresh flag) */
+  dev: DevState | null;
+  /** flag older than 12 h: no banner, a note in Settings */
+  dev_stale: DevState | null;
+  content_types: string[];
+}
+
+export interface ChangelogEntry {
+  version: string;
+  date: string | null;
+  lang: string;
+  markdown: string;
+}
+
+export interface HardwareCheck {
+  cpu: string;
+  cores: number;
+  ram_gb: number;
+  gpu: string | null;
+  vram_gb: number | null;
+  apple_silicon: boolean;
+  whisper: { model: string | null; device: string };
+  encoder: { name: string; label: string; hardware: boolean } | null;
+  llm: { available: boolean; model: string };
+  verdict: "great" | "good" | "cpu";
+}
+
 export const api = {
+  appState: () => req<AppState>("GET", "/api/app"),
+  changelog: (version: string, lang: string) =>
+    req<ChangelogEntry>("GET", `/api/changelog/${encodeURIComponent(version)}?lang=${encodeURIComponent(lang)}`),
+  whatsNewSeen: (version: string) => req<AppState>("POST", "/api/app/whats-new-seen", { version }),
+  finishOnboarding: (body: { ui_language?: string; content_types?: string[]; performance_mode?: string }) =>
+    req<AppState & { settings: Settings }>("POST", "/api/app/onboarding", body),
+  hardwareCheck: () => req<HardwareCheck>("GET", "/api/app/hardware"),
+  clearDevFlag: () => req<AppState>("DELETE", "/api/app/dev"),
   meta: () => req<Meta>("GET", "/api/meta"),
   settings: () => req<Settings>("GET", "/api/settings"),
   saveSettings: (s: Partial<Settings>) => req<Settings>("PUT", "/api/settings", s),
@@ -597,7 +667,7 @@ export function uploadFile(
 ): { promise: Promise<Job>; abort: () => void } {
   const xhr = new XMLHttpRequest();
   const q = new URLSearchParams({ filename: file.name, mode, language });
-  const promise = new Promise<Job>((resolve, reject) => {
+  const promise = guardHeavy("PUT", "/api/uploads").then(() => new Promise<Job>((resolve, reject) => {
     xhr.open("PUT", `/api/uploads?${q}`);
     xhr.setRequestHeader("Content-Type", "application/octet-stream");
     xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total);
@@ -614,6 +684,6 @@ export function uploadFile(
     xhr.onerror = () => reject(new ApiError("Network error", null, 0));
     xhr.onabort = () => reject(new ApiError("aborted", null, 0));
     xhr.send(file);
-  });
+  }));
   return { promise, abort: () => xhr.abort() };
 }

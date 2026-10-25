@@ -65,12 +65,15 @@ export function Modal({
   children,
   footer,
   wide,
+  top,
 }: {
   title: ReactNode;
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
   wide?: boolean;
+  /** above other open dialogs (a question asked while a dialog is open) */
+  top?: boolean;
 }) {
   const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
@@ -85,7 +88,7 @@ export function Modal({
     };
   }, [onClose]);
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className={`modal-backdrop${top ? " modal-top" : ""}`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal${wide ? " modal-wide" : ""}`} role="dialog" aria-modal="true" ref={ref}>
         <div className="modal-head">
           <h2>{title}</h2>

@@ -1,4 +1,4 @@
-# ClipForge core dependencies (all free & open source).
+# SharkyClips core dependencies (all free & open source).
 # NVIDIA GPU users: also install requirements-nvidia.txt (or just run `python cli.py doctor`).
 faster-whisper>=1.1.0
 yt-dlp[default]>=2025.11.12

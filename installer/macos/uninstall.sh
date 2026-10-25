@@ -1,5 +1,5 @@
 #!/bin/bash
-# Remove ClipForge from this Mac. Asks before deleting your projects, settings and AI models
+# Remove SharkyClips from this Mac. Asks before deleting your projects, settings and AI models
 # (the default answer keeps them). Homebrew packages (python, ffmpeg, git, deno, ollama) stay.
 #
 #   bash installer/macos/uninstall.sh [--yes] [--delete-projects] [--lang tr|en] [--shortcut-dir DIR]
@@ -34,14 +34,14 @@ ask() {
 }
 
 APP_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-[ -f "$APP_DIR/backend/cli.py" ] || { echo "$APP_DIR is not a ClipForge folder."; exit 1; }
+[ -f "$APP_DIR/backend/cli.py" ] || { echo "$APP_DIR is not a SharkyClips folder."; exit 1; }
 cd /tmp || exit 1
 
 echo
-echo "$(t 'ClipForge kaldırılacak:' 'This removes ClipForge:') $APP_DIR"
+echo "$(t 'SharkyClips kaldırılacak:' 'This removes SharkyClips:') $APP_DIR"
 if [ "$YES" = 0 ]; then ask "$(t 'Devam edilsin mi?' 'Continue?')" 0 || { echo "$(t 'İptal edildi.' 'Cancelled.')"; exit 0; }; fi
 
-CONFIG_DIR="${CLIPFORGE_HOME:-$HOME/.clipforge}"
+CONFIG_DIR="${SHARKYCLIPS_HOME:-$HOME/.sharkyclips}"
 WORKSPACE="$APP_DIR/workspace"
 custom="$(/usr/bin/python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("workspace_dir") or "")' "$CONFIG_DIR/config.json" 2>/dev/null)"
 [ -n "$custom" ] && WORKSPACE="${custom/#\~/$HOME}"
@@ -61,9 +61,12 @@ if [ "$YES" = 0 ] && ask "$(t 'İndirilmiş yapay zekâ modelleri (Whisper, Qwen
 
 pkill -f "$APP_DIR/.venv/bin/python" 2>/dev/null
 desk="${SHORTCUT_DIR:-$HOME/Desktop}"
-if grep -q "$APP_DIR" "$desk/ClipForge.command" 2>/dev/null; then rm -f "$desk/ClipForge.command"; ok "$desk/ClipForge.command"; fi
-app="${SHORTCUT_DIR:-$HOME/Applications}/ClipForge.app"
-if grep -q "$APP_DIR" "$app/Contents/MacOS/ClipForge" 2>/dev/null; then rm -rf "$app"; ok "$app"; fi
+# ClipForge = the name before 1.2.1 (launchers the app hasn't renamed yet)
+for name in SharkyClips ClipForge; do
+  if grep -q "$APP_DIR" "$desk/$name.command" 2>/dev/null; then rm -f "$desk/$name.command"; ok "$desk/$name.command"; fi
+  app="${SHORTCUT_DIR:-$HOME/Applications}/$name.app"
+  if grep -q "$APP_DIR" "$app/Contents/MacOS/$name" 2>/dev/null; then rm -rf "$app"; ok "$app"; fi
+done
 if [ "$delete_models" = 1 ]; then
   hub="${HF_HOME:-$HOME/.cache/huggingface}/hub"
   rm -rf "$hub"/models--*faster-whisper* "$hub"/models--mlx-community--whisper* 2>/dev/null
@@ -73,6 +76,8 @@ if [ "$delete_models" = 1 ]; then
   ok "$(t 'Modeller silindi' 'Models deleted')"
 fi
 [ "$delete_cfg" = 1 ] && rm -rf "$CONFIG_DIR" && ok "$CONFIG_DIR"
+# the settings folder before 1.2.1, if the app never moved it
+[ "$delete_cfg" = 1 ] && [ -z "$SHARKYCLIPS_HOME" ] && [ -d "$HOME/.clipforge" ] && rm -rf "$HOME/.clipforge"
 [ "$delete_ws" = 1 ] && rm -rf "$WORKSPACE" && ok "$(t 'Projeler silindi' 'Projects deleted')"
 if [ -d "$WORKSPACE" ] && [ "$projects" -gt 0 ] && [ "${WORKSPACE#"$APP_DIR"/}" != "$WORKSPACE" ]; then
   find "$APP_DIR" -mindepth 1 -maxdepth 1 ! -path "$WORKSPACE" -exec rm -rf {} +
@@ -80,5 +85,5 @@ if [ -d "$WORKSPACE" ] && [ "$projects" -gt 0 ] && [ "${WORKSPACE#"$APP_DIR"/}" 
 else
   rm -rf "$APP_DIR"
 fi
-ok "$(t 'ClipForge kaldırıldı.' 'ClipForge removed.')"
+ok "$(t 'SharkyClips kaldırıldı.' 'SharkyClips removed.')"
 echo "$(t 'Homebrew paketleri yerinde bırakıldı (brew uninstall ile kaldırabilirsiniz).' 'Homebrew packages were left installed (remove them with brew uninstall).')"

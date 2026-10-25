@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ClipForge command line.
+"""SharkyClips command line.
 
     python cli.py doctor
     python cli.py ingest <url-or-path> [--mode gaming|study|music]
@@ -15,7 +15,7 @@
     python cli.py launch [--tray]        (desktop shortcut: reuse a running server or start one)
 
 Started with pythonw.exe (the Windows shortcut), there is no console: output goes to
-~/.clipforge/logs/clipforge.log and a tray icon opens or quits ClipForge.
+~/.sharkyclips/logs/sharkyclips.log and a tray icon opens or quits SharkyClips.
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ import time
 from pathlib import Path
 
 if sys.version_info < (3, 11):
-    sys.exit(f"ClipForge needs Python 3.11 or newer (you have {sys.version.split()[0]}).\n"
+    sys.exit(f"SharkyClips needs Python 3.11 or newer (you have {sys.version.split()[0]}).\n"
              "Windows: winget install --id Python.Python.3.12 -e\n"
              "macOS:   brew install python@3.12")
 
@@ -37,11 +37,12 @@ def _log_without_console() -> None:
     """pythonw has no stdout/stderr: write them to a log file instead of losing them."""
     if sys.stdout is not None and sys.stderr is not None:
         return
-    home = Path(os.environ.get("CLIPFORGE_HOME") or Path.home() / ".clipforge")
-    log = home / "logs" / "clipforge.log"
+    home = Path(os.environ.get("SHARKYCLIPS_HOME") or os.environ.get("CLIPFORGE_HOME")
+                or Path.home() / ".sharkyclips")
+    log = home / "logs" / "sharkyclips.log"
     try:
         log.parent.mkdir(parents=True, exist_ok=True)
-        if os.environ.get("CLIPFORGE_SUPERVISED") != "1" and log.is_file() and log.stat().st_size > 5_000_000:
+        if os.environ.get("SHARKYCLIPS_SUPERVISED") != "1" and log.is_file() and log.stat().st_size > 5_000_000:
             log.replace(log.with_suffix(".old.log"))
         f = open(log, "a", encoding="utf-8", buffering=1)  # noqa: SIM115 - lives as long as the process
     except OSError:
@@ -56,11 +57,11 @@ os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("HF_HUB_VERBOSITY", "error")  # hide "unauthenticated requests" notice
 
 try:
-    from clipforge import __version__, config, languages
-    from clipforge.errors import ClipForgeError
-    from clipforge.hardware import MODEL_CHOICES
-    from clipforge.project import MODES
-    from clipforge.ui import console, fmt_time
+    from sharkyclips import __version__, config, languages
+    from sharkyclips.errors import SharkyClipsError
+    from sharkyclips.hardware import MODEL_CHOICES
+    from sharkyclips.project import MODES
+    from sharkyclips.ui import console, fmt_time
 except ImportError as exc:  # dependencies not installed yet
     req = Path(__file__).resolve().parent / "requirements.txt"
     sys.exit(f"Missing Python package: {exc.name or exc}\n"
@@ -69,7 +70,7 @@ except ImportError as exc:  # dependencies not installed yet
 
 
 def cmd_doctor(args) -> int:
-    from clipforge.doctor import run_doctor
+    from sharkyclips.doctor import run_doctor
 
     return run_doctor(fix=not args.no_fix, download_models=args.download_models)
 
@@ -77,7 +78,7 @@ def cmd_doctor(args) -> int:
 def cmd_ingest(args) -> int:
     from rich.table import Table
 
-    from clipforge.ingest import ingest
+    from sharkyclips.ingest import ingest
 
     mode = args.mode or config.get("default_mode")
     project = ingest(args.source, mode=mode)
@@ -93,8 +94,8 @@ def cmd_ingest(args) -> int:
 
 
 def cmd_transcribe(args) -> int:
-    from clipforge.project import get_project
-    from clipforge.transcribe import summary_line, transcribe_project
+    from sharkyclips.project import get_project
+    from sharkyclips.transcribe import summary_line, transcribe_project
 
     project = get_project(args.id)
     lang = args.lang or config.get("transcribe_language") or "auto"
@@ -107,7 +108,7 @@ def cmd_transcribe(args) -> int:
     console.print(f"Transcript: {project.transcript_path}")
     if transcript.get("language") and not transcript.get("language_supported"):
         console.print(f"[yellow]Detected language '{transcript['language']}' isn't one of "
-                      f"ClipForge's languages ({', '.join(languages.codes())}); later steps may "
+                      f"SharkyClips's languages ({', '.join(languages.codes())}); later steps may "
                       "not fully support it.[/]")
     return 0
 
@@ -115,8 +116,8 @@ def cmd_transcribe(args) -> int:
 def cmd_highlights(args) -> int:
     from rich.table import Table
 
-    from clipforge.highlights import run_highlights
-    from clipforge.project import get_project
+    from sharkyclips.highlights import run_highlights
+    from sharkyclips.project import get_project
 
     project = get_project(args.id)
     res = run_highlights(project, mode=args.mode, top=args.top, force=args.force)
@@ -147,30 +148,30 @@ def cmd_highlights(args) -> int:
 def cmd_cut(args) -> int:
     from rich.table import Table
 
-    from clipforge.errors import ClipForgeError
-    from clipforge.project import get_project, read_json
-    from clipforge.render import export_preview, pick_encoder, preview_name
-    from clipforge.ui import time_progress
+    from sharkyclips.errors import SharkyClipsError
+    from sharkyclips.project import get_project, read_json
+    from sharkyclips.render import export_preview, pick_encoder, preview_name
+    from sharkyclips.ui import time_progress
 
     project = get_project(args.id)
     hl_path = project.dir / "highlights.json"
     if not hl_path.is_file():
-        raise ClipForgeError("No highlights yet for this project.",
-                             f"Run: python cli.py highlights {project.id}")
+        raise SharkyClipsError("No highlights yet for this project.",
+                               f"Run: python cli.py highlights {project.id}")
     cands = read_json(hl_path)["candidates"]
     if args.all:
         chosen = cands
     elif args.rank is not None:
         chosen = [c for c in cands if c["rank"] == args.rank]
         if not chosen:
-            raise ClipForgeError(f"No candidate with rank {args.rank}.",
-                                 f"Ranks available: 1-{len(cands)}")
+            raise SharkyClipsError(f"No candidate with rank {args.rank}.",
+                                   f"Ranks available: 1-{len(cands)}")
     else:
-        raise ClipForgeError("Tell me which clip to cut.", "Pass a rank (e.g. 1) or --all.")
+        raise SharkyClipsError("Tell me which clip to cut.", "Pass a rank (e.g. 1) or --all.")
     source = project.source_path
     if source is None:
-        raise ClipForgeError("The project's source video is missing.",
-                             "Re-run: python cli.py ingest <url-or-path>")
+        raise SharkyClipsError("The project's source video is missing.",
+                               "Re-run: python cli.py ingest <url-or-path>")
 
     enc, notes = pick_encoder()
     for note in notes:
@@ -198,8 +199,8 @@ def cmd_cut(args) -> int:
 
 
 def cmd_chat(args) -> int:
-    from clipforge import chat
-    from clipforge.project import get_project
+    from sharkyclips import chat
+    from sharkyclips.project import get_project
 
     project = get_project(args.id)
     if args.file:
@@ -219,8 +220,8 @@ def cmd_analyze(args) -> int:
     from rich.markup import escape
     from rich.table import Table
 
-    from clipforge.analyze import analyze_project
-    from clipforge.project import get_project
+    from sharkyclips.analyze import analyze_project
+    from sharkyclips.project import get_project
 
     project = get_project(args.id)
 
@@ -255,15 +256,15 @@ def cmd_analyze(args) -> int:
 def cmd_render(args) -> int:
     from rich.table import Table
 
-    from clipforge.clips import ClipOptions, Facecam, render_clip
-    from clipforge.project import get_project
-    from clipforge.ui import time_progress
-    from clipforge.web import state
+    from sharkyclips.clips import ClipOptions, Facecam, render_clip
+    from sharkyclips.project import get_project
+    from sharkyclips.ui import time_progress
+    from sharkyclips.web import state
 
     project = get_project(args.id)
     hl = state.load_highlights(project)
     if not hl:
-        raise ClipForgeError("No highlights yet.", f"Run: python cli.py highlights {project.id}")
+        raise SharkyClipsError("No highlights yet.", f"Run: python cli.py highlights {project.id}")
     review = state.load_review(project, hl)
     cands = hl["candidates"]
     if args.all:
@@ -273,7 +274,7 @@ def cmd_render(args) -> int:
     else:
         chosen = [c for c in cands if c["rank"] in (args.ranks or [])]
     if not chosen:
-        raise ClipForgeError("No clips selected.", "Pass ranks (e.g. 1 2 3), --accepted or --all.")
+        raise SharkyClipsError("No clips selected.", "Pass ranks (e.g. 1 2 3), --accepted or --all.")
     opts = {**review["options"], **{k: v for k, v in {
         "layout": args.layout, "subtitles": args.subs, "subtitle_lang": args.sub_lang}.items() if v}}
     if args.hook:
@@ -304,7 +305,7 @@ def cmd_render(args) -> int:
 def cmd_list(args) -> int:
     from rich.table import Table
 
-    from clipforge.project import list_projects
+    from sharkyclips.project import list_projects
 
     projects = list_projects()
     if not projects:
@@ -363,17 +364,22 @@ def _ensure_frontend() -> None:
     if npm is None:
         if index.is_file():
             return  # the shipped build is fine; sources only matter to developers
-        raise ClipForgeError("The web UI isn't built and Node.js isn't installed.",
-                             "Install Node.js (Windows: winget install OpenJS.NodeJS.LTS, "
-                             "macOS: brew install node), then run serve again.")
+        raise SharkyClipsError("The web UI isn't built and Node.js isn't installed.",
+                               "Install Node.js (Windows: winget install OpenJS.NodeJS.LTS, "
+                               "macOS: brew install node), then run serve again.")
+    from sharkyclips import procs
+
     console.print("Building the web UI (first run only) ...")
+    steps = [[npm, "run", "build"]]
     if not (root / "node_modules").is_dir():
-        subprocess.run([npm, "install", "--no-audit", "--no-fund"], cwd=root, check=True)
-    subprocess.run([npm, "run", "build"], cwd=root, check=True)
+        steps.insert(0, [npm, "install", "--no-audit", "--no-fund"])
+    for step in steps:
+        if procs.run_streamed(step, cwd=root) != 0:
+            raise subprocess.CalledProcessError(1, step)
 
 
-def _clipforge_version_at(port: int, timeout: float = 0.8) -> str | None:
-    """Version of the ClipForge server answering on this port, or None."""
+def _sharkyclips_version_at(port: int, timeout: float = 0.8) -> str | None:
+    """Version of the SharkyClips server answering on this port, or None."""
     import json
     import urllib.request
 
@@ -407,7 +413,7 @@ def _open_browser_when_ready(url: str, port: int, timeout: float = 90) -> None:
     def wait() -> None:
         deadline = time.time() + timeout
         while time.time() < deadline:
-            if _clipforge_version_at(port):
+            if _sharkyclips_version_at(port):
                 webbrowser.open(url)
                 return
             time.sleep(0.4)
@@ -415,9 +421,27 @@ def _open_browser_when_ready(url: str, port: int, timeout: float = 90) -> None:
     threading.Thread(target=wait, daemon=True).start()
 
 
+def _open_splash_or_wait(url: str, port: int) -> None:
+    """Open the splash page right away (it waits for the server and then opens the app), so the
+    start-up time is spent looking at the splash, not at nothing. Falls back to opening the app
+    when the server is ready."""
+    import webbrowser
+
+    from sharkyclips import welcome
+
+    splash = welcome.write_splash(url)
+    if splash is not None:
+        try:
+            if webbrowser.open(splash.resolve().as_uri()):
+                return
+        except Exception:  # noqa: BLE001 - no browser registered for files: use the old way
+            pass
+    _open_browser_when_ready(url, port)
+
+
 def _run_server(args) -> int:
     """The real web server (a child process of `serve`, which restarts it after updates)."""
-    from clipforge import governor, procs
+    from sharkyclips import governor, procs
 
     governor.limit_thread_pools()  # before numpy & co. create their thread pools
     procs.contain_server()  # Windows Job Object: priority/affinity for all children, no orphans
@@ -425,9 +449,9 @@ def _run_server(args) -> int:
 
     import uvicorn
 
-    from clipforge.web.app import app
+    from sharkyclips.web.app import app
 
-    app.state.lan_url = os.environ.get("CLIPFORGE_LAN_URL") or None
+    app.state.lan_url = os.environ.get("SHARKYCLIPS_LAN_URL") or None
     uvicorn.run(app, host="0.0.0.0" if args.lan else "127.0.0.1", port=args.port, log_level="warning")
     return 0
 
@@ -444,28 +468,28 @@ def _signal_group(pgid: int, name: str) -> None:
 def cmd_serve(args) -> int:
     import subprocess
 
-    from clipforge.updater import RESTART_CODE
+    from sharkyclips.updater import RESTART_CODE
 
-    if os.environ.get("CLIPFORGE_SUPERVISED") == "1":
+    if os.environ.get("SHARKYCLIPS_SUPERVISED") == "1":
         return _run_server(args)
 
     local_url = f"http://localhost:{args.port}"
-    running = _clipforge_version_at(args.port)
+    running = _sharkyclips_version_at(args.port)
     if running:
-        console.print(f"ClipForge {running} is already running: [cyan]{local_url}[/]")
+        console.print(f"SharkyClips {running} is already running: [cyan]{local_url}[/]")
         if not args.no_browser:
             import webbrowser
 
             webbrowser.open(local_url)
         return 0
     if not _port_free(args.port):
-        raise ClipForgeError(f"Port {args.port} is used by another program.",
-                             f"Pick another one, e.g. python cli.py serve --port {args.port + 1} "
-                             "(or use `python cli.py launch`, which finds a free port).")
+        raise SharkyClipsError(f"Port {args.port} is used by another program.",
+                               f"Pick another one, e.g. python cli.py serve --port {args.port + 1} "
+                               "(or use `python cli.py launch`, which finds a free port).")
     _ensure_frontend()
 
     lan_url = ""
-    console.print(f"[bold]ClipForge {__version__}[/] web UI: [cyan]{local_url}[/]")
+    console.print(f"[bold]SharkyClips {__version__}[/] web UI: [cyan]{local_url}[/]")
     if args.lan:
         ip = _lan_ip()
         if ip:
@@ -477,24 +501,24 @@ def cmd_serve(args) -> int:
             console.print("[yellow]Couldn't find this computer's network address.[/]")
     use_tray = bool(getattr(args, "tray", False))
     if use_tray:
-        from clipforge import tray
+        from sharkyclips import tray
 
         use_tray = tray.available()
     if not use_tray:
         console.print(f"[dim]{_launch_text('stop')}[/]")
     if not args.no_browser:
-        _open_browser_when_ready(local_url, args.port)
+        _open_splash_or_wait(local_url, args.port)
 
     # The server runs in a child process so an update can restart it (exit code RESTART_CODE).
-    env = {**os.environ, "CLIPFORGE_SUPERVISED": "1", "CLIPFORGE_LAN_URL": lan_url}
+    env = {**os.environ, "SHARKYCLIPS_SUPERVISED": "1", "SHARKYCLIPS_LAN_URL": lan_url}
     cmd = [sys.executable, str(Path(__file__).resolve()), "serve", "--port", str(args.port), "--no-browser"]
     if args.lan:
         cmd.append("--lan")
-    from clipforge import procs
+    from sharkyclips import procs
 
     # Windows: the server and everything below it live in a kill-on-close job held by this
     # process, so closing the window (or a crash) never leaves a server, ffmpeg or OCR worker
-    # behind. (This process stays outside: the browser it opens must survive ClipForge.)
+    # behind. (This process stays outside: the browser it opens must survive SharkyClips.)
     # macOS/Linux: the server gets its own process group, which is killed when it ends.
     guard = procs.Job(kill_on_close=True)
     posix = os.name != "nt"
@@ -502,13 +526,13 @@ def cmd_serve(args) -> int:
 
     def supervise() -> int:
         while True:
-            no_window = procs.popen_flags()  # pythonw parent: the server child gets no console
+            # pythonw parent: the server child gets a hidden console, never a window
             if guard.ok:  # start suspended so even its first child is inside the job
-                proc = subprocess.Popen(cmd, env=env, creationflags=0x4 | no_window)  # CREATE_SUSPENDED
+                proc = subprocess.Popen(cmd, env=env, **procs.no_window(0x4))  # CREATE_SUSPENDED
                 guard.assign(proc.pid)
                 procs.resume_pid(proc.pid)
             else:
-                proc = subprocess.Popen(cmd, env=env, start_new_session=posix)
+                proc = subprocess.Popen(cmd, env=env, start_new_session=posix, **procs.no_window())
             state["proc"] = proc
             try:
                 rc = proc.wait()
@@ -521,16 +545,16 @@ def cmd_serve(args) -> int:
                     proc.kill()
                 if posix:
                     _signal_group(proc.pid, "SIGKILL")
-                console.print("ClipForge stopped.")
+                console.print("SharkyClips stopped.")
                 return 0
             if posix:
                 _signal_group(proc.pid, "SIGKILL")  # leftovers of a crashed server
             if state["quit"]:
-                console.print("ClipForge stopped.")
+                console.print("SharkyClips stopped.")
                 return 0
             if rc != RESTART_CODE:
                 return rc
-            console.print("[green]ClipForge was updated.[/] Restarting ...")
+            console.print("[green]SharkyClips was updated.[/] Restarting ...")
             for _ in range(50):  # wait until the old server has released the port
                 if _port_free(args.port):
                     break
@@ -541,7 +565,7 @@ def cmd_serve(args) -> int:
 
     import threading
 
-    from clipforge import tray
+    from sharkyclips import tray
 
     stopped = threading.Event()
     result = {"rc": 0}
@@ -556,7 +580,7 @@ def cmd_serve(args) -> int:
         state["quit"] = True
         _quit_server(args.port, state["proc"])
 
-    threading.Thread(target=run_supervisor, name="clipforge-supervisor", daemon=True).start()
+    threading.Thread(target=run_supervisor, name="sharkyclips-supervisor", daemon=True).start()
     tray.run(local_url, quit_all, stopped)  # blocks until Quit (or the server is gone)
     stopped.wait(15)
     return result["rc"]
@@ -569,7 +593,7 @@ def _quit_server(port: int, proc) -> None:
 
     try:
         req = urllib.request.Request(f"http://127.0.0.1:{port}/api/quit", data=b"{}", method="POST",
-                                     headers={"Content-Type": "application/json", "X-ClipForge": "quit"})
+                                     headers={"Content-Type": "application/json", "X-SharkyClips": "quit"})
         urllib.request.urlopen(req, timeout=10).close()
     except Exception:  # noqa: BLE001
         pass
@@ -582,13 +606,13 @@ def _quit_server(port: int, proc) -> None:
 
 
 _LAUNCH_TEXT = {
-    "tr": {"running": "ClipForge çalışıyor: {url}",
-           "already": "ClipForge zaten açık, tarayıcıda açılıyor: {url}",
-           "stop": "Bu pencere açık kaldığı sürece ClipForge çalışır. Kapatmak için pencereyi kapatın "
+    "tr": {"running": "SharkyClips çalışıyor: {url}",
+           "already": "SharkyClips zaten açık, tarayıcıda açılıyor: {url}",
+           "stop": "Bu pencere açık kaldığı sürece SharkyClips çalışır. Kapatmak için pencereyi kapatın "
                    "(veya Ctrl+C)."},
-    "en": {"running": "ClipForge is running: {url}",
-           "already": "ClipForge is already running, opening it in your browser: {url}",
-           "stop": "ClipForge runs while this window is open. Close the window (or press Ctrl+C) to stop it."},
+    "en": {"running": "SharkyClips is running: {url}",
+           "already": "SharkyClips is already running, opening it in your browser: {url}",
+           "stop": "SharkyClips runs while this window is open. Close the window (or press Ctrl+C) to stop it."},
 }
 
 
@@ -598,11 +622,13 @@ def _launch_text(key: str, **kw) -> str:
 
 
 def _migrate_windows_shortcuts() -> None:
-    """Old installs: the ClipForge shortcuts ran ClipForge.bat (a console window that had to
+    """Old installs: the SharkyClips shortcuts ran SharkyClips.bat (a console window that had to
     stay open). Point them at pythonw (no window, tray icon) - once."""
     if os.name != "nt" or config.get("launcher_version") == 2:
         return
     import subprocess
+
+    from sharkyclips import procs
 
     root = Path(__file__).resolve().parents[1]
     pythonw = Path(sys.executable).with_name("pythonw.exe")
@@ -611,34 +637,34 @@ def _migrate_windows_shortcuts() -> None:
     script = (
         "$sh = New-Object -ComObject WScript.Shell; "
         "foreach ($d in @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs'))) { "
-        "$p = Join-Path $d 'ClipForge.lnk'; if (-not (Test-Path $p)) { continue }; "
-        "$s = $sh.CreateShortcut($p); if ($s.TargetPath -notlike '*ClipForge.bat') { continue }; "
+        "$p = Join-Path $d 'SharkyClips.lnk'; if (-not (Test-Path $p)) { continue }; "
+        "$s = $sh.CreateShortcut($p); if ($s.TargetPath -notlike '*SharkyClips.bat') { continue }; "
         f"$s.TargetPath = '{pythonw}'; $s.Arguments = '\"{root / 'backend' / 'cli.py'}\" launch --tray'; "
         f"$s.WorkingDirectory = '{root}'; $s.WindowStyle = 1; $s.Save() }}"
     )
     try:
         subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
-                       capture_output=True, timeout=30, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                       capture_output=True, timeout=30, **procs.no_window())
         config.update(launcher_version=2)
     except (OSError, subprocess.SubprocessError):
         pass
 
 
 def cmd_launch(args) -> int:
-    """What the desktop shortcut runs: reuse a running ClipForge, else start one on a free port."""
+    """What the desktop shortcut runs: reuse a running SharkyClips, else start one on a free port."""
     import webbrowser
 
     _migrate_windows_shortcuts()
 
     for port in range(8000, 8011):
-        if _clipforge_version_at(port, timeout=0.5):
+        if _sharkyclips_version_at(port, timeout=0.5):
             url = f"http://localhost:{port}"
             console.print(_launch_text("already", url=url))
             webbrowser.open(url)
             return 0
     port = next((p for p in range(8000, 8100) if _port_free(p)), None)
     if port is None:
-        raise ClipForgeError("No free network port between 8000 and 8099.")
+        raise SharkyClipsError("No free network port between 8000 and 8099.")
     console.print(f"[bold]{_launch_text('running', url=f'http://localhost:{port}')}[/]")
     args.port, args.lan, args.no_browser = port, False, False
     args.tray = getattr(args, "tray", False) or sys.stdin is None or not sys.stdout.isatty()
@@ -646,9 +672,9 @@ def cmd_launch(args) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="clipforge",
-                                description=f"ClipForge {__version__} - local stream & video highlight clipper")
-    p.add_argument("--version", action="version", version=f"ClipForge {__version__}")
+    p = argparse.ArgumentParser(prog="sharkyclips",
+                                description=f"SharkyClips {__version__} - local stream & video highlight clipper")
+    p.add_argument("--version", action="version", version=f"SharkyClips {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
 
     d = sub.add_parser("doctor", help="check dependencies, GPU and run a real smoke test")
@@ -719,7 +745,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--tray", action="store_true", help="show a tray icon (Open / mode / Quit)")
     s.set_defaults(func=cmd_serve)
 
-    la = sub.add_parser("launch", help="open ClipForge (what the desktop shortcut runs): reuses a running "
+    la = sub.add_parser("launch", help="open SharkyClips (what the desktop shortcut runs): reuses a running "
                                        "server or starts one on a free port")
     la.add_argument("--tray", action="store_true", help="show a tray icon (automatic without a console)")
     la.set_defaults(func=cmd_launch)
@@ -731,9 +757,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    from sharkyclips import migrate
+
+    done = migrate.run_all()  # ClipForge -> SharkyClips (settings folder, shortcuts); once
+    if done.get("home"):
+        console.print(f"[dim]Settings moved to {done['home'].get('to')}[/]")
     try:
         return args.func(args)
-    except ClipForgeError as exc:
+    except SharkyClipsError as exc:
         from rich.markup import escape  # messages may contain [brackets], e.g. "yt-dlp[default]"
 
         console.print(f"[bold red]Error:[/] {escape(exc.message)}")

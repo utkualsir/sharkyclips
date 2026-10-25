@@ -1,5 +1,5 @@
 ﻿<#
-Remove ClipForge from this computer.
+Remove SharkyClips from this computer.
 
 Removes the app folder, its Python packages (.venv), the shortcuts and the "Apps & features"
 entry. Asks separately before deleting your projects (workspace), your settings and the
@@ -10,7 +10,7 @@ Options:
   -Yes             don't ask; remove the app but keep projects, settings and AI models
   -DeleteProjects  with -Yes: also delete the projects
   -Lang tr|en
-  -AppDir D        the ClipForge folder (default: the folder this script is in)
+  -AppDir D        the SharkyClips folder (default: the folder this script is in)
   -ShortcutDir D   shortcuts were created there (installer -ShortcutDir; for testing)
 #>
 [CmdletBinding()]
@@ -48,13 +48,13 @@ function Size-Gb([string]$path) {
 if (-not $AppDir) { $AppDir = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..')) }
 $AppDir = $AppDir.TrimEnd('\')
 if (-not (Test-Path -LiteralPath (Join-Path $AppDir 'backend\cli.py'))) {
-    Write-Host ((T '{0} bir ClipForge klasörü değil.' '{0} is not a ClipForge folder.') -f $AppDir) -ForegroundColor Red
+    Write-Host ((T '{0} bir SharkyClips klasörü değil.' '{0} is not a SharkyClips folder.') -f $AppDir) -ForegroundColor Red
     exit 1
 }
 Set-Location -LiteralPath $env:TEMP  # we can't delete the folder we are standing in
 
 Write-Host ''
-Write-Host (T 'ClipForge kaldırılacak:' 'This removes ClipForge:') -ForegroundColor White
+Write-Host (T 'SharkyClips kaldırılacak:' 'This removes SharkyClips:') -ForegroundColor White
 Write-Host "  $AppDir" -ForegroundColor DarkGray
 Write-Host (T '  uygulama, Python paketleri (.venv), kısayollar' '  the app, its Python packages (.venv), the shortcuts') -ForegroundColor DarkGray
 Write-Host ''
@@ -63,7 +63,7 @@ if (-not (Ask (T 'Devam edilsin mi?' 'Continue?') $false)) {
 }
 
 # --- where are the projects and settings? -------------------------------------------
-$configDir = if ($env:CLIPFORGE_HOME) { $env:CLIPFORGE_HOME } else { Join-Path $env:USERPROFILE '.clipforge' }
+$configDir = if ($env:SHARKYCLIPS_HOME) { $env:SHARKYCLIPS_HOME } else { Join-Path $env:USERPROFILE '.sharkyclips' }
 $workspace = Join-Path $AppDir 'workspace'
 try {
     $cfgFile = Join-Path $configDir 'config.json'
@@ -115,7 +115,7 @@ if (($whisper.Count + $llmModels.Count) -gt 0 -and -not $Yes) {
 
 # --- remove --------------------------------------------------------------------------
 Write-Host ''
-# Stop a running ClipForge (its Python runs from this folder's .venv).
+# Stop a running SharkyClips (its Python runs from this folder's .venv).
 $venvPy = Join-Path $AppDir '.venv\Scripts\python.exe'
 try {
     Get-CimInstance Win32_Process -Filter "Name = 'python.exe'" | Where-Object { $_.ExecutablePath -eq $venvPy -or $_.CommandLine -like "*$AppDir*cli.py*" } |
@@ -131,17 +131,22 @@ try {
 
 $shortcutDirs = if ($ShortcutDir) { @($ShortcutDir) } else { @([Environment]::GetFolderPath('Desktop'), [Environment]::GetFolderPath('Programs')) }
 $shell = New-Object -ComObject WScript.Shell
+# 'ClipForge' = the name before 1.2.1 (shortcuts the app hasn't renamed yet)
 foreach ($dir in $shortcutDirs) {
-    $lnk = Join-Path $dir 'ClipForge.lnk'
-    if (Test-Path -LiteralPath $lnk) {
-        $target = $shell.CreateShortcut($lnk).TargetPath
-        if ($target -like "$AppDir\*") { Remove-Item -LiteralPath $lnk -Force; Ok ((T 'Kısayol silindi: {0}' 'Removed shortcut: {0}') -f $lnk) }
+    foreach ($name in @('SharkyClips.lnk', 'ClipForge.lnk')) {
+        $lnk = Join-Path $dir $name
+        if (Test-Path -LiteralPath $lnk) {
+            $target = $shell.CreateShortcut($lnk).TargetPath
+            if ($target -like "$AppDir\*") { Remove-Item -LiteralPath $lnk -Force; Ok ((T 'Kısayol silindi: {0}' 'Removed shortcut: {0}') -f $lnk) }
+        }
     }
 }
-$key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\ClipForge'
-if (-not $ShortcutDir -and (Test-Path $key)) {
-    $loc = (Get-ItemProperty -Path $key -ErrorAction SilentlyContinue).InstallLocation
-    if ($loc -eq $AppDir) { Remove-Item -Path $key -Recurse -Force; Ok (T 'Uygulamalar listesinden çıkarıldı' 'Removed from Apps & features') }
+foreach ($name in @('SharkyClips', 'ClipForge')) {
+    $key = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\$name"
+    if (-not $ShortcutDir -and (Test-Path $key)) {
+        $loc = (Get-ItemProperty -Path $key -ErrorAction SilentlyContinue).InstallLocation
+        if ($loc -eq $AppDir) { Remove-Item -Path $key -Recurse -Force; Ok (T 'Uygulamalar listesinden çıkarıldı' 'Removed from Apps & features') }
+    }
 }
 
 if ($deleteModels) {
@@ -151,6 +156,8 @@ if ($deleteModels) {
 }
 if ($deleteSettings) {
     Remove-Item -LiteralPath $configDir -Recurse -Force -ErrorAction SilentlyContinue
+    $oldConfig = Join-Path $env:USERPROFILE '.clipforge'  # settings folder before 1.2.1, if never moved
+    if (-not $env:SHARKYCLIPS_HOME -and (Test-Path -LiteralPath $oldConfig)) { Remove-Item -LiteralPath $oldConfig -Recurse -Force -ErrorAction SilentlyContinue }
     Ok ((T 'Ayarlar silindi: {0}' 'Settings deleted: {0}') -f $configDir)
 }
 
@@ -172,7 +179,7 @@ if (Test-Path -LiteralPath $AppDir) { $left = @(Get-ChildItem -LiteralPath $AppD
 if ($left.Count -gt 0) {
     Write-Host ((T '  !   Bazı dosyalar silinemedi (kullanımda olabilir): {0}' '  !   Some files could not be removed (maybe in use): {0}') -f $AppDir) -ForegroundColor Yellow
 } else {
-    Ok ((T 'ClipForge kaldırıldı: {0}' 'ClipForge removed: {0}') -f $AppDir)
+    Ok ((T 'SharkyClips kaldırıldı: {0}' 'SharkyClips removed: {0}') -f $AppDir)
 }
 if ($keepInside) { Write-Host ((T 'Projeleriniz duruyor: {0}' 'Your projects are still here: {0}') -f $workspace) -ForegroundColor Cyan }
 
@@ -182,5 +189,5 @@ if ($installedTools.Count -gt 0) {
     foreach ($id in $installedTools) { Write-Host "  winget uninstall --id $id -e" -ForegroundColor DarkGray }
 }
 Write-Host ''
-if (-not $Yes -and -not $env:CLIPFORGE_NO_PAUSE) { Read-Host (T 'Kapatmak için Enter' 'Press Enter to close') | Out-Null }
+if (-not $Yes -and -not $env:SHARKYCLIPS_NO_PAUSE) { Read-Host (T 'Kapatmak için Enter' 'Press Enter to close') | Out-Null }
 exit 0

@@ -1,7 +1,7 @@
-# How ClipForge works
+# How SharkyClips works
 
 The [README](../README.md) covers installing and everyday use. This page is the detailed
-reference: the web UI's features, the command line, the files ClipForge writes, and how the
+reference: the web UI's features, the command line, the files SharkyClips writes, and how the
 highlight engine, the local AI and the titles work.
 
 ## The web UI in detail
@@ -28,7 +28,7 @@ highlight engine, the local AI and the titles work.
 - **Settings**: UI language (Turkish default, English, Russian, Hungarian, German, Arabic RTL,
   Chinese), local AI (model picker with the installed Ollama models, auto-analyze switch,
   Fast analysis, glossary), custom trigger words per language, video encoder, default mode,
-  and **Updates** (check for a new version and install it; ClipForge restarts by itself).
+  and **Updates** (check for a new version and install it; SharkyClips restarts by itself).
 - **Queue**, **Best-of video** and **Stats**: see [below](#queue-best-of-videos-and-calibration).
 - Keyboard: up/down (or j/k) moves through candidates, `a` accepts/unaccepts.
 
@@ -95,7 +95,7 @@ python cli.py list         # projects in the workspace
 python cli.py languages    # supported languages
 python cli.py doctor       # check everything; --download-models also fetches Whisper now
 python cli.py serve        # web UI on :8000 (--lan for phones, --port, --no-browser)
-python cli.py launch       # what the desktop shortcut runs: reuse a running ClipForge or
+python cli.py launch       # what the desktop shortcut runs: reuse a running SharkyClips or
                            # start one on a free port, then open the browser
 ```
 
@@ -185,7 +185,7 @@ No chat replay is fine: the signal is skipped. Twitch only keeps the chat of VOD
 
 ### Game awareness (Delta Force, League of Legends)
 
-The `game` signal (`backend/clipforge/game/`, weight 0.6 in gaming mode) reads the game's HUD.
+The `game` signal (`backend/sharkyclips/game/`, weight 0.6 in gaming mode) reads the game's HUD.
 The game comes from the video title, from game words in the transcript ("lane", "minyon", champion
 names...), or from the per-project picker (Auto / Delta Force / League of Legends / Other).
 
@@ -220,13 +220,13 @@ stays high over its whole span. Events of strength >= 0.8 always become a candid
 `candidates.fit_spans` grows a clip so the whole event (every kill of a multikill) plus 4 s of
 build-up fits. The LLM prompt gets the events as facts ("3 kills in a row (multikill) at +11s").
 
-**Sounds.** Optional reference clips in `~/.clipforge/game_sounds/<lol|delta_force>/<event>.mp3`
+**Sounds.** Optional reference clips in `~/.sharkyclips/game_sounds/<lol|delta_force>/<event>.mp3`
 (e.g. `lol_pentakill.mp3`, several per event allowed) are found in the audio with log-mel
 cross-correlation; a hit confirms a screen event or adds one.
 
 **Calibration.** The project's "Game detection" page (gamepad button) shows sampled frames with the
 boxes drawn on them, every event, the OCR text around each moment and "Read this frame". Boxes can be
-edited; they are saved per computer in `~/.clipforge/game_regions.json`, then "Read the HUD again".
+edited; they are saved per computer in `~/.sharkyclips/game_regions.json`, then "Read the HUD again".
 The scan is cached in `<project>/cache/game/scan.json` (rules can change without a rescan).
 
 ### Local LLM (Ollama)
@@ -234,7 +234,7 @@ The scan is cached in `<project>/cache/game/scan.json` (rules can change without
 `python cli.py doctor` installs [Ollama](https://ollama.com) (winget / brew) and downloads the model.
 The model is picked by hardware: **qwen3.5:9b** (6.6 GB, 4-bit) with 8 GB+ VRAM or Apple Silicon
 with 16 GB+, otherwise **qwen3.5:4b** (3.3 GB). Set `llm_model` to any Ollama model to override.
-If Ollama's own download keeps failing (seen with broken IPv6), ClipForge downloads the model
+If Ollama's own download keeps failing (seen with broken IPv6), SharkyClips downloads the model
 files directly from the same registry over IPv4 and resumes where it stopped.
 
 - The LLM and Whisper are **never on the GPU at the same time**: loading one unloads the other,
@@ -250,6 +250,7 @@ files directly from the same registry over IPv4 and resumes where it stopped.
 "publish": {"viral_score": 62, "viral_label": "medium",
             "sub_scores": {"hook": 56, "retention": 64, "trend_fit": 70, "length_fit": 100},
             "titles": ["KONTROLÜ ÇALDIK!", "..."], "hashtags": ["#shorts", "#DeltaForce", "..."],
+            "description": "Lobiye tek başıma daldım ... Sizce nasıldı?\n\n#shorts #DeltaForce ...",
             "hook_text": "KONTROLÜ ALDIK!", "cover_prompt": "... 9:16 thumbnail, navy and gold ...",
             "language": "tr", "model": "qwen3.5:9b"},
 "llm": {"what_happens": "...", "self_contained": true, "moment_type": "exciting",
@@ -267,8 +268,14 @@ files directly from the same registry over IPv4 and resumes where it stopped.
   translated with their timing kept; render with `--sub-lang <code>` (or pick it in the web UI).
 - **Cover prompt**: English, describes what really happens in the clip, always in the same style
   (dramatic, high contrast, navy & gold grade, short bold text, no logos/watermarks).
+- **YouTube description**: a separate short call after the titles (own cache, `desc_*.json`):
+  2-3 sentences in the creator's voice in the output language, spelling fixed like the titles,
+  then the hashtags. Channel names never become hashtags.
+- **Re-running the highlights** keeps a clip's AI results when its original cut didn't change
+  (`highlights/pipeline.py: carry_over_ai`); the analysis job is saved in the queue, so a pause or a
+  restart continues it instead of losing it.
 
-#### Titles (`clipforge/titles/`)
+#### Titles (`sharkyclips/titles/`)
 
 Small local models like to write generic, over-hyped titles ("İnanılmaz Bir Durum!") and make
 spelling mistakes. Titles are therefore written in their own steps:
@@ -294,7 +301,7 @@ actually says them (fuzzy match, so Whisper's misspellings still count). Add you
 Settings or in the config: `"glossary": ["Zero Dam", "kanka"]` (or `{"all": [...], "tr": [...]}`).
 Words the streamer says far more often than usual ("kanka", nicknames) are added automatically.
 
-**Your style**: thumbs up / down in the web UI are saved in `~/.clipforge/title_feedback.json`.
+**Your style**: thumbs up / down in the web UI are saved in `~/.sharkyclips/title_feedback.json`.
 The next "Analyze with AI" rewrites the titles with your liked ones as examples (the scores and
 cuts stay cached).
 
@@ -303,7 +310,7 @@ Measured on an RTX 5070 Laptop (8 GB), qwen3.5:9b, 15 clips of a 19 min stream: 
 afterwards). Re-running after a thumbs up only redoes the titles. A 7 min study video: the LLM
 reads the transcript in ~30 s.
 
-**Your own trigger words** go in `~/.clipforge/config.json`:
+**Your own trigger words** go in `~/.sharkyclips/config.json`:
 
 ```json
 "custom_triggers": {"tr": ["kral", "efsane an"], "en": {"reaction": ["poggers"], "study": ["mnemonic"]}}
@@ -320,7 +327,7 @@ The scorer and candidate picker don't change.
   accepted clip of the projects you tick (already rendered clips with the same settings are
   skipped). The queue is saved in `<workspace>/_queue.json`: after a restart unfinished jobs
   continue. "Shut down the PC when the queue is finished" (Windows/macOS) shows a 60 s countdown
-  with a Cancel button first; set `CLIPFORGE_DRY_SHUTDOWN=1` to test it without shutting down.
+  with a Cancel button first; set `SHARKYCLIPS_DRY_SHUTDOWN=1` to test it without shutting down.
 * **Best-of video** (project page → Best-of video): pick clips (default: best accepted by viral
   score, calibrated score once available), drag to order, optional intro/outro cards. Output is
   1920x1080 at 60 fps with Instrument Serif title cards (navy/gold), 0.5 s crossfades and every
@@ -332,7 +339,7 @@ The scorer and candidate picker don't change.
   clip's signals and scores relate to your channel's views. Calibrated score =
   default + n/(n+10) × (model score − default). Stats shows predicted vs real views (leave-one-out),
   and the best content type, publish time, length and kind of moment. Data:
-  `~/.clipforge/calibration.json`.
+  `~/.sharkyclips/calibration.json`.
 * **Fast analysis** (Settings → Local AI): `llm_fallback_model` (qwen3.5:4b) and 6 instead of 9
   title drafts. "Run speed test" measures both setups on your newest project's best clip
   (RTX 5070 Laptop: 28 s vs 15 s per clip).
@@ -347,7 +354,7 @@ LLM on the same GPU.
 
 ### Staying out of the way (resource governor)
 
-`clipforge/governor.py` decides every ~2 s how hard ClipForge may work; `sysmon.py` provides the
+`sharkyclips/governor.py` decides every ~2 s how hard SharkyClips may work; `sysmon.py` provides the
 measurements in-process (psutil, NVML via `nvml.dll` / `libnvidia-ml`, Windows performance
 counters for per-process GPU load / VRAM / video decode+encode, the foreground window,
 `GetLastInputInfo`, the lock screen). No helper program is started per sample. With no job and
@@ -376,17 +383,33 @@ too, right when the pause starts), in frame-decoding and laughter loops; long ff
 suspended and resumed. Nothing is redone. After every GPU job Ollama gets `keep_alive 0`.
 
 Windows: the shortcut runs `pythonw.exe cli.py launch --tray` (no console; log in
-`~/.clipforge/logs/clipforge.log`), every child process is started with `CREATE_NO_WINDOW`, and
+`~/.sharkyclips/logs/sharkyclips.log`), every child process is started with `CREATE_NO_WINDOW`, and
 the tray icon opens the UI, switches the mode or quits. Ollama's Startup-folder shortcut is moved
-to `~/.clipforge/disabled-startup/` unless `ollama_autostart` is on.
+to `~/.sharkyclips/disabled-startup/` unless `ollama_autostart` is on.
 
 ## Settings
 
-Stored in `~/.clipforge/config.json` (Windows: `C:\Users\<you>\.clipforge\config.json`).
-Set the `CLIPFORGE_HOME` environment variable to use another folder. Useful keys:
+Stored in `~/.sharkyclips/config.json` (Windows: `C:\Users\<you>\.sharkyclips\config.json`).
+Set the `SHARKYCLIPS_HOME` environment variable to use another folder. Useful keys:
 `workspace_dir`, `default_mode`, `transcribe_language`, `transcribe_model`,
 `download_max_height` (default 1080), `ui_language` / `output_language` (default `tr`),
 `custom_triggers`, `video_encoder` (`auto` or `h264_nvenc`, `h264_videotoolbox`, `h264_qsv`,
 `h264_amf`, `libx264`), `llm_enabled`, `llm_model` (`auto` or an Ollama tag),
 `llm_fallback_model` (`qwen3.5:4b`), `llm_num_ctx` (8192), `ollama_url`, `chat_delay` (5 s),
 `auto_analyze` (true), `glossary` (names AI titles must spell exactly), `fast_analysis` (false).
+Set by the app: `onboarding_done`, `content_types`, `seen_version` (the last "What's new" shown).
+
+Before 1.2.1 the folder was `~/.clipforge` (ClipForge). `sharkyclips/migrate.py` moves it over on the
+first start (existing files in the new folder win, paths inside config.json are rewritten) and
+renames old shortcuts and the Apps & features entry; `CLIPFORGE_HOME` is still honoured.
+
+## Version, welcome screen, "What's new"
+
+- The version is only in `VERSION` (repo root); every update bumps the patch number and adds a
+  CHANGELOG.md entry (English, Turkish, then `<!-- lang:xx -->` summaries for the other languages).
+- `sharkyclips/welcome.py`: the launcher writes `~/.sharkyclips/splash.html` and opens it at once;
+  it waits for the server and hands over to the app (`?splash=done`), so the splash costs no time.
+  First start: 3-step onboarding (language, content types, performance mode + hardware check).
+  After an update: the CHANGELOG entry of the new version in the UI language, once.
+- `~/.sharkyclips/dev_in_progress.json` (`{"started_at", "task"}`) shows an "Update in progress"
+  banner while a new version is being built; heavy jobs ask first. Older than 12 hours = stale.

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, type RefObject } from "react";
 import type { Candidate, ClipOptions, Facecam, Word } from "../api";
 import { captionAt, groupWords, joinerFor, upper } from "../captions";
 
-// Canvas size (9:16). Drawing math mirrors backend/clipforge/clips.py at 1080x1920.
+// Canvas size (9:16). Drawing math mirrors backend/sharkyclips/clips.py at 1080x1920.
 const W = 360;
 const H = 640;
 const S = W / 1080; // scale from the 1080-wide render to this canvas

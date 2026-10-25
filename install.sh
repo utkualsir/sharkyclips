@@ -1,18 +1,18 @@
 #!/bin/bash
-# ClipForge installer for macOS (Apple Silicon and Intel).
+# SharkyClips installer for macOS (Apple Silicon and Intel).
 #
-#   bash install.sh            (from the ClipForge folder, or on its own: it then downloads
-#                               ClipForge into ~/ClipForge first)
+#   bash install.sh            (from the SharkyClips folder, or on its own: it then downloads
+#                               SharkyClips into ~/SharkyClips first)
 #
 # Lists what will be installed, asks once, then installs Homebrew packages (python@3.12,
-# ffmpeg, git, deno, ollama), the Python packages (in ClipForge/.venv), the AI models, a
-# ClipForge.command on the Desktop and ClipForge.app in ~/Applications.
+# ffmpeg, git, deno, ollama), the Python packages (in SharkyClips/.venv), the AI models, a
+# SharkyClips.command on the Desktop and SharkyClips.app in ~/Applications.
 #
 # Options: --yes (don't ask)  --dry-run  --lang tr|en  --install-dir DIR  --no-models
 #          --no-shortcuts  --shortcut-dir DIR (testing)  --no-launch
 
 set -u
-REPO_URL="https://github.com/utkualsir/clipforge.git"
+REPO_URL="https://github.com/utkualsir/sharkyclips.git"
 
 YES=0; DRY=0; LANG_CHOICE="auto"; INSTALL_DIR=""; NO_MODELS=0; NO_SHORTCUTS=0; SHORTCUT_DIR=""; NO_LAUNCH=0
 while [ $# -gt 0 ]; do
@@ -54,19 +54,19 @@ ask() {  # ask "question" default(1=yes)
 
 [ "$(uname -s)" = "Darwin" ] || fail "$(t 'Bu betik macOS içindir. Windows: install.bat' 'This script is for macOS. Windows: install.bat')"
 
-# ------------------------------------------------------------------ where is ClipForge?
+# ------------------------------------------------------------------ where is SharkyClips?
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
 BOOTSTRAP=0
 if [ -n "$SCRIPT_DIR" ] && [ -f "$SCRIPT_DIR/backend/cli.py" ]; then
   APP_DIR="$SCRIPT_DIR"
 else
   BOOTSTRAP=1
-  APP_DIR="${INSTALL_DIR:-$HOME/ClipForge}"
+  APP_DIR="${INSTALL_DIR:-$HOME/SharkyClips}"
 fi
 VENV="$APP_DIR/.venv"
 VPY="$VENV/bin/python"
 
-printf '\n  %sClipForge%s  -  %s\n' "$c_yellow" "$c_off" "$(t 'Yayıncılar için ücretsiz, yerel, yapay zekâlı Shorts kesici' 'Free, local, AI-powered Shorts clipper for streamers')"
+printf '\n  %sSharkyClips%s  -  %s\n' "$c_yellow" "$c_off" "$(t 'Yayıncılar için ücretsiz, yerel, yapay zekâlı Shorts kesici' 'Free, local, AI-powered Shorts clipper for streamers')"
 printf '  %s%s%s%s\n\n' "$c_dim" "$(t 'Kurulum klasörü: ' 'Install folder: ')" "$APP_DIR" "$c_off"
 
 # ------------------------------------------------------------------ detection
@@ -100,27 +100,27 @@ list_line() {  # status label detail
   else printf '  %s[%s]%s %s - %s  %s%s%s\n' "$c_yellow" "$(t 'kur  ' 'new  ')" "$c_off" "$2" "$3" "$c_dim" "$4" "$c_off"; fi
 }
 echo
-echo "$(t 'ClipForge şunları kuracak:' 'ClipForge will set up:')"
+echo "$(t 'SharkyClips şunları kuracak:' 'SharkyClips will set up:')"
 if [ -z "$BREW" ]; then list_line new Homebrew "$(t 'macOS paket yöneticisi (yönetici parolası ister)' 'macOS package manager (asks for your password)')" "~300 MB"; fi
-if [ -n "$VENV_VERSION" ]; then list_line found Python "$VENV_VERSION (ClipForge/.venv)"
+if [ -n "$VENV_VERSION" ]; then list_line found Python "$VENV_VERSION (SharkyClips/.venv)"
 elif [ -n "$PYTHON" ]; then list_line found Python "$(py_ok "$PYTHON")"
-else list_line new "Python 3.12" "$(t 'ClipForge onunla çalışır' 'runs ClipForge')" "~70 MB"; TO_INSTALL="$TO_INSTALL python@3.12"; fi
+else list_line new "Python 3.12" "$(t 'SharkyClips onunla çalışır' 'runs SharkyClips')" "~70 MB"; TO_INSTALL="$TO_INSTALL python@3.12"; fi
 if have ffmpeg && have ffprobe; then list_line found FFmpeg "$(command -v ffmpeg)"
 else list_line new FFmpeg "$(t 'video ve ses işleme' 'video and audio processing')" "~100 MB"; TO_INSTALL="$TO_INSTALL ffmpeg"; fi
 if have git; then list_line found Git "$(command -v git)"
-else list_line new Git "$(t "ClipForge'u indirir ve günceller" 'downloads and updates ClipForge')" "~50 MB"; TO_INSTALL="$TO_INSTALL git"; fi
+else list_line new Git "$(t "SharkyClips'i indirir ve günceller" 'downloads and updates SharkyClips')" "~50 MB"; TO_INSTALL="$TO_INSTALL git"; fi
 if have deno || have node; then list_line found "JavaScript runtime" "$(command -v deno || command -v node)"
 else list_line new Deno "$(t 'YouTube indirmeleri için gerekli' 'needed for YouTube downloads')" "~40 MB"; TO_INSTALL="$TO_INSTALL deno"; fi
 if have ollama || [ -x /Applications/Ollama.app/Contents/Resources/ollama ]; then list_line found Ollama "$(command -v ollama || echo /Applications/Ollama.app)"
 else list_line new Ollama "$(t 'yerel yapay zekâ (başlıklar, viral puan)' 'local AI (titles, viral score)')" "~200 MB"; TO_INSTALL="$TO_INSTALL ollama"; fi
-list_line new "$(t 'Python paketleri' 'Python packages')" "$(t 'ClipForge/.venv içine' 'inside ClipForge/.venv')" "~1 GB"
+list_line new "$(t 'Python paketleri' 'Python packages')" "$(t 'SharkyClips/.venv içine' 'inside SharkyClips/.venv')" "~1 GB"
 if [ "$NO_MODELS" = 0 ]; then
   list_line new "$(t 'Yapay zekâ modelleri' 'AI models')" "Whisper + Qwen 3.5" "$(t '~2-8 GB, donanıma göre' '~2-8 GB, depends on your Mac')"
 fi
 if [ "$NO_SHORTCUTS" = 0 ]; then
-  printf '  %s[%s]%s %s\n' "$c_yellow" "$(t 'oluştur' 'create')" "$c_off" "$(t 'Masaüstünde ClipForge.command + Uygulamalar klasöründe ClipForge.app' 'ClipForge.command on the Desktop + ClipForge.app in Applications')"
+  printf '  %s[%s]%s %s\n' "$c_yellow" "$(t 'oluştur' 'create')" "$c_off" "$(t 'Masaüstünde SharkyClips.command + Uygulamalar klasöründe SharkyClips.app' 'SharkyClips.command on the Desktop + SharkyClips.app in Applications')"
 fi
-if [ "$BOOTSTRAP" = 1 ]; then printf '  %s[%s]%s ClipForge -> %s\n' "$c_yellow" "$(t 'indir ' 'get  ')" "$c_off" "$APP_DIR"; fi
+if [ "$BOOTSTRAP" = 1 ]; then printf '  %s[%s]%s SharkyClips -> %s\n' "$c_yellow" "$(t 'indir ' 'get  ')" "$c_off" "$APP_DIR"; fi
 free_gb="$(df -g "$(dirname "$APP_DIR")" 2>/dev/null | awk 'NR==2 {print $4}')"
 echo
 printf '%s%s%s\n' "$c_dim" "$(t "Gereken yer: en fazla ~12 GB. Boş yer: ${free_gb:-?} GB" "Space needed: up to ~12 GB. Free space: ${free_gb:-?} GB")" "$c_off"
@@ -157,16 +157,16 @@ else ok "Python $VENV_VERSION"; fi
 have ffmpeg && ok FFmpeg || warn "$(t 'FFmpeg bulunamadı.' 'FFmpeg not found.')"
 have git && ok Git || warn "$(t 'Git bulunamadı: otomatik güncelleme çalışmaz.' "Git not found: automatic updates won't work.")"
 
-# 2. ClipForge itself
-step 2 $TOTAL ClipForge
+# 2. SharkyClips itself
+step 2 $TOTAL SharkyClips
 if [ "$BOOTSTRAP" = 1 ]; then
-  have git || fail "$(t "ClipForge'u indirmek için Git gerekli." 'Git is needed to download ClipForge.')"
+  have git || fail "$(t "SharkyClips'i indirmek için Git gerekli." 'Git is needed to download SharkyClips.')"
   if [ -d "$APP_DIR/.git" ]; then
     git -C "$APP_DIR" pull --ff-only --quiet || warn "$(t 'Güncelleme alınamadı.' 'Could not pull updates.')"
   elif [ -d "$APP_DIR" ] && [ -n "$(ls -A "$APP_DIR" 2>/dev/null)" ]; then
     fail "$(t "$APP_DIR klasörü dolu. Başka bir klasör seçin: --install-dir <klasör>" "The folder $APP_DIR is not empty. Pick another one: --install-dir <folder>")"
   else
-    git clone --quiet "$REPO_URL" "$APP_DIR" || fail "$(t 'ClipForge indirilemedi (git clone).' 'Could not download ClipForge (git clone).')"
+    git clone --quiet "$REPO_URL" "$APP_DIR" || fail "$(t 'SharkyClips indirilemedi (git clone).' 'Could not download SharkyClips (git clone).')"
   fi
   ok "$APP_DIR"
   args=(--yes --lang "$LANG_CHOICE")
@@ -177,7 +177,7 @@ if [ "$BOOTSTRAP" = 1 ]; then
   exec /bin/bash "$APP_DIR/install.sh" "${args[@]}"
 fi
 ok "$APP_DIR"
-VERSION="$(sed -n 's/^__version__ = "\(.*\)"/\1/p' "$APP_DIR/backend/clipforge/__init__.py")"
+VERSION="$(tr -d '[:space:]' < "$APP_DIR/VERSION")"  # one source of truth for the version
 
 # 3. Python environment
 step 3 $TOTAL "$(t 'Python ortamı (.venv)' 'Python environment (.venv)')"
@@ -205,7 +205,7 @@ if [ "$NO_MODELS" = 1 ]; then doctor_flag="--no-fix"; else doctor_flag="--downlo
 
 # 6. Shortcuts
 step 6 $TOTAL "$(t 'Kısayollar' 'Shortcuts')"
-LAUNCHER="$APP_DIR/installer/macos/ClipForge.command"
+LAUNCHER="$APP_DIR/installer/macos/SharkyClips.command"
 chmod +x "$LAUNCHER" "$APP_DIR/installer/macos/uninstall.sh" 2>/dev/null
 if [ "$NO_SHORTCUTS" = 1 ]; then
   echo "  $(t 'Atlandı.' 'Skipped.')"
@@ -213,40 +213,40 @@ else
   desk="${SHORTCUT_DIR:-$HOME/Desktop}"
   apps="${SHORTCUT_DIR:-$HOME/Applications}"
   mkdir -p "$desk" "$apps"
-  printf '#!/bin/bash\n# ClipForge: opens in your browser. Close this window to stop ClipForge.\nexec "%s"\n' "$LAUNCHER" > "$desk/ClipForge.command"
-  chmod +x "$desk/ClipForge.command"
-  ok "$desk/ClipForge.command"
-  app="$apps/ClipForge.app"
+  printf '#!/bin/bash\n# SharkyClips: opens in your browser. Close this window to stop SharkyClips.\nexec "%s"\n' "$LAUNCHER" > "$desk/SharkyClips.command"
+  chmod +x "$desk/SharkyClips.command"
+  ok "$desk/SharkyClips.command"
+  app="$apps/SharkyClips.app"
   rm -rf "$app"
   mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
-  cp "$APP_DIR/assets/icon/clipforge.icns" "$app/Contents/Resources/clipforge.icns"
+  cp "$APP_DIR/assets/icon/sharkyclips.icns" "$app/Contents/Resources/sharkyclips.icns"
   cat > "$app/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
-  <key>CFBundleName</key><string>ClipForge</string>
-  <key>CFBundleDisplayName</key><string>ClipForge</string>
-  <key>CFBundleIdentifier</key><string>io.github.utkualsir.clipforge</string>
+  <key>CFBundleName</key><string>SharkyClips</string>
+  <key>CFBundleDisplayName</key><string>SharkyClips</string>
+  <key>CFBundleIdentifier</key><string>io.github.utkualsir.sharkyclips</string>
   <key>CFBundleVersion</key><string>${VERSION}</string>
   <key>CFBundleShortVersionString</key><string>${VERSION}</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleExecutable</key><string>ClipForge</string>
-  <key>CFBundleIconFile</key><string>clipforge</string>
+  <key>CFBundleExecutable</key><string>SharkyClips</string>
+  <key>CFBundleIconFile</key><string>sharkyclips</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
 </dict></plist>
 PLIST
   # The app opens the launcher in Terminal (the window keeps the server running).
-  printf '#!/bin/bash\nopen -a Terminal "%s"\n' "$LAUNCHER" > "$app/Contents/MacOS/ClipForge"
-  chmod +x "$app/Contents/MacOS/ClipForge"
+  printf '#!/bin/bash\nopen -a Terminal "%s"\n' "$LAUNCHER" > "$app/Contents/MacOS/SharkyClips"
+  chmod +x "$app/Contents/MacOS/SharkyClips"
   touch "$app"
   ok "$app"
 fi
 
 printf '{"version": "%s", "installed_tools": "%s"}\n' "$VERSION" "$(echo $TO_INSTALL)" > "$APP_DIR/.install-state.json"
 
-printf '\n%s%s%s\n' "$c_green" "$(t "ClipForge $VERSION hazır!" "ClipForge $VERSION is ready!")" "$c_off"
-echo "$(t "Masaüstündeki ClipForge.command dosyasına veya Uygulamalar'daki ClipForge'a çift tıklayın: tarayıcıda açılır. Terminal penceresi açık kaldığı sürece çalışır." 'Double-click ClipForge.command on your Desktop or ClipForge in Applications: it opens in your browser and runs while its Terminal window is open.')"
+printf '\n%s%s%s\n' "$c_green" "$(t "SharkyClips $VERSION hazır!" "SharkyClips $VERSION is ready!")" "$c_off"
+echo "$(t "Masaüstündeki SharkyClips.command dosyasına veya Uygulamalar'daki SharkyClips'e çift tıklayın: tarayıcıda açılır. Terminal penceresi açık kaldığı sürece çalışır." 'Double-click SharkyClips.command on your Desktop or SharkyClips in Applications: it opens in your browser and runs while its Terminal window is open.')"
 if [ "$NO_LAUNCH" = 0 ] && [ "$YES" = 0 ]; then
-  if ask "$(t 'ClipForge şimdi açılsın mı?' 'Open ClipForge now?')" 1; then open -a Terminal "$LAUNCHER"; fi
+  if ask "$(t 'SharkyClips şimdi açılsın mı?' 'Open SharkyClips now?')" 1; then open -a Terminal "$LAUNCHER"; fi
 fi
 exit 0

@@ -1,6 +1,6 @@
 import type { SubtitleStyle, Word } from "./api";
 
-// Same rules as backend/clipforge/clips.py so the live 9:16 preview matches the rendered clip.
+// Same rules as backend/sharkyclips/clips.py so the live 9:16 preview matches the rendered clip.
 const NO_SPACE = new Set(["zh", "ja"]);
 const BREAK_AFTER = /[.!?。！？…؟,，]$/;
 

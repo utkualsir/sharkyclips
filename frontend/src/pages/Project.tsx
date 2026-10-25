@@ -321,6 +321,8 @@ export default function ProjectPage({ id }: { id: string }) {
   const renderJob = renderJobs.find((j) => j.status === "running") ?? renderJobs[0];
   const pipelineJob = activeJobs.find((j) => !["render", "facecam", "titles", "montage"].includes(j.kind)) ?? null;
   const llmJob = activeJobs.find((j) => j.kind === "analyze" || j.kind === "titles") ?? null;
+  const lastAnalyze =
+    projectJobs.filter((j) => j.kind === "analyze" && !isActive(j)).sort((a, b) => (b.finished ?? 0) - (a.finished ?? 0))[0] ?? null;
   const facecamJob = activeJobs.find((j) => j.kind === "facecam");
 
   const cands = project?.highlights?.candidates ?? [];
@@ -836,7 +838,14 @@ export default function ProjectPage({ id }: { id: string }) {
 
             <div className="lower-grid">
               <SignalStats cand={selected} project={project} />
-              <PublishPanel cand={selected} projectId={id} llmAvailable={!!meta?.llm.available} llmJob={llmJob} />
+              <PublishPanel
+                cand={selected}
+                projectId={id}
+                llmAvailable={!!meta?.llm.available}
+                llmJob={llmJob}
+                lastAnalyze={lastAnalyze}
+                onAnalyze={analyzeAI}
+              />
             </div>
           </div>
 
