@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import json
 import os
+import threading
+import time
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +62,13 @@ DEFAULTS: dict[str, Any] = {
     # Windows: let Ollama start with Windows (its installer/updater adds a Startup shortcut;
     # SharkyClips moves it away unless this is on - SharkyClips starts Ollama itself when needed).
     "ollama_autostart": False,
+    # UI motion: "full", "reduced" (simple fades) or "off". The OS "reduce motion" setting
+    # always means at most "reduced". ui_theme: last theme picked in the UI (the launcher's
+    # splash page uses it, it can't read the browser's storage).
+    "ui_motion": "full",
+    "ui_theme": None,
+    # YouTube Data API units per day of the user's own Google Cloud project (Google's default).
+    "youtube_daily_quota": 10000,
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,
@@ -91,12 +100,26 @@ def load() -> dict[str, Any]:
     return cfg
 
 
+_lock = threading.RLock()
+
+
 def save(cfg: dict[str, Any]) -> None:
     path = config_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
-    os.replace(tmp, path)
+    with _lock:
+        tmp = path.with_name(f"config.json.{os.getpid()}.{threading.get_ident()}.tmp")
+        tmp.write_text(json.dumps(cfg, indent=2, ensure_ascii=False), encoding="utf-8")
+        # Windows: replacing fails while another thread / process has config.json open for
+        # reading (the governor reads it every few seconds). That lasts milliseconds: retry.
+        for attempt in range(40):
+            try:
+                os.replace(tmp, path)
+                return
+            except PermissionError:
+                if attempt == 39:
+                    tmp.unlink(missing_ok=True)
+                    raise
+                time.sleep(0.025)
 
 
 def get(key: str) -> Any:
@@ -104,10 +127,11 @@ def get(key: str) -> Any:
 
 
 def update(**values: Any) -> dict[str, Any]:
-    cfg = load()
-    cfg.update(values)
-    save(cfg)
-    return cfg
+    with _lock:
+        cfg = load()
+        cfg.update(values)
+        save(cfg)
+        return cfg
 
 
 def workspace_dir() -> Path:

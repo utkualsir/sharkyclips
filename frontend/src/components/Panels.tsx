@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useCountUp } from "../motion";
 import { api, type Candidate, type ChatStats, type Job, type ProjectDetail } from "../api";
 import { fmtCompact, fmtTime } from "../format";
 import { useI18n } from "../i18n";
@@ -148,7 +149,8 @@ function ScoreRing({ score, label }: { score: number | null; label: string | nul
   const { t, num } = useI18n();
   const r = 50;
   const c = 2 * Math.PI * r;
-  const frac = score == null ? 0 : score / 100;
+  const shown = useCountUp(score); // counts up, the ring fills with it
+  const frac = shown == null ? 0 : shown / 100;
   return (
     <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
       <div className="score-ring" role="img" aria-label={`${t("publish.viral")}: ${score ?? "—"}/100`}>
@@ -160,7 +162,7 @@ function ScoreRing({ score, label }: { score: number | null; label: string | nul
           )}
         </svg>
         <div className="center">
-          <span className="num">{score == null ? "—" : num(score)}</span>
+          <span className="num">{shown == null ? "—" : num(Math.round(shown))}</span>
           <span className="den">/100</span>
         </div>
       </div>

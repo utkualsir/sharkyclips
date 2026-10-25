@@ -119,8 +119,10 @@ export function WhatsNew({ version, onClose }: { version: string; onClose: () =>
           <Markdown text={entry.markdown} />
         </div>
       ) : (
-        <div className="notice">
-          <span className="spinner" />
+        <div className="skeleton-lines">
+          {[70, 90, 55, 80, 40].map((w) => (
+            <div key={w} className="skeleton" style={{ width: `${w}%` }} />
+          ))}
         </div>
       )}
     </Modal>

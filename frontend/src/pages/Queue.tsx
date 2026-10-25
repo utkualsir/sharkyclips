@@ -20,11 +20,17 @@ const KIND_ICON: Record<string, string> = {
   facecam: "camera",
   proxy: "film",
   chat: "hash",
+  export: "download",
+  upload: "upload",
+  yt_stats: "chart",
 };
 
 function jobTitle(job: Job, t: T, projects: Map<string, string>): { title: string; sub: string | null } {
   const p = job.params ?? {};
   const projectTitle = p.project_title ?? (job.project_id ? projects.get(job.project_id) ?? job.project_id : null);
+  if (job.kind === "export" || job.kind === "upload") {
+    return { title: `#${String(p.rank ?? "?").padStart(2, "0")} · ${p.title || t(`kind.${job.kind}`)}`, sub: `${t(`kind.${job.kind}`)} · ${projectTitle ?? ""}` };
+  }
   if (job.kind === "render") {
     return { title: `#${String(p.rank ?? "?").padStart(2, "0")} · ${p.title || t("kind.render")}`, sub: projectTitle };
   }
@@ -377,6 +383,7 @@ export default function Queue() {
 
   const gpu = view?.lanes.gpu ?? [];
   const io = view?.lanes.io ?? [];
+  const net = view?.lanes.net ?? [];
   const queuedGpu = gpu.filter((j) => j.status === "queued");
   const history = view?.history ?? [];
   const activeCount = jobs.filter(isActive).length;
@@ -485,6 +492,30 @@ export default function Queue() {
           </div>
           <ol className="q-list">
             {io.map((job, i) => (
+              <QueueRow
+                key={job.id}
+                job={job}
+                pos={i + 1}
+                queuedCount={0}
+                projects={projects}
+                onMove={() => {}}
+                dragProps={{}}
+                dragOver={false}
+              />
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {net.length > 0 && (
+        <section className="q-section" aria-labelledby="q-net">
+          <div className="q-section-head">
+            <h2 className="section-title" id="q-net">
+              {t("queue.net")} <span className="count mono">{net.length}</span>
+            </h2>
+          </div>
+          <ol className="q-list">
+            {net.map((job, i) => (
               <QueueRow
                 key={job.id}
                 job={job}

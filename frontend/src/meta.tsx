@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { api, type Meta } from "./api";
 import { useI18n } from "./i18n";
+import { applyMotion, storedMotion } from "./motion";
 
 const Ctx = createContext<Meta | null>(null);
 
@@ -20,6 +21,7 @@ export function MetaProvider({ children }: { children: ReactNode }) {
         }
         // The config file wins unless this browser chose a language itself.
         if (!explicit && s.ui_language && s.ui_language !== lang) setLang(s.ui_language);
+        if (s.ui_motion && s.ui_motion !== storedMotion()) applyMotion(s.ui_motion);
       })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps

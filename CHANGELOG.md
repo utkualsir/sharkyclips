@@ -7,6 +7,189 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.2] - 2026-10-25
+
+Export your clips for every platform, upload them straight to YouTube, and enjoy a new launch animation.
+
+### Added
+- **Export** (Clips tab, or **Export…** under the render button): pick clips, a platform and a format,
+  see the estimated file size before anything renders.
+  - Formats: MP4 (H.264, plays everywhere), MP4 (HEVC, about 30% smaller), MP4 (AV1, smallest; shown
+    when your graphics card can encode it), MOV, WebM (VP9), GIF (optimized colors, with a size limit)
+    and MP3 / M4A (audio only). Your graphics card does the work when it can, the CPU otherwise.
+  - Platform presets in one click: **YouTube Shorts, TikTok, Instagram Reels, X / Twitter and
+    YouTube 16:9**. Each sets the size, frame rate, bitrate and length limit, and keeps subtitles and
+    the hook text out of the areas the app covers with its own buttons. Clips that are too long for
+    the platform get a warning.
+  - **Subtitle files**: SRT and VTT in any of the 7 languages (the local AI translates them when
+    needed), next to the video or instead of burned-in subtitles.
+  - **Editor timelines**: FCPXML for DaVinci Resolve and Final Cut Pro, and an XML for Premiere Pro,
+    with the cut on your original video, the captions and markers for the detected moments (kills,
+    laughter, chat spikes...). CapCut has no open project format, so it isn't offered; import the SRT
+    file there.
+  - Export several clips with one preset in one go; every clip is its own entry in the queue.
+- **Direct YouTube upload** with the free, official YouTube API:
+  - Settings > YouTube walks you through creating your own free Google key step by step. It is
+    stored only on your computer.
+  - Per clip: title, description and hashtags filled in from the publish package, visibility
+    (private / unlisted / public), scheduled publishing, the "made for kids" answer and a thumbnail
+    for 16:9 videos.
+  - Uploads run in their own network queue next to rendering (they never wait for the graphics
+    card), continue where they stopped after a restart, and the app shows how many uploads are left
+    today.
+  - SharkyClips remembers each video and fetches its views by itself, so public clips older than
+    two days calibrate the viral score automatically (Stats > **Fetch views from YouTube**).
+  - Note: Google keeps videos uploaded through a new, unaudited Google Cloud project private until
+    the project passes Google's free API audit. Private uploads always work.
+- **Launch animation**: a water line draws across the screen, the shark fin rises out of it and
+  glides, a quick cut reveals the name, then the logo flies into the header while the app fades in.
+  It plays while SharkyClips starts (no extra waiting) and click or Esc skips it.
+- **Smoother app**: cards and lists glide in, the Hype Map bars grow on load, scores count up,
+  pages fade between each other, and loading spots show soft placeholders instead of spinners.
+- Settings > **Animations: Full / Reduced / Off**. Your system's "reduce motion" setting is always
+  respected (simple fades only).
+
+### Fixed
+- Saving a setting could fail now and then on Windows while the app was reading its settings file.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Kliplerini her platform için dışa aktar, doğrudan YouTube'a yükle ve yeni açılış animasyonunun tadını çıkar.
+
+### Eklendi
+- **Dışa aktarma** (Klipler sekmesi ya da render düğmesinin altındaki **Dışa aktar…**): klipleri,
+  platformu ve formatı seç; render başlamadan tahmini dosya boyutunu gör.
+  - Formatlar: MP4 (H.264, her yerde oynar), MP4 (HEVC, ~%30 daha küçük), MP4 (AV1, en küçük; ekran
+    kartın kodlayabiliyorsa görünür), MOV, WebM (VP9), GIF (optimize renkler, boyut sınırıyla) ve
+    MP3 / M4A (yalnızca ses). Mümkünse işi ekran kartı yapar, değilse işlemci.
+  - Tek tıkla platform ayarları: **YouTube Shorts, TikTok, Instagram Reels, X / Twitter ve
+    YouTube 16:9**. Her biri boyutu, kare hızını, bit hızını ve süre sınırını ayarlar; altyazıları ve
+    kanca metnini uygulamanın kendi düğmeleriyle kapattığı alanlardan uzak tutar. Platform için fazla
+    uzun klipler uyarı alır.
+  - **Altyazı dosyaları**: 7 dilin herhangi birinde SRT ve VTT (gerekirse yerel yapay zekâ çevirir);
+    videonun yanında ya da gömülü altyazı yerine.
+  - **Kurgu zaman çizelgeleri**: DaVinci Resolve ve Final Cut Pro için FCPXML, Premiere Pro için XML;
+    orijinal videondaki kesim, altyazılar ve bulunan anlar için işaretçiler (kill'ler, kahkaha, sohbet
+    patlamaları...). CapCut'ın açık bir proje formatı olmadığı için sunulmuyor; oraya SRT dosyasını aktar.
+  - Birden fazla klibi tek ayarla tek seferde dışa aktar; her klip kuyrukta ayrı bir iş olur.
+- Ücretsiz, resmî YouTube API'siyle **doğrudan YouTube'a yükleme**:
+  - Ayarlar > YouTube, kendi ücretsiz Google anahtarını oluşturman için seni adım adım yönlendirir.
+    Anahtar yalnızca bilgisayarında saklanır.
+  - Her klip için: yayın paketinden doldurulan başlık, açıklama ve etiketler; görünürlük (gizli /
+    liste dışı / herkese açık), zamanlanmış yayın, "çocuklara özel" cevabı ve 16:9 videolar için
+    küçük resim.
+  - Yüklemeler render ile yan yana kendi ağ kuyruğunda çalışır (ekran kartını hiç beklemez), yeniden
+    başlatmadan sonra kaldığı yerden devam eder; uygulama bugün kaç yükleme hakkın kaldığını gösterir.
+  - SharkyClips her videoyu hatırlar ve izlenmelerini kendisi alır; iki günden eski herkese açık
+    klipler viral puanı otomatik kalibre eder (İstatistikler > **İzlenmeleri YouTube'dan al**).
+  - Not: Google, yeni ve denetlenmemiş bir Google Cloud projesiyle yüklenen videoları, proje
+    Google'ın ücretsiz API denetiminden geçene kadar gizli tutar. Gizli yüklemeler her zaman çalışır.
+- **Açılış animasyonu**: ekrana bir su çizgisi çizilir, köpekbalığı yüzgeci içinden yükselip süzülür,
+  hızlı bir kesik adı ortaya çıkarır; ardından logo üst çubuğa uçar ve uygulama belirir. SharkyClips
+  açılırken oynar (ek bekleme yok); tıklayınca veya Esc ile geçilir.
+- **Daha akıcı uygulama**: kartlar ve listeler kayarak gelir, Heyecan Haritası çubukları yüklenirken
+  yükselir, puanlar sayarak artar, sayfalar yumuşak geçer; yükleme yerlerinde dönen simge yerine
+  sakin yer tutucular var.
+- Ayarlar > **Animasyonlar: Tam / Azaltılmış / Kapalı**. Sistemindeki "hareketi azalt" ayarına her
+  zaman uyulur (yalnızca yumuşak geçişler).
+
+### Düzeltildi
+- Windows'ta uygulama ayar dosyasını okurken bir ayarı kaydetmek ara sıra başarısız olabiliyordu.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Exportiere Clips für jede Plattform, lade sie direkt auf YouTube hoch, und genieße die neue Startanimation.
+
+- **Neu: Export** mit geschätzter Dateigröße vorab: MP4 (H.264, HEVC, AV1 bei passender Grafikkarte),
+  MOV, WebM, GIF mit Größenlimit, MP3/M4A. Ein-Klick-Vorgaben für YouTube Shorts, TikTok, Instagram
+  Reels, X und YouTube 16:9 (Größe, fps, Bitrate, Längenlimit, Untertitel außerhalb der App-Buttons).
+- **Neu:** SRT/VTT-Untertitel in allen 7 Sprachen (bei Bedarf von der lokalen KI übersetzt) und
+  Schnitt-Timelines für DaVinci Resolve, Final Cut Pro (FCPXML) und Premiere Pro (XML) mit Markern.
+  CapCut hat kein offenes Projektformat; importiere dort die SRT-Datei.
+- **Neu: YouTube-Upload** über die kostenlose offizielle API mit deinem eigenen Google-Schlüssel:
+  Titel, Beschreibung, Hashtags, Sichtbarkeit, Planung, „für Kinder“, Thumbnail; eigene
+  Netzwerk-Warteschlange, verbleibende Uploads pro Tag, Aufrufe kalibrieren den Viral-Score.
+- **Neu:** Startanimation (Flosse taucht auf, Logo fliegt in die Kopfzeile), flüssigere Oberfläche und
+  Einstellungen > Animationen: Voll / Reduziert / Aus.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Exportáld a klipjeidet bármely platformra, töltsd fel őket közvetlenül a YouTube-ra, és élvezd az új indítóanimációt.
+
+- **Új: exportálás** előre becsült fájlmérettel: MP4 (H.264, HEVC, AV1 megfelelő videokártyával), MOV,
+  WebM, GIF méretkorláttal, MP3/M4A. Egykattintásos beállítások: YouTube Shorts, TikTok, Instagram
+  Reels, X és YouTube 16:9 (méret, fps, bitráta, hosszkorlát, feliratok az alkalmazás gombjain kívül).
+- **Új:** SRT/VTT feliratok mind a 7 nyelven (szükség esetén a helyi MI fordítja) és vágási idővonalak
+  DaVinci Resolve-hoz, Final Cut Pro-hoz (FCPXML) és Premiere Pro-hoz (XML) jelölőkkel. A CapCut-nak
+  nincs nyílt projektformátuma; oda az SRT fájlt importáld.
+- **Új: YouTube-feltöltés** az ingyenes hivatalos API-val, a saját Google-kulcsoddal: cím, leírás,
+  hashtagek, láthatóság, ütemezés, „gyerekeknek” jelölés, bélyegkép; saját hálózati sor, napi
+  feltöltési keret, a megtekintések kalibrálják a virális pontszámot.
+- **Új:** indítóanimáció (felbukkanó uszony, a logó a fejlécbe repül), gördülékenyebb felület és
+  Beállítások > Animációk: Teljes / Csökkentett / Ki.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Экспортируйте клипы для любой платформы, загружайте их прямо на YouTube и встречайте новую анимацию запуска.
+
+- **Новое: экспорт** с оценкой размера файла заранее: MP4 (H.264, HEVC, AV1 при подходящей видеокарте),
+  MOV, WebM, GIF с лимитом размера, MP3/M4A. Пресеты в один клик: YouTube Shorts, TikTok, Instagram
+  Reels, X и YouTube 16:9 (размер, fps, битрейт, лимит длины, субтитры вне кнопок приложения).
+- **Новое:** субтитры SRT/VTT на всех 7 языках (при необходимости переводит локальный ИИ) и таймлайны
+  для DaVinci Resolve, Final Cut Pro (FCPXML) и Premiere Pro (XML) с маркерами. У CapCut нет открытого
+  формата проектов; импортируйте туда файл SRT.
+- **Новое: загрузка на YouTube** через бесплатный официальный API с вашим собственным ключом Google:
+  название, описание, хештеги, доступ, расписание, «для детей», превью; своя сетевая очередь,
+  остаток загрузок на день, просмотры калибруют вирусный балл.
+- **Новое:** анимация запуска (плавник всплывает, логотип улетает в шапку), более плавный интерфейс и
+  Настройки > Анимации: Полные / Упрощённые / Выкл.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+صدّر مقاطعك لكل منصة، وارفعها مباشرة إلى YouTube، واستمتع بحركة البدء الجديدة.
+
+- **جديد: التصدير** مع حجم ملف تقديري مسبقًا: MP4 (H.264 وHEVC وAV1 مع بطاقة رسوميات مناسبة) وMOV
+  وWebM وGIF بحد للحجم وMP3/M4A. إعدادات بنقرة واحدة: YouTube Shorts وTikTok وInstagram Reels وX
+  وYouTube 16:9 (الحجم، الإطارات، معدل البت، حد الطول، والترجمة بعيدًا عن أزرار التطبيق).
+- **جديد:** ترجمة SRT/VTT بجميع اللغات السبع (يترجمها الذكاء الاصطناعي المحلي عند الحاجة) وخطوط
+  زمنية لـ DaVinci Resolve وFinal Cut Pro (FCPXML) وPremiere Pro (XML) مع علامات. لا يملك CapCut
+  صيغة مشاريع مفتوحة؛ استورد ملف SRT فيه.
+- **جديد: الرفع إلى YouTube** عبر الواجهة الرسمية المجانية بمفتاح Google الخاص بك: العنوان والوصف
+  والوسوم والظهور والجدولة و«مخصص للأطفال» والصورة المصغرة؛ قائمة شبكة خاصة، وعدد مرات الرفع
+  المتبقية اليوم، والمشاهدات تعاير درجة الانتشار.
+- **جديد:** حركة بدء (يظهر الزعنف ويطير الشعار إلى الشريط العلوي)، واجهة أكثر سلاسة، والإعدادات >
+  الحركة: كاملة / مخففة / متوقفة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+为各个平台导出片段、直接上传到 YouTube，并迎来全新的启动动画。
+
+- **新增：导出**，渲染前即可看到预计文件大小：MP4（H.264、HEVC，显卡支持时还有 AV1）、MOV、WebM、
+  带大小上限的 GIF、MP3/M4A。一键平台预设：YouTube Shorts、TikTok、Instagram Reels、X 和
+  YouTube 16:9（尺寸、帧率、码率、时长上限，字幕避开平台按钮）。
+- **新增：** 7 种语言的 SRT/VTT 字幕（需要时由本地 AI 翻译），以及带标记的剪辑时间线：DaVinci
+  Resolve、Final Cut Pro（FCPXML）和 Premiere Pro（XML）。CapCut 没有开放的工程格式，请在其中导入 SRT。
+- **新增：直接上传到 YouTube**，使用免费的官方 API 和你自己的 Google 密钥：标题、说明、话题标签、
+  公开范围、定时发布、“为儿童打造”、缩略图；独立的网络队列，显示今日剩余上传次数，播放量自动
+  校准爆款分数。
+- **新增：** 启动动画（鱼鳍浮出水面，标志飞入顶栏）、更流畅的界面，以及 设置 > 动画：完整 / 减少 / 关闭。
+
+</details>
+
 ## [1.2.1] - 2026-10-25
 
 ClipForge is now **SharkyClips**, with a new logo, a welcome screen and a working publish package.

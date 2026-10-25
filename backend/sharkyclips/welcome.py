@@ -209,9 +209,13 @@ def write_splash(url: str, lang: str | None = None) -> Path | None:
         html = SPLASH_TEMPLATE.read_text(encoding="utf-8")
     except OSError:
         return None
-    lang = lang or str(config.get("ui_language") or languages.DEFAULT_UI_LANGUAGE)
+    cfg = config.load()
+    lang = lang or str(cfg.get("ui_language") or languages.DEFAULT_UI_LANGUAGE)
+    theme = cfg.get("ui_theme") if cfg.get("ui_theme") in ("dark", "light") else "auto"
+    motion = cfg.get("ui_motion") if cfg.get("ui_motion") in ("full", "reduced", "off") else "full"
     html = (html.replace("__APP_URL__", json.dumps(url)).replace("__LANG__", json.dumps(lang))
-            .replace("__DIR__", "rtl" if languages.is_rtl(lang) else "ltr"))
+            .replace("__DIR__", "rtl" if languages.is_rtl(lang) else "ltr")
+            .replace("__THEME__", theme).replace("__MOTION__", motion))
     out = config.config_dir() / "splash.html"
     try:
         out.parent.mkdir(parents=True, exist_ok=True)

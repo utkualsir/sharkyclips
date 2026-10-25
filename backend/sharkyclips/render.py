@@ -47,6 +47,80 @@ ENCODERS = {
 }
 
 
+# Other codecs (export formats, export.py). Same rule: the first encoder that really works wins.
+# Quality settings measured against H.264 (cq 30): same SSIM (~0.95), HEVC ~30 % and AV1 ~35 %
+# smaller. AV1 is offered only with a hardware encoder (CPU AV1 is far too slow for "never slows the PC").
+CODEC_ENCODERS: dict[str, dict[str, Encoder]] = {
+    "hevc": {
+        "hevc_nvenc": Encoder("hevc_nvenc", "NVIDIA NVENC", True,
+                              ("-preset", "p5", "-tune", "hq", "-rc", "vbr", "-cq", "32", "-b:v", "0")),
+        "hevc_videotoolbox": Encoder("hevc_videotoolbox", "Apple VideoToolbox", True,
+                                     ("-b:v", "4M", "-allow_sw", "0")),
+        "hevc_qsv": Encoder("hevc_qsv", "Intel Quick Sync", True, ("-preset", "faster", "-global_quality", "25")),
+        "hevc_amf": Encoder("hevc_amf", "AMD AMF", True,
+                            ("-quality", "speed", "-rc", "cqp", "-qp_i", "26", "-qp_p", "26")),
+        "libx265": Encoder("libx265", "CPU (x265)", False, ("-preset", "fast", "-crf", "26")),
+    },
+    "av1": {
+        "av1_nvenc": Encoder("av1_nvenc", "NVIDIA NVENC", True,
+                             ("-preset", "p5", "-tune", "hq", "-rc", "vbr", "-cq", "39", "-b:v", "0")),
+        "av1_qsv": Encoder("av1_qsv", "Intel Quick Sync", True, ("-preset", "faster", "-global_quality", "28")),
+        "av1_amf": Encoder("av1_amf", "AMD AMF", True,
+                           ("-quality", "speed", "-rc", "cqp", "-qp_i", "120", "-qp_p", "120")),
+    },
+    "vp9": {
+        "libvpx-vp9": Encoder("libvpx-vp9", "CPU (VP9)", False,
+                              ("-deadline", "good", "-cpu-used", "5", "-row-mt", "1", "-crf", "37", "-b:v", "0")),
+    },
+}
+# CPU encoders that take a -threads budget from the governor.
+CPU_ENCODERS = ("libx264", "libx265", "libvpx-vp9", "libsvtav1")
+
+
+def _codec_candidates(codec: str) -> list[str]:
+    hw = hardware.detect_hardware()
+    gpus = " ".join(hw.other_gpus).lower()
+    vendor = {"nvenc": bool(hw.nvidia_gpus), "videotoolbox": platform.system() == "Darwin",
+              "qsv": "intel" in gpus, "amf": "amd" in gpus or "radeon" in gpus}
+    out = []
+    for name, enc in CODEC_ENCODERS[codec].items():
+        suffix = name.rsplit("_", 1)[-1]
+        if not enc.hardware or vendor.get(suffix, False):
+            out.append(name)
+    return out
+
+
+def _test(enc: Encoder) -> tuple[bool, str]:
+    ffmpeg = require_tool("ffmpeg")
+    cmd = [ffmpeg, "-hide_banner", "-loglevel", "error", "-f", "lavfi",
+           "-i", "testsrc2=size=640x360:rate=30:duration=0.5",
+           "-c:v", enc.name, *enc.args, "-pix_fmt", "yuv420p", "-f", "null", "-"]
+    try:
+        res = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
+                             errors="replace", timeout=60, **no_window())
+    except (OSError, subprocess.SubprocessError) as exc:
+        return False, str(exc)
+    return res.returncode == 0, res.stderr.strip()[-300:]
+
+
+@functools.lru_cache(maxsize=8)
+def pick_codec(codec: str) -> Encoder | None:
+    """Best working encoder for h264 / hevc / av1 / vp9 (None = this PC can't make it)."""
+    if codec == "h264":
+        return pick_encoder()[0]
+    for name in _codec_candidates(codec):
+        enc = CODEC_ENCODERS[codec][name]
+        if _test(enc)[0]:
+            return enc
+    return None
+
+
+def cpu_fallback(codec: str) -> Encoder | None:
+    """The CPU encoder used when a hardware encode fails half-way (GPU busy, session limit)."""
+    return {"h264": ENCODERS["libx264"], "hevc": CODEC_ENCODERS["hevc"]["libx265"],
+            "vp9": CODEC_ENCODERS["vp9"]["libvpx-vp9"]}.get(codec)
+
+
 def _candidates() -> list[str]:
     hw = hardware.detect_hardware()
     gpus = " ".join(hw.other_gpus).lower()
@@ -117,7 +191,7 @@ def run_ffmpeg(cmd: list[str], duration: float,
     (game, fullscreen, ...) and the CPU encoder uses only the thread budget."""
     from . import governor, procs
 
-    if "libx264" in cmd and "-threads" not in cmd:
+    if any(e in cmd for e in CPU_ENCODERS) and "-threads" not in cmd:
         cmd = [*cmd[:-1], "-threads", str(governor.cpu_threads()), cmd[-1]]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                             encoding="utf-8", errors="replace", **no_window(),

@@ -16,7 +16,7 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.1-1F6FE5" alt="Version 1.2.1"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.2-1F6FE5" alt="Version 1.2.2"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -63,6 +63,16 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
 - **Ready-to-post 9:16 clips.** Facecam on top and gameplay below (detected automatically and
   adjustable), burned-in word-timed subtitles (also right-to-left Arabic), an optional hook text and
   a "peak flash" opener. Encodes on NVIDIA, Apple, Intel or AMD hardware when available.
+- **Export for every platform.** MP4 (H.264, HEVC, AV1 on recent GPUs), MOV, WebM, GIF with a size
+  limit, MP3/M4A. One-click presets for **YouTube Shorts, TikTok, Instagram Reels, X and YouTube 16:9**
+  set size, fps, bitrate and length limit and keep subtitles out of each app's buttons. The file size
+  is estimated before anything renders; several clips export in one go.
+- **Subtitle files and editor timelines.** SRT/VTT in all 7 languages (translated locally when
+  needed), FCPXML for DaVinci Resolve / Final Cut Pro and XML for Premiere Pro with the cut, captions
+  and markers for the detected moments.
+- **Direct YouTube upload** (optional) through the free official API with your own Google key:
+  title, description and hashtags from the publish package, privacy, scheduling, thumbnail, a daily
+  quota counter, and views that flow back into the calibration by themselves.
 - **Best-of videos.** One 16:9 YouTube video from your best clips, with title cards, crossfades,
   even loudness, and AI-written titles, description and chapters.
 - **A render queue.** Reorder, cancel and retry jobs. The queue survives restarts and can shut the PC
@@ -99,7 +109,9 @@ More screenshots, in both themes, are in [docs/screenshots](docs/screenshots).
 no paid API and no telemetry. Transcription (Whisper), the language model (Qwen 3.5 via Ollama),
 highlight detection and rendering all run locally. Your videos, transcripts and clips stay in
 the `workspace` folder. SharkyClips only goes online to download what you ask it to (a VOD, its
-chat replay), the AI models (once), and updates (when you click "Check for updates").
+chat replay), the AI models (once), and updates (when you click "Check for updates"). The optional
+YouTube upload talks only to Google's official API, with a key you create yourself and that never
+leaves your computer.
 
 ## Supported hardware
 
@@ -336,6 +348,11 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
 - Facecam üstte, oyun altta olacak şekilde **9:16 klip** üretir; kelime kelime altyazı ve kanca
   metni ekler.
 - En iyi kliplerden bölümlü, 16:9 bir **"en iyi anlar" videosu** hazırlar.
+- Her platform için **dışa aktarır**: MP4 (H.264, HEVC, AV1), MOV, WebM, GIF, MP3/M4A; YouTube Shorts,
+  TikTok, Instagram Reels, X ve YouTube 16:9 için tek tıkla ayarlar, SRT/VTT altyazı dosyaları ve
+  DaVinci Resolve / Final Cut Pro / Premiere Pro için kurgu zaman çizelgeleri.
+- İsterseniz klipleri resmî YouTube API'siyle, kendi Google anahtarınızla **doğrudan YouTube'a yükler**
+  (başlık, açıklama, etiketler, görünürlük, zamanlama, küçük resim).
 - Arayüzü 7 dildedir (varsayılan Türkçe), koyu ve açık tema vardır, telefondan da kullanılabilir.
   İlk açılışta kısa bir kurulum (dil, içerik türü, performans modu + donanım kontrolü) ve her
   güncellemeden sonra "Yenilikler" penceresi gelir.
@@ -344,7 +361,8 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
 
 **Her şey bilgisayarınızda çalışır; hiçbir şey internete yüklenmez.** Hesap, bulut, ücretli servis
 veya veri toplama yoktur. İnternet yalnızca sizin istediğiniz videoyu, yapay zekâ modellerini (bir
-kez) ve güncellemeleri indirmek için kullanılır.
+kez) ve güncellemeleri indirmek için kullanılır. İsteğe bağlı YouTube yüklemesi yalnızca Google'ın
+resmî API'siyle, sizin oluşturduğunuz ve bilgisayarınızdan çıkmayan bir anahtarla konuşur.
 
 ### Kurulum (Windows 10 / 11)
 

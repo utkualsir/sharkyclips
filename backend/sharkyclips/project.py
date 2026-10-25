@@ -22,14 +22,26 @@ def write_json_atomic(path: Path, data: Any, compact: bool = False) -> None:
     """Write JSON so a crash never leaves a half-written file behind.
 
     compact=True for files the web UI loads (no indentation, smaller/faster)."""
+    import threading
+    import time
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
     with open(tmp, "w", encoding="utf-8", newline="\n") as f:
         if compact:
             json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
         else:
             json.dump(data, f, ensure_ascii=False, indent=2)
-    os.replace(tmp, path)
+    # Windows: the replace fails for a moment while someone reads the file. Retry briefly.
+    for attempt in range(40):
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            if attempt == 39:
+                tmp.unlink(missing_ok=True)
+                raise
+            time.sleep(0.025)
 
 
 def read_json(path: Path) -> Any:

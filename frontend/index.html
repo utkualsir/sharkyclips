@@ -26,11 +26,45 @@
           var l = localStorage.getItem("cf-lang") || "tr";
           document.documentElement.lang = l;
           document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+          // Animation level (Settings > Animations), capped by the OS reduce-motion setting.
+          var m = localStorage.getItem("sc-motion") || "full";
+          if (m !== "off" && (m === "reduced" || window.matchMedia("(prefers-reduced-motion: reduce)").matches)) m = "reduced";
+          document.documentElement.setAttribute("data-motion", m === "off" ? "off" : m === "reduced" ? "reduced" : "full");
+          // Coming from the launcher's splash page: paint its last frame at once (#boot-launch),
+          // the app then flies the logo into the header (components/Launch.tsx).
+          if (/[?&]splash=done/.test(location.search)) document.documentElement.classList.add("boot-handover");
         } catch (e) {}
       })();
     </script>
   </head>
   <body>
+    <div id="boot-launch" class="launch launch-static" aria-hidden="true">
+      <div class="launch-stage">
+        <div class="launch-mark-wrap">
+          <svg class="launch-water" viewBox="0 0 1200 12" preserveAspectRatio="none"><path pathLength="1" vector-effect="non-scaling-stroke" d="M0 6 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0" /></svg>
+          <svg class="launch-mark" viewBox="6 8 52 48">
+            <defs>
+              <linearGradient id="boot-fin" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" class="launch-fin-a" /><stop offset="1" class="launch-fin-b" /></linearGradient>
+            </defs>
+            <path class="launch-mini-wave" d="M8 50Q11 48.4 14 50Q17 51.6 20 50Q23 48.4 26 50Q29 51.6 32 50Q35 48.4 38 50Q41 51.6 44 50Q47 48.4 50 50Q53 51.6 56 50" />
+            <g class="launch-fin">
+              <path fill-rule="evenodd" fill="url(#boot-fin)" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" />
+              <path class="launch-fin-solid" fill-rule="evenodd" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" />
+            </g>
+          </svg>
+        </div>
+        <div class="launch-word" dir="ltr"><span class="launch-word-text">SharkyClips</span></div>
+        <p class="launch-slogan" id="boot-slogan"></p>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var S = { tr: "En iyi anların avlanmaya hazır.", en: "Hunt your best moments.", de: "Deine besten Momente – bereit für die Jagd.",
+          hu: "Vadászd le a legjobb pillanataidat.", ru: "Охоться за своими лучшими моментами.", ar: "اصطد أفضل لحظاتك.", zh: "猎取你的高光时刻。" };
+        var el = document.getElementById("boot-slogan");
+        if (el) el.textContent = S[document.documentElement.lang] || S.en;
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Candidate, HypeCurve } from "../api";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
+import { useTween } from "../motion";
 import { cssVar } from "../theme";
 
 interface Props {
@@ -22,6 +23,7 @@ export default function HypeMap({ curve, candidates, selected, currentTime, onSe
   const [hover, setHover] = useState<{ x: number; t: number; v: number } | null>(null);
   const [themeTick, setThemeTick] = useState(0);
   const duration = curve.duration;
+  const grow = useTween(curve); // bars grow up on load, left to right
 
   useEffect(() => {
     const el = canvas.current;
@@ -78,7 +80,8 @@ export default function HypeMap({ curve, candidates, selected, currentTime, onSe
       (i + 1) * secPerBar > c.start && i * secPerBar < c.end;
 
     for (let i = 0; i < n; i++) {
-      const h = Math.max(2, (vals[i] / 100) * usable);
+      const g = Math.min(1, Math.max(0, grow * 1.5 - (i / n) * 0.5));
+      const h = Math.max(2, (vals[i] / 100) * usable * (1 - Math.pow(1 - g, 3)));
       let col = colBar;
       if (selected && inRange(selected, i)) col = colGold;
       else if (candidates.some((c) => inRange(c, i))) col = colCand;
@@ -113,7 +116,7 @@ export default function HypeMap({ curve, candidates, selected, currentTime, onSe
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-  }, [width, bars, candidates, selected, currentTime, duration, themeTick]);
+  }, [width, bars, candidates, selected, currentTime, duration, themeTick, grow]);
 
   const timeAt = (clientX: number) => {
     const rect = canvas.current!.getBoundingClientRect();

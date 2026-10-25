@@ -115,9 +115,7 @@ export default function FacecamEditor({
       >
         <img src={urls.frame(projectId, time)} alt="" onLoad={() => setLoaded(true)} draggable={false} />
         {!loaded && (
-          <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center" }}>
-            <span className="spinner" />
-          </div>
+          <div className="skeleton skeleton-fill" />
         )}
         {rect && rect.w > 0 && (
           <div

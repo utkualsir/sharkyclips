@@ -5,7 +5,8 @@ import { useAppState } from "./appstate";
 import { BrandMark } from "./components/Brand";
 import { Icon } from "./components/Icons";
 import { DevBanner, Footer, WhatsNew } from "./components/Shell";
-import { Onboarding, Splash } from "./components/Welcome";
+import Launch from "./components/Launch";
+import { Onboarding } from "./components/Welcome";
 import { jobLabel } from "./components/ui";
 import { UI_LANGUAGES, useI18n } from "./i18n";
 import { isActive, useJobs } from "./jobs";
@@ -154,19 +155,21 @@ export default function App() {
       <TopBar />
       <DevBanner />
       <ShutdownBanner />
-      {route.name === "library" && <Library />}
-      {route.name === "settings" && <Settings />}
-      {route.name === "project" && <ProjectPage key={route.id} id={route.id} />}
-      {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
-      {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
-      {route.name === "queue" && <Queue />}
-      {route.name === "stats" && <Stats />}
+      <div className="page-fx" key={route.name + ("id" in route ? `:${route.id}` : "")}>
+        {route.name === "library" && <Library />}
+        {route.name === "settings" && <Settings />}
+        {route.name === "project" && <ProjectPage key={route.id} id={route.id} />}
+        {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
+        {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
+        {route.name === "queue" && <Queue />}
+        {route.name === "stats" && <Stats />}
+      </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />
       {(autoWhatsNew || manualWhatsNew) && state && (
         <WhatsNew version={state.whats_new ?? state.version} onClose={closeWhatsNew} />
       )}
       {showOnboarding && <Onboarding onDone={() => setOnboarded(true)} />}
-      {!splashDone && <Splash onDone={() => setSplashDone(true)} />}
+      {!splashDone && <Launch onDone={() => setSplashDone(true)} />}
     </>
   );
 }

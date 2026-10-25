@@ -1,90 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, type HardwareCheck, type PerfMode } from "../api";
 import { useAppState } from "../appstate";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { chooseLanguage } from "../meta";
 import { SharkLogo } from "./Brand";
 import { Icon } from "./Icons";
-
-const SPLASH_MS = 1500;
-const SPLASH_KEY = "sc-splash-shown";
-
-function reducedMotion() {
-  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-}
-
-function shownThisSession(): boolean {
-  try {
-    return sessionStorage.getItem(SPLASH_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
-/** Start-up splash: once per browser tab session, ~1.5 s, click / Esc skips. The app loads
- * underneath, so it never adds waiting time. When the launcher's splash page already played
- * (?splash=done) only its last frame fades out, for a seamless hand-over. */
-export function Splash({ onDone }: { onDone: () => void }) {
-  const { t } = useI18n();
-  const handedOver = useRef(new URLSearchParams(window.location.search).get("splash") === "done");
-  const [phase, setPhase] = useState<"skip" | "show" | "out">(() =>
-    handedOver.current ? "out" : shownThisSession() ? "skip" : "show",
-  );
-  const done = useRef(false);
-
-  const finish = useCallback(() => {
-    if (done.current) return;
-    done.current = true;
-    setPhase("out");
-    window.setTimeout(onDone, reducedMotion() ? 120 : 320);
-  }, [onDone]);
-
-  useEffect(() => {
-    try {
-      sessionStorage.setItem(SPLASH_KEY, "1");
-    } catch {
-      /* private mode */
-    }
-    if (handedOver.current) {
-      const url = new URL(window.location.href);
-      url.searchParams.delete("splash");
-      window.history.replaceState(null, "", url.pathname + url.search + url.hash);
-      done.current = true;
-      const id = window.setTimeout(onDone, reducedMotion() ? 120 : 320);
-      return () => window.clearTimeout(id);
-    }
-    if (phase === "skip") {
-      onDone();
-      return;
-    }
-    const id = window.setTimeout(finish, SPLASH_MS);
-    const key = (e: KeyboardEvent) => (e.key === "Escape" || e.key === "Enter" || e.key === " ") && finish();
-    window.addEventListener("keydown", key);
-    return () => {
-      window.clearTimeout(id);
-      window.removeEventListener("keydown", key);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  if (phase === "skip") return null;
-  return (
-    <div
-      className={`splash${phase === "out" ? " splash-out" : ""}${handedOver.current ? " splash-handover" : ""}`}
-      onClick={finish}
-      role="status"
-      aria-live="polite"
-      aria-label="SharkyClips"
-    >
-      <div className="splash-stage">
-        <SharkLogo animated={!handedOver.current} className="splash-logo" />
-        <div className="splash-name">SharkyClips</div>
-        <p className="splash-slogan">{t("brand.slogan")}</p>
-      </div>
-      <span className="splash-hint">{t("splash.skip")}</span>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------- onboarding
 

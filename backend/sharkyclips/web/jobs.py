@@ -1,9 +1,10 @@
 """Background jobs for the web UI.
 
-Two lanes, each with one worker thread:
-  gpu  transcription, highlight analysis, LLM, rendering, best-of videos - heavy work, strictly
-       one at a time (Whisper, the local LLM and the video encoder never fight over the GPU)
+Three lanes, each with one worker thread:
+  gpu  transcription, highlight analysis, LLM, rendering, exports, best-of videos - heavy work,
+       strictly one at a time (Whisper, the local LLM and the video encoder never fight over the GPU)
   io   downloads/imports and facecam detection - can run while the GPU is busy
+  net  YouTube uploads and statistics - only the network, never waits for the GPU
 
 Each lane is an ordered list: queued jobs can be moved up and down (the Queue screen).
 Batch jobs (renders, best-of videos) are "persistent": they are written to
@@ -116,7 +117,7 @@ class JobManager:
         self._lock = threading.RLock()
         self._cv = threading.Condition(self._lock)
         self._jobs: dict[str, Job] = {}
-        self._lanes: dict[str, list[Job]] = {"gpu": [], "io": []}
+        self._lanes: dict[str, list[Job]] = {"gpu": [], "io": [], "net": []}
         self._next_id = 1
         self.store = store
         self.rev = 0  # bumped on every change; SSE clients watch it
@@ -265,7 +266,7 @@ class JobManager:
             for s in saved:
                 if s.get("status") in ACTIVE:
                     continue
-                job = Job(s["id"], s["kind"], s.get("lane") or "gpu", s.get("project_id"),
+                job = Job(s["id"], s["kind"], s.get("lane") if s.get("lane") in self._lanes else "gpu", s.get("project_id"),
                           s.get("params") or {}, None, persist=True, status=s["status"],
                           stage=s.get("stage"), progress=s.get("progress"), detail=s.get("detail") or {},
                           error=s.get("error"), result=s.get("result"), created=s.get("created") or 0,

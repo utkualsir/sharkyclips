@@ -103,7 +103,8 @@ def entry_key(project_id: str, clip_id: str) -> str:
 
 
 def set_entry(project, cand: dict, views: int, likes: int | None = None,
-              published_at: str | None = None) -> dict:
+              published_at: str | None = None, video_id: str | None = None) -> dict:
+    """Real numbers of a published clip. video_id: set when they came from the YouTube API."""
     meta = project.load_meta()
     pub = cand.get("publish") or {}
     duration_stream = float(meta.get("duration") or 0)
@@ -123,6 +124,8 @@ def set_entry(project, cand: dict, views: int, likes: int | None = None,
             "stream_pos": round(float(cand.get("start") or 0) / duration_stream, 3) if duration_stream else None,
             "viral_score": pub.get("viral_score"), "hype_score": cand.get("hype_score"),
             "features": features(cand),
+            "video_id": video_id or old.get("video_id"),
+            "source": "youtube" if video_id else "manual",
         }
         data["entries"][key] = entry
         data["model"] = fit(data["entries"])

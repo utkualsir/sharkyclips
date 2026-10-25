@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, type CalibrationGroup, type CalibrationStats } from "../api";
+import { api, type CalibrationGroup, type CalibrationStats, type YoutubeStatus } from "../api";
 import { Icon } from "../components/Icons";
 import { ProgressBar } from "../components/ui";
 import { fmtCompact, fmtInt } from "../format";
 import { useI18n, type T } from "../i18n";
-import { useJobs } from "../jobs";
+import { isActive, useJobs } from "../jobs";
 import { href } from "../router";
 import { useToast } from "../toast";
 
@@ -158,9 +158,14 @@ export default function Stats() {
   const [data, setData] = useState<CalibrationStats | null>(null);
 
   const load = () => api.calibration().then(setData).catch(() => {});
+  const [yt, setYt] = useState<YoutubeStatus | null>(null);
   useEffect(() => {
     load();
+    api.youtube().then(setYt).catch(() => {});
   }, [finishedTick]);
+  const { jobs } = useJobs();
+  const syncing = jobs.some((j) => j.kind === "yt_stats" && isActive(j));
+  const fetchViews = () => api.youtubeStats().catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
 
   const st = data?.status;
   const points = data?.points ?? [];
@@ -184,6 +189,12 @@ export default function Stats() {
           <h1 className="display">{t("stats.title")}</h1>
           <p className="lede">{t("stats.lede")}</p>
         </div>
+        {yt?.connected && (
+          <button className="btn btn-sm" onClick={fetchViews} disabled={syncing} title={t("stats.yt_hint")}>
+            {syncing ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <Icon name="refresh" />}
+            {t("stats.yt_fetch")}
+          </button>
+        )}
         {st && (
           <span className={`chip ${st.calibrated ? "chip-gold" : "chip-outline"} cal-chip`}>
             <Icon name={st.calibrated ? "check" : "clock"} size={13} />

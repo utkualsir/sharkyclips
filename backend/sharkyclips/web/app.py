@@ -13,6 +13,7 @@ import re
 import subprocess
 import threading
 import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -325,12 +326,178 @@ def submit_benchmark() -> Job:
     return jobs.submit("benchmark", "gpu", None, {}, run, key="benchmark")
 
 
+def _cand(project: Project, cid: str) -> dict:
+    hl = state.load_highlights(project) or {}
+    cand = next((c for c in hl.get("candidates", []) if c["id"] == cid), None)
+    if cand is None:
+        raise SharkyClipsError("This clip doesn't exist any more.", "Re-run the highlight analysis and pick clips again.")
+    return cand
+
+
+def submit_export(project_id: str, cid: str, request: dict, batch: dict | None = None,
+                  job_id: str | None = None, attempt: int = 1) -> Job:
+    """One clip in one export format / preset (+ subtitle files, editor timelines)."""
+    from .. import export
+
+    project = get_project(project_id)
+    cand = _cand(project, cid)
+    req = export.ExportRequest.from_dict(request)
+
+    def run(job: Job):
+        from ..analyze import translate_clip
+
+        project = get_project(project_id)
+        cand = _cand(project, cid)
+        review = state.load_review(project)
+        opts = ClipOptions.from_dict({**review["options"], "hook_text": review["hooks"].get(cid, "")})
+        facecam = Facecam.from_dict(review.get("facecam"))
+
+        def progress(stage: str, frac: float | None) -> None:
+            jobs.update(job, stage=stage, progress=frac)
+
+        def translate(lang: str) -> list[dict]:
+            if not llm_available():
+                raise SharkyClipsError(f"Subtitles in {lang} need the local AI to translate them.",
+                                       "Install it with: python cli.py doctor")
+            jobs.update(job, stage="translating", progress=None)
+            return translate_clip(project, cid, lang)
+
+        entry = export.run_export(project, cand, opts, facecam, req, progress, translate)
+        if req.format:
+            speeds.record("export", entry["seconds"], cand["duration"])
+        return {"export": entry["id"], "files": [f["name"] for f in entry["files"]],
+                "bytes": sum(f["size_bytes"] for f in entry["files"]), "seconds": entry["seconds"],
+                "encoder": entry["encoder"], "warnings": entry["warnings"]}
+
+    pub = cand.get("publish") or {}
+    params = {"clip_id": cid, "rank": cand["rank"], "request": req.to_dict(), "duration": cand["duration"],
+              "title": (pub.get("titles") or [None])[0] or cand.get("text", "")[:90],
+              "project_title": project.load_meta().get("title") or project_id, **(batch or {})}
+    key = f"export:{project_id}:{cid}:{export.export_stem(cand, req)}"
+    return jobs.submit("export", "gpu", project_id, params, run, key=key, persist=True, job_id=job_id,
+                       attempt=attempt)
+
+
+def _upload_source(project: Project, cid: str, source: str) -> Path:
+    """'clip' = the rendered 9:16 clip, else the name of an export file of this clip."""
+    from .. import export
+
+    if source == "clip":
+        clip = state.load_clips(project).get(cid)
+        if not clip:
+            raise SharkyClipsError("Render this clip first (or export it with a YouTube preset).")
+        return project.dir / "clips" / clip["file"]
+    path = export.file_path(project, source)
+    if path is None or path.suffix.lower() not in (".mp4", ".mov", ".webm"):
+        raise SharkyClipsError("Pick a video file of this clip to upload.")
+    return path
+
+
+def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = None, attempt: int = 1) -> Job:
+    """YouTube upload (network lane: runs while the GPU renders)."""
+    from .. import youtube
+
+    project = get_project(project_id)
+    cand = _cand(project, cid)
+    path = _upload_source(project, cid, str(body.get("source") or "clip"))
+    mode = project.load_meta().get("mode") or "gaming"
+    yt = youtube.build_body(str(body.get("title") or ""), str(body.get("description") or ""),
+                            [str(t) for t in body.get("tags") or []], str(body.get("privacy") or "private"),
+                            body.get("publish_at") or None, bool(body.get("made_for_kids")),
+                            youtube.CATEGORY.get(mode, "20"), body.get("language") or None)
+    thumb = str(body.get("thumbnail") or "none")  # none | auto | custom
+
+    def run(job: Job):
+        project = get_project(project_id)
+        jobs.update(job, stage="uploading", progress=0.0)
+        key = f"{project_id}:{cid}:{path.name}:{path.stat().st_size}"
+        video = youtube.upload(path, yt, key, on_progress=lambda f: jobs.update(job, progress=f),
+                               checkpoint=governor.checkpoint)
+        vid = video.get("id")
+        if not vid:
+            raise SharkyClipsError("YouTube didn't return a video ID.")
+        thumb_note = None
+        if thumb != "none":
+            jobs.update(job, stage="thumbnail", progress=None)
+            try:
+                img = _thumbnail_file(project, cid, cand, thumb)
+                youtube.set_thumbnail(vid, img)
+            except SharkyClipsError as exc:  # the video is up; a missing thumbnail is only a note
+                thumb_note = exc.message + (f" {exc.hint}" if exc.hint else "")
+        st = video.get("status") or {}
+        entry = {"video_id": vid, "url": f"https://youtu.be/{vid}", "title": yt["snippet"]["title"],
+                 "privacy": st.get("privacyStatus") or yt["status"]["privacyStatus"],
+                 "publish_at": yt["status"].get("publishAt"), "file": path.name, "uploaded_at": state.now_iso(),
+                 "made_for_kids": yt["status"]["selfDeclaredMadeForKids"], "thumbnail_error": thumb_note}
+        state.save_upload(project, cid, entry)
+        return {**entry, "clip_id": cid}
+
+    params = {"clip_id": cid, "rank": cand["rank"], "body": body, "duration": cand["duration"],
+              "title": yt["snippet"]["title"], "file": path.name, "size_bytes": path.stat().st_size,
+              "project_title": project.load_meta().get("title") or project_id}
+    return jobs.submit("upload", "net", project_id, params, run, key=f"upload:{project_id}:{cid}:{path.name}",
+                       persist=True, job_id=job_id, attempt=attempt)
+
+
+def _thumbnail_file(project: Project, cid: str, cand: dict, kind: str) -> Path:
+    custom = project.cache_dir / "thumbnails" / f"{cid}.jpg"
+    if kind == "custom" and custom.is_file():
+        return custom
+    t = round(float(cand.get("peak") or cand["start"]), 1)
+    return _frame(project, t, 1280, project.cache_dir / "frames" / f"1280_{t:.1f}.jpg")
+
+
+STATS_MIN_AGE_H = 48  # calibration learns from public videos that had two days to find viewers
+
+
+def submit_youtube_stats(force: bool = False) -> Job:
+    """Fetch views of every uploaded clip; public ones older than 2 days calibrate the score."""
+    from .. import calibration, youtube
+
+    def run(job: Job):
+        jobs.update(job, stage="fetching_stats", progress=None)
+        ids: dict[str, tuple[Project, str]] = {}
+        for p in list_projects():
+            for cid, ups in state.load_uploads(p).items():
+                for u in ups:
+                    if u.get("video_id"):
+                        ids[u["video_id"]] = (p, cid)
+        if not ids:
+            return {"videos": 0, "calibrated": 0}
+        stats = youtube.video_stats(list(ids))
+        calibrated = 0
+        by_project: dict[str, dict] = {}
+        for vid, s in stats.items():
+            p, cid = ids[vid]
+            by_project.setdefault(p.id, {})[vid] = s
+            if s["privacy"] != "public" or not s.get("published_at"):
+                continue
+            try:
+                published = datetime.fromisoformat(s["published_at"].replace("Z", "+00:00"))
+            except ValueError:
+                continue
+            if datetime.now(timezone.utc) - published < timedelta(hours=STATS_MIN_AGE_H):
+                continue
+            try:
+                cand = _cand(p, cid)
+            except SharkyClipsError:
+                continue
+            calibration.set_entry(p, cand, s["views"], s["likes"], s["published_at"], video_id=vid)
+            calibrated += 1
+        for pid, st in by_project.items():
+            state.update_upload_stats(get_project(pid), st)
+        youtube.mark_synced()
+        return {"videos": len(stats), "calibrated": calibrated}
+
+    return jobs.submit("yt_stats", "net", None, {"force": force}, run, key="yt_stats")
+
+
 # ------------------------------------------------------------- queue helpers
 
 
 class Speeds:
     """Measured render speed (seconds of work per second of video) for the queue's ETA."""
-    DEFAULTS = {"render": 0.3, "montage": 0.4}
+    DEFAULTS = {"render": 0.3, "montage": 0.4, "export": 0.35}
 
     def __init__(self):
         self.path: Path | None = None
@@ -375,6 +542,10 @@ def estimate(job: dict) -> float | None:
         return 25.0 + float(p.get("duration") or 120) * speeds.get("montage")
     if job["kind"] == "titles":
         return 30.0
+    if job["kind"] == "export":
+        return 3.0 + float(p.get("duration") or 25) * speeds.get("export")
+    if job["kind"] == "upload":  # assume ~2 MB/s up until measured
+        return 5.0 + float(p.get("size_bytes") or 0) / 2_000_000
     return None
 
 
@@ -402,6 +573,13 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
         batch = {k: p[k] for k in ("batch", "batch_index", "batch_count") if k in p}
         return submit_render_clip(pid, p["clip_id"], p.get("options") or {}, p.get("hook") or "", batch,
                                   job_id=keep_id, attempt=attempt)
+    if kind == "export":
+        batch = {k: p[k] for k in ("batch", "batch_index", "batch_count") if k in p}
+        return submit_export(pid, p["clip_id"], p.get("request") or {}, batch, job_id=keep_id, attempt=attempt)
+    if kind == "upload":
+        return submit_upload(pid, p["clip_id"], p.get("body") or {}, job_id=keep_id, attempt=attempt)
+    if kind == "yt_stats":
+        return submit_youtube_stats()
     if kind == "montage":
         return submit_montage(pid, p.get("clip_ids") or [], bool(p.get("intro", True)), bool(p.get("outro", True)),
                               bool(p.get("cards", True)), p.get("lang"), job_id=keep_id, attempt=attempt)
@@ -536,7 +714,12 @@ def _settings_view() -> dict:
             "auto_analyze": cfg.get("auto_analyze") is not False,
             "fast_analysis": bool(cfg.get("fast_analysis")),
             "glossary": [str(t) for t in glossary],
+            "ui_motion": cfg.get("ui_motion") if cfg.get("ui_motion") in MOTION else "full",
+            "youtube_daily_quota": int(cfg.get("youtube_daily_quota") or 10000),
             **_perf_view(cfg)}
+
+
+MOTION = ("full", "reduced", "off")
 
 
 PERF_BOOLS = ("perf_pause_fullscreen", "perf_pause_video", "perf_pause_busy", "perf_idle_only")
@@ -637,6 +820,14 @@ def api_settings_put(body: dict) -> dict:
                 terms.append(t)
         old = config.get("glossary")
         changes["glossary"] = {**old, "all": terms[:500]} if isinstance(old, dict) else terms[:500]
+    if "ui_motion" in body:
+        if body["ui_motion"] not in MOTION:
+            raise SharkyClipsError(f"Unknown animation setting '{body['ui_motion']}'.")
+        changes["ui_motion"] = body["ui_motion"]
+    if "ui_theme" in body:
+        changes["ui_theme"] = "light" if body["ui_theme"] == "light" else "dark"
+    if "youtube_daily_quota" in body:
+        changes["youtube_daily_quota"] = max(100, min(10_000_000, int(body["youtube_daily_quota"])))
     changes.update(_perf_changes(body))
     if changes:
         config.update(**changes)
@@ -816,7 +1007,7 @@ def api_job_forget(job_id: str) -> dict:
 def _queue_view() -> dict:
     now = time.time()
     lanes = {}
-    for lane in ("gpu", "io"):
+    for lane in ("gpu", "io", "net"):
         t = 0.0
         known = True
         out = []
@@ -1435,6 +1626,246 @@ def api_calibration_delete(key: str) -> dict:
     return {"removed": calibration.delete_entry(key), "calibration": calibration.status()}
 
 
+# ------------------------------------------------------------------ export (Phase 9)
+
+_formats_cache: dict[str, Any] = {}
+
+
+@app.get("/api/export/options")
+def api_export_options() -> dict:
+    """Formats this PC can make (test-encodes once), platform presets, editor formats."""
+    from .. import export
+
+    if "formats" not in _formats_cache:
+        _formats_cache["formats"] = export.available_formats()
+    return {"formats": _formats_cache["formats"],
+            "presets": [export.preset_view(p) for p in export.PRESETS.values()],
+            "gif_default_mb": export.DEFAULT_GIF_MB, "subtitle_kinds": list(export.SUB_KINDS),
+            "editors": ["fcpxml", "premiere"]}
+
+
+@app.post("/api/projects/{project_id}/export/estimate")
+def api_export_estimate(project_id: str, body: dict) -> dict:
+    from .. import export
+
+    project = _project(project_id)
+    hl = state.load_highlights(project) or {}
+    by_id = {c["id"]: c for c in hl.get("candidates", [])}
+    fmt = body.get("format") or None
+    preset = body.get("preset") or None
+    if fmt is not None and fmt not in export.FORMATS:
+        raise SharkyClipsError(f"Unknown export format '{fmt}'.")
+    if preset is not None and preset not in export.PRESETS:
+        raise SharkyClipsError(f"Unknown platform preset '{preset}'.")
+    fps = float(project.load_meta().get("fps") or 30)
+    flash = bool(state.load_review(project, hl)["options"].get("hook_flash"))
+    out = []
+    for cid in [str(c) for c in body.get("clip_ids") or []]:
+        c = by_id.get(cid)
+        if c is None:
+            continue
+        size = export.estimate_bytes(fmt, preset, c["duration"], fps, body.get("gif_max_mb"), flash) if fmt else 0
+        out.append({"clip_id": cid, "bytes": size, "warnings": export.check_length(preset, c["duration"]),
+                    "seconds": round(3.0 + c["duration"] * speeds.get("export"), 1) if fmt else 2.0})
+    return {"clips": out, "bytes": sum(x["bytes"] for x in out), "seconds": round(sum(x["seconds"] for x in out), 1)}
+
+
+@app.post("/api/projects/{project_id}/export")
+def api_export(project_id: str, body: dict) -> dict:
+    """Export clips (one queue entry per clip): format, platform preset, subtitles, editor files."""
+    project = _project(project_id)
+    clip_ids = [str(c) for c in body.get("clip_ids") or []]
+    if not clip_ids:
+        raise SharkyClipsError("Choose at least one clip.")
+    request = {k: body.get(k) for k in ("format", "preset", "burn_captions", "subtitles", "subtitle_lang",
+                                        "editors", "gif_max_mb")}
+    batch = f"x{int(time.time() * 1000)}"
+    out = [submit_export(project.id, cid, request, {"batch": batch, "batch_index": i + 1,
+                                                    "batch_count": len(clip_ids)})
+           for i, cid in enumerate(clip_ids)]
+    return {"jobs": [j.to_dict() for j in out]}
+
+
+@app.get("/api/projects/{project_id}/clip-exports")
+def api_clip_exports(project_id: str) -> list[dict]:
+    from .. import export
+
+    return sorted(export.load_registry(_project(project_id)), key=lambda e: e["created_at"], reverse=True)
+
+
+@app.get("/api/projects/{project_id}/clip-exports/file/{name}")
+def api_clip_export_file(project_id: str, name: str, download: bool = False):
+    from .. import export
+
+    project = _project(project_id)
+    path = export.file_path(project, name)
+    if path is None:
+        raise HTTPException(404, "No such export file")
+    mime = {".mp4": "video/mp4", ".mov": "video/quicktime", ".webm": "video/webm", ".gif": "image/gif",
+            ".mp3": "audio/mpeg", ".m4a": "audio/mp4", ".srt": "application/x-subrip", ".vtt": "text/vtt",
+            ".fcpxml": "application/xml", ".xml": "application/xml"}.get(path.suffix.lower(),
+                                                                        "application/octet-stream")
+    title = slugify(project.load_meta().get("title") or project.id, 50)
+    return FileResponse(path, media_type=mime, filename=f"{title}-{name}" if download else None,
+                        content_disposition_type="attachment" if download else "inline")
+
+
+@app.delete("/api/projects/{project_id}/clip-exports/{export_id}")
+def api_clip_export_delete(project_id: str, export_id: str) -> dict:
+    from .. import export
+
+    return {"removed": export.delete_export(_project(project_id), export_id)}
+
+
+# ------------------------------------------------------------------ YouTube (Phase 9)
+
+
+def _yt_view() -> dict:
+    from .. import youtube
+
+    return {**youtube.status(), "last_synced": youtube.last_synced() or None}
+
+
+@app.get("/api/youtube")
+def api_youtube() -> dict:
+    return _yt_view()
+
+
+@app.put("/api/youtube/client")
+async def api_youtube_client(request: Request) -> dict:
+    """The OAuth client JSON the user downloaded from Google Cloud (raw body). This PC only."""
+    from .. import youtube
+
+    if not _is_local(request):
+        raise HTTPException(403, "Only the computer running SharkyClips can do this.")
+    raw = await request.body()
+    if len(raw) > 64 * 1024:
+        raise SharkyClipsError("That file is too big for an OAuth client JSON.")
+    youtube.set_client(raw.decode("utf-8-sig", errors="replace"))
+    return _yt_view()
+
+
+@app.delete("/api/youtube/client")
+def api_youtube_client_delete(request: Request) -> dict:
+    from .. import youtube
+
+    if not _is_local(request):
+        raise HTTPException(403, "Only the computer running SharkyClips can do this.")
+    youtube.remove_client()
+    return _yt_view()
+
+
+@app.post("/api/youtube/connect")
+def api_youtube_connect(request: Request) -> dict:
+    """Google sign-in URL. Google sends the browser back to http://127.0.0.1:<port>/ (spa())."""
+    from .. import youtube
+
+    if not _is_local(request):
+        raise SharkyClipsError("Connect YouTube on the computer running SharkyClips.",
+                               "Google sends the sign-in back to this computer's own address.")
+    port = request.url.port or 8000
+    return {"url": youtube.auth_url(f"http://127.0.0.1:{port}/")}
+
+
+@app.post("/api/youtube/disconnect")
+def api_youtube_disconnect(request: Request) -> dict:
+    from .. import youtube
+
+    if not _is_local(request):
+        raise HTTPException(403, "Only the computer running SharkyClips can do this.")
+    youtube.disconnect()
+    return _yt_view()
+
+
+@app.post("/api/youtube/stats")
+def api_youtube_stats() -> dict:
+    from .. import youtube
+
+    if not youtube.connected():
+        raise SharkyClipsError("Connect YouTube first (Settings > YouTube).")
+    return submit_youtube_stats(force=True).to_dict()
+
+
+@app.get("/api/projects/{project_id}/uploads")
+def api_uploads(project_id: str) -> dict:
+    return state.load_uploads(_project(project_id))
+
+
+@app.post("/api/projects/{project_id}/clips/{cid}/upload")
+def api_upload_clip(project_id: str, cid: str, body: dict) -> dict:
+    from .. import youtube
+
+    project = _project(project_id)
+    if not youtube.connected():
+        raise SharkyClipsError("Connect YouTube first (Settings > YouTube).")
+    youtube.check_quota(youtube.COST["upload"])
+    return submit_upload(project.id, cid, body).to_dict()
+
+
+@app.put("/api/projects/{project_id}/clips/{cid}/thumbnail")
+async def api_thumbnail_upload(project_id: str, cid: str, request: Request) -> dict:
+    """A custom YouTube thumbnail (JPEG/PNG, max 2 MB - YouTube's limit)."""
+    project = _project(project_id)
+    _cand(project, cid)
+    raw = await request.body()
+    if len(raw) > 2 * 1024 * 1024:
+        raise SharkyClipsError("YouTube thumbnails can be at most 2 MB.")
+    if not (raw[:3] == b"\xff\xd8\xff" or raw[:8] == b"\x89PNG\r\n\x1a\n"):
+        raise SharkyClipsError("Use a JPEG or PNG image.")
+    dest = project.cache_dir / "thumbnails" / f"{cid}.jpg"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if raw[:4] == b"\x89PNG":  # store as JPEG (smaller, one name)
+        src = dest.with_suffix(".png")
+        src.write_bytes(raw)
+        cmd = [require_tool("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error", "-i", str(src),
+               "-q:v", "3", str(dest)]
+        subprocess.run(cmd, capture_output=True, timeout=60, **no_window())
+        src.unlink(missing_ok=True)
+    else:
+        dest.write_bytes(raw)
+    return {"ok": dest.is_file()}
+
+
+@app.get("/api/projects/{project_id}/clips/{cid}/thumbnail.jpg")
+def api_thumbnail(project_id: str, cid: str, kind: str = "auto"):
+    project = _project(project_id)
+    path = _thumbnail_file(project, cid, _cand(project, cid), kind)
+    return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "no-cache"})
+
+
+def _oauth_page(ok: bool, message: str) -> Response:
+    color = "#17694a" if ok else "#a3341f"
+    html = f"""<!doctype html><html><head><meta charset="utf-8"><title>SharkyClips</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>body{{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;
+background:#f4f7fd;color:#0e1a33}}main{{max-width:440px;padding:32px;text-align:center}}
+h1{{font-weight:500;font-size:24px;color:{color}}}p{{color:#52607d;line-height:1.5}}</style></head>
+<body><main><h1>{"YouTube connected" if ok else "YouTube not connected"}</h1><p>{message}</p></main>
+<script>try{{new BroadcastChannel("sharkyclips-youtube").postMessage({{ok:{str(ok).lower()}}});}}catch(e){{}}
+{"setTimeout(function(){window.close();},1500);" if ok else ""}</script></body></html>"""
+    return Response(html, media_type="text/html")
+
+
+def _oauth_callback(request: Request) -> Response | None:
+    """Google's redirect after the sign-in lands on http://127.0.0.1:<port>/?code=..&state=.."""
+    from html import escape
+
+    from .. import youtube
+
+    q = request.query_params
+    state_ = q.get("state")
+    if not youtube.is_pending(state_):
+        return None
+    if q.get("error"):  # e.g. access_denied: the state stays valid until it expires
+        return _oauth_page(False, escape(f"Google said: {q.get('error')}. Close this tab and try again."))
+    try:
+        st = youtube.finish_auth(q.get("code") or "", state_ or "")
+    except SharkyClipsError as exc:
+        return _oauth_page(False, escape(exc.message + (" " + exc.hint if exc.hint else "")))
+    name = (st.get("channel") or {}).get("title") or "your channel"
+    return _oauth_page(True, escape(f"SharkyClips can now upload to {name}. You can close this tab."))
+
+
 def _chat_summary(project: Project) -> dict | None:
     from ..chat import load_chat
 
@@ -1602,7 +2033,11 @@ if (FRONTEND_DIST / "assets").is_dir():
 
 
 @app.get("/{rest:path}", include_in_schema=False)
-def spa(rest: str):
+def spa(rest: str, request: Request):
+    if not rest and request.query_params.get("state"):
+        page = _oauth_callback(request)
+        if page is not None:
+            return page
     candidate = (FRONTEND_DIST / rest).resolve()
     if rest and candidate.is_file() and FRONTEND_DIST.resolve() in candidate.parents:
         return FileResponse(candidate)
@@ -1641,7 +2076,31 @@ def _restore_queue() -> None:
 
         g.on_change.append(_jobs_follow)
     n = jobs.restore(rebuild_job)
+    _schedule_stats_sync()
     if n:
         from ..ui import console
 
         console.print(f"Resumed [bold]{n}[/] queued job(s) from the last run.")
+
+
+def _schedule_stats_sync() -> None:
+    """Twice a day, a minute after start: fetch the views of uploaded clips (network lane)."""
+    from .. import youtube
+
+    if os.environ.get("SHARKYCLIPS_NO_GOVERNOR") == "1":  # tests
+        return
+
+    def tick() -> None:
+        try:
+            if youtube.connected() and time.time() - youtube.last_synced() > 12 * 3600:
+                if any(state.load_uploads(p) for p in list_projects()):
+                    submit_youtube_stats()
+        except Exception:  # noqa: BLE001 - offline etc.: try again next time
+            pass
+        t = threading.Timer(3600, tick)
+        t.daemon = True
+        t.start()
+
+    t = threading.Timer(60, tick)
+    t.daemon = True
+    t.start()

@@ -1,84 +1,173 @@
 <!doctype html>
 <!-- SharkyClips start-up splash. The launcher writes a copy to ~/.sharkyclips/splash.html with the
-     app URL and language filled in and opens it at once; it waits for the server, then opens
-     the app (which skips its own splash). Keep the look in sync with Splash in frontend/src. -->
-<html lang="en" dir="__DIR__">
+     app URL, language, theme and animation level filled in and opens it at once. It plays the
+     launch sequence while the server starts, then opens the app with ?splash=done: index.html
+     paints this page's last frame and the app flies the logo into its header.
+     Markup + CSS = frontend/src/components/Launch.tsx and the 1.2.2 block of styles.css (the CSS
+     between splash:begin/end is copied from styles.css by frontend/scripts/sync-splash.mjs, which npm run build runs). -->
+<html lang="en" dir="__DIR__" data-theme="__THEME__" data-motion="__MOTION__">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SharkyClips</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&family=Instrument+Serif&family=Noto+Sans+Arabic:wght@400..600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Instrument+Serif&family=Noto+Sans+Arabic:wght@400..700&display=swap" />
 <style>
-  :root { --navy: #0e1a33; --ocean: #1f6fe5; --muted: #52607d; --wave: #a9c6f3; }
+  :root { --font-ui: "Geist", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Instrument Serif", "Noto Serif", Georgia, "Noto Sans Arabic", serif; --mark-fin: #ffffff; }
+  :root[data-theme="light"] { --mark-fin: #1650c8; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: #ffffff; color: var(--navy);
-    font-family: "Geist", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif; }
-  body { display: grid; place-items: center; cursor: default; overflow: hidden; }
-  .stage { display: grid; justify-items: center; gap: 22px; padding: 24px; text-align: center; }
-  .mark { width: min(260px, 64vw); height: auto; overflow: visible; }
-  .fin { animation: glide 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-  .waves { animation: drift 2.4s linear infinite; }
-  .name { font-family: "Instrument Serif", Georgia, serif; font-size: 44px; line-height: 1; letter-spacing: -0.01em;
-    animation: rise 0.6s 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-  .slogan { margin: -8px 0 0; font-size: 16px; color: var(--muted);
-    animation: rise 0.6s 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-  .status { position: fixed; bottom: 28px; left: 0; right: 0; text-align: center; font-size: 12.5px; color: var(--muted);
-    opacity: 0; transition: opacity 0.4s; }
-  .status.show { opacity: 1; }
-  .skip { position: fixed; top: 18px; inset-inline-end: 20px; font-size: 12px; color: var(--muted); opacity: 0.7; }
-  @keyframes glide { from { transform: translateX(-46px); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
-  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(-12px); } }
-  @keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) {
-    .fin, .name, .slogan { animation: fade 0.3s both; }
-    .waves { animation: none; }
-    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  html, body { margin: 0; height: 100%; background: #0a1020; font-family: var(--font-ui); }
+  :root[data-theme="light"] body { background: #ffffff; }
+  @media (prefers-color-scheme: light) {
+    :root[data-theme="auto"] { --mark-fin: #1650c8; }
+    :root[data-theme="auto"] body { background: #ffffff; }
+    :root[data-theme="auto"] .launch {
+      --l-bg: #ffffff; --l-text: #0e1a33; --l-muted: #52607d; --l-water: #a9c6f3;
+      --l-fin-a: #1f6fe5; --l-fin-b: #0f3a94; --l-cut: #1f6fe5;
+    }
   }
+  .status { position: fixed; bottom: 52px; left: 0; right: 0; text-align: center; font-size: 12.5px;
+    color: var(--l-muted, #aeb7ca); opacity: 0; transition: opacity 0.4s; z-index: 101; }
+  .status.show { opacity: 1; }
+/* splash:begin */
+/* ------------------------------------------------------- 1.2.2: launch sequence
+   Same CSS in backend/sharkyclips/web/splash.html (keep in sync). Theme colors: dark navy with
+   a white fin, light white with the blue fin. */
+
+.launch {
+  --l-bg: #0a1020; --l-text: #ffffff; --l-muted: #aeb7ca; --l-water: #5b9bff;
+  --l-fin-a: #ffffff; --l-fin-b: #9ec2ff; --l-cut: #d9b56a; --l-fin-solid: var(--mark-fin, #ffffff);
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+  background: var(--l-bg); color: var(--l-text); cursor: default; overflow: hidden;
+  font-family: var(--font-ui, "Geist", system-ui, sans-serif);
+}
+:root[data-theme="light"] .launch {
+  --l-bg: #ffffff; --l-text: #0e1a33; --l-muted: #52607d; --l-water: #a9c6f3;
+  --l-fin-a: #1f6fe5; --l-fin-b: #0f3a94; --l-cut: #1f6fe5;
+}
+.launch-stage { display: grid; justify-items: center; gap: 18px; padding: 24px; text-align: center; }
+.launch-mark-wrap { position: relative; width: 112px; height: 112px; }
+.launch-mark { position: relative; width: 112px; height: 112px; overflow: visible; display: block; transform-origin: center; will-change: transform; }
+.launch-water {
+  position: absolute; top: 84.6%; left: 50%; width: 100vw; height: 12px; margin: -6px 0 0 -50vw;
+  overflow: visible; pointer-events: none;
+  animation: l-reveal 0.55s cubic-bezier(0.45, 0, 0.2, 1) both;
+}
+.launch-water path { fill: none; stroke: var(--l-water); stroke-width: 2.4px; stroke-linecap: round; }
+.launch-fin-a { stop-color: var(--l-fin-a); }
+.launch-fin-b { stop-color: var(--l-fin-b); }
+.launch-fin-solid { fill: var(--l-fin-solid); opacity: 0; }
+.launch-fin { animation: l-rise 0.8s 0.25s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.launch-wake {
+  fill: none; stroke: var(--l-water); stroke-width: 1.6; stroke-linecap: round;
+  stroke-dasharray: 1; opacity: 0;
+  animation: l-wake 0.9s 0.55s ease-out both;
+}
+.launch-mini-wave {
+  fill: none; stroke: var(--l-water); stroke-width: 3.4; stroke-linecap: round; opacity: 0;
+  /* only during the flight into the header (Launch.tsx), where it becomes the logo's wave */
+}
+.launch-word { position: relative; line-height: 1; padding: 0 6px; }
+.launch-word-text {
+  display: inline-block; font-family: var(--font-display, "Instrument Serif", Georgia, serif);
+  font-size: 44px; letter-spacing: -0.01em; color: var(--l-text); transform-origin: center; will-change: transform;
+  clip-path: inset(0 0 0 0); animation: l-reveal 0.36s 1s cubic-bezier(0.6, 0, 0.2, 1) both;
+}
+.launch-slash {
+  position: absolute; top: -18%; bottom: -18%; left: 0; width: 3px; border-radius: 2px;
+  background: var(--l-cut); box-shadow: 0 0 14px var(--l-cut); transform: skewX(-18deg); opacity: 0;
+  animation: l-slash 0.42s 0.98s cubic-bezier(0.6, 0, 0.2, 1) both;
+}
+.launch-slogan { margin: -4px 0 0; font-size: 16px; color: var(--l-muted); animation: l-up 0.45s 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.launch-hint { position: fixed; bottom: 24px; inset-inline: 0; text-align: center; font-size: 12px; color: var(--l-muted); opacity: 0.75; }
+
+@keyframes l-rise {
+  0% { transform: translate(-18px, 40px); }
+  70% { transform: translate(-1.5px, -1.2px); }
+  100% { transform: translate(0, 0); }
+}
+@keyframes l-wake {
+  0% { opacity: 0; stroke-dashoffset: 1; }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; stroke-dashoffset: 0; transform: translateX(-6px); }
+}
+@keyframes l-reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes l-slash {
+  0% { left: -4%; opacity: 0; }
+  12% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: 104%; opacity: 0; }
+}
+@keyframes l-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes l-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Last frame right away: skipped, handed over from the launcher, or reduced motion */
+.launch-static *, [data-motion="reduced"] .launch *, [data-motion="off"] .launch * {
+  animation-delay: 0s !important; animation-duration: 0s !important;
+}
+.launch-static .launch-wake, .launch-static .launch-slash,
+[data-motion="reduced"] .launch-wake, [data-motion="reduced"] .launch-slash { display: none; }
+[data-motion="reduced"] .launch-stage { animation: l-fade-in 0.25s ease-out both !important; }
+
+/* splash:end */
 </style>
 </head>
 <body>
-  <main class="stage" role="status" aria-live="polite">
-    <svg class="mark" viewBox="0 0 160 64" aria-hidden="true">
-      <defs>
-        <linearGradient id="fin" x1="0" y1="0" x2="0.35" y2="1">
-          <stop offset="0" stop-color="#1F6FE5" /><stop offset="1" stop-color="#0F3A94" />
-        </linearGradient>
-        <clipPath id="sea"><rect x="0" y="40" width="160" height="24" /></clipPath>
-      </defs>
-      <g clip-path="url(#sea)">
-        <path class="waves" fill="none" stroke="var(--wave)" stroke-width="2.6" stroke-linecap="round"
-          d="M-12 50q3-1.6 6 0t6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0 6 0" />
-      </g>
-      <g transform="translate(49 0)">
-        <g class="fin">
-          <path fill-rule="evenodd" fill="url(#fin)" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" />
-        </g>
-      </g>
-    </svg>
-    <div class="name">SharkyClips</div>
-    <p class="slogan" id="slogan"></p>
-  </main>
+  <div class="launch" id="launch" role="status" aria-live="polite" aria-label="SharkyClips">
+    <div class="launch-stage">
+      <div class="launch-mark-wrap">
+        <svg class="launch-water" viewBox="0 0 1200 12" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" vector-effect="non-scaling-stroke" d="M0 6 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0 q15 -3.2 30 0 t30 0" /></svg>
+        <svg class="launch-mark" viewBox="6 8 52 48" aria-hidden="true">
+          <defs>
+            <linearGradient id="fin" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" class="launch-fin-a" /><stop offset="1" class="launch-fin-b" /></linearGradient>
+            <clipPath id="air"><rect x="-40" y="-20" width="140" height="70" /></clipPath>
+          </defs>
+          <path class="launch-wake" pathLength="1" d="M12.5 50.2 Q6 48.6 -1 50 M14 52.6 Q7 52.4 1 54" />
+          <path class="launch-mini-wave" d="M8 50Q11 48.4 14 50Q17 51.6 20 50Q23 48.4 26 50Q29 51.6 32 50Q35 48.4 38 50Q41 51.6 44 50Q47 48.4 50 50Q53 51.6 56 50" />
+          <g clip-path="url(#air)">
+            <g class="launch-fin">
+              <path fill-rule="evenodd" fill="url(#fin)" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" />
+              <path class="launch-fin-solid" fill-rule="evenodd" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" />
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div class="launch-word" dir="ltr"><span class="launch-word-text">SharkyClips</span><span class="launch-slash" aria-hidden="true"></span></div>
+      <p class="launch-slogan" id="slogan"></p>
+    </div>
+    <span class="launch-hint" id="hint"></span>
+  </div>
   <div class="status" id="status"></div>
   <script>
     (function () {
       var APP = __APP_URL__;
       var LANG = __LANG__;
+      var MOTION = document.documentElement.getAttribute("data-motion");
+      if (MOTION === "full" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        MOTION = "reduced";
+        document.documentElement.setAttribute("data-motion", MOTION);
+      }
       var T = {
-        tr: ["En iyi anların avlanmaya hazır.", "Başlatılıyor…", "SharkyClips başlamadı. Günlük: ~/.sharkyclips/logs/sharkyclips.log"],
-        en: ["Hunt your best moments.", "Starting…", "SharkyClips didn't start. Log: ~/.sharkyclips/logs/sharkyclips.log"],
-        de: ["Deine besten Momente – bereit für die Jagd.", "Wird gestartet…", "SharkyClips ist nicht gestartet. Protokoll: ~/.sharkyclips/logs/sharkyclips.log"],
-        hu: ["Vadászd le a legjobb pillanataidat.", "Indítás…", "A SharkyClips nem indult el. Napló: ~/.sharkyclips/logs/sharkyclips.log"],
-        ru: ["Охоться за своими лучшими моментами.", "Запуск…", "SharkyClips не запустился. Журнал: ~/.sharkyclips/logs/sharkyclips.log"],
-        ar: ["اصطد أفضل لحظاتك.", "جارٍ التشغيل…", "لم يبدأ SharkyClips. السجل: ~/.sharkyclips/logs/sharkyclips.log"],
-        zh: ["猎取你的高光时刻。", "正在启动…", "SharkyClips 未能启动。日志：~/.sharkyclips/logs/sharkyclips.log"]
+        tr: ["En iyi anların avlanmaya hazır.", "Başlatılıyor…", "SharkyClips başlamadı. Günlük: ~/.sharkyclips/logs/sharkyclips.log", "Geçmek için tıkla ya da Esc'ye bas"],
+        en: ["Hunt your best moments.", "Starting…", "SharkyClips didn't start. Log: ~/.sharkyclips/logs/sharkyclips.log", "Click or press Esc to skip"],
+        de: ["Deine besten Momente – bereit für die Jagd.", "Wird gestartet…", "SharkyClips ist nicht gestartet. Protokoll: ~/.sharkyclips/logs/sharkyclips.log", "Klicken oder Esc drücken zum Überspringen"],
+        hu: ["Vadászd le a legjobb pillanataidat.", "Indítás…", "A SharkyClips nem indult el. Napló: ~/.sharkyclips/logs/sharkyclips.log", "Kattints vagy nyomd meg az Esc-et a kihagyáshoz"],
+        ru: ["Охоться за своими лучшими моментами.", "Запуск…", "SharkyClips не запустился. Журнал: ~/.sharkyclips/logs/sharkyclips.log", "Нажмите или Esc, чтобы пропустить"],
+        ar: ["اصطد أفضل لحظاتك.", "جارٍ التشغيل…", "لم يبدأ SharkyClips. السجل: ~/.sharkyclips/logs/sharkyclips.log", "انقر أو اضغط Esc للتخطي"],
+        zh: ["猎取你的高光时刻。", "正在启动…", "SharkyClips 未能启动。日志：~/.sharkyclips/logs/sharkyclips.log", "点击或按 Esc 跳过"]
       };
       var t = T[LANG] || T.en;
       document.documentElement.lang = LANG;
       document.getElementById("slogan").textContent = t[0];
+      document.getElementById("hint").textContent = t[3];
+      var launch = document.getElementById("launch");
+      if (MOTION !== "full") launch.className += " launch-static";
       var status = document.getElementById("status");
-      var started = Date.now(), MIN = 1500, ready = false, skipped = false, gone = false;
+      // The sequence takes 1.8 s; it plays while the server starts, so it costs no waiting time.
+      var MIN = MOTION === "full" ? 1800 : MOTION === "reduced" ? 500 : 0;
+      var started = Date.now(), ready = false, skipped = false, gone = false;
       function go() {
         if (gone) return;
         gone = true;
@@ -96,11 +185,13 @@
       }
       function skip() {
         skipped = true;
+        if (launch.className.indexOf("launch-static") < 0) launch.className += " launch-static";
         if (!ready) { status.textContent = t[1]; status.className = "status show"; }
         maybeGo();
       }
       ping();
-      setTimeout(function () { if (!ready) { status.textContent = t[1]; status.className = "status show"; } maybeGo(); }, MIN);
+      setTimeout(function () { if (!ready) { status.textContent = t[1]; status.className = "status show"; } maybeGo(); }, MIN + 1200);
+      setTimeout(maybeGo, MIN);
       document.addEventListener("click", skip);
       document.addEventListener("keydown", function (e) { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") skip(); });
     })();

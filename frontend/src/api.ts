@@ -29,7 +29,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -63,7 +63,7 @@ export interface ShutdownState {
 }
 
 export interface QueueView {
-  lanes: { gpu: Job[]; io: Job[] };
+  lanes: { gpu: Job[]; io: Job[]; net?: Job[] };
   history: Job[];
   eta_total_seconds: number | null;
   shutdown: ShutdownState;
@@ -418,6 +418,142 @@ export interface Settings {
   perf_games_default: string[];
   /** Windows: Ollama starts with Windows (null: not Windows / Ollama not installed) */
   ollama_autostart: boolean | null;
+  ui_motion: "full" | "reduced" | "off";
+  ui_theme?: "dark" | "light";
+  youtube_daily_quota: number;
+}
+
+// ------------------------------------------------------------------ export + YouTube (1.2.2)
+
+export type FormatId = "mp4_h264" | "mp4_hevc" | "mp4_av1" | "mov" | "webm_vp9" | "gif" | "mp3" | "m4a";
+export type PresetId = "youtube_shorts" | "tiktok" | "instagram_reels" | "x" | "youtube_16x9";
+
+export interface ExportFormat {
+  id: FormatId;
+  label: string;
+  kind: "video" | "gif" | "audio";
+  ext: string;
+  available: boolean;
+  encoder: string | null;
+  hardware: boolean;
+}
+
+export interface ExportPreset {
+  id: PresetId;
+  label: string;
+  frame: "vertical" | "wide";
+  width: number;
+  height: number;
+  fps: number;
+  bitrate_k: number;
+  audio_k: number;
+  max_seconds: number | null;
+  safe: [number, number, number, number];
+  format: FormatId;
+  thumbnail: boolean;
+}
+
+export interface ExportOptions {
+  formats: ExportFormat[];
+  presets: ExportPreset[];
+  gif_default_mb: number;
+  subtitle_kinds: ("srt" | "vtt")[];
+  editors: ("fcpxml" | "premiere")[];
+}
+
+export interface ExportRequest {
+  format: FormatId | null;
+  preset: PresetId | null;
+  burn_captions: boolean;
+  subtitles: ("srt" | "vtt")[];
+  subtitle_lang: string;
+  editors: ("fcpxml" | "premiere")[];
+  gif_max_mb: number;
+}
+
+export interface ExportWarning {
+  code: "too_long" | "gif_over_limit";
+  max?: number;
+  duration?: number;
+  max_mb?: number;
+}
+
+export interface ExportEstimate {
+  clips: { clip_id: string; bytes: number; seconds: number; warnings: ExportWarning[] }[];
+  bytes: number;
+  seconds: number;
+}
+
+export interface ExportFile {
+  name: string;
+  role: string; // media | srt | vtt | fcpxml | premiere
+  mime: string;
+  size_bytes: number;
+  language?: string | null;
+  editor?: boolean;
+}
+
+export interface ClipExport {
+  id: string;
+  clip_id: string;
+  rank: number;
+  format: FormatId | null;
+  preset: PresetId | null;
+  files: ExportFile[];
+  duration: number;
+  encoder: string | null;
+  seconds: number;
+  created_at: string;
+  frame: "vertical" | "wide" | null;
+  subtitle_language: string | null;
+  warnings: ExportWarning[];
+}
+
+export interface YoutubeQuota {
+  used: number;
+  limit: number;
+  uploads_left: number;
+  uploads_left_with_thumbnail: number;
+  resets_at: string;
+}
+
+export interface YoutubeStatus {
+  client: boolean;
+  client_id: string | null;
+  project_id: string | null;
+  connected: boolean;
+  channel: { id: string; title: string; thumbnail: string | null } | null;
+  connected_at: string | null;
+  quota: YoutubeQuota;
+  last_synced: number | null;
+}
+
+export type Privacy = "private" | "unlisted" | "public";
+
+export interface YoutubeUpload {
+  video_id: string;
+  url: string;
+  title: string;
+  privacy: Privacy;
+  publish_at: string | null;
+  file: string;
+  uploaded_at: string;
+  views?: number;
+  likes?: number | null;
+  stats_at?: string;
+  thumbnail_error?: string | null;
+}
+
+export interface UploadBody {
+  source: string; // "clip" or an export file name
+  title: string;
+  description: string;
+  tags: string[];
+  privacy: Privacy;
+  publish_at: string | null;
+  made_for_kids: boolean;
+  thumbnail: "none" | "auto" | "custom";
+  language?: string | null;
 }
 
 export type PerfMode = "silent" | "balanced" | "turbo";
@@ -474,7 +610,7 @@ export class ApiError extends Error {
 // banner), starting one asks first; DevBanner registers the dialog.
 const HEAVY: [string, RegExp][] = [
   ["POST", /^\/api\/projects$/],
-  ["POST", /\/(transcribe|highlights|analyze|render|montage)$/],
+  ["POST", /\/(transcribe|highlights|analyze|render|montage|export)$/],
   ["POST", /\/game\/rescan$/],
   ["PUT", /\/game$/],
   ["POST", /^\/api\/(llm\/benchmark|queue\/render|update)$/],
@@ -602,6 +738,32 @@ export const api = {
     if (!res.ok) throw new ApiError(data.error || res.statusText, data.hint || null, res.status);
     return data as NonNullable<ProjectDetail["chat"]>;
   },
+  exportOptions: () => req<ExportOptions>("GET", "/api/export/options"),
+  exportEstimate: (id: string, body: { clip_ids: string[]; format: FormatId | null; preset: PresetId | null; gif_max_mb?: number }) =>
+    req<ExportEstimate>("POST", `${P(id)}/export/estimate`, body),
+  exportClips: (id: string, body: ExportRequest & { clip_ids: string[] }) => req<{ jobs: Job[] }>("POST", `${P(id)}/export`, body),
+  clipExports: (id: string) => req<ClipExport[]>("GET", `${P(id)}/clip-exports`),
+  deleteClipExport: (id: string, exportId: string) =>
+    req<{ removed: boolean }>("DELETE", `${P(id)}/clip-exports/${encodeURIComponent(exportId)}`),
+  youtube: () => req<YoutubeStatus>("GET", "/api/youtube"),
+  youtubeClient: async (file: File) => {
+    const res = await fetch("/api/youtube/client", { method: "PUT", body: file });
+    const data = await res.json();
+    if (!res.ok) throw new ApiError(data.error || data.detail || res.statusText, data.hint || null, res.status);
+    return data as YoutubeStatus;
+  },
+  youtubeRemoveClient: () => req<YoutubeStatus>("DELETE", "/api/youtube/client"),
+  youtubeConnect: () => req<{ url: string }>("POST", "/api/youtube/connect"),
+  youtubeDisconnect: () => req<YoutubeStatus>("POST", "/api/youtube/disconnect"),
+  youtubeStats: () => req<Job>("POST", "/api/youtube/stats"),
+  uploads: (id: string) => req<Record<string, YoutubeUpload[]>>("GET", `${P(id)}/uploads`),
+  uploadClip: (id: string, cid: string, body: UploadBody) => req<Job>("POST", `${P(id)}/clips/${cid}/upload`, body),
+  uploadThumbnail: async (id: string, cid: string, file: File) => {
+    const res = await fetch(`${P(id)}/clips/${cid}/thumbnail`, { method: "PUT", body: file });
+    const data = await res.json();
+    if (!res.ok) throw new ApiError(data.error || data.detail || res.statusText, data.hint || null, res.status);
+    return data as { ok: boolean };
+  },
   cancelJob: (jobId: string) => req<Job>("POST", `/api/jobs/${jobId}/cancel`),
   moveJob: (jobId: string, to: number) => req<Job>("POST", `/api/jobs/${jobId}/move`, { to }),
   retryJob: (jobId: string) => req<Job>("POST", `/api/jobs/${jobId}/retry`),
@@ -656,6 +818,9 @@ export const urls = {
   export: (id: string, name: string) => `${P(id)}/exports/${name}/video`,
   exportDownload: (id: string, name: string) => `${P(id)}/exports/${name}/video?download=true`,
   exportPoster: (id: string, name: string) => `${P(id)}/exports/${name}/poster.jpg`,
+  clipExportFile: (id: string, name: string, download = false) =>
+    `${P(id)}/clip-exports/file/${encodeURIComponent(name)}${download ? "?download=true" : ""}`,
+  thumbnail: (id: string, cid: string, kind: "auto" | "custom", v = 0) => `${P(id)}/clips/${cid}/thumbnail.jpg?kind=${kind}&v=${v}`,
 };
 
 /** Upload a file with progress (streamed to disk by the server). */

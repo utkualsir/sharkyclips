@@ -1,6 +1,8 @@
+import { api } from "./api";
 import { useCallback, useEffect, useState } from "react";
 
 export type Theme = "dark" | "light";
+let lastSent: Theme | null = null;
 
 function initial(): Theme {
   const attr = document.documentElement.getAttribute("data-theme");
@@ -18,6 +20,11 @@ export function useTheme(): [Theme, (t: Theme) => void, () => void] {
       /* ignore */
     }
     window.dispatchEvent(new CustomEvent("cf-theme", { detail: theme }));
+    // The launcher's splash page can't read this browser's storage: tell the server.
+    if (lastSent !== theme) {
+      api.saveSettings({ ui_theme: theme }).catch(() => {});
+      lastSent = theme;
+    }
   }, [theme]);
   useEffect(() => {
     const on = (e: Event) => setThemeState((e as CustomEvent<Theme>).detail);

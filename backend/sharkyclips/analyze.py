@@ -732,6 +732,36 @@ def _sync_hype_curve(project: Project, hl: dict) -> None:
     write_json_atomic(path, curve, compact=True)
 
 
+def translate_clip(project: Project, cid: str, lang: str) -> list[dict]:
+    """Subtitle lines of one clip in `lang` (export: SRT / VTT in any language). Cached in the
+    candidate's translations, so a second export needs no LLM."""
+    from . import llm
+
+    lang = languages.require(lang).code
+    hl_path = project.dir / "highlights.json"
+    hl = read_json(hl_path)
+    c = next((x for x in hl["candidates"] if x["id"] == cid), None)
+    if c is None:
+        raise SharkyClipsError("This clip doesn't exist any more.")
+    have = (c.get("translations") or {}).get(lang)
+    if have:
+        return have
+    transcript = read_json(project.transcript_path)
+    spoken = transcript.get("language")
+    lines = sentences(transcript, c["start"], c["end"])
+    if not lines or not spoken or spoken == lang:
+        return lines
+    context = (c.get("llm") or {}).get("what_happens") or (c.get("text") or "")[:240]
+    with llm.session() as model:
+        tr_lines = translate_lines(model, lines, spoken, lang, context)
+    hl = read_json(hl_path)  # re-read: the analysis may have saved meanwhile
+    c = next((x for x in hl["candidates"] if x["id"] == cid), None)
+    if c is not None:
+        c.setdefault("translations", {})[lang] = tr_lines
+        write_json_atomic(hl_path, hl)
+    return tr_lines
+
+
 def regenerate_titles(project: Project, cid: str) -> dict:
     """Six fresh titles for one candidate (the UI's "New suggestions")."""
     from . import llm

@@ -106,6 +106,45 @@ def save_clip(project: Project, cid: str, entry: dict) -> None:
         write_json_atomic(project.dir / "clips.json", {"version": 1, "clips": clips})
 
 
+# ----------------------------------------------------------------- uploads
+
+
+def load_uploads(project: Project) -> dict[str, list[dict]]:
+    """YouTube uploads per clip id (uploads.json): video id, privacy, latest numbers."""
+    path = project.dir / "uploads.json"
+    try:
+        return (read_json(path).get("uploads") or {}) if path.is_file() else {}
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def save_upload(project: Project, cid: str, entry: dict) -> None:
+    with _lock:
+        ups = load_uploads(project)
+        lst = [u for u in ups.get(cid, []) if u.get("video_id") != entry.get("video_id")]
+        lst.append(entry)
+        ups[cid] = lst
+        write_json_atomic(project.dir / "uploads.json", {"version": 1, "uploads": ups})
+
+
+def update_upload_stats(project: Project, stats: dict[str, dict]) -> int:
+    """Store fetched views/likes on the matching uploads. Returns how many changed."""
+    with _lock:
+        ups = load_uploads(project)
+        n = 0
+        for lst in ups.values():
+            for u in lst:
+                s = stats.get(u.get("video_id"))
+                if s:
+                    u.update({"views": s["views"], "likes": s["likes"], "privacy": s["privacy"] or u.get("privacy"),
+                              "published_at": s.get("published_at") or u.get("published_at"),
+                              "stats_at": now_iso()})
+                    n += 1
+        if n:
+            write_json_atomic(project.dir / "uploads.json", {"version": 1, "uploads": ups})
+        return n
+
+
 # -------------------------------------------------------------------- chat
 
 _chat_cache: dict[str, tuple[float, dict]] = {}

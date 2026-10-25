@@ -6,6 +6,8 @@ import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { chooseLanguage, useMeta } from "../meta";
+import { YoutubeCard } from "../components/Publish";
+import { applyMotion, type MotionSetting } from "../motion";
 import { useTheme } from "../theme";
 import { useToast } from "../toast";
 
@@ -454,6 +456,22 @@ export default function Settings() {
                   {t("settings.theme_desc")}
                 </div>
               </div>
+              <div>
+                <div className="field-label" style={{ marginBottom: 6 }}>
+                  {t("settings.motion")}
+                </div>
+                <Segmented<MotionSetting>
+                  value={settings.ui_motion}
+                  options={(["full", "reduced", "off"] as MotionSetting[]).map((m) => ({ value: m, label: t(`settings.motion.${m}`) }))}
+                  onChange={(m) => {
+                    applyMotion(m);
+                    save({ ui_motion: m });
+                  }}
+                />
+                <div className="field-hint" style={{ marginTop: 6 }}>
+                  {t("settings.motion_desc")}
+                </div>
+              </div>
             </div>
           </section>
 
@@ -672,6 +690,12 @@ export default function Settings() {
               )}
             </div>
           </section>
+
+          <YoutubeCard
+            isLocal={!!meta?.is_local}
+            quota={settings.youtube_daily_quota}
+            onQuota={(n) => save({ youtube_daily_quota: n })}
+          />
 
           <UpdatesCard />
 

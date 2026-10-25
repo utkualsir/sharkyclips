@@ -4,6 +4,7 @@ import {
   ApiError,
   urls,
   type Candidate,
+  type ClipExport,
   type ClipOptions,
   type Facecam,
   type GameChoice,
@@ -15,7 +16,9 @@ import {
   type RenderedClip,
   type SubtitleStyle,
   type Word,
+  type YoutubeUpload,
 } from "../api";
+import { ExportDialog, ExportsList, UploadDialog, UploadsLine } from "../components/Publish";
 import FacecamEditor from "../components/FacecamEditor";
 import HypeMap from "../components/HypeMap";
 import { Icon } from "../components/Icons";
@@ -26,6 +29,7 @@ import { fmtBytes, fmtCompact, fmtTime, sourceLabel } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { useMeta } from "../meta";
+import { CountUp } from "../motion";
 import { href } from "../router";
 import { useToast } from "../toast";
 import { gameReasonLabel, whyText } from "./GameDebug";
@@ -89,7 +93,7 @@ function CandidateRow({
           >
             <span className="v-num">
               <Icon name="sparkles" size={12} />
-              {num(viral)}
+              <CountUp value={viral} format={num} />
               <span className="v-den">/100</span>
             </span>
             {label && !cal && <span className={`v-pill v-${label}`}>{t(`publish.label.${label}`)}</span>}
@@ -107,7 +111,7 @@ function CandidateRow({
             <div className="bar">
               <span style={{ width: `${c.hype_score}%` }} />
             </div>
-            <span className="n">{num(c.hype_score)}</span>
+            <span className="n"><CountUp value={c.hype_score} format={num} /></span>
           </div>
         </div>
         <div className="cand-reasons">
@@ -279,6 +283,14 @@ export default function ProjectPage({ id }: { id: string }) {
   const playerBox = useRef<HTMLDivElement>(null);
   const [previewH, setPreviewH] = useState<number | null>(null);
   const saveTimer = useRef<number>();
+  const [exportIds, setExportIds] = useState<string[] | null>(null);
+  const [uploadFor, setUploadFor] = useState<{ cid: string; source?: string } | null>(null);
+  const [clipExports, setClipExports] = useState<ClipExport[]>([]);
+  const [uploads, setUploads] = useState<Record<string, YoutubeUpload[]>>({});
+  const loadExports = useCallback(() => {
+    api.clipExports(id).then(setClipExports).catch(() => {});
+    api.uploads(id).then(setUploads).catch(() => {});
+  }, [id]);
 
   const load = useCallback(async () => {
     try {
@@ -297,12 +309,28 @@ export default function ProjectPage({ id }: { id: string }) {
 
   useEffect(() => {
     load();
-  }, [load]);
+    loadExports();
+  }, [load, loadExports]);
 
   // Reload when one of this project's jobs finishes.
   useEffect(() => {
     if (!lastFinished || lastFinished.project_id !== id) return;
     load();
+    if (["export", "upload", "render"].includes(lastFinished.kind)) loadExports();
+    const stillExporting = jobs.some((j) => j.kind === "export" && j.project_id === id && isActive(j));
+    if (lastFinished.kind === "export" && lastFinished.status === "done" && !stillExporting) {
+      toast({ kind: "ok", text: t("export.done"), action: { label: t("render.view"), run: () => setTab("clips") } });
+      setTab("clips");
+    }
+    if (lastFinished.kind === "upload" && lastFinished.status === "done" && lastFinished.result?.url) {
+      const r = lastFinished.result;
+      toast({
+        kind: "ok",
+        text: t("yt.done"),
+        hint: r.thumbnail_error ?? undefined,
+        action: { label: t("yt.open"), run: () => window.open(r.url, "_blank", "noopener") },
+      });
+    }
     const stillRendering = jobs.some((j) => j.kind === "render" && j.project_id === id && isActive(j));
     if (lastFinished.kind === "render" && lastFinished.status === "done" && !stillRendering) {
       const n = lastFinished.params?.batch_count ?? 1;
@@ -324,6 +352,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const lastAnalyze =
     projectJobs.filter((j) => j.kind === "analyze" && !isActive(j)).sort((a, b) => (b.finished ?? 0) - (a.finished ?? 0))[0] ?? null;
   const facecamJob = activeJobs.find((j) => j.kind === "facecam");
+  const exportJobs = activeJobs.filter((j) => j.kind === "export" || j.kind === "upload");
 
   const cands = project?.highlights?.candidates ?? [];
   const selected = cands.find((c) => c.id === selectedId) ?? null;
@@ -746,9 +775,7 @@ export default function ProjectPage({ id }: { id: string }) {
                     {project.playable ? (
                       <video ref={video} src={urls.source(id)} controls playsInline preload="metadata" />
                     ) : (
-                      <div style={{ display: "grid", placeItems: "center", height: "100%", color: "#aeb7ca" }}>
-                        <span className="spinner" />
-                      </div>
+                      <div className="skeleton skeleton-fill" aria-label={t("common.loading")} />
                     )}
                   </div>
                 </div>
@@ -1008,6 +1035,20 @@ export default function ProjectPage({ id }: { id: string }) {
                       {accepted.size ? t("render.button", { n: accepted.size }) : t("render.none")}
                     </button>
                   )}
+                  <button
+                    className="btn btn-block"
+                    disabled={!cands.length}
+                    onClick={() => setExportIds(accepted.size ? [...accepted] : selected ? [selected.id] : [])}
+                    title={t("export.button_hint")}
+                  >
+                    <Icon name="download" />
+                    {t("export.open")}
+                  </button>
+                  {exportJobs.length > 0 && (
+                    <a className="muted render-note" href={href.queue}>
+                      {t("export.in_queue", { n: exportJobs.length })}
+                    </a>
+                  )}
                 </div>
               </>
             ) : (
@@ -1023,7 +1064,7 @@ export default function ProjectPage({ id }: { id: string }) {
                     <a href={href.stats}>{t("nav.stats")}</a>
                   </div>
                 )}
-                {clips.length === 0 ? (
+                {clips.length === 0 && clipExports.length === 0 ? (
                   <p className="muted" style={{ padding: 16 }}>
                     {t("clips.empty")}
                   </p>
@@ -1051,9 +1092,31 @@ export default function ProjectPage({ id }: { id: string }) {
                             <Icon name="download" />
                           </a>
                         </div>
+                        <div className="clip-pub">
+                          <button className="btn btn-sm btn-ghost" onClick={() => setExportIds([c.id])}>
+                            <Icon name="download" />
+                            {t("export.short")}
+                          </button>
+                          <button className="btn btn-sm btn-ghost" onClick={() => setUploadFor({ cid: c.id })}>
+                            <Icon name="upload" />
+                            YouTube
+                          </button>
+                        </div>
+                        <UploadsLine uploads={uploads[c.id] ?? []} />
                         <PerformanceForm projectId={id} clip={c} onSaved={load} />
                       </div>
                     ))}
+                  </div>
+                )}
+                {clipExports.length > 0 && (
+                  <div className="exports-block">
+                    <h3 className="section-title">{t("export.list_title")}</h3>
+                    <ExportsList
+                      projectId={id}
+                      exports={clipExports}
+                      onChanged={loadExports}
+                      onUpload={(cid, source) => setUploadFor({ cid, source })}
+                    />
                   </div>
                 )}
               </div>
@@ -1062,6 +1125,25 @@ export default function ProjectPage({ id }: { id: string }) {
         </div>
       )}
 
+      {exportIds && (
+        <ExportDialog
+          projectId={id}
+          candidates={cands}
+          initial={exportIds}
+          spokenLang={project.language}
+          onClose={() => setExportIds(null)}
+        />
+      )}
+      {uploadFor && cands.find((c) => c.id === uploadFor.cid) && (
+        <UploadDialog
+          projectId={id}
+          cand={cands.find((c) => c.id === uploadFor.cid)!}
+          clip={project.clips[uploadFor.cid] ?? null}
+          exports={clipExports}
+          initialSource={uploadFor.source}
+          onClose={() => setUploadFor(null)}
+        />
+      )}
       {facecamOpen && (
         <FacecamEditor
           projectId={id}

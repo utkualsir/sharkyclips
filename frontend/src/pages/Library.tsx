@@ -88,9 +88,7 @@ function PendingImportCard({ job }: { job: Job }) {
   return (
     <div className="card pcard" style={{ cursor: "default" }}>
       <div className="pcard-thumb">
-        <div className="placeholder">
-          <span className="spinner" style={{ width: 24, height: 24 }} />
-        </div>
+        <div className="placeholder skeleton" style={{ borderRadius: 0 }} />
       </div>
       <div className="pcard-body">
         <h3 className="pcard-title" dir="auto">
