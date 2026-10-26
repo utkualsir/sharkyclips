@@ -7,6 +7,80 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.3] - 2026-10-26
+
+A small reliability fix for the Export window.
+
+### Fixed
+- The Export window no longer fails to open when ffmpeg is missing or can't encode H.264. It now
+  opens and shows the formats as unavailable, and checks again as soon as ffmpeg is installed
+  (no restart needed).
+- Behind the scenes: the automatic tests now run on clean machines too, so every release is
+  checked before it reaches you.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Dışa Aktar penceresi için küçük bir güvenilirlik düzeltmesi.
+
+### Düzeltildi
+- ffmpeg eksikse veya H.264 kodlayamıyorsa Dışa Aktar penceresi artık açılmamazlık yapmıyor. Pencere
+  açılıyor, formatları kullanılamaz olarak gösteriyor ve ffmpeg kurulur kurulmaz yeniden kontrol
+  ediyor (yeniden başlatmaya gerek yok).
+- Arka planda: otomatik testler artık temiz bilgisayarlarda da çalışıyor; her sürüm sana ulaşmadan
+  önce kontrol ediliyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Eine kleine Zuverlässigkeitskorrektur für das Export-Fenster.
+
+- **Behoben:** Das Export-Fenster öffnet sich jetzt auch ohne ffmpeg (oder ohne H.264-Encoder) und
+  zeigt die Formate als nicht verfügbar an. Nach der Installation von ffmpeg wird erneut geprüft,
+  ohne Neustart.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Egy kis megbízhatósági javítás az Exportálás ablakhoz.
+
+- **Javítva:** Az Exportálás ablak most ffmpeg nélkül (vagy H.264 kódoló nélkül) is megnyílik, és
+  nem elérhetőként mutatja a formátumokat. Az ffmpeg telepítése után újraellenőriz, újraindítás nélkül.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшое исправление надёжности окна экспорта.
+
+- **Исправлено:** окно экспорта теперь открывается и без ffmpeg (или без кодировщика H.264) и
+  показывает форматы как недоступные. После установки ffmpeg проверка повторяется без перезапуска.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+إصلاح صغير لموثوقية نافذة التصدير.
+
+- **تم الإصلاح:** تُفتح نافذة التصدير الآن حتى بدون ffmpeg (أو بدون مُرمِّز H.264) وتعرض الصيغ على
+  أنها غير متاحة، ثم تتحقق مجددًا فور تثبيت ffmpeg دون إعادة التشغيل.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+导出窗口的一个小可靠性修复。
+
+- **修复：** 即使没有 ffmpeg（或没有 H.264 编码器），导出窗口现在也能打开，并将格式显示为不可用；
+  安装 ffmpeg 后会自动重新检测，无需重启。
+
+</details>
+
 ## [1.2.2] - 2026-10-25
 
 Export your clips for every platform, upload them straight to YouTube, and enjoy a new launch animation.

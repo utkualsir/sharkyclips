@@ -110,9 +110,15 @@ def available_formats() -> list[dict]:
     """Which formats this PC can make, and with which encoder (first call test-encodes)."""
     from .render import pick_codec
 
+    have_ffmpeg = shutil.which("ffmpeg") is not None
     out = []
     for f in FORMATS.values():
-        enc = pick_codec(f.codec) if f.codec else None
+        enc = None
+        if f.codec and have_ffmpeg:
+            try:
+                enc = pick_codec(f.codec)
+            except SharkyClipsError:  # e.g. an ffmpeg build without any H.264 encoder
+                enc = None
         ok = f.codec is None or enc is not None
         out.append({"id": f.id, "label": f.label, "kind": f.kind, "ext": f.ext, "available": ok,
                     "encoder": enc.label if enc else None, "hardware": bool(enc and enc.hardware)})

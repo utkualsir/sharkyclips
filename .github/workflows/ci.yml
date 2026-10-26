@@ -30,6 +30,14 @@ jobs:
           grep -v nvidia backend/requirements.txt > "$RUNNER_TEMP/requirements-ci.txt"
           python -m pip install --upgrade pip
           python -m pip install -r "$RUNNER_TEMP/requirements-ci.txt" -r backend/requirements-dev.txt
+      - name: Install ffmpeg (the export tests encode with it)
+        run: |
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            choco install ffmpeg -y --no-progress
+          else
+            sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+          fi
+          ffmpeg -hide_banner -version | head -1
       - name: Lint (ruff)
         run: python -m ruff check backend installer
       - name: Tests (pytest)

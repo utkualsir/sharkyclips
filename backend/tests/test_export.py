@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -250,10 +251,9 @@ def test_api_endpoints():
 
     client = TestClient(app)
     r = client.get("/api/export/options")
-    assert r.status_code == 200
+    assert r.status_code == 200  # works with or without ffmpeg (formats then show unavailable)
     data = r.json()
     assert {f["id"] for f in data["formats"]} == set(export.FORMATS)
-    assert any(f["id"] == "mp4_h264" and f["available"] for f in data["formats"])
     assert len(data["presets"]) == 5
     yt = client.get("/api/youtube").json()
     assert yt["connected"] is False and yt["quota"]["limit"] == 10000
@@ -263,3 +263,25 @@ def test_api_endpoints():
     assert client.put("/api/settings", json={"ui_motion": "wild"}).status_code == 400
     client.put("/api/settings", json={"ui_motion": "full"})
     assert config.get("ui_motion") == "full"
+
+
+def test_export_options_without_ffmpeg(monkeypatch):
+    """No ffmpeg on PATH: every video format is listed as unavailable instead of an error."""
+    from fastapi.testclient import TestClient
+
+    from sharkyclips.web import app as webapp
+
+    real_which = shutil.which
+    monkeypatch.setattr(shutil, "which", lambda name, *a, **k: None if name == "ffmpeg" else real_which(name, *a, **k))
+    monkeypatch.setattr(webapp, "_formats_cache", {})
+    r = TestClient(webapp.app).get("/api/export/options")
+    assert r.status_code == 200
+    formats = {f["id"]: f for f in r.json()["formats"]}
+    assert all(not f["available"] for f in formats.values() if export.FORMATS[f["id"]].codec)
+    assert webapp._formats_cache == {}  # not cached: checked again once ffmpeg is installed
+
+
+@pytest.mark.requires_ffmpeg
+def test_export_options_h264_available():
+    """With ffmpeg installed, H.264 MP4 always works (CPU libx264 at worst)."""
+    assert any(f["id"] == "mp4_h264" and f["available"] for f in export.available_formats())

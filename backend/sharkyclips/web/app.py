@@ -10,6 +10,7 @@ import asyncio
 import json
 import os
 import re
+import shutil
 import subprocess
 import threading
 import time
@@ -1636,9 +1637,13 @@ def api_export_options() -> dict:
     """Formats this PC can make (test-encodes once), platform presets, editor formats."""
     from .. import export
 
-    if "formats" not in _formats_cache:
-        _formats_cache["formats"] = export.available_formats()
-    return {"formats": _formats_cache["formats"],
+    if "formats" in _formats_cache:
+        formats = _formats_cache["formats"]
+    else:
+        formats = export.available_formats()
+        if shutil.which("ffmpeg"):  # without ffmpeg, check again once the user installs it
+            _formats_cache["formats"] = formats
+    return {"formats": formats,
             "presets": [export.preset_view(p) for p in export.PRESETS.values()],
             "gif_default_mb": export.DEFAULT_GIF_MB, "subtitle_kinds": list(export.SUB_KINDS),
             "editors": ["fcpxml", "premiere"]}

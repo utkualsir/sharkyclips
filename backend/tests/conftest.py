@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import sys
 import tempfile
 from pathlib import Path
+
+import pytest
 
 BACKEND = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BACKEND))
@@ -19,3 +22,13 @@ os.environ["SHARKYCLIPS_HOME"] = str(_home)
 os.environ["SHARKYCLIPS_NO_MIGRATE"] = "1"  # never touch the real shortcuts / ~/.clipforge
 os.environ.pop("CLIPFORGE_HOME", None)
 os.environ.pop("SHARKYCLIPS_SUPERVISED", None)
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip tests that need ffmpeg when it is not installed (CI installs it, so they run there)."""
+    if shutil.which("ffmpeg"):
+        return
+    skip = pytest.mark.skip(reason="ffmpeg is not installed")
+    for item in items:
+        if "requires_ffmpeg" in item.keywords:
+            item.add_marker(skip)
