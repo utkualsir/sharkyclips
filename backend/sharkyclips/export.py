@@ -291,7 +291,7 @@ def write_subtitles(dest_stem: Path, cues: list[dict], lang: str | None, kinds: 
 
 
 def _render_audio(project: Project, cand: dict, fmt: Format, dest: Path,
-                  on_progress: Callable[[float], None] | None) -> RenderResult:
+                  on_progress: Callable[[float], None] | None, opts: ClipOptions | None = None) -> RenderResult:
     ffmpeg = require_tool("ffmpeg")
     if project.source_path is None:
         raise SharkyClipsError("The project's source video is missing.")
@@ -300,18 +300,40 @@ def _render_audio(project: Project, cand: dict, fmt: Format, dest: Path,
     tmp = dest.with_name(dest.stem + ".partial" + dest.suffix)
     codec = ["-c:a", "libmp3lame", "-b:a", "192k", "-f", "mp3"] if fmt.audio == "mp3" else \
         ["-c:a", "aac", "-b:a", "192k", "-f", "ipod", "-movflags", "+faststart"]
-    cmd = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-nostats", "-ss", f"{start:.3f}",
-           "-t", f"{duration:.3f}", "-i", str(project.source_path.resolve()), "-vn", "-map", "0:a:0",
-           "-af", f"afade=t=in:d=0.12,afade=t=out:st={max(0.0, duration - 0.2):.3f}:d=0.2",
-           *codec, "-progress", "pipe:1", str(tmp)]
+    info: dict = {}
+    work = None
+    plan = None
+    if opts is not None:  # cuts / bleeps / music: the same sound as the video export
+        from .edit import plan as plan_mod
+
+        plan = plan_mod.build(project, cand, opts, vertical=False, fps=100)
+        plan.brand, plan.intro_s, plan.outro_s = None, 0.0, 0.0
+    if plan is not None and plan.audio_active:
+        from .edit import audiomix
+
+        work = Path(tempfile.mkdtemp(prefix="sharkyclips-audio-"))
+        mix = audiomix.build(project.source_path, plan, work / "mix.wav")
+        info = {"music": mix.music, "lufs": mix.lufs, "duration": round(mix.seconds, 2)}
+        duration = mix.seconds
+        cmd = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-nostats", "-i", str(work / "mix.wav"),
+               *codec, "-progress", "pipe:1", str(tmp)]
+    else:
+        cmd = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-nostats", "-ss", f"{start:.3f}",
+               "-t", f"{duration:.3f}", "-i", str(project.source_path.resolve()), "-vn", "-map", "0:a:0",
+               "-af", f"afade=t=in:d=0.12,afade=t=out:st={max(0.0, duration - 0.2):.3f}:d=0.2",
+               *codec, "-progress", "pipe:1", str(tmp)]
     t0 = time.perf_counter()
-    code, err = run_ffmpeg(cmd, duration, on_progress)
+    try:
+        code, err = run_ffmpeg(cmd, duration, on_progress)
+    finally:
+        if work is not None:
+            shutil.rmtree(work, ignore_errors=True)
     if code != 0:
         tmp.unlink(missing_ok=True)
         raise SharkyClipsError(f"ffmpeg could not export the audio: {err.strip()[-400:]}",
                                "Does this video have a sound track?")
     os.replace(tmp, dest)
-    return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, "CPU")
+    return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, "CPU", info)
 
 
 def _gif_pass(src: Path, dest: Path, width: int, fps: int) -> int:
@@ -502,7 +524,7 @@ def run_export(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam
             stage("exporting", min(1.0, s / max(duration + (FLASH_SECONDS if flash else 0), 0.1)))
 
         if fmt.kind == "audio":
-            res = _render_audio(project, cand, fmt, dest, prog)
+            res = _render_audio(project, cand, fmt, dest, prog, opts)
         elif fmt.kind == "gif":
             res, extra = _render_gif(project, cand, opts, facecam, preset, req.burn_captions, dest, req.gif_max_mb,
                                      lambda f: stage("exporting", f))
@@ -516,6 +538,10 @@ def run_export(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam
                 video_bytes = max(1.0, res.size_bytes - spec.audio_k * 1000 / 8 * total)
                 _record_stats(f"q:{spec.codec}", video_bytes / total / _pixels_factor(w, h, fps))
         encoder = res.encoder
+        if res.info:
+            extra["edits"] = res.info
+            if res.info.get("music"):
+                extra["music"] = res.info["music"]
         files.append(_file_entry(dest, "media", fmt.mime))
 
     sub_lang = None

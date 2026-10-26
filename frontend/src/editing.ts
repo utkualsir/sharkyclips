@@ -1,0 +1,204 @@
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { api, type Candidate, type ClipEdit, type ClipOptions, type EditPlanView, type ZoomPulse } from "./api";
+
+// Editing tools (1.2.4): helpers shared by the project page, the transcript editor, the live
+// 9:16 preview and fast review. Zoom math mirrors backend/sharkyclips/edit/zoom.py.
+
+const RAMP_IN = 0.35;
+const RAMP_OUT = 0.55;
+
+export function effectiveRange(c: Candidate, edit: ClipEdit | undefined): { start: number; end: number } {
+  const start = edit?.start ?? c.start;
+  const end = edit?.end ?? c.end;
+  return end - start >= 1 ? { start, end } : { start: c.start, end: c.end };
+}
+
+export function zoomAt(t: number, pulses: ZoomPulse[], target: "scene" | "cam", level: number): number {
+  if (level <= 1) return 1;
+  for (const p of pulses) {
+    if (p.target !== target || t < p.t0 || t > p.t1) continue;
+    const d = p.t1 - p.t0;
+    const ri = Math.min(RAMP_IN, d / 3);
+    const ro = Math.min(RAMP_OUT, d / 3);
+    const s = Math.min(Math.max(0, Math.min(1, (t - p.t0) / ri)), Math.max(0, Math.min(1, (p.t1 - t) / ro)));
+    return 1 + (level - 1) * s * s * (3 - 2 * s);
+  }
+  return 1;
+}
+
+/** Source-time ranges that are bleeped / muted (swear words that survive the cuts). */
+export function bleepRanges(plan: EditPlanView | null): [number, number][] {
+  if (!plan || plan.bleep_mode === "off") return [];
+  return plan.words.filter((w) => w.bleep && !w.removed).map((w) => [w.start - 0.03, w.end + 0.03] as [number, number]);
+}
+
+/** Fetch the edit plan of the selected clip (debounced; stale answers ignored). */
+export function usePlan(
+  projectId: string,
+  cid: string | null,
+  deps: { options: ClipOptions; edit?: ClipEdit; music?: string | null; rev: number },
+): EditPlanView | null {
+  const [plan, setPlan] = useState<EditPlanView | null>(null);
+  const seq = useRef(0);
+  const key = JSON.stringify([cid, deps.options, deps.edit ?? null, deps.music ?? null, deps.rev]);
+  useEffect(() => {
+    if (!cid) {
+      setPlan(null);
+      return;
+    }
+    const n = ++seq.current;
+    const timer = window.setTimeout(() => {
+      const body: Parameters<typeof api.plan>[2] = { options: deps.options, edit: deps.edit ?? {} };
+      if (deps.music !== undefined) body.music = deps.music;
+      api
+        .plan(projectId, cid, body)
+        .then((p) => n === seq.current && setPlan(p))
+        .catch(() => n === seq.current && setPlan(null));
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [projectId, key]); // eslint-disable-line react-hooks/exhaustive-deps
+  return plan && plan.clip_id === cid ? plan : null;
+}
+
+/** While a clip plays in the preview: jump over cut parts, bleep / mute swear words, stop at
+ * the clip's end. Runs every frame (timeupdate only fires ~4x a second). */
+export function usePreviewPlayback(
+  video: RefObject<HTMLVideoElement>,
+  active: boolean,
+  plan: EditPlanView | null,
+  end: number | null,
+  onEnd: () => void,
+) {
+  const audio = useRef<{ ctx: AudioContext; osc: OscillatorNode; gain: GainNode } | null>(null);
+  useEffect(() => {
+    const v = video.current;
+    if (!v || !active) return;
+    const removed = plan?.removed ?? [];
+    const bleeps = bleepRanges(plan);
+    const mode = plan?.bleep_mode ?? "off";
+    let raf = 0;
+    let wasMuted = v.muted;
+    let inBleep = false;
+    const beep = (on: boolean) => {
+      if (mode !== "bleep") return;
+      try {
+        if (!audio.current) {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.frequency.value = 1000;
+          gain.gain.value = 0;
+          osc.connect(gain).connect(ctx.destination);
+          osc.start();
+          audio.current = { ctx, osc, gain };
+        }
+        const a = audio.current;
+        a.gain.gain.setTargetAtTime(on ? 0.12 * v.volume : 0, a.ctx.currentTime, 0.005);
+      } catch {
+        /* no Web Audio: muting is enough */
+      }
+    };
+    const tick = () => {
+      const t = v.currentTime;
+      const cut = removed.find((r) => t >= r.a - 0.02 && t < r.b - 0.02);
+      if (cut) v.currentTime = cut.b;
+      const b = bleeps.some(([a, bb]) => t >= a && t <= bb);
+      if (b !== inBleep) {
+        inBleep = b;
+        if (b) {
+          wasMuted = v.muted;
+          v.muted = true;
+        } else v.muted = wasMuted;
+        beep(b);
+      }
+      if (end != null && t >= end) {
+        v.pause();
+        onEnd();
+        return;
+      }
+      if (!v.paused) raf = requestAnimationFrame(tick);
+    };
+    const start = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(tick);
+    };
+    v.addEventListener("play", start);
+    if (!v.paused) start();
+    return () => {
+      cancelAnimationFrame(raf);
+      v.removeEventListener("play", start);
+      if (inBleep) {
+        v.muted = wasMuted;
+        beep(false);
+      }
+    };
+  }, [video, active, plan, end]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(
+    () => () => {
+      audio.current?.ctx.close().catch(() => {});
+      audio.current = null;
+    },
+    [],
+  );
+}
+
+/** Undo / redo of review snapshots (accept, reject, transcript edits). */
+export function useHistory<T>() {
+  const past = useRef<T[]>([]);
+  const future = useRef<T[]>([]);
+  const [, setTick] = useState(0);
+  const push = useCallback((before: T) => {
+    past.current.push(before);
+    if (past.current.length > 100) past.current.shift();
+    future.current = [];
+    setTick((n) => n + 1);
+  }, []);
+  const undo = useCallback((current: T): T | null => {
+    const prev = past.current.pop();
+    if (prev === undefined) return null;
+    future.current.push(current);
+    setTick((n) => n + 1);
+    return prev;
+  }, []);
+  const redo = useCallback((current: T): T | null => {
+    const next = future.current.pop();
+    if (next === undefined) return null;
+    past.current.push(current);
+    setTick((n) => n + 1);
+    return next;
+  }, []);
+  return { push, undo, redo, canUndo: past.current.length > 0, canRedo: future.current.length > 0 };
+}
+
+/** Is the keyboard event aimed at a text field (then shortcuts stay off)? */
+export function typing(e: KeyboardEvent): boolean {
+  const el = e.target as HTMLElement | null;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable;
+}
+
+export const SHORTCUTS: { keys: string[]; label: string }[] = [
+  { keys: ["A"], label: "keys.accept" },
+  { keys: ["X"], label: "keys.reject" },
+  { keys: ["Space"], label: "keys.play" },
+  { keys: ["J", "L"], label: "keys.seek" },
+  { keys: ["K"], label: "keys.pause" },
+  { keys: ["←", "→"], label: "keys.prev_next" },
+  { keys: ["I", "O"], label: "keys.in_out" },
+  { keys: ["Ctrl", "Z"], label: "keys.undo" },
+  { keys: ["Ctrl", "Shift", "Z"], label: "keys.redo" },
+  { keys: ["Del"], label: "keys.delete_words" },
+  { keys: ["F"], label: "keys.fast" },
+  { keys: ["?"], label: "keys.help" },
+];
+
+/** "ass" -> "a**" (first letter and punctuation kept, CJK fully starred), like the renderer. */
+export function maskWord(word: string): string {
+  const m = word.match(/^([\p{P}\p{S}\s]*)(.*?)([\p{P}\p{S}\s]*)$/u);
+  if (!m || !m[2]) return word;
+  const [, lead, core, trail] = m;
+  const chars = [...core];
+  if (/[　-鿿가-힯＀-￯]/.test(core)) return lead + "*".repeat(chars.length) + trail;
+  return lead + chars[0] + "*".repeat(chars.length - 1) + trail;
+}

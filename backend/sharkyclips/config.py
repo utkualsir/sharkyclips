@@ -67,6 +67,16 @@ DEFAULTS: dict[str, Any] = {
     # splash page uses it, it can't read the browser's storage).
     "ui_motion": "full",
     "ui_theme": None,
+    # Editing tools (1.2.4). Word lists per language replace the built-in ones when set:
+    # {"tr": ["amk", "siktir*"]} / {"tr": {"sure": ["ııı"], "maybe": ["şey"]}}
+    "profanity_lists": {},
+    "filler_lists": {},
+    "cut_silence_ms": {},  # {"light": 800, "strong": 450}: silences longer than this are cut
+    "music_dir": None,  # None -> ~/.sharkyclips/music
+    "music_credit": None,  # None -> "Music: {title} by {artist}" (added to YouTube descriptions)
+    "music_credit_enabled": True,
+    "brand_presets": [],  # brand kit presets (edit/brand.py); the active one is brand_active
+    "brand_active": None,
     # YouTube Data API units per day of the user's own Google Cloud project (Google's default).
     "youtube_daily_quota": 10000,
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.

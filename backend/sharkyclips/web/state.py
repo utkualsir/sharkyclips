@@ -1,6 +1,7 @@
 """Per-project UI state on disk, next to the pipeline's own files:
 
-  review.json  what the user decided: accepted clips, hook texts, render options, facecam
+  review.json  what the user decided: accepted / rejected clips, hook texts, render options,
+               facecam, per-clip edits (transcript cuts, trims) and music choices
   clips.json   finished 9:16 clips (clips/<rank>_<id>.mp4)
 """
 
@@ -38,7 +39,17 @@ def viral_label(score: float | None) -> str | None:
 
 def load_highlights(project: Project) -> dict | None:
     path = project.dir / "highlights.json"
-    return read_json(path) if path.is_file() else None
+    if not path.is_file():
+        return None
+    hl = read_json(path)
+    manual_path = project.dir / "manual.json"
+    if manual_path.is_file():  # a run that rewrote highlights.json meanwhile can't lose them
+        from ..edit import manual
+
+        have = {c["id"] for c in hl.get("candidates", [])}
+        if any(m["id"] not in have for m in manual.load(project)):
+            manual.merge_into(project, hl)
+    return hl
 
 
 # ------------------------------------------------------------------ review
@@ -57,11 +68,19 @@ def load_review(project: Project, highlights: dict | None = None) -> dict:
             "options": {**DEFAULT_OPTIONS, **(data.get("options") or {})},
             "facecam": data.get("facecam"),
             "facecam_checked": bool(data.get("facecam_checked")),
+            "rejected": list(data.get("rejected") or []),
+            "edits": dict(data.get("edits") or {}),
+            "music": dict(data.get("music") or {}),
         }
-        # Candidates were recomputed: old accept/hook choices point at other moments.
+        # Candidates were recomputed: old choices point at other moments (manual clips stay).
         if hl_stamp and review["highlights_created_at"] != hl_stamp:
             if review["highlights_created_at"] is not None:
-                review["accepted"], review["hooks"] = [], {}
+                def keep(d):
+                    return {k: v for k, v in d.items() if str(k).startswith("m")}
+                review["accepted"] = [c for c in review["accepted"] if c.startswith("m")]
+                review["rejected"] = [c for c in review["rejected"] if c.startswith("m")]
+                review["hooks"], review["edits"], review["music"] = (keep(review["hooks"]), keep(review["edits"]),
+                                                                     keep(review["music"]))
             review["highlights_created_at"] = hl_stamp
         return review
 
@@ -82,8 +101,75 @@ def save_review(project: Project, changes: dict[str, Any]) -> dict:
             fc = Facecam.from_dict(changes["facecam"])
             review["facecam"] = fc.to_dict() if fc else None
             review["facecam_checked"] = True
+        if "rejected" in changes:
+            review["rejected"] = [str(c) for c in changes["rejected"]][:500]
+        if "edits" in changes:
+            review["edits"] = {str(k): e for k, v in (changes["edits"] or {}).items() if (e := clean_edit(v))}
+        if "music" in changes:
+            review["music"] = {str(k): (str(v)[:200] if v else "") for k, v in (changes["music"] or {}).items()
+                               if v is not None}
         write_json_atomic(project.dir / "review.json", review)
         return review
+
+
+def clean_edit(e: dict | None) -> dict | None:
+    """One clip's edits: {"start", "end"} trims (None = the found cut) and the deleted
+    (source time) ranges from the transcript editor. Empty edits -> None."""
+    if not isinstance(e, dict):
+        return None
+    out: dict[str, Any] = {}
+    for k in ("start", "end"):
+        if e.get(k) is not None:
+            try:
+                out[k] = round(max(0.0, float(e[k])), 3)
+            except (TypeError, ValueError):
+                pass
+    if "start" in out and "end" in out and out["end"] - out["start"] < 1.0:
+        out.pop("end")
+    dels = []
+    for r in e.get("deleted") or []:
+        try:
+            a, b = float(r[0]), float(r[1])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if b > a:
+            dels.append([round(a, 3), round(b, 3)])
+    if dels:
+        out["deleted"] = sorted(dels)[:2000]
+    return out or None
+
+
+def effective_cand(cand: dict, review: dict) -> dict:
+    """The candidate as the user edited it: trimmed start / end, cuts, music choice."""
+    cid = cand["id"]
+    e = (review.get("edits") or {}).get(cid) or {}
+    start = float(e.get("start", cand["start"]))
+    end = float(e.get("end", cand["end"]))
+    if end - start < 1.0:
+        start, end = float(cand["start"]), float(cand["end"])
+    music = review.get("music") or {}
+    return {**cand, "start": start, "end": end, "duration": round(end - start, 2),
+            "edit": {"deleted": e.get("deleted") or [], "music": music.get(cid) if cid in music else None}}
+
+
+def edit_fingerprint(cand: dict, review: dict, options: dict) -> str:
+    """Changes when a clip's edits / music / brand change (the rendered clip is then old)."""
+    import hashlib
+    import json
+
+    eff = effective_cand(cand, review)
+    parts: dict[str, Any] = {}
+    if eff["edit"]["deleted"]:
+        parts["d"] = eff["edit"]["deleted"]
+    if options.get("music"):
+        parts["m"] = eff["edit"]["music"]
+    if options.get("brand"):
+        from ..edit import brand
+
+        parts["b"] = brand.fingerprint(brand.active_preset())
+    if not parts:
+        return ""
+    return hashlib.sha1(json.dumps(parts, sort_keys=True).encode()).hexdigest()[:12]
 
 
 # ------------------------------------------------------------------- clips
@@ -217,6 +303,7 @@ def candidate_view(c: dict) -> dict:
     llm = c.get("llm") or {}
     return {k: c.get(k) for k in ("id", "rank", "start", "end", "duration", "peak", "hype_score",
                                   "reasons", "signal_scores", "text")} | {
+        "manual": bool(c.get("manual")),
         "publish": {k: publish.get(k) for k in (*EMPTY_PUBLISH, "title_styles", "cover_text")},
         "llm": {k: llm.get(k) for k in ("what_happens", "self_contained", "moment_type", "game_or_topic",
                                          "refined", "original")} if llm else None,

@@ -11,12 +11,14 @@ interface Props {
   selected: Candidate | null;
   currentTime: number;
   onSeek: (t: number, cand: Candidate | null) => void;
+  /** in / out marks of a clip being marked by hand (I / O) */
+  marks?: { in: number | null; out: number | null };
 }
 
 const BAR_PX = 4; // bar + gap, in CSS pixels
 
 /** Bar chart of the whole video's hype curve. Selected clip in gold, other candidates highlighted. */
-export default function HypeMap({ curve, candidates, selected, currentTime, onSeek }: Props) {
+export default function HypeMap({ curve, candidates, selected, currentTime, onSeek, marks }: Props) {
   const { t } = useI18n();
   const canvas = useRef<HTMLCanvasElement>(null);
   const [width, setWidth] = useState(0);
@@ -104,6 +106,28 @@ export default function HypeMap({ curve, candidates, selected, currentTime, onSe
       ctx.fillText(String(c.rank), x, 1);
     }
 
+    // In / out marks (manual clip)
+    if (marks && (marks.in != null || marks.out != null)) {
+      const colMark = cssVar("--mark");
+      const xi = marks.in != null ? (marks.in / duration) * width : null;
+      const xo = marks.out != null ? (marks.out / duration) * width : null;
+      if (xi != null && xo != null && xo > xi) {
+        ctx.fillStyle = colMark;
+        ctx.globalAlpha = 0.18;
+        ctx.fillRect(xi, top - 2, xo - xi, H - top + 2);
+        ctx.globalAlpha = 1;
+      }
+      ctx.strokeStyle = colMark;
+      ctx.lineWidth = 2;
+      for (const x of [xi, xo]) {
+        if (x == null) continue;
+        ctx.beginPath();
+        ctx.moveTo(Math.round(x) + 0.5, top - 2);
+        ctx.lineTo(Math.round(x) + 0.5, H);
+        ctx.stroke();
+      }
+    }
+
     // Playhead
     if (currentTime > 0) {
       const x = Math.round((currentTime / duration) * width) + 0.5;
@@ -116,7 +140,7 @@ export default function HypeMap({ curve, candidates, selected, currentTime, onSe
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
-  }, [width, bars, candidates, selected, currentTime, duration, themeTick, grow]);
+  }, [width, bars, candidates, selected, currentTime, duration, themeTick, grow, marks]);
 
   const timeAt = (clientX: number) => {
     const rect = canvas.current!.getBoundingClientRect();

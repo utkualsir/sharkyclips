@@ -16,7 +16,7 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.3-1F6FE5" alt="Version 1.2.3"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.4-1F6FE5" alt="Version 1.2.4"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -63,6 +63,17 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
 - **Ready-to-post 9:16 clips.** Facecam on top and gameplay below (detected automatically and
   adjustable), burned-in word-timed subtitles (also right-to-left Arabic), an optional hook text and
   a "peak flash" opener. Encodes on NVIDIA, Apple, Intel or AMD hardware when available.
+- **Editing tools.** Swear words bleeped or muted (7 languages, editable lists, "a**" in the
+  captions; on by default for Shorts-style videos), silences and filler words ("um", "ııı", "äh"...)
+  cut with tiny crossfades but never inside a laugh, a subtle smart zoom on the peak moments and on
+  your facecam when you react, and **edit by transcript**: delete words to cut them, drag the first
+  and last word to trim, with undo and a live preview.
+- **Your own music and brand.** Drop your songs (e.g. your AI songs) into the music library and tag
+  their mood; SharkyClips suggests a fitting one per clip, starts it at its strongest part, ducks it
+  under your voice and keeps the mix at -14 LUFS, with an optional credit line for YouTube. A brand
+  kit adds your logo watermark, @handle, intro/outro cards and caption style with one switch.
+- **Fast review.** Keyboard shortcuts for everything (A keep, X skip, J/K/L, I/O to mark your own
+  clip...) and a full-screen, swipe-style review of one clip at a time.
 - **Export for every platform.** MP4 (H.264, HEVC, AV1 on recent GPUs), MOV, WebM, GIF with a size
   limit, MP3/M4A. One-click presets for **YouTube Shorts, TikTok, Instagram Reels, X and YouTube 16:9**
   set size, fps, bitrate and length limit and keep subtitles out of each app's buttons. The file size
@@ -347,6 +358,17 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
   sizin tarzınızı öğrenir.
 - Facecam üstte, oyun altta olacak şekilde **9:16 klip** üretir; kelime kelime altyazı ve kanca
   metni ekler.
+- **Düzenleme araçları:** küfürleri bip'ler veya susturur (7 dil, düzenlenebilir liste, altyazıda
+  "a**"), sessizlikleri ve "ııı", "eee", "şey" gibi dolgu kelimelerini küçük geçişlerle keser (gülme
+  anının içinde asla), önemli anlarda ve tepki verdiğinizde facecam'de hafif yakınlaştırma yapar.
+  **Metinden düzenleme:** kelimeyi silince videodan kesilir, ilk ve son kelimeyi sürükleyince klip
+  kırpılır; geri alma ve canlı önizleme vardır.
+- **Kendi müziğiniz ve markanız:** şarkılarınızı (örneğin yapay zekâ şarkılarınızı) müzik kitaplığına
+  bırakıp havasını etiketleyin; her klibe uygun olanı önerir, en güçlü kısmından başlatır, konuşurken
+  kısar, sesi -14 LUFS'ta tutar. Marka kiti logo filigranı, @kullanıcı adı, giriş/kapanış kartları ve
+  altyazı stilini tek düğmeyle ekler.
+- Her şey için **klavye kısayolları** (A tut, X geç, J/K/L, kendi klibiniz için I/O) ve adayları tek
+  tek, tam ekran, kaydırarak inceleyebileceğiniz **hızlı inceleme** modu.
 - En iyi kliplerden bölümlü, 16:9 bir **"en iyi anlar" videosu** hazırlar.
 - Her platform için **dışa aktarır**: MP4 (H.264, HEVC, AV1), MOV, WebM, GIF, MP3/M4A; YouTube Shorts,
   TikTok, Instagram Reels, X ve YouTube 16:9 için tek tıkla ayarlar, SRT/VTT altyazı dosyaları ve

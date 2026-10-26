@@ -52,13 +52,28 @@ class ClipOptions:
     hook_text: str = ""  # empty -> the LLM's hook text, else the clip's first sentence
     hook_flash: bool = False  # show the peak moment for ~1 s before the clip
     subtitle_lang: str = ""  # "" = spoken language; a code = use that translation if available
+    # Editing tools (1.2.4, edit/): swear words, silence / filler cuts, zoom, music, brand kit
+    profanity: str = "auto"  # auto (bleep in vertical videos) | bleep | mute | off
+    profanity_captions: bool = True  # "a**" in the captions
+    cuts: str = "off"  # off | light | strong
+    zoom: str = "off"  # off | subtle | strong
+    music: bool = False  # background music from the user's library
+    brand: bool = False  # the active brand kit preset
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
-        keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang")
+        keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
+                "profanity_captions", "cuts", "zoom", "music", "brand")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.hook_flash = bool(opts.hook_flash)
+        opts.profanity_captions = bool(opts.profanity_captions)
+        opts.music, opts.brand = bool(opts.music), bool(opts.brand)
+        for name, allowed in (("profanity", ("auto", "bleep", "mute", "off")), ("cuts", ("off", "light", "strong")),
+                              ("zoom", ("off", "subtle", "strong"))):
+            if getattr(opts, name) not in allowed:
+                raise SharkyClipsError(f"Unknown {name} setting '{getattr(opts, name)}'.",
+                                       f"Use one of: {', '.join(allowed)}")
         opts.subtitle_lang = str(opts.subtitle_lang or "")
         if opts.subtitle_lang and not languages.get(opts.subtitle_lang):
             raise SharkyClipsError(f"Unknown subtitle language '{opts.subtitle_lang}'.")
@@ -271,11 +286,22 @@ def translated_words(lines: list[dict], start: float, end: float, lang: str) -> 
 
 def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str,
               lang: str | None, hook_text: str, offset: float = 0.0,
-              hook_lang: str | None = None, geo: Geometry | None = None) -> str:
-    """offset: seconds of hook flash before the clip (subtitles start after it).
-    geo: canvas size and text positions (default: the 1080x1920 clip)."""
+              hook_lang: str | None = None, geo: Geometry | None = None,
+              style: dict | None = None, hook_start: float = 0.0, extra: list[str] | None = None) -> str:
+    """offset: seconds before the clip's main part (intro card + hook flash); subtitles start
+    after it. geo: canvas size and text positions (default: the 1080x1920 clip).
+    style: brand kit caption look {"font", "primary", "highlight", "outline"} (#RRGGBB).
+    hook_start: when the hook text appears (after an intro card). extra: more Dialogue lines."""
     geo = geo or Geometry()
     font = _font_for(lang)
+    prim_c, gold_c, black_c = WHITE, GOLD, BLACK
+    if style:
+        from .edit.brand import ass_color
+
+        font = style.get("font") or font
+        prim_c = ass_color(style.get("primary") or "#FFFFFF")
+        gold_c = ass_color(style.get("highlight") or "#D9B56A")
+        black_c = ass_color(style.get("outline") or "#000000")
     rtl = languages.is_rtl(hook_lang or lang)
     # Caption line position (center of the text block)
     cap_y = geo.cap_y if geo.cap_y is not None else (SPLIT_TOP if layout == "split" else 1390)
@@ -285,9 +311,9 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
 
     styles = {
         # name: size, primary, outline colour, back colour, bold, border style, outline, shadow
-        "bold": (sz(86), WHITE, BLACK, "&H80000000", -1, 1, sz(7), sz(2)),
-        "clean": (sz(62), WHITE, "&H50000000", "&H00000000", -1, 3, sz(14), 0),
-        "minimal": (sz(56), WHITE, "&H70000000", "&HA0000000", 0, 1, sz(2), sz(3)),
+        "bold": (sz(86), prim_c, black_c, "&H80000000", -1, 1, sz(7), sz(2)),
+        "clean": (sz(62), prim_c, "&H50000000", "&H00000000", -1, 3, sz(14), 0),
+        "minimal": (sz(56), prim_c, "&H70000000", "&HA0000000", 0, 1, sz(2), sz(3)),
     }
     lines = [
         "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {geo.w}", f"PlayResY: {geo.h}",
@@ -298,10 +324,14 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
         "Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
     ]
     for name, (size, prim, outl, back, bold, border, outline, shadow) in styles.items():
-        lines.append(f"Style: {name},{font},{size},{prim},{GOLD},{outl},{back},{bold},0,0,0,"
+        lines.append(f"Style: {name},{font},{size},{prim},{gold_c},{outl},{back},{bold},0,0,0,"
                      f"100,100,0,0,{border},{outline},{shadow},5,{geo.margin_l},{geo.margin_r},0,1")
     lines.append(f"Style: hook,{font},{sz(64)},{NAVY},{NAVY},{WHITE},&H40000000,-1,0,0,0,"
                  f"100,100,0,0,3,{sz(22)},0,8,{geo.margin_l + 20},{geo.margin_r + 20},0,1")
+    lines.append(f"Style: card,{font},{sz(80)},{WHITE},{WHITE},&H00000000,&H00000000,-1,0,0,0,"
+                 f"100,100,0,0,1,0,0,5,{geo.margin_l},{geo.margin_r},0,1")
+    lines.append(f"Style: handle,{font},{sz(38)},{WHITE},{WHITE},&H60000000,&H80000000,-1,0,0,0,"
+                 f"100,100,0,0,1,{sz(3)},{sz(1)},7,0,0,0,1")
     lines += ["", "[Events]",
               "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
 
@@ -331,7 +361,7 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
                     w_end = group[wi + 1]["start"] if wi + 1 < len(group) else g_end
                     if w_end <= w_start:
                         continue
-                    parts = [(f"{{\\c{GOLD}}}{t}{{\\c{WHITE}}}" if i == wi else t)
+                    parts = [(f"{{\\c{gold_c}}}{t}{{\\c{prim_c}}}" if i == wi else t)
                              for i, t in enumerate(texts)]
                     if languages.is_rtl(lang):
                         # libass lays out runs split by override tags left-to-right, so the
@@ -347,8 +377,9 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
         text = _ass_escape(hook_text)
         if rtl:
             text = "‫" + text + "‬"  # keep punctuation on the right side
-        event(0.0, min(3.2, duration) + offset * 0.6, "hook",
+        event(hook_start, hook_start + min(3.2, duration) + (offset - hook_start) * 0.6, "hook",
               f"{{\\an8\\pos({geo.cap_x},{hook_y})\\fad(150,300)}}{text}", layer=1, shift=False)
+    lines += extra or []
     return "\n".join(lines) + "\n"
 
 
@@ -360,22 +391,29 @@ def _even(v: float) -> int:
 
 
 def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
-                  inp: str = "0:v", out: str = "base", size: tuple[int, int] = (OUT_W, OUT_H)) -> str:
+                  inp: str = "0:v", out: str = "base", size: tuple[int, int] = (OUT_W, OUT_H),
+                  fx: dict | None = None) -> str:
     """Layout filter chain from input pad `inp` to output pad `out` (labels are unique per out).
-    size: canvas (1080x1920, or 1920x1080 for 16:9 exports, which always use fit / crop)."""
+    size: canvas (1080x1920, or 1920x1080 for 16:9 exports, which always use fit / crop).
+    fx: extra filters (smart zoom) per picture: "full" (crop / fit), "cam" and "game" (split)."""
     W, H = size
+    zfx = fx or {}
+
+    def add(key: str) -> str:
+        return f",{zfx[key]}" if zfx.get(key) else ""
+
     cover = f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=bicubic,crop={W}:{H}"
     a, b, bg_, fg_, cam_, game_ = (f"{out}_{x}" for x in ("a", "b", "bg", "fg", "cam", "game"))
     if layout == "crop":
-        return f"[{inp}]{cover},setsar=1[{out}]"
+        return f"[{inp}]{cover},setsar=1{add('full')}[{out}]"
     if layout == "fit" and abs(src_w / max(src_h, 1) - W / H) < 0.02:  # same shape: just scale
-        return f"[{inp}]scale={W}:{H}:flags=bicubic,setsar=1[{out}]"
+        return f"[{inp}]scale={W}:{H}:flags=bicubic,setsar=1{add('full')}[{out}]"
     if layout == "fit":
         # Blur at quarter size (fast), then scale back up.
         bg = (f"scale={W // 4}:{H // 4}:force_original_aspect_ratio=increase,"
               f"crop={W // 4}:{H // 4},boxblur=12:2,eq=brightness=-0.10:saturation=1.1,"
               f"scale={W}:{H}")
-        fg = f"scale={W}:{H}:force_original_aspect_ratio=decrease:flags=bicubic"
+        fg = f"scale={W}:{H}:force_original_aspect_ratio=decrease:flags=bicubic{add('full')}"
         return (f"[{inp}]split=2[{a}][{b}];[{a}]{bg}[{bg_}];[{b}]{fg}[{fg_}];"
                 f"[{bg_}][{fg_}]overlay=(W-w)/2:(H-h)/2,setsar=1[{out}]")
     assert facecam is not None
@@ -406,7 +444,7 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
     game = (f"crop={_even(gw)}:{_even(src_h)}:{_even(gx)}:0,"
             f"scale={OUT_W}:{bottom_h}:force_original_aspect_ratio=increase:flags=bicubic,"
             f"crop={OUT_W}:{bottom_h}")
-    return (f"[{inp}]split=2[{a}][{b}];[{a}]{cam}[{cam_}];[{b}]{game}[{game_}];"
+    return (f"[{inp}]split=2[{a}][{b}];[{a}]{cam}{add('cam')}[{cam_}];[{b}]{game}{add('game')}[{game_}];"
             f"[{cam_}][{game_}]vstack=inputs=2,setsar=1[{out}]")
 
 
@@ -486,6 +524,11 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
     src_dur = float(meta.get("duration") or end)
     peak = float(cand.get("peak") or (start + end) / 2)
     flash_start = min(max(0.0, peak - 0.45), max(0.0, src_dur - FLASH_SECONDS))
+    plan = edit_plan(project, cand, opts, spec, max(1, round(min(60.0, fps, float(spec.fps or 60)))))
+    if plan is not None:  # editing tools at work: cuts, bleeps, zoom, music, brand kit
+        return _render_planned(project, cand, opts, facecam, dest, on_progress, spec, plan, layout=layout,
+                               geo=geo, has_audio=has_audio, flash=flash, flash_start=flash_start,
+                               src_w=src_w, src_h=src_h, fps=fps)
     ass = build_ass(words, duration, opts, layout, lang, hook_text, offset=flash, hook_lang=hook_lang, geo=geo)
 
     out_fps = min(60.0, fps, float(spec.fps or 60))
@@ -561,5 +604,258 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
             raise SharkyClipsError(f"ffmpeg could not render the clip: {err.strip()[-500:]}")
         os.replace(tmp, dest)
         return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc.label)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
+# --------------------------------------------------------------------- editing tools (1.2.4)
+
+
+def edit_plan(project: Project, cand: dict, opts: ClipOptions, spec: OutputSpec | None, fps: int):
+    """The clip's EditPlan when an editing tool changes something, else None (plain render)."""
+    from .edit import plan as plan_mod
+
+    spec = spec or OutputSpec()
+    plan = plan_mod.build(project, cand, opts, vertical=spec.frame != "wide", fps=fps)
+    return plan if plan.active else None
+
+
+def _logo_size(path: Path) -> tuple[int, int]:
+    import cv2
+    import numpy as np
+
+    img = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+    if img is None:
+        return 1, 1
+    return int(img.shape[1]), int(img.shape[0])
+
+
+def _brand_layers(preset: dict, geo: Geometry, spec: OutputSpec, canvas: tuple[int, int], lead: float,
+                  main_end: float, total: float, intro: float, outro: float) -> tuple[dict, list[str]]:
+    """Watermark placement + the ASS lines for the handle and the intro / outro cards."""
+    from .edit import brand
+
+    W, H = canvas
+    top, right, bottom, left = spec.safe
+    m = 40
+    logo = brand.logo_path(preset)
+    info: dict = {"logo": logo}
+    lw = lh = 0
+    if logo is not None:
+        iw, ih = _logo_size(logo)
+        lw = _even(W * float(preset["logo_size"]) / 100)
+        lh = _even(lw * ih / max(1, iw))
+        pos = preset["logo_pos"]
+        x = m + left if pos in ("tl", "bl") else W - lw - m - right
+        y = m + top if pos in ("tl", "tr") else H - lh - m - bottom
+        info.update(w=lw, h=lh, x=x, y=y)
+    lines = []
+
+    def ev(a: float, b: float, style: str, text: str) -> None:
+        lines.append(f"Dialogue: 2,{_ass_time(a)},{_ass_time(b)},{style},,0,0,0,,{text}")
+
+    handle = f"@{preset['handle']}" if preset.get("handle") else ""
+    if handle and preset.get("show_handle"):
+        pos = preset["logo_pos"]
+        an = {"tl": 7, "tr": 9, "bl": 1, "br": 3}[pos]
+        hx = m + left if pos in ("tl", "bl") else W - m - right
+        hy = (m + top + lh + (10 if lh else 0)) if pos in ("tl", "tr") else (H - m - bottom - lh - (10 if lh else 0))
+        ev(lead, main_end, "handle", f"{{\\an{an}\\pos({hx},{hy})}}{_ass_escape(handle)}")
+    card_y = int(H * (0.64 if logo is not None else 0.5))
+    if intro:
+        text = brand.intro_text(preset)
+        if text:
+            ev(0.0, intro, "card", f"{{\\an5\\pos({W // 2},{card_y})\\fad(200,250)}}{_ass_escape(text)}")
+    if outro:
+        text = brand.outro_text(preset)
+        if text:
+            ev(total - outro, total, "card", f"{{\\an5\\pos({W // 2},{card_y})\\fad(250,200)}}{_ass_escape(text)}")
+    return info, lines
+
+
+def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None, dest: Path,
+                    on_progress: Callable[[float], None] | None, spec: OutputSpec, plan, *, layout: str,
+                    geo: Geometry, has_audio: bool, flash: float, flash_start: float, src_w: int, src_h: int,
+                    fps: float) -> RenderResult:
+    """Render with an EditPlan: frame-accurate cuts, smart zoom, the numpy sound mix (bleeps,
+    music, crossfades), brand watermark / handle / caption style and intro / outro cards."""
+    from .edit import audiomix, zoom
+    from .render import cpu_fallback, pick_codec
+
+    ffmpeg = require_tool("ffmpeg")
+    source = project.source_path
+    start, end = float(cand["start"]), float(cand["end"])
+    duration = max(0.5, end - start)
+    F = int(plan.fps)
+    W, H = spec.canvas
+    main = plan.out_duration
+    intro, outro = plan.intro_s, plan.outro_s
+    lead = intro + flash
+    total = lead + main + outro
+
+    # Text: captions in output time (translated subtitles too), hook after the intro card.
+    words, lang, hook_text, hook_lang = clip_text(project, cand, opts)
+    if opts.subtitle_lang and lang == opts.subtitle_lang and lang != plan.lang:
+        mapped = []
+        for w in words:  # translated pseudo-words (relative to the clip start)
+            s0, e0 = plan.to_out(w["start"] + start, "fwd"), plan.to_out(w["end"] + start, "back")
+            if s0 is not None and e0 is not None and e0 > s0:
+                mapped.append({**w, "start": s0, "end": e0})
+        words = mapped
+    else:
+        words = plan.out_words()
+    style = None
+    extra: list[str] = []
+    brand_info: dict = {}
+    if plan.brand:
+        p = plan.brand
+        style = {"font": p.get("caption_font"), "primary": p.get("caption_color"),
+                 "highlight": p.get("caption_highlight"), "outline": p.get("caption_outline")}
+        brand_info, extra = _brand_layers(p, geo, spec, (W, H), lead, lead + main, total, intro, outro)
+    if not spec.burn_captions:
+        opts = ClipOptions.from_dict({**opts.to_dict(), "subtitles": "none"})
+    ass = build_ass(words, main, opts, layout, lang, hook_text, offset=lead, hook_lang=hook_lang, geo=geo,
+                    style=style, hook_start=intro, extra=extra)
+
+    final = ""
+    if spec.width and spec.height and (spec.width, spec.height) != (W, H):
+        final = f",scale={spec.width}:{spec.height}:flags=lanczos"
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dest.with_name(dest.stem + ".partial" + dest.suffix)
+    work = Path(tempfile.mkdtemp(prefix="sharkyclips-"))
+    try:
+        (work / "subs.ass").write_text(ass, encoding="utf-8")
+        src = str(source.resolve())
+        mix = None
+        if (has_audio or plan.music) and spec.audio != "none":
+            mix = audiomix.build(source, plan, work / "mix.wav", has_audio=has_audio,
+                                 flash=(flash_start, flash) if flash else None)
+
+        inputs = ["-ss", f"{start:.3f}", "-t", f"{duration + 0.05:.3f}", "-i", src]
+        n_in = 1
+        fl_i = logo_i = in_i = out_i = a_i = None
+        if flash:
+            inputs += ["-ss", f"{flash_start:.3f}", "-t", f"{flash:.3f}", "-i", src]
+            fl_i, n_in = n_in, n_in + 1
+        if brand_info.get("logo") is not None:
+            inputs += ["-i", str(brand_info["logo"])]
+            logo_i, n_in = n_in, n_in + 1
+        card = (plan.brand or {}).get("card_color", "#0E1A33").lstrip("#")
+        if intro:
+            inputs += ["-f", "lavfi", "-i", f"color=c=0x{card}:s={W}x{H}:r={F}:d={intro:.3f}"]
+            in_i, n_in = n_in, n_in + 1
+        if outro:
+            inputs += ["-f", "lavfi", "-i", f"color=c=0x{card}:s={W}x{H}:r={F}:d={outro:.3f}"]
+            out_i, n_in = n_in, n_in + 1
+        if mix is not None:
+            inputs += ["-i", "mix.wav"]
+            a_i, n_in = n_in, n_in + 1
+
+        g: list[str] = []
+        sel = ""
+        if plan.cuts:
+            expr = "+".join(f"between(n,{fa},{fb - 1})" for fa, fb in plan.frames())
+            sel = f"select='{expr}',"
+        g.append(f"[0:v]fps={F},{sel}setpts=N/({F}*TB)[src]")
+        fx: dict = {}
+        if plan.zooms:
+            z = plan.zoom_level
+            if layout == "split":
+                fx["game"] = zoom.perspective_filter(plan.out_pulses("scene"), z, F)
+                fx["cam"] = zoom.perspective_filter(plan.out_pulses("cam"), z, F, cy=0.45)
+            else:
+                from .edit.plan import merge
+
+                fx["full"] = zoom.perspective_filter(merge(plan.out_pulses("scene") + plan.out_pulses("cam")), z, F)
+        g.append(_filter_graph(layout, src_w, src_h, facecam, "src", "base", (W, H), fx=fx))
+        white = ",fade=t=in:st=0:d=0.18:color=white" if flash else ""
+        g.append(f"[base]setsar=1{white},format=yuv420p[mainv]")
+        logos: list[str] = []
+        if logo_i is not None:
+            n_logo = 1 + bool(intro) + bool(outro)
+            logos = [f"lg{k}" for k in range(n_logo)]
+            g.append(f"[{logo_i}:v]format=rgba,split={n_logo}" + "".join(f"[{x}]" for x in logos))
+        seq = []
+
+        def card_chain(idx: int, name: str, d: float, logo_pad: str | None) -> None:
+            base = f"[{idx}:v]format=yuv420p,setsar=1"
+            if logo_pad:
+                cw = _even(W * 0.36)
+                g.append(f"[{logo_pad}]scale={cw}:-2[{name}_l]")
+                g.append(f"{base}[{name}_b];[{name}_b][{name}_l]overlay=(W-w)/2:(H-h)/2-{int(H * 0.06)}[{name}_c]")
+                base = f"[{name}_c]"
+            g.append(f"{base}{'' if logo_pad else ','}fade=t=in:st=0:d=0.25,fade=t=out:st={max(0.0, d - 0.3):.3f}:d=0.3,"
+                     f"format=yuv420p,setsar=1[{name}]")
+
+        if intro:
+            card_chain(in_i, "introv", intro, logos[1] if logos else None)
+            seq.append("[introv]")
+        if flash:
+            punch = f"scale={int(W * 1.08) // 2 * 2}:{int(H * 1.08) // 2 * 2},crop={W}:{H}"
+            g.append(_filter_graph(layout, src_w, src_h, facecam, f"{fl_i}:v", "fl", (W, H)))
+            g.append(f"[fl]{punch},setsar=1,fps={F},format=yuv420p[flv]")
+            seq.append("[flv]")
+        seq.append("[mainv]")
+        if outro:
+            card_chain(out_i, "outrov", outro, logos[-1] if logos else None)
+            seq.append("[outrov]")
+        if len(seq) > 1:
+            g.append("".join(seq) + f"concat=n={len(seq)}:v=1:a=0[cv]")
+        else:
+            g.append("[mainv]null[cv]")
+        g.append("[cv]ass=subs.ass[sv]")
+        last = "sv"
+        if logos:
+            op = float(plan.brand["logo_opacity"])
+            g.append(f"[{logos[0]}]scale={brand_info['w']}:{brand_info['h']},colorchannelmixer=aa={op:.2f}[wm]")
+            g.append(f"[sv][wm]overlay=x={brand_info['x']}:y={brand_info['y']}:"
+                     f"enable='between(t,{lead:.3f},{lead + main:.3f})'[wv]")
+            last = "wv"
+        g.append(f"[{last}]null{final},format=yuv420p[v]")
+        graph = ";".join(g)
+
+        maps = ["-map", "[v]"] + (["-map", f"{a_i}:a"] if a_i is not None else [])
+        if a_i is not None and spec.audio != "none":
+            audio_args = ["-c:a", "libopus", "-b:a", f"{spec.audio_k}k"] if spec.audio == "opus" else \
+                ["-c:a", "aac", "-b:a", f"{spec.audio_k}k"]
+        else:
+            maps = ["-map", "[v]"]
+            audio_args = ["-an"]
+        mux = ["-f", "webm"] if spec.container == "webm" else \
+            ["-f", "mov" if spec.container == "mov" else "mp4", "-movflags", "+faststart"]
+
+        def build(e: Encoder) -> list[str]:
+            return [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-nostats", *inputs,
+                    "-filter_complex", graph, *maps, *video_args(e, spec), *audio_args,
+                    "-t", f"{total:.3f}", *mux, "-progress", "pipe:1", str(tmp.resolve())]
+
+        ref = duration + flash  # callers measure progress against the clip (+ flash)
+
+        def progress(sec: float) -> None:
+            if on_progress:
+                on_progress(min(ref, sec * ref / max(total, 0.1)))
+
+        enc = pick_codec(spec.codec)
+        if enc is None:
+            raise SharkyClipsError(f"This computer can't encode {spec.codec.upper()} video.",
+                                   "Pick another format (MP4 H.264 works everywhere).")
+        t0 = time.perf_counter()
+        code, err = run_ffmpeg(build(enc), total, progress, cwd=work)
+        fallback = cpu_fallback(spec.codec)
+        if code != 0 and enc.hardware and fallback is not None:
+            enc = fallback
+            code, err = run_ffmpeg(build(enc), total, progress, cwd=work)
+        if code != 0:
+            tmp.unlink(missing_ok=True)
+            raise SharkyClipsError(f"ffmpeg could not render the clip: {err.strip()[-500:]}")
+        os.replace(tmp, dest)
+        info = {"plan": plan.fingerprint(), "duration": round(total, 2), "main": round(main, 2),
+                "cut_seconds": max(0.0, round(duration - main, 2)), "cuts": len(plan.removed),
+                "bleeps": len(plan.bleeps) if plan.bleep_mode != "off" else 0, "bleep_mode": plan.bleep_mode,
+                "zoom_pulses": len(plan.out_pulses("scene")) + len(plan.out_pulses("cam")) if plan.zooms else 0,
+                "music": mix.music if mix else None, "lufs": mix.lufs if mix else None,
+                "brand": (plan.brand or {}).get("name"), "intro": intro, "outro": outro}
+        return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc.label, info)
     finally:
         shutil.rmtree(work, ignore_errors=True)

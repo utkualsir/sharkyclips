@@ -458,6 +458,12 @@ export function UploadDialog({
   const [busy, setBusy] = useState(false);
   const thumbInput = useRef<HTMLInputElement>(null);
   const wide = sources.find((s) => s.value === source)?.wide ?? false;
+  // Song credit ("Music: <song> by <channel>") of the chosen video, when it has background music.
+  const credit = useMemo(() => {
+    if (source === "clip") return clip?.edits?.music?.credit ?? null;
+    const e = exports.find((x) => x.files.some((f) => f.name === source));
+    return e?.music?.credit ?? null;
+  }, [source, clip, exports]);
 
   useEffect(() => {
     api.youtube().then(setYt).catch(() => {});
@@ -484,6 +490,7 @@ export function UploadDialog({
     try {
       let desc = description.trim();
       const missing = hashtagsInDesc.filter((h) => !desc.toLowerCase().includes(h.toLowerCase()));
+      if (credit && !desc.includes(credit)) desc = `${desc}\n\n${credit}`.trim();
       if (missing.length) desc = `${desc}\n\n${missing.join(" ")}`.trim();
       const body: UploadBody = {
         source,
@@ -573,6 +580,11 @@ export function UploadDialog({
         <label className="field">
           <span className="field-label">{t("yt.description")}</span>
           <textarea className="input" dir="auto" rows={5} value={description} onChange={(e) => setDescription(e.target.value)} />
+          {credit && !description.includes(credit) && (
+            <span className="field-hint">
+              <Icon name="music" size={12} /> {t("yt.credit_added")}: <span className="mono">{credit}</span>
+            </span>
+          )}
         </label>
         <label className="field">
           <span className="field-label">{t("yt.tags")}</span>

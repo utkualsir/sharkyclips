@@ -602,7 +602,7 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
             hi = min([duration or orig["end"] + MAX_SHIFT] + [o["start"] for o in others
                                                               if o["start"] >= orig["end"] - 0.01])
             lo, hi = max(lo, orig["start"] - MAX_SHIFT), min(hi, orig["end"] + MAX_SHIFT)
-            if refine:
+            if refine and not c.get("manual"):  # a hand-marked clip keeps its exact cut
                 start, end = snap_boundaries(
                     transcript, orig["start"] + j["start_shift_s"], orig["end"] + j["end_shift_s"],
                     lo, hi, preset.clip_min * 0.8, preset.clip_max)
@@ -634,7 +634,7 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                         "self_contained": j["self_contained"], "moment_type": j["moment_type"],
                         "funny": j["funny"], "exciting": j["exciting"], "useful": j["useful"],
                         "start_shift_s": j["start_shift_s"], "end_shift_s": j["end_shift_s"],
-                        "original": orig, "refined": refine and (start, end) != (orig["start"], orig["end"])}
+                        "original": orig, "refined": (start, end) != (orig["start"], orig["end"])}
 
             # YouTube description (own cache: clips analyzed before 1.2.1 only need this call)
             pub = c["publish"]

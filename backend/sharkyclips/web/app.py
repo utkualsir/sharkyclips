@@ -129,7 +129,7 @@ def llm_available() -> bool:
 
 
 def submit_analyze(project_id: str, lang: str | None = None, force: bool = False,
-                   job_id: str | None = None, attempt: int = 1) -> Job:
+                   job_id: str | None = None, attempt: int = 1, ranks: list[int] | None = None) -> Job:
     def run(job: Job):
         from ..analyze import analyze_project
 
@@ -138,13 +138,15 @@ def submit_analyze(project_id: str, lang: str | None = None, force: bool = False
         def progress(i: int, n: int, _c: dict) -> None:
             jobs.update(job, stage="llm_analyzing", progress=i / n, detail={"index": i, "count": n})
 
-        res = analyze_project(get_project(project_id), out_lang=lang, force=force, on_progress=progress)
+        res = analyze_project(get_project(project_id), out_lang=lang, force=force, on_progress=progress,
+                              ranks=ranks)
         return {"language": res["language"], "model": res["model"], "seconds": res["total_seconds"],
                 "count": len(res["candidates"]), "failed": res["failed"]}
 
     # persistent: a pause, restart or crash must not silently lose the publish packages
-    return jobs.submit("analyze", "gpu", project_id, {"lang": lang, "force": force}, run,
-                       key=f"analyze:{project_id}", persist=True, job_id=job_id, attempt=attempt)
+    key = f"analyze:{project_id}" + (f":{','.join(map(str, ranks))}" if ranks else "")
+    return jobs.submit("analyze", "gpu", project_id, {"lang": lang, "force": force, "ranks": ranks}, run,
+                       key=key, persist=True, job_id=job_id, attempt=attempt)
 
 
 def submit_titles(project_id: str, cid: str) -> Job:
@@ -246,15 +248,19 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
                                    "Re-run the highlight analysis and pick clips again.")
         review = state.load_review(project, hl)
         facecam = Facecam.from_dict(review.get("facecam"))
+        edit_fp = state.edit_fingerprint(cand, review, opts.to_dict())
+        cand = state.effective_cand(cand, review)  # trims, transcript cuts, music choice
         name = f"{cand['rank']:02d}_{cand['id']}.mp4"
         jobs.update(job, stage="rendering", progress=0.0)
         res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
-                          on_progress=lambda s: jobs.update(job, progress=s / max(cand["duration"], 0.1)))
+                          on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
         entry = {"file": name, "id": cand["id"], "rank": cand["rank"], "start": cand["start"],
-                 "end": cand["end"], "duration": cand["duration"], "options": opts.to_dict(),
+                 "end": cand["end"], "duration": res.info.get("duration") or cand["duration"],
+                 "options": opts.to_dict(), "edit_fp": edit_fp,
                  "facecam": facecam.to_dict() if facecam else None,
                  "rendered_at": state.now_iso(), "size_bytes": res.size_bytes,
-                 "render_seconds": round(res.seconds, 2), "encoder": res.encoder}
+                 "render_seconds": round(res.seconds, 2), "encoder": res.encoder,
+                 "edits": res.info or None}
         state.save_clip(project, cand["id"], entry)
         speeds.record("render", res.seconds, cand["duration"])
         return {"clips": [cand["id"]], "encoder": res.encoder, "seconds": round(res.seconds, 1)}
@@ -348,8 +354,8 @@ def submit_export(project_id: str, cid: str, request: dict, batch: dict | None =
         from ..analyze import translate_clip
 
         project = get_project(project_id)
-        cand = _cand(project, cid)
         review = state.load_review(project)
+        cand = state.effective_cand(_cand(project, cid), review)
         opts = ClipOptions.from_dict({**review["options"], "hook_text": review["hooks"].get(cid, "")})
         facecam = Facecam.from_dict(review.get("facecam"))
 
@@ -589,7 +595,8 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
     if kind == "highlights":
         return submit_highlights(pid, p.get("mode"), bool(p.get("force")))
     if kind == "analyze":
-        return submit_analyze(pid, p.get("lang"), bool(p.get("force")), job_id=keep_id, attempt=attempt)
+        return submit_analyze(pid, p.get("lang"), bool(p.get("force")), job_id=keep_id, attempt=attempt,
+                              ranks=p.get("ranks") or None)
     if kind == "titles":
         return submit_titles(pid, p["clip_id"])
     if kind == "facecam":
@@ -600,6 +607,10 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
         return submit_chat(pid, bool(p.get("force")))
     if kind == "benchmark":
         return submit_benchmark()
+    if kind == "music":
+        from .studio import submit_music_analysis
+
+        return submit_music_analysis()
     if kind == "import":
         from ..ingest import is_url
 
@@ -1036,13 +1047,19 @@ def api_queue() -> dict:
     return _queue_view()
 
 
-def _render_is_current(clip: dict | None, cand: dict, options: dict, hook: str) -> bool:
-    """Already rendered with the same cut and the same settings?"""
+def _render_is_current(clip: dict | None, cand: dict, options: dict, hook: str, review: dict | None = None) -> bool:
+    """Already rendered with the same cut, edits and settings? (Clips rendered before an
+    option existed count as rendered with its default.)"""
     if not clip:
         return False
-    old = dict(clip.get("options") or {})
+    defaults = ClipOptions().to_dict()
+    old = {**defaults, **(clip.get("options") or {})}
     want = {**options, "hook_text": hook}
-    same_opts = all(old.get(k) == v for k, v in want.items() if k in ClipOptions().to_dict())
+    same_opts = all(old.get(k) == v for k, v in want.items() if k in defaults)
+    if review is not None:
+        if (clip.get("edit_fp") or "") != state.edit_fingerprint(cand, review, options):
+            return False
+        cand = state.effective_cand(cand, review)
     return same_opts and abs(clip["start"] - cand["start"]) < 0.05 and abs(clip["end"] - cand["end"]) < 0.05
 
 
@@ -1055,7 +1072,8 @@ def _accepted_overview(project: Project) -> dict | None:
     clips = state.load_clips(project)
     opts = dict(review["options"])
     accepted = [c for c in review["accepted"] if c in by_id]
-    current = [c for c in accepted if _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, ""))]
+    current = [c for c in accepted
+               if _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, ""), review)]
     return {"project_id": project.id, "title": project.load_meta().get("title") or project.id,
             "accepted": len(accepted), "rendered": len(current), "to_render": len(accepted) - len(current),
             "seconds": round(sum(by_id[c]["duration"] for c in accepted if c not in current), 1)}
@@ -1086,7 +1104,8 @@ def api_queue_render(body: dict) -> dict:
         clips = state.load_clips(project)
         opts = dict(review["options"])
         todo = [c for c in review["accepted"] if c in by_id and
-                (include_current or not _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, "")))]
+                (include_current or not _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, ""),
+                                                            review))]
         if todo:
             out += submit_render(project.id, todo, ClipOptions.from_dict(opts), review["hooks"])
     return {"queued": len(out), "jobs": [j.to_dict() for j in out]}
@@ -2026,6 +2045,11 @@ def api_update_restart(request: Request) -> dict:
         return {"restarting": False}
     threading.Timer(0.4, lambda: os._exit(updater.RESTART_CODE)).start()
     return {"restarting": True}
+
+
+from .studio import router as _studio_router  # noqa: E402 - editing tools API (1.2.4)
+
+app.include_router(_studio_router)
 
 
 @app.get("/api/{rest:path}")

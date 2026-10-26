@@ -3,7 +3,10 @@ import {
   api,
   ApiError,
   urls,
+  type BrandState,
   type Candidate,
+  type ClipEdit,
+  type MusicTrack,
   type ClipExport,
   type ClipOptions,
   type Facecam,
@@ -18,7 +21,10 @@ import {
   type Word,
   type YoutubeUpload,
 } from "../api";
+import EditTools from "../components/EditTools";
+import FastReview, { ShortcutSheet } from "../components/FastReview";
 import { ExportDialog, ExportsList, UploadDialog, UploadsLine } from "../components/Publish";
+import TranscriptEditor from "../components/TranscriptEditor";
 import FacecamEditor from "../components/FacecamEditor";
 import HypeMap from "../components/HypeMap";
 import { Icon } from "../components/Icons";
@@ -32,6 +38,7 @@ import { useMeta } from "../meta";
 import { CountUp } from "../motion";
 import { href } from "../router";
 import { useToast } from "../toast";
+import { effectiveRange, maskWord, typing, useHistory, usePlan, usePreviewPlayback } from "../editing";
 import { gameReasonLabel, whyText } from "./GameDebug";
 
 const MODES: Mode[] = ["gaming", "study", "music"];
@@ -41,6 +48,7 @@ const SUBS: SubtitleStyle[] = ["bold", "clean", "minimal", "none"];
 const LAYOUTS: Layout[] = ["auto", "split", "fit", "crop"];
 type HookMode = "off" | "text" | "flash" | "both";
 const HOOK_MODES: HookMode[] = ["off", "text", "flash", "both"];
+type Snapshot = { accepted: string[]; rejected: string[]; edits: Record<string, ClipEdit> };
 
 // ------------------------------------------------------------------ candidate row
 
@@ -48,14 +56,20 @@ function CandidateRow({
   c,
   selected,
   accepted,
+  rejected,
+  edited,
   onSelect,
   onAccept,
+  onDelete,
 }: {
   c: Candidate;
   selected: boolean;
   accepted: boolean;
+  rejected: boolean;
+  edited: boolean;
   onSelect: () => void;
   onAccept: (v: boolean) => void;
+  onDelete?: () => void;
 }) {
   const { t, num } = useI18n();
   const codes = [...new Set(c.reasons.map((r) => r.code))].slice(0, 4);
@@ -69,7 +83,7 @@ function CandidateRow({
     .sort((a, b) => b.strength - a.strength)[0]?.value;
   return (
     <div
-      className="cand"
+      className={`cand${rejected ? " rejected" : ""}`}
       role="option"
       aria-selected={selected}
       tabIndex={0}
@@ -105,6 +119,11 @@ function CandidateRow({
             <span className="tc">{fmtTime(c.start)}</span>
             <span aria-hidden="true">·</span>
             <span className="tc">{num(Math.round(c.duration))} s</span>
+            {edited && (
+              <span className="cand-flag" title={t("tx.edited")}>
+                <Icon name="wand" size={11} />
+              </span>
+            )}
           </div>
           <div className={`cand-score${viral != null ? " secondary" : ""}`} title={`${t("signals.score")}: ${c.hype_score}/100`}>
             <span className="lbl">{t("cands.hype_short")}</span>
@@ -115,6 +134,7 @@ function CandidateRow({
           </div>
         </div>
         <div className="cand-reasons">
+          {rejected && <span className="chip chip-danger">{t("fast.skipped")}</span>}
           {codes.map((code) => (
             <span
               key={code}
@@ -129,6 +149,11 @@ function CandidateRow({
       <div className="cand-accept" onClick={(e) => e.stopPropagation()}>
         <Toggle checked={accepted} onChange={onAccept} label={`${t("cands.accept")} #${c.rank}`} />
         <span className={accepted ? "ok" : ""}>{accepted ? <Icon name="check" size={13} /> : t("cands.accept")}</span>
+        {onDelete && (
+          <button className="btn btn-sm btn-ghost icon-btn" onClick={onDelete} aria-label={t("manual.delete")} title={t("manual.delete")}>
+            <Icon name="trash" size={13} />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -287,6 +312,16 @@ export default function ProjectPage({ id }: { id: string }) {
   const [uploadFor, setUploadFor] = useState<{ cid: string; source?: string } | null>(null);
   const [clipExports, setClipExports] = useState<ClipExport[]>([]);
   const [uploads, setUploads] = useState<Record<string, YoutubeUpload[]>>({});
+  const [marks, setMarks] = useState<{ in: number | null; out: number | null }>({ in: null, out: null });
+  const [fastOpen, setFastOpen] = useState(false);
+  const [keysOpen, setKeysOpen] = useState(false);
+  const [tracks, setTracks] = useState<MusicTrack[]>([]);
+  const [brand, setBrand] = useState<BrandState | null>(null);
+  const history = useHistory<Snapshot>();
+  useEffect(() => {
+    api.music().then((m) => setTracks(m.tracks)).catch(() => {});
+    api.brand().then(setBrand).catch(() => {});
+  }, []);
   const loadExports = useCallback(() => {
     api.clipExports(id).then(setClipExports).catch(() => {});
     api.uploads(id).then(setUploads).catch(() => {});
@@ -359,23 +394,42 @@ export default function ProjectPage({ id }: { id: string }) {
   const review = project?.review;
   const accepted = useMemo(() => new Set(review?.accepted ?? []), [review]);
   const options: ClipOptions = review?.options ?? {
-    layout: "auto", subtitles: "bold", hook: true, hook_flash: false, subtitle_lang: "",
+    layout: "auto", subtitles: "bold", hook: true, hook_flash: false, subtitle_lang: "", profanity: "auto",
+    profanity_captions: true, cuts: "off", zoom: "off", music: false, brand: false,
   };
+  const rejected = useMemo(() => new Set(review?.rejected ?? []), [review]);
+  const edit: ClipEdit | undefined = selected ? review?.edits?.[selected.id] : undefined;
+  const range = selected ? effectiveRange(selected, edit) : null;
+  const musicChoice = selected && review?.music && selected.id in review.music ? review.music[selected.id] : undefined;
+  const activeBrand = brand?.presets.find((b) => b.id === brand.active) ?? null;
+  const plan = usePlan(id, selected?.id ?? null, {
+    options,
+    edit,
+    music: musicChoice === undefined ? null : musicChoice,
+    rev: (activeBrand?.rev ?? 0) + tracks.length * 1000,
+  });
   const subLangs = [...new Set(cands.flatMap((c) => c.subtitle_languages ?? []))].filter((l) => l !== project?.language);
   const hookText = selected ? review?.hooks[selected.id] ?? selected.default_hook : "";
   const hookEdited = !!(selected && review?.hooks[selected.id] != null);
   const aiHook = !!selected?.publish.hook_text;
   const hookMode: HookMode = options.hook ? (options.hook_flash ? "both" : "text") : options.hook_flash ? "flash" : "off";
 
-  // Words of the selected clip (for the live subtitle preview)
+  // Words around the selected clip (transcript editor; the live preview uses the clip's part)
+  const ctxFrom = selected ? Math.max(0, Math.min(selected.start, range!.start) - 12) : 0;
+  const ctxTo = selected ? Math.max(selected.end, range!.end) + 12 : 0;
   useEffect(() => {
     if (!selected) return;
     let cancelled = false;
-    api.words(id, selected.start, selected.end).then((w) => !cancelled && setWords(w)).catch(() => setWords([]));
+    api.words(id, ctxFrom, ctxTo).then((w) => !cancelled && setWords(w)).catch(() => setWords([]));
     return () => {
       cancelled = true;
     };
-  }, [id, selected?.id, selected?.start, selected?.end]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, selected?.id, Math.round(ctxFrom), Math.round(ctxTo)]); // eslint-disable-line react-hooks/exhaustive-deps
+  const previewWords = useMemo(() => {
+    if (plan) return plan.words.filter((w) => !w.removed).map((w) => (w.bleep && plan.mask_captions ? { ...w, word: maskWord(w.word) } : w));
+    if (!range) return [];
+    return words.filter((w) => (w.start + w.end) / 2 >= range.start && (w.start + w.end) / 2 <= range.end);
+  }, [plan, words, range?.start, range?.end]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep the 9:16 preview as tall as the 16:9 player on wide screens.
   useEffect(() => {
@@ -401,8 +455,8 @@ export default function ProjectPage({ id }: { id: string }) {
     const go = () => {
       if (didInitialSeek.current) return;
       didInitialSeek.current = true;
-      v.currentTime = selected.start;
-      setTime(selected.start);
+      v.currentTime = range?.start ?? selected.start;
+      setTime(range?.start ?? selected.start);
     };
     if (v.readyState >= 1) go();
     else v.addEventListener("loadedmetadata", go, { once: true });
@@ -422,13 +476,7 @@ export default function ProjectPage({ id }: { id: string }) {
   useEffect(() => {
     const v = video.current;
     if (!v) return;
-    const on = () => {
-      setTime(v.currentTime);
-      if (playingClip && selected && v.currentTime >= selected.end) {
-        v.pause();
-        setPlayingClip(false);
-      }
-    };
+    const on = () => setTime(v.currentTime);
     const onPause = () => setPlayingClip(false);
     v.addEventListener("timeupdate", on);
     v.addEventListener("seeked", on);
@@ -440,15 +488,19 @@ export default function ProjectPage({ id }: { id: string }) {
     };
   }, [playingClip, selected, project?.highlights]);
 
+  usePreviewPlayback(video, playingClip, plan, range?.end ?? null, () => setPlayingClip(false));
+
   const seek = (s: number) => {
     const v = video.current;
     if (v) v.currentTime = s;
     setTime(s);
   };
 
+  const rangeOf = (c: Candidate) => effectiveRange(c, review?.edits?.[c.id]);
+
   const select = (c: Candidate, play = false) => {
     setSelectedId(c.id);
-    seek(c.start);
+    seek(rangeOf(c).start);
     if (play) playClip(c);
     document.querySelector(`[data-cand="${c.id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   };
@@ -456,10 +508,18 @@ export default function ProjectPage({ id }: { id: string }) {
   const playClip = (c: Candidate | null = selected) => {
     const v = video.current;
     if (!v || !c) return;
-    if (v.currentTime < c.start - 0.5 || v.currentTime >= c.end - 0.2) v.currentTime = c.start;
+    const r = rangeOf(c);
+    if (c.id !== selected?.id || v.currentTime < r.start - 0.5 || v.currentTime >= r.end - 0.2) v.currentTime = r.start;
     setPlayingClip(true);
     v.play().catch(() => setPlayingClip(false));
   };
+
+  const playPause = () => {
+    if (playingClip || (video.current && !video.current.paused)) video.current?.pause();
+    else playClip();
+  };
+
+  const seekBy = (s: number) => seek(Math.max(0, Math.min(project?.duration ?? 1e9, (video.current?.currentTime ?? time) + s)));
 
   const step = (dir: 1 | -1) => {
     if (!selected) return;
@@ -480,12 +540,84 @@ export default function ProjectPage({ id }: { id: string }) {
     else send();
   };
 
+  const snapshot = (): Snapshot => ({
+    accepted: review?.accepted ?? [],
+    rejected: review?.rejected ?? [],
+    edits: review?.edits ?? {},
+  });
+
   const setAccepted = (cid: string, v: boolean) => {
+    history.push(snapshot());
     const next = new Set(accepted);
     if (v) next.add(cid);
     else next.delete(cid);
     // keep rank order
-    patchReview({ accepted: cands.filter((c) => next.has(c.id)).map((c) => c.id) });
+    patchReview({
+      accepted: cands.filter((c) => next.has(c.id)).map((c) => c.id),
+      rejected: (review?.rejected ?? []).filter((x) => !(v && x === cid)),
+    });
+  };
+
+  const decide = (cid: string, keep: boolean) => {
+    history.push(snapshot());
+    const acc = new Set(accepted);
+    const rej = new Set(rejected);
+    if (keep) {
+      acc.add(cid);
+      rej.delete(cid);
+    } else {
+      acc.delete(cid);
+      rej.add(cid);
+    }
+    patchReview({ accepted: cands.filter((c) => acc.has(c.id)).map((c) => c.id), rejected: [...rej] });
+  };
+
+  const setEdit = (cid: string, e: ClipEdit) => {
+    history.push(snapshot());
+    const edits = { ...(review?.edits ?? {}) };
+    if (e.start == null && e.end == null && !e.deleted?.length) delete edits[cid];
+    else edits[cid] = e;
+    patchReview({ edits });
+  };
+
+  const setMusicChoice = (cid: string, v: string | null) => {
+    const music = { ...(review?.music ?? {}) };
+    if (v == null) delete music[cid];
+    else music[cid] = v;
+    patchReview({ music });
+  };
+
+  const undo = () => {
+    const prev = history.undo(snapshot());
+    if (prev) patchReview(prev);
+  };
+
+  const redo = () => {
+    const next = history.redo(snapshot());
+    if (next) patchReview(next);
+  };
+
+  const addManual = async () => {
+    if (marks.in == null || marks.out == null) return;
+    try {
+      const r = await api.addManualClip(id, marks.in, marks.out);
+      setMarks({ in: null, out: null });
+      toast({ kind: "ok", text: t("manual.added", { n: r.candidate.rank }), hint: r.job ? t("manual.analyzing") : undefined });
+      await load();
+      setSelectedId(r.candidate.id);
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+
+  const deleteManual = async (c: Candidate) => {
+    if (!window.confirm(t("manual.delete_confirm", { n: c.rank }))) return;
+    try {
+      await api.deleteManualClip(id, c.id);
+      load();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message });
+    }
   };
 
   const setOption = (o: Partial<ClipOptions>) => patchReview({ options: { ...options, ...o } });
@@ -559,14 +691,33 @@ export default function ProjectPage({ id }: { id: string }) {
     }
   };
 
-  // keyboard: arrows move through candidates, space plays the clip, A toggles accept
+  // Keyboard shortcuts ("?" shows them). Fast review has its own while it is open.
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement).tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || facecamOpen) return;
-      if (e.key === "ArrowDown" || e.key === "j") (e.preventDefault(), step(1));
-      else if (e.key === "ArrowUp" || e.key === "k") (e.preventDefault(), step(-1));
-      else if (e.key === "a" && selected) setAccepted(selected.id, !accepted.has(selected.id));
+      if (typing(e) || facecamOpen || exportIds || uploadFor || keysOpen || fastOpen) return;
+      const onVideo = (e.target as HTMLElement)?.tagName === "VIDEO";
+      const k = e.key.toLowerCase();
+      if ((e.ctrlKey || e.metaKey) && (k === "z" || k === "y")) {
+        e.preventDefault();
+        if (k === "y" || e.shiftKey) redo();
+        else undo();
+        return;
+      }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === "?") setKeysOpen(true);
+      else if (e.key === "ArrowDown" || e.key === "ArrowRight") !onVideo && (e.preventDefault(), step(1));
+      else if (e.key === "ArrowUp" || e.key === "ArrowLeft") !onVideo && (e.preventDefault(), step(-1));
+      else if (k === "a" && selected) decide(selected.id, true);
+      else if (k === "x" && selected) decide(selected.id, false);
+      else if ((e.key === " " && !onVideo) || k === "k") (e.preventDefault(), playPause());
+      else if (k === "j") seekBy(e.shiftKey ? -1 : -3);
+      else if (k === "l") seekBy(e.shiftKey ? 1 : 3);
+      else if (k === "i") setMarks((m) => ({ ...m, in: video.current?.currentTime ?? time }));
+      else if (k === "o") setMarks((m) => ({ ...m, out: video.current?.currentTime ?? time }));
+      else if (k === "f" && cands.length) {
+        setFastOpen(true);
+        if (selected) select(selected, true);
+      }
     };
     window.addEventListener("keydown", on);
     return () => window.removeEventListener("keydown", on);
@@ -788,11 +939,14 @@ export default function ProjectPage({ id }: { id: string }) {
                       <VerticalPreview
                         video={video}
                         clip={selected}
+                        range={range}
                         options={options}
                         facecam={fc}
-                        words={words}
+                        words={previewWords}
                         lang={project.language}
                         hookText={hookText}
+                        zoom={plan && plan.zoom_level > 1 ? { pulses: plan.pulses, level: plan.zoom_level } : null}
+                        brand={options.brand ? activeBrand : null}
                       />
                     </div>
                   </div>
@@ -816,18 +970,69 @@ export default function ProjectPage({ id }: { id: string }) {
                 <button className="btn btn-sm icon-btn" onClick={() => step(1)} aria-label={t("player.next")} title={t("player.next")}>
                   <Icon name="chevron-right" className="icon flip-rtl" />
                 </button>
-                {selected && (
+                {selected && range && (
                   <span className="tc" style={{ marginInlineStart: 4 }}>
-                    #{String(selected.rank).padStart(2, "0")} · {fmtTime(selected.start)} – {fmtTime(selected.end)}
+                    #{String(selected.rank).padStart(2, "0")} · {fmtTime(range.start)} – {fmtTime(range.end)}
                   </span>
                 )}
                 <span style={{ flex: 1 }} />
                 <span className="tc">
                   {fmtTime(time, true)} / {fmtTime(project.duration)}
                 </span>
-                <span className="chip chip-outline">{t("preview.title")}</span>
+                <button className="btn btn-sm btn-ghost" onClick={() => setMarks((m) => ({ ...m, in: video.current?.currentTime ?? time }))} title={t("manual.mark_in_hint")}>
+                  <kbd>I</kbd>
+                </button>
+                <button className="btn btn-sm btn-ghost" onClick={() => setMarks((m) => ({ ...m, out: video.current?.currentTime ?? time }))} title={t("manual.mark_out_hint")}>
+                  <kbd>O</kbd>
+                </button>
+                <button className="btn btn-sm btn-ghost icon-btn" onClick={() => setKeysOpen(true)} title={t("keys.title")} aria-label={t("keys.title")}>
+                  <kbd>?</kbd>
+                </button>
               </div>
+              {(marks.in != null || marks.out != null) && (
+                <div className="mark-bar">
+                  <Icon name="scan" size={14} />
+                  <span>
+                    {t("manual.in")} <b className="tc">{marks.in != null ? fmtTime(marks.in, true) : "–"}</b>
+                  </span>
+                  <span>
+                    {t("manual.out")} <b className="tc">{marks.out != null ? fmtTime(marks.out, true) : "–"}</b>
+                  </span>
+                  {marks.in != null && marks.out != null && (
+                    <span className="muted tc">{num(Math.round(Math.abs(marks.out - marks.in) * 10) / 10)} s</span>
+                  )}
+                  <span style={{ flex: 1 }} />
+                  <button
+                    className="btn btn-sm btn-primary"
+                    disabled={marks.in == null || marks.out == null || Math.abs(marks.out - marks.in) < 2}
+                    onClick={addManual}
+                  >
+                    <Icon name="plus" />
+                    {t("manual.add")}
+                  </button>
+                  <button className="btn btn-sm btn-ghost icon-btn" onClick={() => setMarks({ in: null, out: null })} aria-label={t("common.cancel")}>
+                    <Icon name="x" />
+                  </button>
+                </div>
+              )}
             </section>
+
+            {selected && (
+              <TranscriptEditor
+                words={words}
+                cand={selected}
+                edit={edit}
+                plan={plan}
+                time={time}
+                lang={project.language}
+                onChange={(e) => setEdit(selected.id, e)}
+                onSeek={seek}
+                onUndo={undo}
+                onRedo={redo}
+                canUndo={history.canUndo}
+                canRedo={history.canRedo}
+              />
+            )}
 
             {curve && (
               <section className="panel" aria-labelledby="hype-title">
@@ -855,6 +1060,7 @@ export default function ProjectPage({ id }: { id: string }) {
                   candidates={cands}
                   selected={selected}
                   currentTime={time}
+                  marks={marks}
                   onSeek={(s, c) => {
                     if (c && c.id !== selectedId) setSelectedId(c.id);
                     seek(s);
@@ -890,6 +1096,20 @@ export default function ProjectPage({ id }: { id: string }) {
                   {t("cands.accepted", { n: accepted.size })}
                 </span>
               )}
+              {tab === "cands" && cands.length > 0 && (
+                <button
+                  className="btn btn-sm btn-ghost icon-btn"
+                  style={{ alignSelf: "center" }}
+                  onClick={() => {
+                    setFastOpen(true);
+                    if (selected) select(selected, true);
+                  }}
+                  title={`${t("fast.title")} (F)`}
+                  aria-label={t("fast.open")}
+                >
+                  <Icon name="layers" />
+                </button>
+              )}
             </div>
 
             {tab === "cands" ? (
@@ -901,8 +1121,11 @@ export default function ProjectPage({ id }: { id: string }) {
                       c={c}
                       selected={c.id === selectedId}
                       accepted={accepted.has(c.id)}
+                      rejected={rejected.has(c.id)}
+                      edited={!!review?.edits?.[c.id]}
                       onSelect={() => select(c)}
                       onAccept={(v) => setAccepted(c.id, v)}
+                      onDelete={c.manual ? () => deleteManual(c) : undefined}
                     />
                   ))}
                 </div>
@@ -1003,6 +1226,16 @@ export default function ProjectPage({ id }: { id: string }) {
                       </select>
                     </div>
                   )}
+                  <EditTools
+                    options={options}
+                    setOption={setOption}
+                    plan={plan}
+                    tracks={tracks}
+                    musicChoice={musicChoice}
+                    setMusicChoice={(v) => selected && setMusicChoice(selected.id, v)}
+                    brand={brand}
+                    hasClip={!!selected}
+                  />
                   <div className="facecam-line">
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                       <Icon name="camera" size={14} />
@@ -1144,6 +1377,44 @@ export default function ProjectPage({ id }: { id: string }) {
           onClose={() => setUploadFor(null)}
         />
       )}
+      {fastOpen && (
+        <FastReview
+          candidates={cands}
+          current={selected}
+          accepted={accepted}
+          rejected={rejected}
+          playing={playingClip}
+          preview={
+            <VerticalPreview
+              video={video}
+              clip={selected}
+              range={range}
+              options={options}
+              facecam={fc}
+              words={previewWords}
+              lang={project.language}
+              hookText={hookText}
+              zoom={plan && plan.zoom_level > 1 ? { pulses: plan.pulses, level: plan.zoom_level } : null}
+              brand={options.brand ? activeBrand : null}
+            />
+          }
+          onSelect={(c) => select(c, true)}
+          onDecide={(c, keep) => decide(c.id, keep)}
+          onUndo={undo}
+          onPlayPause={playPause}
+          onSeekBy={seekBy}
+          onHelp={() => setKeysOpen(true)}
+          onRender={() => {
+            setFastOpen(false);
+            render();
+          }}
+          onClose={() => {
+            setFastOpen(false);
+            video.current?.pause();
+          }}
+        />
+      )}
+      {keysOpen && <ShortcutSheet onClose={() => setKeysOpen(false)} />}
       {facecamOpen && (
         <FacecamEditor
           projectId={id}

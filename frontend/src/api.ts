@@ -29,7 +29,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -258,7 +258,13 @@ export interface Candidate {
   };
   subtitle_languages: string[];
   chat?: ChatStats | null;
+  /** marked by hand (I/O) */
+  manual?: boolean;
 }
+
+export type ProfanityMode = "auto" | "bleep" | "mute" | "off";
+export type CutLevel = "off" | "light" | "strong";
+export type ZoomLevel = "off" | "subtle" | "strong";
 
 export interface ClipOptions {
   layout: Layout;
@@ -266,6 +272,142 @@ export interface ClipOptions {
   hook: boolean;
   hook_flash: boolean;
   subtitle_lang: string;
+  profanity: ProfanityMode;
+  profanity_captions: boolean;
+  cuts: CutLevel;
+  zoom: ZoomLevel;
+  music: boolean;
+  brand: boolean;
+}
+
+/** One clip's edits (transcript editor): trims and deleted source-time ranges. */
+export interface ClipEdit {
+  start?: number;
+  end?: number;
+  deleted?: [number, number][];
+}
+
+export interface PlanWord extends Word {
+  removed?: boolean;
+  bleep?: boolean;
+  filler?: boolean;
+}
+
+export interface ZoomPulse {
+  t0: number;
+  t1: number;
+  target: "scene" | "cam";
+  code: string;
+}
+
+export interface PlanMusic {
+  name: string;
+  title: string;
+  artist: string;
+  best_start: number | null;
+  duration: number | null;
+  why: "manual" | "ai" | "signals" | "mode";
+  mood?: string;
+  credit?: string;
+}
+
+/** What the render does to a clip (source times), for the live preview. */
+export interface EditPlanView {
+  clip_id: string;
+  start: number;
+  end: number;
+  fps: number;
+  keep: [number, number][];
+  removed: { a: number; b: number; kind: "deleted" | "silence" | "filler" }[];
+  duration: number;
+  words: PlanWord[];
+  bleep_mode: "bleep" | "mute" | "off";
+  bleeps: [number, number][];
+  mask_captions: boolean;
+  zoom_level: number;
+  pulses: ZoomPulse[];
+  music: PlanMusic | null;
+  suggestion: { name: string; title: string; artist: string; mood: string; why: string; matched: boolean } | null;
+  brand: boolean;
+  brand_preset: BrandPreset | null;
+  intro_s: number;
+  outro_s: number;
+}
+
+export type Mood = "hype" | "chill" | "sad" | "funny";
+
+export interface MusicTrack {
+  name: string;
+  title: string;
+  artist: string;
+  moods: Mood[];
+  mood_guess: Mood | null;
+  duration: number | null;
+  bpm: number | null;
+  best_start: number | null;
+  lufs: number | null;
+  analyzed: boolean;
+  size_bytes: number;
+}
+
+export interface MusicLibrary {
+  folder: string;
+  tracks: MusicTrack[];
+  moods: Mood[];
+  credit_template: string;
+  credit_enabled: boolean;
+}
+
+export type LogoPos = "tl" | "tr" | "bl" | "br";
+
+export interface BrandCard {
+  enabled: boolean;
+  text: string;
+  seconds: number;
+}
+
+export interface BrandPreset {
+  id: string;
+  name: string;
+  channel: string;
+  handle: string;
+  logo: string | null;
+  logo_pos: LogoPos;
+  logo_size: number;
+  logo_opacity: number;
+  show_handle: boolean;
+  intro: BrandCard;
+  outro: BrandCard;
+  card_color: string;
+  caption_font: string;
+  caption_color: string;
+  caption_highlight: string;
+  caption_outline: string;
+  rev: number;
+}
+
+export interface BrandState {
+  presets: BrandPreset[];
+  active: string | null;
+  positions: LogoPos[];
+}
+
+export interface WordLists {
+  profanity: Record<string, { words: string[]; default: string[]; custom: boolean }>;
+  fillers: Record<string, { sure: string[]; maybe: string[]; default: { sure: string[]; maybe: string[] }; custom: boolean }>;
+  silence_ms: { light: number; strong: number };
+  silence_default_ms: { light: number; strong: number };
+}
+
+export interface RenderEdits {
+  duration?: number;
+  cut_seconds?: number;
+  cuts?: number;
+  bleeps?: number;
+  zoom_pulses?: number;
+  music?: (PlanMusic & { offset: number }) | null;
+  lufs?: number | null;
+  brand?: string | null;
 }
 
 export interface Facecam {
@@ -283,6 +425,10 @@ export interface Review {
   options: ClipOptions;
   facecam: Facecam | null;
   facecam_checked: boolean;
+  rejected: string[];
+  edits: Record<string, ClipEdit>;
+  /** per clip: song file name, "" = no music (missing = the AI's suggestion) */
+  music: Record<string, string>;
 }
 
 export interface RenderedClip {
@@ -298,6 +444,7 @@ export interface RenderedClip {
   render_seconds: number;
   encoder: string;
   performance?: Performance | null;
+  edits?: RenderEdits | null;
 }
 
 export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
@@ -507,6 +654,8 @@ export interface ClipExport {
   frame: "vertical" | "wide" | null;
   subtitle_language: string | null;
   warnings: ExportWarning[];
+  /** the song used (editing tools), with its credit line when that setting is on */
+  music?: (PlanMusic & { offset: number }) | null;
 }
 
 export interface YoutubeQuota {
@@ -613,7 +762,8 @@ const HEAVY: [string, RegExp][] = [
   ["POST", /\/(transcribe|highlights|analyze|render|montage|export)$/],
   ["POST", /\/game\/rescan$/],
   ["PUT", /\/game$/],
-  ["POST", /^\/api\/(llm\/benchmark|queue\/render|update)$/],
+  ["POST", /^\/api\/(llm\/benchmark|queue\/render|update|music\/analyze)$/],
+  ["POST", /\/candidates$/],
   ["PUT", /^\/api\/uploads/],
 ];
 let heavyGuard: (() => Promise<void>) | null = null;
@@ -790,6 +940,46 @@ export const api = {
   deleteCalibrationEntry: (key: string) =>
     req<{ removed: boolean }>("DELETE", `/api/calibration/${encodeURIComponent(key)}`),
   benchmark: () => req<Job>("POST", "/api/llm/benchmark"),
+  // editing tools (1.2.4)
+  plan: (id: string, cid: string, body: { options?: Partial<ClipOptions>; edit?: ClipEdit; music?: string | null } = {}) =>
+    req<EditPlanView>("POST", `${P(id)}/candidates/${encodeURIComponent(cid)}/plan`, body),
+  addManualClip: (id: string, start: number, end: number) =>
+    req<{ candidate: Candidate; job: Job | null }>("POST", `${P(id)}/candidates`, { start, end }),
+  deleteManualClip: (id: string, cid: string) =>
+    req<{ removed: boolean }>("DELETE", `${P(id)}/candidates/${encodeURIComponent(cid)}`),
+  music: () => req<MusicLibrary>("GET", "/api/music"),
+  musicSettings: (body: { credit_template?: string; credit_enabled?: boolean }) =>
+    req<MusicLibrary>("PUT", "/api/music/settings", body),
+  updateTrack: (name: string, body: { moods?: Mood[]; title?: string; artist?: string }) =>
+    req<MusicTrack>("PUT", `/api/music/${encodeURIComponent(name)}`, body),
+  deleteTrack: (name: string) => req<{ removed: boolean }>("DELETE", `/api/music/${encodeURIComponent(name)}`),
+  analyzeMusic: () => req<Job>("POST", "/api/music/analyze"),
+  openMusicFolder: () => req<{ ok: boolean; folder: string }>("POST", "/api/music/open"),
+  uploadTrack: async (file: File) => {
+    const res = await fetch(`/api/music/upload?filename=${encodeURIComponent(file.name)}`, { method: "PUT", body: file });
+    const data = await res.json();
+    if (!res.ok) throw new ApiError(data.error || data.detail || res.statusText, data.hint || null, res.status);
+    return data as MusicTrack;
+  },
+  brand: () => req<BrandState>("GET", "/api/brand"),
+  saveBrand: (presets: Partial<BrandPreset>[], active: string | null) =>
+    req<BrandState>("PUT", "/api/brand", { presets, active }),
+  uploadLogo: async (pid: string, file: File) => {
+    const res = await fetch(`/api/brand/${encodeURIComponent(pid)}/logo?filename=${encodeURIComponent(file.name)}`, {
+      method: "PUT",
+      body: file,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new ApiError(data.error || data.detail || res.statusText, data.hint || null, res.status);
+    return data as BrandState;
+  },
+  removeLogo: (pid: string) => req<BrandState>("DELETE", `/api/brand/${encodeURIComponent(pid)}/logo`),
+  wordLists: () => req<WordLists>("GET", "/api/wordlists"),
+  saveWordLists: (body: {
+    profanity?: Record<string, string[] | null>;
+    fillers?: Record<string, { sure: string[]; maybe: string[] } | null>;
+    silence_ms?: Partial<{ light: number; strong: number }>;
+  }) => req<WordLists>("PUT", "/api/wordlists", body),
   jobs: () => req<Job[]>("GET", "/api/jobs"),
   updateStatus: () => req<UpdateStatus>("GET", "/api/update"),
   updateApply: () => req<Job>("POST", "/api/update"),
@@ -821,6 +1011,8 @@ export const urls = {
   clipExportFile: (id: string, name: string, download = false) =>
     `${P(id)}/clip-exports/file/${encodeURIComponent(name)}${download ? "?download=true" : ""}`,
   thumbnail: (id: string, cid: string, kind: "auto" | "custom", v = 0) => `${P(id)}/clips/${cid}/thumbnail.jpg?kind=${kind}&v=${v}`,
+  musicAudio: (name: string) => `/api/music/${encodeURIComponent(name)}/audio`,
+  brandLogo: (pid: string, rev = 0) => `/api/brand/${encodeURIComponent(pid)}/logo?v=${rev}`,
 };
 
 /** Upload a file with progress (streamed to disk by the server). */

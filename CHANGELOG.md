@@ -7,6 +7,174 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.4] - 2026-10-26
+
+Editing power tools: bleep swear words, cut silences, smart zoom, edit by transcript, your own
+music, a brand kit, manual clips and keyboard shortcuts with a fast review mode.
+
+### Added
+- **Swear word bleep** (good for YouTube ads): swear words are found from the transcript in all 7
+  languages and get a bleep or silence. Choose Auto / Bleep / Mute / Off per render; Auto bleeps
+  vertical videos (Shorts, TikTok, Reels and the Clips tab) and leaves 16:9 videos alone. They can
+  be hidden in the captions too ("a**"). The lists are yours to edit in **Studio > Word lists**
+  (Turkish ı / i variants are handled: "amına" also finds "amina", but "sik" never finds "sıkıntı").
+- **Silence and filler cuts**: Light or Strong cuts pauses (only real silence, not game sounds or
+  music) and filler words like "ııı", "eee", "um", "äh", "ну", with tiny crossfades so the jump
+  cuts sound natural. Words that are also real words ("şey", "yani", "like") are only cut by Strong
+  and only when they stand alone. Nothing is ever cut inside a laugh or a reaction.
+- **Smart zoom**: a subtle (or strong) punch-in on the peak moments (game events, loud moments,
+  trigger words, laughs) with smooth ease in and out, and on the facecam when you react.
+- **Edit by transcript**: under the player you see the clip's words. Click a word to jump there,
+  select words and press Delete to cut them out of the video, drag the [ ] handles to trim the
+  clip. Undo / redo, and the 9:16 preview plays your edit live (cuts skipped, bleeps, zoom).
+- **Background music from your own songs**: drop your songs (for example your AI songs) into
+  **Studio > Music** and tag their mood (hype / chill / sad / funny). SharkyClips finds each song's
+  strongest part and suggests a fitting song for every clip (you can pick another one or none).
+  The music gets quieter under speech and comes back in pauses, fades out at the end, and the
+  whole clip is mixed to -14 LUFS. An optional credit line ("Music: <song> by <your channel>") is
+  added to the YouTube description.
+- **Brand kit**: your channel name and @handle, a logo watermark (position, size, opacity),
+  intro / outro cards and your caption font and colors, saved as presets in **Studio > Brand kit**
+  and added to every render with one switch.
+- **Your own clips**: press I and O (or the buttons under the player) to mark a moment yourself.
+  It becomes a candidate like the others, gets the AI analysis, and stays when you re-run the
+  highlight search.
+- **Keyboard shortcuts**: A keep, X skip, Space play / pause, J / K / L seek, ← / → previous / next
+  clip, I / O in / out, Ctrl+Z undo, ? shows the list.
+- **Fast review**: one candidate at a time, full screen. Swipe right (or A) to keep, left (or X)
+  to skip, and the next clip plays by itself.
+- All of it follows the performance mode: in Silent mode renders and music analysis still pause
+  for your games and videos.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Düzenleme araçları: küfür bip'leme, sessizlik kesme, akıllı zoom, metinden düzenleme, kendi müziğin,
+marka kiti, elle klip ekleme ve hızlı inceleme modlu klavye kısayolları.
+
+### Eklendi
+- **Küfür bip'leme** (YouTube reklamları için iyi): küfürler 7 dilde metinden bulunur ve bip'lenir
+  ya da susturulur. Her render için Otomatik / Bip / Sessiz / Kapalı seç; Otomatik dikey videolarda
+  (Shorts, TikTok, Reels ve Klipler sekmesi) bip'ler, 16:9 videolara dokunmaz. İstersen altyazıda da
+  gizlenir ("a**"). Listeleri **Stüdyo > Kelime listeleri**'nden düzenleyebilirsin (Türkçe ı / i
+  farkı gözetilir: "amına" "amina"yı da bulur ama "sik" asla "sıkıntı"yı bulmaz).
+- **Sessizlik ve dolgu kesme**: Hafif veya Güçlü, duraklamaları (sadece gerçek sessizliği; oyun
+  sesi veya müzik kalır) ve "ııı", "eee", "um", "äh" gibi dolgu kelimelerini keser; küçük geçişler
+  sayesinde kesmeler doğal duyulur. Gerçek kelime de olan dolgular ("şey", "yani") sadece Güçlü'de
+  ve tek başına durduklarında kesilir. Gülme veya tepki anının içinde asla kesilmez.
+- **Akıllı zoom**: önemli anlarda (oyun olayları, sesin yükseldiği anlar, tepki kelimeleri,
+  kahkahalar) yumuşak giriş-çıkışlı hafif (veya güçlü) bir yakınlaştırma; tepki verdiğinde facecam'de de.
+- **Metinden düzenleme**: oynatıcının altında klibin kelimeleri var. Bir kelimeye tıkla, oraya
+  atla; kelimeleri seçip Delete'e bas, videodan kesilsin; [ ] tutamaçlarını sürükleyip klibi kırp.
+  Geri al / yinele var ve 9:16 önizleme düzenlemeni canlı oynatır (kesilen yerler atlanır, bip'ler,
+  zoom).
+- **Kendi şarkılarınla arka plan müziği**: şarkılarını (örneğin yapay zekâ şarkılarını) **Stüdyo >
+  Müzik**'e bırak, havasını etiketle (coşkulu / sakin / hüzünlü / komik). SharkyClips her şarkının en
+  güçlü kısmını bulur ve her klibe uygun bir şarkı önerir (başkasını seçebilir ya da müziksiz
+  bırakabilirsin). Müzik konuşurken kısılır, aralarda geri gelir, sonda kaybolur; klibin tamamı
+  -14 LUFS'a ayarlanır. İstersen YouTube açıklamasına bir künye satırı ("Müzik: <şarkı> - <kanalın>")
+  eklenir.
+- **Marka kiti**: kanal adın ve @kullanıcı adın, logo filigranı (konum, boyut, opaklık), giriş /
+  kapanış kartları ve altyazı yazı tipin ile renklerin; **Stüdyo > Marka kiti**'nde ayar olarak
+  saklanır ve tek düğmeyle her render'a eklenir.
+- **Kendi kliplerin**: bir anı kendin işaretlemek için I ve O'ya bas (veya oynatıcının altındaki
+  düğmeler). Diğerleri gibi aday olur, yapay zekâ analizinden geçer ve öne çıkanları yeniden
+  aradığında kaybolmaz.
+- **Klavye kısayolları**: A tut, X geç, Boşluk oynat / durdur, J / K / L sar, ← / → önceki / sonraki
+  klip, I / O başlangıç / bitiş, Ctrl+Z geri al, ? listeyi gösterir.
+- **Hızlı inceleme**: adaylar tek tek, tam ekran. Tutmak için sağa (veya A), geçmek için sola
+  (veya X) kaydır; sıradaki klip kendiliğinden oynar.
+- Hepsi performans moduna uyar: Sessiz modda render'lar ve müzik analizi oyunların ve videoların
+  için yine durur.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Schnittwerkzeuge: Schimpfwörter überpiepen, Pausen schneiden, Smart-Zoom, Schnitt per Transkript,
+deine eigene Musik, ein Brand-Kit, eigene Clips und Tastenkürzel mit schneller Sichtung.
+
+- **Neu: Piepton für Schimpfwörter** in allen 7 Sprachen (Auto piept Hochkant-Videos), auf Wunsch
+  auch in den Untertiteln verborgen ("a**"); die Listen bearbeitest du unter **Studio > Wortlisten**.
+- **Neu: Pausen und Füllwörter** ("äh", "um", "ııı") werden mit kurzen Überblendungen geschnitten,
+  nie mitten in einem Lachen; dazu ein dezenter **Smart-Zoom** auf die Höhepunkte und deine Facecam.
+- **Neu: Schnitt per Transkript**: Wörter löschen schneidet sie heraus, [ ] ziehen kürzt den Clip,
+  mit Rückgängig und Live-Vorschau.
+- **Neu: eigene Musik** (Studio > Musik) mit Stimmungen, Vorschlag pro Clip, Start am stärksten Teil,
+  leiser beim Sprechen, -14 LUFS und optionalem Song-Credit; **Brand-Kit** mit Logo, @Handle,
+  Intro / Outro und Untertitelstil.
+- **Neu:** eigene Clips mit I / O, Tastenkürzel (? zeigt sie) und schnelle Sichtung im Vollbild.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Vágóeszközök: káromkodás kisípolása, szünetek kivágása, okos zoom, vágás az átiratból, saját zene,
+márkacsomag, saját klipek és billentyűparancsok gyors átnézéssel.
+
+- **Új: sípolás a csúnya szavakra** mind a 7 nyelven (az Auto az álló videókat sípolja), kérésre a
+  feliratban is elrejtve ("a**"); a listákat a **Stúdió > Szólisták** alatt szerkesztheted.
+- **Új: a szünetek és töltelékszavak** ("ööö", "um", "ııı") rövid áttűnéssel kivágva, nevetés
+  közepén soha; finom **okos zoom** a csúcspontokra és a facecamre.
+- **Új: vágás az átiratból**: a törölt szavak kikerülnek, a [ ] húzása vágja a klipet,
+  visszavonással és élő előnézettel.
+- **Új: saját zene** (Stúdió > Zene) hangulatokkal, klipenkénti javaslattal, a legerősebb résztől,
+  beszéd alatt halkítva, -14 LUFS, opcionális feltüntetéssel; **márkacsomag** logóval, @névvel,
+  intróval / outróval és feliratstílussal.
+- **Új:** saját klipek I / O-val, billentyűparancsok (? mutatja) és teljes képernyős gyors átnézés.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Инструменты монтажа: запикивание мата, вырезка пауз, умный зум, монтаж по тексту, своя музыка,
+брендинг, свои клипы и горячие клавиши с быстрым просмотром.
+
+- **Новое: запикивание мата** на всех 7 языках (Авто — для вертикальных видео), по желанию скрытие
+  в субтитрах ("a**"); списки редактируются в **Студия > Списки слов**.
+- **Новое: паузы и слова-паразиты** ("э-э", "ну", "um") вырезаются с короткими переходами, никогда
+  посреди смеха; плюс мягкий **умный зум** на ярких моментах и на вебке.
+- **Новое: монтаж по тексту**: удалённые слова вырезаются, [ ] обрезают клип, есть отмена и живой
+  предпросмотр.
+- **Новое: своя музыка** (Студия > Музыка) с настроениями, подбором песни для клипа, стартом с самой
+  сильной части, приглушением под речью, -14 LUFS и строкой об авторе; **брендинг** с логотипом,
+  @ником, заставками и стилем субтитров.
+- **Новое:** свои клипы через I / O, горячие клавиши (? показывает их) и быстрый просмотр на весь экран.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+أدوات مونتاج: صفير على الشتائم، وقص الصمت، وتقريب ذكي، ومونتاج من النص، وموسيقاك الخاصة، وهوية
+بصرية، ومقاطعك الخاصة، واختصارات لوحة المفاتيح مع مراجعة سريعة.
+
+- **جديد: صفير على الشتائم** بجميع اللغات السبع (التلقائي للفيديوهات العمودية)، مع إخفائها في
+  الترجمة إن أردت ("a**")؛ تُعدَّل القوائم في **الاستوديو > قوائم الكلمات**.
+- **جديد: قص الصمت وكلمات الحشو** بانتقالات قصيرة، ولا قص أبدًا وسط ضحكة؛ مع **تقريب ذكي** خفيف على
+  أبرز اللحظات وعلى كاميرا الوجه.
+- **جديد: مونتاج من النص**: حذف الكلمات يقصها، وسحب [ ] يقصّر المقطع، مع تراجع ومعاينة حية.
+- **جديد: موسيقاك** (الاستوديو > الموسيقى) مع الطابع واقتراح لكل مقطع وبداية من الجزء الأقوى وخفض
+  أثناء الكلام و-14 LUFS وسطر ذكر اختياري؛ و**هوية بصرية** بالشعار و@المعرّف وبطاقات البداية والنهاية
+  ونمط الترجمة.
+- **جديد:** مقاطعك الخاصة عبر I / O، واختصارات لوحة المفاتيح (? تعرضها)، ومراجعة سريعة بملء الشاشة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+剪辑工具：脏话哔声、剪掉静音、智能缩放、按文字稿剪辑、你自己的音乐、品牌套件、手动片段，以及带快速审阅的键盘快捷键。
+
+- **新增：脏话哔声**，支持全部 7 种语言（自动模式用于竖屏视频），也可在字幕中遮住（a**）；词表在**工作室 > 词表**中编辑。
+- **新增：剪掉静音和口头禅**，带短暂交叉淡化，绝不在笑声中间剪；另有轻微的**智能缩放**，在高光时刻和你的摄像头画面上推近。
+- **新增：按文字稿剪辑**：删除词语即剪掉，拖动 [ ] 修剪片段，可撤销并实时预览。
+- **新增：你自己的音乐**（工作室 > 音乐），可标记情绪、按片段推荐、从最有力的部分开始、说话时自动压低、-14 LUFS，并可添加署名；**品牌套件**包含 Logo、@账号、片头 / 片尾和字幕样式。
+- **新增：**用 I / O 标记自己的片段、键盘快捷键（按 ? 查看）以及全屏快速审阅。
+
+</details>
+
 ## [1.2.3] - 2026-10-26
 
 A small reliability fix for the Export window.

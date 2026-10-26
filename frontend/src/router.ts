@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 
 // Hash routes: works from any server path and survives reloads without server config.
+export type StudioTab = "music" | "brand" | "words";
 export type Route =
   | { name: "library" }
   | { name: "project"; id: string }
   | { name: "bestof"; id: string }
   | { name: "game"; id: string }
   | { name: "settings" }
+  | { name: "studio"; tab: StudioTab }
   | { name: "queue" }
   | { name: "stats" };
 
@@ -17,6 +19,7 @@ function parse(): Route {
   if (a === "p" && b && c === "game") return { name: "game", id: decodeURIComponent(b) };
   if (a === "p" && b) return { name: "project", id: decodeURIComponent(b) };
   if (a === "settings") return { name: "settings" };
+  if (a === "studio") return { name: "studio", tab: b === "brand" || b === "words" ? b : "music" };
   if (a === "queue") return { name: "queue" };
   if (a === "stats") return { name: "stats" };
   return { name: "library" };
@@ -38,6 +41,7 @@ export function useRoute(): Route {
 export const href = {
   library: "#/",
   settings: "#/settings",
+  studio: (tab: StudioTab = "music") => `#/studio/${tab}`,
   queue: "#/queue",
   stats: "#/stats",
   project: (id: string) => `#/p/${encodeURIComponent(id)}`,

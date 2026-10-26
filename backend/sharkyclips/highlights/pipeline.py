@@ -108,6 +108,7 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
     }
     path = project.dir / "highlights.json"
     carried = carry_over_ai(path, result)
+    _keep_manual_clips(project, path, result)
     write_json_atomic(path, result)
     write_json_atomic(project.dir / "hype_curve.json", hype_curve_json(project, ctx, hype, result),
                       compact=True)
@@ -121,6 +122,17 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
 
 
 AI_FIELDS = ("publish", "llm", "translations")
+
+
+def _keep_manual_clips(project: Project, path, result: dict) -> None:
+    """Clips the user marked by hand (manual.json) survive a re-run, with their AI results."""
+    from ..edit import manual
+
+    try:
+        old = json.loads(path.read_text(encoding="utf-8")).get("candidates") if path.is_file() else None
+    except (OSError, ValueError):
+        old = None
+    manual.merge_into(project, result, old)
 
 
 def carry_over_ai(path, result: dict) -> int:

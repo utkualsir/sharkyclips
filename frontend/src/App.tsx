@@ -15,6 +15,7 @@ import Library from "./pages/Library";
 import BestOf from "./pages/BestOf";
 import GameDebug from "./pages/GameDebug";
 import ProjectPage from "./pages/Project";
+import Studio from "./pages/Studio";
 import Queue from "./pages/Queue";
 import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
@@ -50,6 +51,9 @@ function TopBar() {
         </a>
         <a href={href.stats} aria-current={route.name === "stats" ? "page" : undefined}>
           {t("nav.stats")}
+        </a>
+        <a href={href.studio()} aria-current={route.name === "studio" ? "page" : undefined}>
+          {t("nav.studio")}
         </a>
         <a href={href.settings} aria-current={route.name === "settings" ? "page" : undefined}>
           {t("nav.settings")}
@@ -158,6 +162,7 @@ export default function App() {
       <div className="page-fx" key={route.name + ("id" in route ? `:${route.id}` : "")}>
         {route.name === "library" && <Library />}
         {route.name === "settings" && <Settings />}
+        {route.name === "studio" && <Studio tab={route.tab} />}
         {route.name === "project" && <ProjectPage key={route.id} id={route.id} />}
         {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
         {route.name === "game" && <GameDebug key={route.id} id={route.id} />}

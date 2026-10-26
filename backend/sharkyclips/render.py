@@ -15,7 +15,7 @@ import os
 import platform
 import subprocess
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
@@ -180,6 +180,7 @@ class RenderResult:
     seconds: float
     size_bytes: int
     encoder: str
+    info: dict = field(default_factory=dict)  # editing tools: cuts, music, loudness ...
 
 
 def run_ffmpeg(cmd: list[str], duration: float,
