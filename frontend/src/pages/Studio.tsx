@@ -201,7 +201,7 @@ function MusicTab() {
         }}
       >
         <div>
-          <h3>{t("music.title_lib")}</h3>
+          <h2>{t("music.title_lib")}</h2>
           <p>{t("music.desc")}</p>
           {lib && (
             <p className="mono studio-folder" dir="ltr" title={lib.folder}>
@@ -269,7 +269,7 @@ function MusicTab() {
       {lib && (
         <section className="card setting">
           <div>
-            <h3>{t("music.credit")}</h3>
+            <h2>{t("music.credit")}</h2>
             <p>{t("music.credit_desc")}</p>
           </div>
           <div style={{ display: "grid", gap: 10, alignContent: "start" }}>
@@ -593,14 +593,14 @@ function WordsTab() {
       </div>
       <section className="card setting">
         <div>
-          <h3>{t("words.swear")}</h3>
+          <h2>{t("words.swear")}</h2>
           <p>{t("words.swear_desc")}</p>
           <p className="field-hint" style={{ marginTop: 8 }}>
             {t("words.syntax")}
           </p>
         </div>
         <div>
-          <textarea className="textarea words-area" dir={rtl} lang={code} value={swear} onChange={(e) => setSwear(e.target.value)} />
+          <textarea className="textarea words-area" aria-label={t("words.swear")} dir={rtl} lang={code} value={swear} onChange={(e) => setSwear(e.target.value)} />
           <div className="save-line">
             <span className="muted">{t("words.count", { n: lines(swear).length })}</span>
             {data.profanity[code]?.custom && (
@@ -613,7 +613,7 @@ function WordsTab() {
       </section>
       <section className="card setting">
         <div>
-          <h3>{t("words.fillers")}</h3>
+          <h2>{t("words.fillers")}</h2>
           <p>{t("words.fillers_desc")}</p>
         </div>
         <div style={{ display: "grid", gap: 12 }}>
@@ -634,7 +634,7 @@ function WordsTab() {
       </section>
       <section className="card setting">
         <div>
-          <h3>{t("words.silence")}</h3>
+          <h2>{t("words.silence")}</h2>
           <p>{t("words.silence_desc")}</p>
         </div>
         <div className="brand-grid">

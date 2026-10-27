@@ -10,6 +10,8 @@ const tr: Record<string, string> = {
   "common.save": "Kaydet",
   "common.saved": "Kaydedildi",
   "common.close": "Kapat",
+  "common.progress": "İlerleme",
+  "common.back": "Geri",
   "common.copy": "Kopyala",
   "common.copied": "Kopyalandı",
   "common.copy_all": "Tümünü kopyala",

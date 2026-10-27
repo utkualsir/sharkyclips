@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import type { Job } from "../api";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
@@ -44,12 +44,14 @@ export function Toggle({ checked, onChange, label }: { checked: boolean; onChang
   );
 }
 
-export function ProgressBar({ value }: { value: number | null | undefined }) {
+export function ProgressBar({ value, label }: { value: number | null | undefined; label?: string }) {
+  const { t } = useI18n();
   const indet = value == null;
   return (
     <div
       className={`progress${indet ? " indeterminate" : ""}`}
       role="progressbar"
+      aria-label={label ?? t("common.progress")}
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={indet ? undefined : Math.round(value * 100)}
@@ -77,6 +79,7 @@ export function Modal({
 }) {
   const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const on = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", on);
@@ -89,9 +92,9 @@ export function Modal({
   }, [onClose]);
   return (
     <div className={`modal-backdrop${top ? " modal-top" : ""}`} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`modal${wide ? " modal-wide" : ""}`} role="dialog" aria-modal="true" ref={ref}>
+      <div className={`modal${wide ? " modal-wide" : ""}`} role="dialog" aria-modal="true" aria-labelledby={titleId} ref={ref}>
         <div className="modal-head">
-          <h2>{title}</h2>
+          <h2 id={titleId}>{title}</h2>
           <button className="btn btn-ghost icon-btn modal-x" onClick={onClose} aria-label={t("common.close")}>
             <Icon name="x" />
           </button>

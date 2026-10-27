@@ -284,6 +284,7 @@ export default function Stories({ id }: { id: string }) {
       <div className="page-head">
         <div style={{ minWidth: 0 }}>
           <a className="crumbs" href={href.project(id)}>
+        <span className="visually-hidden">{t("common.back")}: </span>
             <Icon name="chevron-left" className="icon flip-rtl" />
             {project?.title ?? t("nav.library")}
           </a>

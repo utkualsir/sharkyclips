@@ -75,12 +75,12 @@
   --strong: #0b1530;
   --muted: #55617a;
   --gold: #d4ae5c;
-  --gold-text: #86662a;
+  --gold-text: #806027;
   --gold-soft: rgba(212, 174, 92, 0.16);
   --gold-line: rgba(212, 174, 92, 0.6);
   --chip-bg: #eaf0fb;
   --chip-text: #1d3461;
-  --success: #1d7a52;
+  --success: #1a724c;
   --success-soft: rgba(29, 122, 82, 0.1);
   --danger: #b3261e;
   --danger-soft: rgba(179, 38, 30, 0.08);
@@ -1633,6 +1633,11 @@ h3.section-title {
   border-bottom: 1px solid var(--border);
 }
 
+.side-tablist {
+  display: flex;
+  gap: 4px;
+}
+
 .side-tabs button {
   border: 0;
   background: transparent;
@@ -1688,7 +1693,7 @@ h3.section-title {
   background: var(--surface-2);
 }
 
-.cand[aria-selected="true"] {
+.cand[aria-current="true"] {
   background: var(--surface-2);
   border-color: var(--gold-line);
 }
@@ -1700,7 +1705,7 @@ h3.section-title {
   padding-top: 2px;
 }
 
-.cand[aria-selected="true"] .cand-rank {
+.cand[aria-current="true"] .cand-rank {
   color: var(--gold-text);
 }
 
@@ -1787,7 +1792,7 @@ h3.section-title {
   border-radius: inherit;
 }
 
-.cand[aria-selected="true"] .cand-score .bar span {
+.cand[aria-current="true"] .cand-score .bar span {
   background: var(--gold);
 }
 
@@ -1967,6 +1972,7 @@ h3.section-title {
   padding: 22px;
 }
 
+.setting h2,
 .setting h3 {
   margin: 0 0 4px;
   font-size: 15px;
@@ -2741,6 +2747,7 @@ h3.section-title {
 
 /* What's new (CHANGELOG.md rendered) */
 .md { display: grid; gap: 10px; font-size: 14px; line-height: 1.6; }
+.md h3,
 .md h4 { margin: 6px 0 0; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .md p { margin: 0; }
 .md ul { margin: 0; padding-inline-start: 20px; display: grid; gap: 6px; }
@@ -3038,23 +3045,23 @@ h3.section-title {
 .page-fx { animation: m-rise 0.32s var(--ease) both; }
 
 /* cards and lists stagger in (only when they first appear) */
-.grid-cards > *, .side-scroll[role="listbox"] > .cand, .clips-grid > *, .settings-list > *,
+.grid-cards > *, .side-scroll[role="list"] > .cand, .clips-grid > *, .settings-list > *,
 .q-list > *, .exports-list > * {
   animation: m-rise 0.42s var(--ease) both;
 }
-.grid-cards > :nth-child(2), .side-scroll[role="listbox"] > .cand:nth-child(2), .clips-grid > :nth-child(2),
+.grid-cards > :nth-child(2), .side-scroll[role="list"] > .cand:nth-child(2), .clips-grid > :nth-child(2),
 .settings-list > :nth-child(2), .q-list > :nth-child(2), .exports-list > :nth-child(2) { animation-delay: 35ms; }
-.grid-cards > :nth-child(3), .side-scroll[role="listbox"] > .cand:nth-child(3), .clips-grid > :nth-child(3),
+.grid-cards > :nth-child(3), .side-scroll[role="list"] > .cand:nth-child(3), .clips-grid > :nth-child(3),
 .settings-list > :nth-child(3), .q-list > :nth-child(3), .exports-list > :nth-child(3) { animation-delay: 70ms; }
-.grid-cards > :nth-child(4), .side-scroll[role="listbox"] > .cand:nth-child(4), .clips-grid > :nth-child(4),
+.grid-cards > :nth-child(4), .side-scroll[role="list"] > .cand:nth-child(4), .clips-grid > :nth-child(4),
 .settings-list > :nth-child(4), .q-list > :nth-child(4), .exports-list > :nth-child(4) { animation-delay: 105ms; }
-.grid-cards > :nth-child(5), .side-scroll[role="listbox"] > .cand:nth-child(5), .clips-grid > :nth-child(5),
+.grid-cards > :nth-child(5), .side-scroll[role="list"] > .cand:nth-child(5), .clips-grid > :nth-child(5),
 .settings-list > :nth-child(5), .q-list > :nth-child(5), .exports-list > :nth-child(5) { animation-delay: 140ms; }
-.grid-cards > :nth-child(6), .side-scroll[role="listbox"] > .cand:nth-child(6), .clips-grid > :nth-child(6),
+.grid-cards > :nth-child(6), .side-scroll[role="list"] > .cand:nth-child(6), .clips-grid > :nth-child(6),
 .settings-list > :nth-child(6), .q-list > :nth-child(6), .exports-list > :nth-child(6) { animation-delay: 175ms; }
-.grid-cards > :nth-child(7), .side-scroll[role="listbox"] > .cand:nth-child(7), .clips-grid > :nth-child(7),
+.grid-cards > :nth-child(7), .side-scroll[role="list"] > .cand:nth-child(7), .clips-grid > :nth-child(7),
 .settings-list > :nth-child(7), .q-list > :nth-child(7), .exports-list > :nth-child(7) { animation-delay: 210ms; }
-.grid-cards > :nth-child(n+8), .side-scroll[role="listbox"] > .cand:nth-child(n+8), .clips-grid > :nth-child(n+8),
+.grid-cards > :nth-child(n+8), .side-scroll[role="list"] > .cand:nth-child(n+8), .clips-grid > :nth-child(n+8),
 .settings-list > :nth-child(n+8), .q-list > :nth-child(n+8), .exports-list > :nth-child(n+8) { animation-delay: 245ms; }
 
 /* score bars fill from zero, the viral ring draws */
@@ -3224,7 +3231,7 @@ a.edit-note:hover { text-decoration: underline; }
 }
 .tx-w { padding: 2px 3px; border-radius: 5px; cursor: pointer; transition: background 0.12s; }
 .tx-w:hover { background: var(--surface-3); }
-.tx-w.out { color: var(--muted); opacity: 0.6; }
+.tx-w.out { color: var(--muted); }
 .tx-w.del { text-decoration: line-through; text-decoration-thickness: 2px; color: var(--danger); background: var(--danger-soft); }
 .tx-w.auto-filler, .tx-w.auto-silence { text-decoration: line-through dashed; text-decoration-color: var(--auto-cut); color: var(--auto-cut); }
 .tx-w.bleep { color: var(--bleep); font-weight: 600; }
@@ -3253,6 +3260,7 @@ a.edit-note:hover { text-decoration: underline; }
   position: fixed; inset: 0; z-index: 55; display: grid; grid-template-rows: auto 1fr; gap: 8px;
   padding: 14px 18px 18px; background: color-mix(in srgb, var(--bg) 94%, black); overflow: auto;
 }
+.fast:focus { outline: none; }
 .fast-top { display: flex; align-items: center; gap: 10px; font-size: 13px; }
 .fast-stage { display: flex; align-items: center; justify-content: center; gap: 36px; min-height: 0; flex-wrap: wrap; }
 .fast-card { position: relative; touch-action: pan-y; cursor: grab; user-select: none; transition: transform 0.18s ease-out; }

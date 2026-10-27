@@ -10,6 +10,8 @@ const ru: Record<string, string> = {
   "common.save": "Сохранить",
   "common.saved": "Сохранено",
   "common.close": "Закрыть",
+  "common.progress": "Прогресс",
+  "common.back": "Назад",
   "common.copy": "Копировать",
   "common.copied": "Скопировано",
   "common.copy_all": "Копировать все",

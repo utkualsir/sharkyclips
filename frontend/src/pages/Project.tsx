@@ -86,8 +86,8 @@ function CandidateRow({
   return (
     <div
       className={`cand${rejected ? " rejected" : ""}`}
-      role="option"
-      aria-selected={selected}
+      role="listitem"
+      aria-current={selected ? "true" : undefined}
       tabIndex={0}
       onClick={onSelect}
       onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelect())}
@@ -965,7 +965,7 @@ export default function ProjectPage({ id }: { id: string }) {
                 <div className="stage-left">
                   <div className="player" ref={playerBox}>
                     {project.playable ? (
-                      <video ref={video} src={urls.source(id)} controls playsInline preload="metadata" />
+                      <video ref={video} src={urls.source(id)} controls playsInline preload="metadata" aria-label={project.title} />
                     ) : (
                       <div className="skeleton skeleton-fill" aria-label={t("common.loading")} />
                     )}
@@ -1125,13 +1125,15 @@ export default function ProjectPage({ id }: { id: string }) {
           </div>
 
           <aside className="card proj-side">
-            <div className="side-tabs" role="tablist">
-              <button role="tab" aria-selected={tab === "cands"} onClick={() => setTab("cands")}>
-                {t("cands.tab")} <span className="count mono">{cands.length}</span>
-              </button>
-              <button role="tab" aria-selected={tab === "clips"} onClick={() => setTab("clips")}>
-                {t("clips.tab")} <span className="count mono">{clips.length}</span>
-              </button>
+            <div className="side-tabs">
+              <div className="side-tablist" role="tablist">
+                <button role="tab" aria-selected={tab === "cands"} onClick={() => setTab("cands")}>
+                  {t("cands.tab")} <span className="count mono">{cands.length}</span>
+                </button>
+                <button role="tab" aria-selected={tab === "clips"} onClick={() => setTab("clips")}>
+                  {t("clips.tab")} <span className="count mono">{clips.length}</span>
+                </button>
+              </div>
               <span style={{ flex: 1 }} />
               {tab === "cands" && accepted.size > 0 && (
                 <span className="chip chip-success" style={{ alignSelf: "center" }}>
@@ -1156,7 +1158,7 @@ export default function ProjectPage({ id }: { id: string }) {
 
             {tab === "cands" ? (
               <>
-                <div className="side-scroll" role="listbox" aria-label={t("cands.tab")}>
+                <div className="side-scroll" role="list" aria-label={t("cands.tab")}>
                   {cands.map((c) => (
                     <CandidateRow
                       key={c.id}

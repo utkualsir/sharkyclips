@@ -10,6 +10,8 @@ const de: Record<string, string> = {
   "common.save": "Speichern",
   "common.saved": "Gespeichert",
   "common.close": "Schließen",
+  "common.progress": "Fortschritt",
+  "common.back": "Zurück",
   "common.copy": "Kopieren",
   "common.copied": "Kopiert",
   "common.copy_all": "Alle kopieren",

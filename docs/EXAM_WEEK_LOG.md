@@ -135,3 +135,33 @@ helpers and FastAPI handlers that return files; not worth the churn.
 
 **Decision:** pytest-cov and vulture were installed into the local venv only, not added to
 `requirements-dev.txt` (CI doesn't need them).
+
+## Task 5: accessibility audit
+
+**How:** a throwaway SharkyClips with a tiny synthetic project (20 s test pattern, made with
+ffmpeg `ultrafast`), headless Edge, [axe-core](https://github.com/dequelabs/axe-core) 4.10 with
+the WCAG 2.1 A/AA + best-practice rules on all 11 screens (library, project, best-of, stories, game
+detection, queue, stats, settings, studio music/brand/words) in dark and light, plus the What's
+new, fast review and export dialogs. A keyboard walk (40 Tab stops per screen) checked that every
+stop shows a focus ring.
+
+**Result:** first run 11 issue types; now **0 violations** everywhere, focus ring on every stop.
+
+Fixed:
+
+- Contrast: dimmed transcript words (outside the clip) were 2.6:1 (light) / 3.9:1 (dark) → now the
+  normal muted color (≥ 4.5:1). Light theme gold text `#86662a` → `#806027` (the "High" pill was
+  4.44:1) and green `#1d7a52` → `#1a724c` (the "GPU" label in export was 4.31:1). Both are barely
+  visible changes. The project site uses the same gold.
+- Dialogs are named by their title (`aria-labelledby`); the fast review overlay now takes focus
+  when it opens and gives it back when it closes.
+- Clip candidates were `role="option"` items containing buttons (invalid for screen readers) →
+  a list with `aria-current` on the selected clip. The candidates/clips tab bar no longer has a
+  non-tab button inside its `tablist`.
+- Headings: setting cards and library cards were `h3` right under the page `h1` → `h2`; What's new
+  markdown headings `h4` → `h3` (same look).
+- Names: three Settings dropdowns (UI language, output language, encoder), the swear-word list,
+  progress bars, the main video player, back links while the title loads.
+- The scrollable What's new text can be reached and scrolled with the keyboard.
+
+Not automated: a real screen reader run (NVDA / VoiceOver). Worth doing once by hand.

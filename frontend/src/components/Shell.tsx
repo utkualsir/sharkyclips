@@ -77,7 +77,7 @@ export function Markdown({ text }: { text: string }) {
     } else if (h) {
       flushPara();
       flushList();
-      blocks.push(<h4 key={blocks.length}>{inline(h[2])}</h4>);
+      blocks.push(<h3 key={blocks.length}>{inline(h[2])}</h3>);
     } else if (li) {
       flushPara();
       items.push({ depth: li[1].length >= 2 ? 1 : 0, text: li[2] });
@@ -115,7 +115,7 @@ export function WhatsNew({ version, onClose }: { version: string; onClose: () =>
       }
     >
       {entry ? (
-        <div className="whatsnew" lang={entry.lang} dir={entry.lang === "ar" ? "rtl" : "ltr"}>
+        <div className="whatsnew" tabIndex={0} role="region" aria-label={t("whatsnew.title", { v: version })} lang={entry.lang} dir={entry.lang === "ar" ? "rtl" : "ltr"}>
           <Markdown text={entry.markdown} />
         </div>
       ) : (

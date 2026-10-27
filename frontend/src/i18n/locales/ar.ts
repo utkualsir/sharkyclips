@@ -11,6 +11,8 @@ const ar: Record<string, string> = {
   "common.save": "حفظ",
   "common.saved": "تم الحفظ",
   "common.close": "إغلاق",
+  "common.progress": "التقدم",
+  "common.back": "رجوع",
   "common.copy": "نسخ",
   "common.copied": "تم النسخ",
   "common.copy_all": "نسخ الكل",

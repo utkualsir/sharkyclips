@@ -199,6 +199,7 @@ export default function BestOf({ id }: { id: string }) {
   return (
     <main className="page bestof-page">
       <a className="crumbs" href={href.project(id)}>
+        <span className="visually-hidden">{t("common.back")}: </span>
         <Icon name="chevron-left" className="icon flip-rtl" />
         <span dir="auto">{project.title}</span>
       </a>

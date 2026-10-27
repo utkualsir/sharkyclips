@@ -66,9 +66,9 @@ function ProjectCard({ p, job }: { p: ProjectSummary; job: Job | undefined }) {
         {p.duration != null && <span className="pcard-duration tc">{fmtTime(p.duration)}</span>}
       </div>
       <div className="pcard-body">
-        <h3 className="pcard-title" dir="auto">
+        <h2 className="pcard-title" dir="auto">
           {p.title}
-        </h3>
+        </h2>
         <div className="pcard-source">
           <Icon name={p.source.type === "file" ? "file" : "link"} size={13} />
           <span dir="auto">{[src, p.source.uploader].filter(Boolean).join(" · ")}</span>
@@ -91,9 +91,9 @@ function PendingImportCard({ job }: { job: Job }) {
         <div className="placeholder skeleton" style={{ borderRadius: 0 }} />
       </div>
       <div className="pcard-body">
-        <h3 className="pcard-title" dir="auto">
+        <h2 className="pcard-title" dir="auto">
           {job.params.title}
-        </h3>
+        </h2>
         <div className="pcard-foot">
           <span className="status status-running">
             <span className="dot" />

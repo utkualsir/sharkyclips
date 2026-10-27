@@ -10,6 +10,8 @@ const hu: Record<string, string> = {
   "common.save": "Mentés",
   "common.saved": "Mentve",
   "common.close": "Bezárás",
+  "common.progress": "Folyamat",
+  "common.back": "Vissza",
   "common.copy": "Másolás",
   "common.copied": "Kimásolva",
   "common.copy_all": "Összes másolása",

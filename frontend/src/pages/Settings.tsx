@@ -167,7 +167,7 @@ function UpdatesCard() {
   return (
     <section className="card setting" id="updates">
       <div>
-        <h3>{t("settings.updates")}</h3>
+        <h2>{t("settings.updates")}</h2>
         <p>{t("settings.updates_desc", { v: meta?.version ?? "" })}</p>
       </div>
       <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
@@ -238,7 +238,7 @@ function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Pa
   return (
     <section className="card setting" id="performance">
       <div>
-        <h3>{t("perf.title")}</h3>
+        <h2>{t("perf.title")}</h2>
         <p>{t("perf.desc")}</p>
       </div>
       <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
@@ -430,11 +430,11 @@ export default function Settings() {
         <div className="settings-list">
           <section className="card setting">
             <div>
-              <h3>{t("lang.label")}</h3>
+              <h2>{t("lang.label")}</h2>
               <p>{t("settings.ui_language_desc")}</p>
             </div>
             <div style={{ display: "grid", gap: 14, alignContent: "start" }}>
-              <select className="select" value={lang} onChange={(e) => chooseLanguage(e.target.value, setLang)}>
+              <select className="select" aria-label={t("lang.label")} value={lang} onChange={(e) => chooseLanguage(e.target.value, setLang)}>
                 {UI_LANGUAGES.map((l) => (
                   <option key={l.code} value={l.code}>
                     {l.name}
@@ -478,12 +478,13 @@ export default function Settings() {
 
           <section className="card setting">
             <div>
-              <h3>{t("settings.output_language")}</h3>
+              <h2>{t("settings.output_language")}</h2>
               <p>{t("settings.output_language_desc")}</p>
             </div>
             <div>
               <select
                 className="select"
+                aria-label={t("settings.output_language")}
                 value={settings.output_language}
                 onChange={(e) => save({ output_language: e.target.value })}
               >
@@ -499,7 +500,7 @@ export default function Settings() {
           <PerformanceCard settings={settings} save={save} />
           <section className="card setting" id="ai">
             <div>
-              <h3>{t("settings.ai")}</h3>
+              <h2>{t("settings.ai")}</h2>
               <p>{t("settings.ai_desc")}</p>
             </div>
             <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
@@ -593,7 +594,7 @@ export default function Settings() {
 
           <section className="card setting">
             <div>
-              <h3>{t("settings.triggers")}</h3>
+              <h2>{t("settings.triggers")}</h2>
               <p>{t("settings.triggers_desc")}</p>
             </div>
             <div>
@@ -630,12 +631,13 @@ export default function Settings() {
 
           <section className="card setting">
             <div>
-              <h3>{t("settings.encoder")}</h3>
+              <h2>{t("settings.encoder")}</h2>
               <p>{t("settings.encoder_desc")}</p>
             </div>
             <div>
               <select
                 className="select"
+                aria-label={t("settings.encoder")}
                 value={settings.video_encoder}
                 onChange={(e) => save({ video_encoder: e.target.value })}
               >
@@ -651,7 +653,7 @@ export default function Settings() {
 
           <section className="card setting">
             <div>
-              <h3>{t("settings.mode")}</h3>
+              <h2>{t("settings.mode")}</h2>
               <p>{t("settings.mode_desc")}</p>
             </div>
             <div>
@@ -666,7 +668,7 @@ export default function Settings() {
 
           <section className="card setting">
             <div>
-              <h3>{t("settings.lan")}</h3>
+              <h2>{t("settings.lan")}</h2>
               <p>{t("settings.lan_desc")}</p>
             </div>
             <div style={{ display: "grid", gap: 12, alignContent: "start" }}>

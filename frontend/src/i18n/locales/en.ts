@@ -12,6 +12,8 @@ const en: Record<string, string> = {
   "common.save": "Save",
   "common.saved": "Saved",
   "common.close": "Close",
+  "common.progress": "Progress",
+  "common.back": "Back",
   "common.copy": "Copy",
   "common.copied": "Copied",
   "common.copy_all": "Copy all",

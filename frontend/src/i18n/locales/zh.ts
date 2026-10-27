@@ -10,6 +10,8 @@ const zh: Record<string, string> = {
   "common.save": "保存",
   "common.saved": "已保存",
   "common.close": "关闭",
+  "common.progress": "进度",
+  "common.back": "返回",
   "common.copy": "复制",
   "common.copied": "已复制",
   "common.copy_all": "全部复制",

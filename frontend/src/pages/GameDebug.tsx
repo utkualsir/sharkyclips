@@ -187,6 +187,7 @@ export default function GameDebug({ id }: { id: string }) {
   return (
     <main className="page game-page">
       <a className="crumbs" href={href.project(id)}>
+        <span className="visually-hidden">{t("common.back")}: </span>
         <Icon name="chevron-left" className="icon flip-rtl" />
         <span dir="auto">{title}</span>
       </a>

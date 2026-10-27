@@ -773,7 +773,7 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
   return (
     <section className="card setting" id="youtube">
       <div>
-        <h3>{t("yt.settings_title")}</h3>
+        <h2>{t("yt.settings_title")}</h2>
         <p>{t("yt.settings_desc")}</p>
       </div>
       <div style={{ display: "grid", gap: 12, alignContent: "start" }}>

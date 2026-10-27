@@ -55,6 +55,13 @@ export default function FastReview(p: Props) {
   const [dx, setDx] = useState(0);
   const [fly, setFly] = useState<0 | 1 | -1>(0);
   const start = useRef<number | null>(null);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    // keyboard and screen-reader focus go into the overlay, and back where they were afterwards
+    const prev = document.activeElement as HTMLElement | null;
+    box.current?.focus();
+    return () => prev?.focus?.();
+  }, []);
   const reduce = document.documentElement.dataset.motion && document.documentElement.dataset.motion !== "full";
   const idx = current ? candidates.findIndex((c) => c.id === current.id) : -1;
   const decided = candidates.filter((c) => p.accepted.has(c.id) || p.rejected.has(c.id)).length;
@@ -110,7 +117,7 @@ export default function FastReview(p: Props) {
 
   // A portal: the page wrapper animates with transforms, which would trap a fixed overlay.
   return createPortal(
-    <div className="fast" role="dialog" aria-modal="true" aria-label={t("fast.title")}>
+    <div className="fast" role="dialog" aria-modal="true" aria-label={t("fast.title")} tabIndex={-1} ref={box}>
       <div className="fast-top">
         <span className="chip chip-outline mono">
           {idx + 1} / {candidates.length}
