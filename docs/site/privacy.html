@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SharkyClips Privacy Policy</title>
+  <meta name="description" content="What SharkyClips does with your videos and your YouTube data: it keeps everything on your own computer.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="SharkyClips home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0E1A33"/><path fill-rule="evenodd" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" fill="#FFFFFF"/><path d="M8 50Q11 48.4 14 50Q17 51.6 20 50Q23 48.4 26 50Q29 51.6 32 50Q35 48.4 38 50Q41 51.6 44 50Q47 48.4 50 50Q53 51.6 56 50" fill="none" stroke="#5B9BFF" stroke-width="3.4" stroke-linecap="round"/></svg>
+      SharkyClips
+    </a>
+    <nav class="links" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="privacy.html" aria-current="page">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap doc">
+  <h1>Privacy policy</h1>
+  <p class="meta">Effective 27 October 2026</p>
+
+  <p class="callout"><b>Short version:</b> SharkyClips runs on your computer. It has no server, no
+    account and no telemetry. Your videos, transcripts, clips and YouTube data stay on your
+    computer. The people who make SharkyClips never receive any of it.</p>
+
+  <h2>1. Who this applies to</h2>
+  <p>This policy covers the SharkyClips desktop app (the "app") and this website. SharkyClips is a
+    free, open-source project published on <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>
+    (the "developers", "we"). You install the app on your own computer and it runs there.</p>
+
+  <h2>2. Data the app works with</h2>
+  <p>Everything below is created and stored <b>on your computer only</b>, in the SharkyClips
+    folder (<code>workspace</code>) and in your settings folder (<code>~/.sharkyclips</code>):</p>
+  <ul>
+    <li><b>Videos you import</b> and what the app makes from them: audio, transcripts, highlight
+      lists, rendered clips, exports.</li>
+    <li><b>Chat replays</b> of streams you import. Chat author names are not stored; messages are
+      kept only to find moments where chat got excited.</li>
+    <li><b>Your settings and preferences</b>, such as language, title feedback (thumbs up/down),
+      glossary, music library and brand kit.</li>
+    <li><b>View counts you enter yourself</b> to calibrate the viral score.</li>
+  </ul>
+  <p>Speech recognition and the AI model run locally (Whisper and Ollama). The app does not send
+    your videos, transcripts or prompts to any AI service.</p>
+
+  <h2>3. When the app goes online</h2>
+  <p>Only for things you start or allow:</p>
+  <ul>
+    <li>Downloading a video or its chat replay from a link you paste (Twitch, YouTube, Kick and
+      other sites, through yt-dlp). These sites receive a normal request from your computer.</li>
+    <li>Downloading the AI models once (from Hugging Face and Ollama).</li>
+    <li>Checking for and installing updates from GitHub, when you click "Check for updates".</li>
+    <li>The optional YouTube connection described below.</li>
+  </ul>
+  <p>The app contains no analytics, crash reporting, advertising or tracking code.</p>
+
+  <h2 id="youtube">4. YouTube data</h2>
+  <p>SharkyClips uses the <b>YouTube API Services</b>. Connecting a YouTube channel is optional.
+    By connecting, you agree to the <a href="https://www.youtube.com/t/terms">YouTube Terms of
+    Service</a>, and Google processes your data under the
+    <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.</p>
+
+  <h3>What the app accesses, and why</h3>
+  <table>
+    <thead><tr><th>Permission</th><th>Data</th><th>Used for</th></tr></thead>
+    <tbody>
+      <tr><td><code>youtube.upload</code></td><td>Sends the clip, title, description, tags, privacy setting, schedule and thumbnail you chose</td><td>Uploading a clip when you press Upload</td></tr>
+      <tr><td><code>youtube.readonly</code></td><td>Your channel's name, id and avatar; views, likes, privacy status and publish time of videos uploaded with SharkyClips</td><td>Showing which channel is connected; showing your clips' results; calibrating the viral score to your channel</td></tr>
+      <tr><td><code>yt-analytics.readonly</code></td><td>Views, average view duration and average view percentage of videos uploaded with SharkyClips as part of a hook test</td><td>Learning which clip opening style keeps your viewers watching (the A/B hook test)</td></tr>
+    </tbody>
+  </table>
+  <p>The app does not read your other videos' contents, comments, subscribers, playlists, watch
+    history or other people's channels, and it never edits or deletes videos.</p>
+
+  <h3>Where it is stored</h3>
+  <p>On your computer only: the access and refresh token in
+    <code>~/.sharkyclips/youtube/token.json</code>, upload records and statistics in each project's
+    <code>uploads.json</code>, and the derived learning data in
+    <code>~/.sharkyclips/calibration.json</code> and <code>~/.sharkyclips/hook_tests.json</code>.
+    The app talks directly to Google's servers (<code>googleapis.com</code>); there is no
+    SharkyClips server in between.</p>
+
+  <h3>Sharing</h3>
+  <p>We do not receive, sell, rent or share YouTube data or any other data. It is not used for
+    advertising and not transferred to anyone. SharkyClips' use of information received from Google
+    APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google
+    API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+  <h3>Revoking access and deleting data</h3>
+  <ul>
+    <li><b>Disconnect</b> in Settings → YouTube revokes the token at Google and deletes it from your
+      computer.</li>
+    <li>You can also revoke access at any time on your
+      <a href="https://myaccount.google.com/permissions">Google account permissions page</a>.</li>
+    <li>Calibration data can be cleared on the Stats page. Deleting a project's folder from the
+      <code>workspace</code> deletes its upload records. The uninstaller offers to delete your
+      settings folder, including all YouTube data. You can also delete the files listed above
+      yourself at any time.</li>
+  </ul>
+
+  <h2>5. LAN mode</h2>
+  <p>If you start the app in LAN mode, devices on your local network can open its interface. Set an
+    access PIN or password in Settings so only you can. The PIN is stored only as a salted hash on
+    your computer.</p>
+
+  <h2>6. This website</h2>
+  <p>This site is static and hosted on GitHub Pages. It sets no cookies and has no analytics.
+    GitHub may log your IP address when you visit (see the
+    <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub
+    Privacy Statement</a>), and the fonts are loaded from Google Fonts.</p>
+
+  <h2>7. Children</h2>
+  <p>SharkyClips is not directed at children under 13. Uploading to YouTube requires a YouTube
+    account, which has its own age requirements.</p>
+
+  <h2>8. Changes</h2>
+  <p>If this policy changes, the new version is published on this page with a new effective date,
+    and the change is listed in the app's changelog.</p>
+
+  <h2>9. Contact</h2>
+  <p>Questions about this policy: open an issue on
+    <a href="https://github.com/utkualsir/sharkyclips/issues">GitHub</a>. For anything private,
+    use the <a href="https://github.com/utkualsir/sharkyclips/security/advisories/new">private
+    reporting form</a>.</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>SharkyClips · MIT license</span>
+    <span><a href="privacy.html">Privacy policy</a> · <a href="terms.html">Terms of use</a> · <a href="https://github.com/utkualsir/sharkyclips/issues">Contact</a></span>
+  </div>
+</footer>
+</body>
+</html>

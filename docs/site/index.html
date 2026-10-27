@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SharkyClips</title>
+  <meta name="description" content="SharkyClips is a free, open-source app that finds the best moments in your stream recordings and turns them into vertical Shorts, entirely on your own computer.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="SharkyClips home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#0E1A33"/><path fill-rule="evenodd" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" fill="#FFFFFF"/><path d="M8 50Q11 48.4 14 50Q17 51.6 20 50Q23 48.4 26 50Q29 51.6 32 50Q35 48.4 38 50Q41 51.6 44 50Q47 48.4 50 50Q53 51.6 56 50" fill="none" stroke="#5B9BFF" stroke-width="3.4" stroke-linecap="round"/></svg>
+      SharkyClips
+    </a>
+    <nav class="links" aria-label="Site">
+      <a href="index.html" aria-current="page">Home</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <h1>SharkyClips</h1>
+  <p class="tagline">Hunt your best moments.</p>
+  <p class="lead">A free, open-source app for streamers. Point it at a stream recording and it finds
+    the best moments, writes titles and a description, and renders vertical clips ready for YouTube
+    Shorts, TikTok or Reels. Everything runs on your own computer.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/utkualsir/sharkyclips/releases/latest">Download</a>
+    <a class="btn" href="https://github.com/utkualsir/sharkyclips#readme">Read the guide</a>
+  </div>
+
+  <picture class="shot">
+    <source media="(prefers-color-scheme: light)" srcset="img/project-light.png">
+    <img src="img/project-dark.png" width="1440" height="900" loading="lazy"
+         alt="The SharkyClips project screen: a stream recording with its hype curve, a vertical clip preview and a ranked list of clip candidates">
+  </picture>
+
+  <h2>What it does</h2>
+  <div class="grid">
+    <div class="card"><h3>Finds the moments</h3><p>Volume spikes, laughter, reaction words, chat bursts and in-game events become one ranked list of clip candidates.</p></div>
+    <div class="card"><h3>Writes the text</h3><p>A local AI model scores each clip and suggests titles, hashtags and a short description in 7 languages.</p></div>
+    <div class="card"><h3>Renders 9:16 clips</h3><p>Facecam on top, gameplay below, word-timed subtitles, music and your brand kit, on your own GPU.</p></div>
+    <div class="card"><h3>Stays local</h3><p>No account, no cloud, no telemetry. Your videos never leave your computer unless you upload them.</p></div>
+  </div>
+
+  <h2 id="youtube">How SharkyClips uses YouTube</h2>
+  <p>Uploading to YouTube is optional. If you connect your channel in <b>Settings → YouTube</b>,
+    SharkyClips uses the official YouTube API Services to do exactly these things, and only when you
+    ask for them:</p>
+  <table>
+    <thead><tr><th>Action</th><th>Permission (scope)</th><th>When</th></tr></thead>
+    <tbody>
+      <tr><td>Upload a clip you rendered, with the title, description, tags, privacy, schedule and thumbnail you chose</td><td><code>youtube.upload</code></td><td>When you press <b>Upload</b></td></tr>
+      <tr><td>Show which channel is connected (name and avatar); read the view and like counts and the privacy status of videos uploaded <i>with SharkyClips</i></td><td><code>youtube.readonly</code></td><td>When you open Settings or press <b>Fetch views from YouTube</b> (Stats), and about twice a day while the app runs</td></tr>
+      <tr><td>Read the average view percentage of those same videos, to learn which opening (hook) style keeps your viewers watching</td><td><code>yt-analytics.readonly</code></td><td>Only for clips uploaded as part of a hook test, once they have been public for 48 hours</td></tr>
+    </tbody>
+  </table>
+  <p class="callout">This data is stored only on your computer and is used only to show you your
+    results and to improve the clip scores for <i>your</i> channel. SharkyClips has no server: the
+    developers never receive, see or share your YouTube data, and nothing is used for ads.
+    SharkyClips never reads other people's channels, your comments, your subscribers or your
+    watch history, and it never deletes or edits videos.</p>
+  <p>You can disconnect at any time in Settings → YouTube (this revokes the access token at Google),
+    or remove the access in your <a href="https://myaccount.google.com/permissions">Google account
+    permissions</a>. Read the full <a href="privacy.html">privacy policy</a>.</p>
+
+  <h2>Open source</h2>
+  <p>SharkyClips is MIT-licensed. The source code, the installers and every release are on
+    <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>, where you can also report a bug.</p>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>SharkyClips · MIT license</span>
+    <span><a href="privacy.html">Privacy policy</a> · <a href="terms.html">Terms of use</a> · <a href="https://github.com/utkualsir/sharkyclips/issues">Contact</a></span>
+  </div>
+</footer>
+</body>
+</html>

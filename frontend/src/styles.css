@@ -3163,6 +3163,9 @@ h3.section-title {
 .yt-quota .bar span { display: block; height: 100%; background: var(--gold); border-radius: inherit; transition: width 0.4s var(--ease); }
 .yt-guide { margin: 0; padding-inline-start: 20px; display: grid; gap: 12px; font-size: 13px; line-height: 1.5; }
 .yt-guide li { display: grid; gap: 2px; }
+.yt-legal { font-size: 12px; line-height: 1.5; }
+.yt-legal p { margin: 0; }
+.yt-legal a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .yt-guide li span { color: var(--muted); }
 .yt-guide li a { color: var(--gold-text); font-size: 12.5px; width: fit-content; }
 .yt-guide .yt-guide-note { list-style: none; margin-inline-start: -20px; display: block; color: var(--muted); font-size: 12.5px; }

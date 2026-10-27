@@ -711,6 +711,8 @@ export function UploadsLine({ uploads }: { uploads: YoutubeUpload[] }) {
 // ------------------------------------------------------------------ Settings: YouTube
 
 const GUIDE_STEPS = ["project", "api", "consent", "client", "load", "connect"] as const;
+// The project site (docs/site, published with .github/workflows/pages.yml).
+const PRIVACY_URL = "https://utkualsir.github.io/sharkyclips/privacy.html";
 
 export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quota: number; onQuota: (n: number) => void }) {
   const { t, num, relTime } = useI18n();
@@ -869,6 +871,18 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
             />
           </>
         )}
+        <div className="yt-legal muted">
+          <p>{t("yt.legal")}</p>
+          <p>
+            <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer">{t("yt.legal_tos")}</a>
+            {" · "}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">{t("yt.legal_google")}</a>
+            {" · "}
+            <a href={PRIVACY_URL} target="_blank" rel="noreferrer">{t("yt.legal_privacy")}</a>
+            {" · "}
+            <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">{t("yt.legal_manage")}</a>
+          </p>
+        </div>
         <button className="link-btn" style={{ justifySelf: "start" }} onClick={() => setGuide(!guide)}>
           {guide ? t("yt.guide_hide") : t("yt.guide_show")}
         </button>

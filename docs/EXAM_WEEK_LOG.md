@@ -41,3 +41,40 @@ history for keys/tokens):
   out of the public repo (or keep it: it doubles as contributor notes).
 - The UI still stores the theme / language in `localStorage` keys `cf-theme` / `cf-lang` (old
   ClipForge prefix). Renaming them would reset every user's choice, so they stay.
+
+## Task 2: Google verification prep
+
+- `docs/site/`: static project site in the app's look (navy/gold, Instrument Serif + Geist, dark
+  and light from the OS setting): `index.html` (what the app does + a table of exactly what it
+  does with YouTube data, per scope), `privacy.html`, `terms.html`. Checked headless at 1280 px
+  and 390 px in both color schemes (no horizontal scroll).
+- `.github/workflows/pages.yml`: deploys `docs/site` to GitHub Pages, **manual trigger only**
+  (`workflow_dispatch`). Nothing is published; Pages isn't enabled.
+- `docs/google-verification.md`: checklist, scope justifications, demo-video script and answers
+  for the YouTube API audit / quota form.
+- The app's Settings → YouTube card now shows "SharkyClips uses YouTube API Services..." with links
+  to the YouTube Terms, Google Privacy Policy, the SharkyClips privacy policy and Google's
+  permissions page (required by the YouTube API policies; 7 languages).
+- The policy text was checked against the code: scopes (`youtube.SCOPES`), what is read
+  (`channels.list mine`, `videos.list` of own IDs, Analytics `averageViewPercentage` for hook-test
+  uploads only), timing (views sync about twice a day, retention 48 h after publishing), storage
+  paths.
+
+**Decisions:**
+
+- Contact on the site = GitHub issues + the private security advisory form, so your email isn't
+  published. Google's consent screen still needs a support email (your choice, in the checklist).
+- Google Fonts on the site (to match the app); disclosed in the privacy policy.
+- The privacy-policy link in the app points to `https://utkualsir.github.io/sharkyclips/privacy.html`
+  (`PRIVACY_URL` in `Publish.tsx`). It 404s until the repo is public and the Pages workflow ran.
+
+**Open questions for you (important):**
+
+- **Verification only helps with a shared OAuth client.** Today each user brings their own Google
+  Cloud project, and each such project stays "unaudited" (uploads forced private). Shipping one
+  SharkyClips client is a product decision (shared quota pool), so I didn't change it. Details
+  at the top of `docs/google-verification.md`.
+- **`github.io` as the verified domain** usually works (it's on the Public Suffix List), but if
+  Google rejects it you need a custom domain.
+- **Stored statistics after Disconnect** stay in the project files. Google's policies want them
+  deleted on revocation; suggested follow-up in the verification doc.
