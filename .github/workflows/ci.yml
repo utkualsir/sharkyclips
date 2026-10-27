@@ -15,6 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30  # a hung runner (seen: apt-get) must not burn hours of minutes
     defaults:
       run:
         shell: bash
@@ -31,6 +32,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r "$RUNNER_TEMP/requirements-ci.txt" -r backend/requirements-dev.txt
       - name: Install ffmpeg (the export tests encode with it)
+        timeout-minutes: 10
         run: |
           if [ "$RUNNER_OS" = "Windows" ]; then
             choco install ffmpeg -y --no-progress
@@ -49,6 +51,7 @@ jobs:
     name: Backend (macOS)
     if: ${{ !github.event.repository.private }}
     runs-on: macos-latest
+    timeout-minutes: 40
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -85,6 +88,7 @@ jobs:
   frontend:
     name: Frontend
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
@@ -106,6 +110,7 @@ jobs:
   installers:
     name: Installer scripts
     runs-on: windows-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: PowerShell scripts parse

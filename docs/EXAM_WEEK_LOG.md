@@ -263,3 +263,15 @@ first green macOS run, remove that line** so it blocks merges like the others.
   away, so the first shutdown can fail (the app reports it). Worth a real-Mac test.
 - macOS has no fullscreen / video-playing detection in the governor (Windows only); Silent mode
   pauses on Mac only for listed games in front and when you're away/back.
+
+## Release
+
+- 1.2.6 committed, tagged `v1.2.6`, pushed. CI on the release commit and the tag: all green
+  (Backend Windows + Ubuntu, Frontend, Installer scripts; macOS skipped while private).
+- Two CI runs of earlier commits (task 6 and 7) hung for 15+ minutes in `apt-get install ffmpeg`
+  on GitHub's Ubuntu runner (a mirror problem, not our code: the same code passed on the release
+  commit). I cancelled them so they wouldn't burn up to 6 hours of private-repo minutes, and
+  added `timeout-minutes` to every CI job (and 10 min for the ffmpeg install). That last change is
+  CI-only and not user-visible, so it went in without a version bump (decision: the bump rule is
+  for app updates).
+- The "under construction" flag was removed at the end.
