@@ -1,5 +1,31 @@
 # Exam week log
 
+## Summary (read this first)
+
+All 7 tasks are done, each in its own commit, released as **1.2.6** (tag `v1.2.6`), CI green.
+Nothing was published: the repo stays private and the GitHub Pages workflow is manual-only.
+No heavy jobs ran (only a 20-second synthetic test video); all browser checks were headless.
+
+| # | Task | Result |
+|---|---|---|
+| 1 | Release readiness | Repo clean of secrets/paths; README contradictions about uploading fixed; CONTRIBUTING.md + SECURITY.md |
+| 2 | Google verification prep | `docs/site/` (home, privacy, terms), manual Pages workflow, `docs/google-verification.md` (form answers, demo script), YouTube legal links in the app |
+| 3 | LAN security | Optional PIN/password, scrypt-hashed, rate-limited login, login screen, `cli.py lan-pin` |
+| 4 | Code health | +60 tests; queue 30→90 %, YouTube 64→87 %, migration 51→84 % coverage; 2 event-loop stalls and 1 path issue fixed; dead code removed |
+| 5 | Accessibility | 0 axe violations on 11 screens + dialogs, both themes; focus rings everywhere |
+| 6 | Performance | Server import 1.2→0.5 s, start 3.2→2.7 s, −60 MB RAM, main JS bundle 743→380 KB |
+| 7 | macOS | 3 real installer/launcher bugs fixed, macOS CI job (runs once the repo is public) |
+
+**Your decisions needed** (details in the sections below):
+
+1. Google verification only helps if SharkyClips ships **one shared OAuth client** (today every
+   user brings their own). Product decision, see `docs/google-verification.md`.
+2. Your **email is in the git history** (commit author). Decide before going public.
+3. After the repo is public: run the **Project site** workflow, verify the domain in Search
+   Console, and remove `continue-on-error` from the macOS CI job once it's green.
+4. Test on a real Mac once (installer, launcher from the Dock, "shut down when finished").
+
+
 Autonomous work session started 2026-10-27 (base version 1.2.5). Every decision and open question
 is written down here so it can be reviewed later. Nothing was published; the repo stays private.
 

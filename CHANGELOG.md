@@ -7,6 +7,136 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.6] - 2026-10-27
+
+A safer phone mode, a faster start, better accessibility, and fixes for Mac.
+
+### Added
+- **Access PIN for other devices.** When you use SharkyClips from your phone (`--lan` mode), you
+  can set a PIN or password in **Settings → Other devices** (or with `python cli.py lan-pin`).
+  Other devices then log in once; this computer never needs it. Wrong guesses are slowed down,
+  and the PIN is stored only as a secure hash. Without a PIN, Settings warns you that anyone on
+  your network can open SharkyClips.
+- Settings → YouTube now links the YouTube Terms of Service, Google's privacy policy and
+  SharkyClips' own privacy policy, and where to remove the access in your Google account.
+
+### Improved
+- **Faster start and a lighter app**: the server is ready sooner and uses about 60 MB less memory,
+  and the app loads only the language you use, so the first screen appears faster.
+- **Accessibility**: better contrast in the light theme and the transcript, every button and list
+  has a name for screen readers, and keyboard focus moves into windows like Fast review.
+- Uploading a thumbnail or importing a large chat log no longer freezes the live progress for a
+  moment.
+
+### Fixed
+- **Mac**: SharkyClips now finds FFmpeg, Git and Deno when started from the Dock on new Apple
+  Silicon Macs; the uninstaller no longer stops halfway, and it closes SharkyClips before
+  removing it.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Daha güvenli telefon modu, daha hızlı açılış, daha iyi erişilebilirlik ve Mac düzeltmeleri.
+
+### Eklendi
+- **Diğer cihazlar için erişim PIN'i.** SharkyClips'i telefonundan kullanıyorsan (`--lan` modu)
+  **Ayarlar → Diğer cihazlar**'dan (ya da `python cli.py lan-pin` ile) bir PIN veya parola
+  belirleyebilirsin. Diğer cihazlar bir kez giriş yapar; bu bilgisayar hiç gerekmez. Yanlış
+  denemeler yavaşlatılır ve PIN yalnızca güvenli bir özet (hash) olarak saklanır. PIN yoksa Ayarlar,
+  ağındaki herkesin SharkyClips'i açabileceği konusunda uyarır.
+- Ayarlar → YouTube artık YouTube Hizmet Şartları'na, Google Gizlilik Politikası'na, SharkyClips'in
+  kendi gizlilik politikasına ve erişimi Google hesabından nasıl kaldıracağına bağlantı veriyor.
+
+### İyileştirildi
+- **Daha hızlı açılış, daha hafif uygulama**: sunucu daha çabuk hazır olur ve yaklaşık 60 MB daha az
+  bellek kullanır; uygulama yalnızca kullandığın dili yükler, ilk ekran daha hızlı gelir.
+- **Erişilebilirlik**: açık temada ve metin düzenleyicide daha iyi kontrast, ekran okuyucular için
+  her düğme ve listenin bir adı var, klavye odağı Hızlı inceleme gibi pencerelerin içine geçiyor.
+- Küçük resim yüklemek veya büyük bir sohbet kaydı içe aktarmak artık canlı ilerlemeyi bir anlığına
+  dondurmuyor.
+
+### Düzeltildi
+- **Mac**: SharkyClips, yeni Apple Silicon Mac'lerde Dock'tan açıldığında FFmpeg, Git ve Deno'yu
+  artık buluyor; kaldırma aracı yarıda kalmıyor ve kaldırmadan önce SharkyClips'i kapatıyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Ein sichererer Handy-Modus, ein schnellerer Start, bessere Barrierefreiheit und Mac-Korrekturen.
+
+- **Neu: Zugangs-PIN für andere Geräte** (`--lan`-Modus): in **Einstellungen → Andere Geräte** oder
+  mit `python cli.py lan-pin`. Falsche Versuche werden gebremst, die PIN wird nur als sicherer Hash
+  gespeichert. Ohne PIN warnen die Einstellungen.
+- **Schneller und leichter**: der Server ist früher bereit, braucht ~60 MB weniger Speicher, und die
+  App lädt nur deine Sprache.
+- **Barrierefreiheit**: besserer Kontrast im hellen Design, Namen für Screenreader, Tastaturfokus in
+  Fenstern.
+- **Mac**: FFmpeg, Git und Deno werden beim Start aus dem Dock gefunden; der Deinstaller bricht nicht
+  mehr ab.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Biztonságosabb telefonos mód, gyorsabb indulás, jobb akadálymentesség és Mac-javítások.
+
+- **Új: hozzáférési PIN más eszközökhöz** (`--lan` mód): **Beállítások → Más eszközök**, vagy
+  `python cli.py lan-pin`. A hibás próbálkozások lassítva vannak, a PIN csak biztonságos hash-ként
+  tárolódik. PIN nélkül a Beállítások figyelmeztet.
+- **Gyorsabb és könnyebb**: a szerver hamarabb kész, ~60 MB-tal kevesebb memóriát használ, és az
+  alkalmazás csak a te nyelvedet tölti be.
+- **Akadálymentesség**: jobb kontraszt a világos témában, nevek a képernyőolvasóknak, billentyűzetfókusz
+  az ablakokban.
+- **Mac**: a Dockból indítva megtalálja az FFmpeg-et, a Gitet és a Denót; az eltávolító nem áll le
+  félúton.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Более безопасный режим для телефона, быстрый запуск, улучшенная доступность и исправления для Mac.
+
+- **Новое: PIN-код доступа для других устройств** (режим `--lan`): **Настройки → Другие устройства**
+  или `python cli.py lan-pin`. Неверные попытки замедляются, PIN хранится только как безопасный хеш.
+  Без PIN-кода настройки предупреждают.
+- **Быстрее и легче**: сервер готов раньше, использует на ~60 МБ меньше памяти, а приложение загружает
+  только ваш язык.
+- **Доступность**: лучший контраст в светлой теме, названия для экранных дикторов, фокус клавиатуры
+  внутри окон.
+- **Mac**: при запуске из Dock находятся FFmpeg, Git и Deno; деинсталлятор больше не обрывается.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+وضع أكثر أمانًا للهاتف، وتشغيل أسرع، وإمكانية وصول أفضل، وإصلاحات لأجهزة Mac.
+
+- **جديد: رمز PIN للوصول من الأجهزة الأخرى** (وضع `--lan`): من **الإعدادات ← الأجهزة الأخرى** أو
+  `python cli.py lan-pin`. تُبطَّأ المحاولات الخاطئة، ويُحفظ الرمز كتجزئة آمنة فقط. وتنبّهك الإعدادات
+  إذا لم يكن هناك رمز.
+- **أسرع وأخف**: الخادم جاهز أسرع ويستهلك ذاكرة أقل بنحو 60 ميغابايت، والتطبيق يحمّل لغتك فقط.
+- **إمكانية الوصول**: تباين أفضل في السمة الفاتحة، وأسماء لقارئات الشاشة، وتركيز لوحة المفاتيح داخل
+  النوافذ.
+- **Mac**: يجد FFmpeg وGit وDeno عند التشغيل من Dock، ولم يعد برنامج الإزالة يتوقف في المنتصف.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+更安全的手机模式、更快的启动、更好的无障碍体验，以及 Mac 修复。
+
+- **新增：其他设备的访问 PIN**（`--lan` 模式）：在 **设置 → 其他设备** 或用 `python cli.py lan-pin`
+  设置。错误尝试会被限速，PIN 只以安全哈希保存。未设置 PIN 时设置页会提醒。
+- **更快更轻**：服务器更早就绪，内存少用约 60 MB，应用只加载你使用的语言。
+- **无障碍**：浅色主题对比度更好，屏幕阅读器可读出名称，键盘焦点会进入弹出窗口。
+- **Mac**：从 Dock 启动时能找到 FFmpeg、Git 和 Deno；卸载程序不再中途停止。
+
+</details>
+
 ## [1.2.5] - 2026-10-27
 
 Retention tools: seamless loops, story clips from the whole stream, A/B hooks that learn what

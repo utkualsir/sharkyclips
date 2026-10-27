@@ -438,6 +438,21 @@ Before 1.2.1 the folder was `~/.clipforge` (ClipForge). `sharkyclips/migrate.py`
 first start (existing files in the new folder win, paths inside config.json are rewritten) and
 renames old shortcuts and the Apps & features entry; `CLIPFORGE_HOME` is still honoured.
 
+## LAN mode and the access PIN
+
+`python cli.py serve --lan` listens on the local network. An optional PIN or password
+(Settings → Other devices, or `python cli.py lan-pin [--clear]`) protects it
+(`sharkyclips/lanauth.py`, `web/auth.py`):
+
+- Stored as a salted scrypt hash in `~/.sharkyclips/lan_auth.json` (never in `config.json`).
+  Sessions: a random token in an `HttpOnly`, `SameSite=Strict` cookie for 30 days; only its
+  SHA-256 is kept (`lan_sessions.json`). Setting a new PIN logs every device out.
+- Requests from this computer (127.0.0.1 / ::1) never need it. Other devices need a session for
+  every `/api/` path; the UI files load so the login screen can show.
+- Failed logins: 5 per device in 15 minutes, then a lock of 30 s that doubles per miss (max
+  15 min), and at most 20 failures a minute from all devices together (HTTP 429 + `Retry-After`).
+- Only this computer can set or remove the PIN.
+
 ## Version, welcome screen, "What's new"
 
 - The version is only in `VERSION` (repo root); every update bumps the patch number and adds a
