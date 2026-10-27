@@ -96,10 +96,6 @@ def register(name: str, obj: Any, release: Callable[[Any], None] = release_model
     _current = {"name": name, "obj": obj, "release": release}
 
 
-def current_model_name() -> str | None:
-    return _current["name"] if _current else None
-
-
 @contextmanager
 def exclusive_model(name: str, loader: Callable[[], Any],
                     release: Callable[[Any], None] = release_model) -> Iterator[Any]:

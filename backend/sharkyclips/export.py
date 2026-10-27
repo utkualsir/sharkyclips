@@ -458,6 +458,13 @@ def export_stem(cand: dict, req: ExportRequest) -> str:
     return f"{cand['rank']:02d}_{cand['id']}_{tag}_{fmt}"
 
 
+def _plain_name(name) -> bool:
+    """A bare file name: a hand-edited registry can't point delete/download outside exports/."""
+    if not isinstance(name, str) or name in ("", ".", ".."):
+        return False
+    return "/" not in name and "\\" not in name and Path(name).name == name
+
+
 def load_registry(project: Project) -> list[dict]:
     path = registry_path(project)
     try:
@@ -467,7 +474,7 @@ def load_registry(project: Project) -> list[dict]:
     root = exports_root(project)
     out = []
     for e in items:
-        files = [f for f in e.get("files", []) if (root / f["name"]).is_file()]
+        files = [f for f in e.get("files", []) if _plain_name(f.get("name")) and (root / f["name"]).is_file()]
         if files:
             out.append({**e, "files": files})
     return out

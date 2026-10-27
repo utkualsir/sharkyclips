@@ -18,6 +18,7 @@ from __future__ import annotations
 import math
 import threading
 from datetime import datetime, timezone
+from pathlib import Path
 from statistics import median
 from typing import Any
 
@@ -37,7 +38,7 @@ _lock = threading.RLock()
 _cache: dict[str, Any] = {"mtime": None, "data": None}
 
 
-def path():
+def path() -> Path:
     return config.config_dir() / "calibration.json"
 
 

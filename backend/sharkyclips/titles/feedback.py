@@ -11,6 +11,7 @@ import json
 import os
 import threading
 from datetime import datetime, timezone
+from pathlib import Path
 
 from .. import config
 
@@ -18,7 +19,7 @@ MAX_ITEMS = 2000
 _lock = threading.RLock()
 
 
-def path():
+def path() -> Path:
     return config.config_dir() / "title_feedback.json"
 
 

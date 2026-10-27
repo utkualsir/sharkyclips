@@ -1906,7 +1906,8 @@ async def api_thumbnail_upload(project_id: str, cid: str, request: Request) -> d
         src.write_bytes(raw)
         cmd = [require_tool("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error", "-i", str(src),
                "-q:v", "3", str(dest)]
-        subprocess.run(cmd, capture_output=True, timeout=60, **no_window())
+        # in a worker thread: ffmpeg must not stall the event loop (live progress, other tabs)
+        await asyncio.to_thread(subprocess.run, cmd, capture_output=True, timeout=60, **no_window())
         src.unlink(missing_ok=True)
     else:
         dest.write_bytes(raw)
@@ -1992,7 +1993,7 @@ async def api_chat_import(project_id: str, request: Request, filename: str = Que
             if size > 500 * 1024**2:
                 raise SharkyClipsError("Chat file too large (max 500 MB).")
             f.write(chunk)
-    import_file(project, dest)
+    await asyncio.to_thread(import_file, project, dest)  # big logs: don't block the event loop
     return _chat_summary(project) or {}
 
 

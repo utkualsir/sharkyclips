@@ -17,6 +17,7 @@ import json
 import re
 import unicodedata
 from pathlib import Path
+from typing import Iterator
 
 import numpy as np
 from scipy.ndimage import gaussian_filter1d
@@ -81,7 +82,8 @@ def trigger_phrases(lang: str, categories: tuple[str, ...]) -> dict[str, tuple[s
     return out
 
 
-def find_matches(words, lang: str, phrases: dict[str, tuple[str, float]]):
+def find_matches(words: list[dict], lang: str,
+                 phrases: dict[str, tuple[str, float]]) -> Iterator[tuple[int, str, float]]:
     """Yield (word_index, display_phrase, weight) for every phrase occurrence."""
     if not phrases or not words:
         return

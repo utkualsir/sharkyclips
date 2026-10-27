@@ -46,6 +46,7 @@ STAGES = {
 }
 
 ACTIVE = ("queued", "running")
+HISTORY_KEEP = 40  # finished persistent jobs kept in _queue.json (the Queue screen's history)
 
 
 def _release_gpu() -> None:
@@ -58,7 +59,6 @@ def _release_gpu() -> None:
             llm.unload_all()
     except Exception:  # noqa: BLE001
         pass
-HISTORY_KEEP = 40  # finished persistent jobs kept in _queue.json (the Queue screen's history)
 
 
 @dataclass
@@ -330,7 +330,7 @@ class JobManager:
         for j in done[: max(0, len(done) - self.KEEP_FINISHED)]:
             self._jobs.pop(j.id, None)
 
-    def _sink_for(self, job: Job):
+    def _sink_for(self, job: Job) -> Callable[[str, float, float | None], None]:
         last = {"t": 0.0, "stage": None}
 
         def sink(description: str, completed: float, total: float | None) -> None:

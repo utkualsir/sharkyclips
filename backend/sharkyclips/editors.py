@@ -161,12 +161,6 @@ class Timeline:
     loop: bool = False
     files: list[Path] = field(default_factory=list)  # sidecar files written next to the XML
 
-    @property
-    def joins(self) -> list[int]:
-        """Timeline frames where two kept parts meet (the sound crossfades there)."""
-        mains = [p for p in self.pieces if p.kind == "main"]
-        return [p.frame for p in mains[1:]]
-
     def piece_at(self, frame: int) -> Piece:
         for p in self.pieces:
             if p.frame <= frame < p.frame + p.frames:

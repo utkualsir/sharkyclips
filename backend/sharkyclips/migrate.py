@@ -19,6 +19,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from . import config
 
@@ -68,7 +69,7 @@ def _merge_move(src: Path, dst: Path, moved: list[str], kept: list[str]) -> None
         kept.append(str(src))  # both exist: keep the new one, leave the old one where it was
 
 
-def _rewrite_paths(value, old: str, new: str):
+def _rewrite_paths(value: Any, old: str, new: str) -> Any:
     if isinstance(value, str):
         if value.startswith(old):
             return new + value[len(old):]

@@ -29,7 +29,7 @@ import time
 import urllib.parse
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from . import config
 from .errors import SharkyClipsError
@@ -76,7 +76,7 @@ def _write(name: str, data: dict) -> None:
             pass
 
 
-def _http():
+def _http() -> Any:  # the `requests` module (tests swap in a fake)
     import requests
 
     return requests
@@ -317,7 +317,7 @@ def _expire_access() -> None:
             _write("token.json", tok)
 
 
-def _json(res) -> dict:
+def _json(res: Any) -> dict:
     try:
         d = res.json()
         return d if isinstance(d, dict) else {}
@@ -325,7 +325,7 @@ def _json(res) -> dict:
         return {}
 
 
-def _api_error(res, what: str) -> SharkyClipsError:
+def _api_error(res: Any, what: str) -> SharkyClipsError:
     data = _json(res)
     err = data.get("error") or {}
     reason = ""

@@ -11,7 +11,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 INTENSITY = {"off": 0.0, "subtle": 1.15, "strong": 1.3}
-LEVELS = tuple(INTENSITY)
 RAMP_IN, RAMP_OUT, HOLD = 0.35, 0.55, 1.1
 MIN_GAP = 3.5  # seconds between two pulses on the same picture
 

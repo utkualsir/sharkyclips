@@ -28,8 +28,6 @@ DEFAULTS: dict[str, dict[str, list[str]]] = {
            "maybe": ["那个", "就是", "然后"]},
 }
 
-LEVELS = ("off", "light", "strong")
-
 
 def lists(lang: str | None) -> dict[str, list[str]]:
     custom = config.get("filler_lists") or {}

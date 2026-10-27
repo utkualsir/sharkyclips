@@ -422,11 +422,6 @@ def list_exports(project: Project) -> list[dict]:
     return out
 
 
-def estimate_seconds(total_video_s: float, speed: float | None = None) -> float:
-    """Rough render time: measured speed (render seconds per video second) or a default."""
-    return 20 + total_video_s * (speed or 0.35)
-
-
 def render_montage(project: Project, clip_ids: list[str], *, lang: str | None = None, intro: bool = True,
                    outro: bool = True, cards: bool = True,
                    on_progress: Callable[[str, float | None], None] | None = None) -> dict:

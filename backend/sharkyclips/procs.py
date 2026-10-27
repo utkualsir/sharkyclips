@@ -347,11 +347,6 @@ def resume_pid(pid: int) -> None:
         pass
 
 
-def tracked_count() -> int:
-    with _lock:
-        return sum(1 for p in _tracked if p.poll() is None)
-
-
 def kill_children() -> None:
     """Kill every process this one started (also the ones started by them)."""
     try:
@@ -414,11 +409,6 @@ def run_streamed(cmd: list[str], **kwargs) -> int:
         except (OSError, ValueError, AttributeError):  # pythonw: no stdout
             pass
     return proc.wait()
-
-
-def popen_flags() -> int:
-    """Old name, kept for callers outside the package; use no_window()."""
-    return CREATE_NO_WINDOW if IS_WIN else 0
 
 
 _hidden = False

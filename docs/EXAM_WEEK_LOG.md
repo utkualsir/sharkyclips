@@ -101,3 +101,37 @@ history for keys/tokens):
 **Decisions:** "recommended on LAN" = warning, not forced, so existing LAN users aren't locked out
 after the update. No HTTPS (would need certificates); SECURITY.md says to use LAN mode only on
 trusted networks.
+
+## Task 4: code health
+
+**Coverage** (line coverage, measured locally with pytest-cov; total 49% → 52%):
+
+| Module | Before | After | New tests |
+|---|---|---|---|
+| `web/jobs.py` (queue) | 30% | 90% | `test_jobs.py`: order, lanes, dedupe, move/front, cancel, errors, follow-ups, restart restore, broken queue files, trimming |
+| `youtube.py` (uploads) | 64% | 87% | `test_youtube_flow.py`: PKCE sign-in, token refresh / sign-out, revoke offline, chunked + resumed upload, network errors, quota, stats/retention parsing (fake HTTP, no network) |
+| `migrate.py` | 51% | 84% | `test_migrate_more.py`: config merge, log rename, copy fallback, path rewrite, hidden PowerShell call, macOS app rename |
+| `web/power.py` | 44% | 96% | `test_power.py`: countdown, new work stops it, cancel, failed shutdown (real shutdown impossible in tests) |
+| `governor.py` | 73% | 80% | `test_governor_gate.py`: hot-loop gate pause/stop/cancel, deferred, throttling |
+| `export.py` | 63% | 68% | `test_export_registry.py`: request validation, registry, delete, SRT/VTT |
+
+**Fixes found on the way:**
+
+- The thumbnail upload ran ffmpeg (up to 60 s) and the chat import parsed up to 500 MB directly
+  inside `async` handlers, which froze every other request (live progress, other tabs) meanwhile.
+  Both now run in a worker thread.
+- Export registry hardening: a hand-edited `exports/clips.json` with names like `../../x` could
+  make "delete export" remove files outside the exports folder. Names with path parts are ignored.
+
+**Dead code removed** (found with vulture, checked against every caller incl. tests):
+`memory.current_model_name`, `montage.estimate_seconds`, `procs.tracked_count`, `procs.popen_flags`,
+`editors.Timeline.joins`, unused `LEVELS` constants in `edit/fillers.py` and `edit/zoom.py`.
+Route handlers, registered signals and serialized dataclass fields that vulture also lists are used.
+
+**Lint / types:** `ruff check` was already clean with the project rules. Added type hints to the
+public helpers that had none and to the risky modules (governor, jobs, migrate, youtube, lanauth,
+errors, calibration, feedback, keywords). ~180 annotations are still missing, mostly private
+helpers and FastAPI handlers that return files; not worth the churn.
+
+**Decision:** pytest-cov and vulture were installed into the local venv only, not added to
+`requirements-dev.txt` (CI doesn't need them).

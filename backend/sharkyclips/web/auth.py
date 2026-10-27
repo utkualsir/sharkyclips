@@ -75,10 +75,10 @@ def auth_status(request: Request) -> dict:
 
 
 @router.post("/login")
-def auth_login(request: Request, body: dict | None = None):
+def auth_login(request: Request, body: dict | None = None) -> JSONResponse:
     ip = _host(request)
     if is_local_host(ip) or not lanauth.enabled():
-        return _status(request)
+        return JSONResponse(_status(request))
     wait = lanauth.limiter.wait(ip)
     if wait > 0:
         secs = math.ceil(wait)
@@ -96,7 +96,7 @@ def auth_login(request: Request, body: dict | None = None):
 
 
 @router.post("/logout")
-def auth_logout(request: Request):
+def auth_logout(request: Request) -> JSONResponse:
     lanauth.end_session(request.cookies.get(lanauth.COOKIE))
     res = JSONResponse({**_status(request), "authenticated": is_local_host(_host(request)) or not lanauth.enabled()})
     res.delete_cookie(lanauth.COOKIE, path="/")

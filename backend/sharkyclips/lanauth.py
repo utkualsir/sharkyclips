@@ -23,6 +23,7 @@ import time
 from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from . import config
 from .errors import SharkyClipsError
@@ -38,7 +39,7 @@ _lock = threading.RLock()
 _cache: dict = {"mtime": None, "data": None}
 
 
-def _read(path: Path):
+def _read(path: Path) -> Any:
     try:
         return read_json(path)
     except (OSError, ValueError):

@@ -29,7 +29,7 @@ import os
 import threading
 import time
 from dataclasses import dataclass
-from typing import Callable, Iterator
+from typing import Any, Callable, Iterator
 
 import psutil
 
@@ -468,11 +468,11 @@ def get() -> Governor | None:
     return _gov
 
 
-def set_current_job(job) -> None:
+def set_current_job(job: Any) -> None:
     _tls.job = job
 
 
-def current_job():
+def current_job() -> Any:
     return getattr(_tls, "job", None)
 
 

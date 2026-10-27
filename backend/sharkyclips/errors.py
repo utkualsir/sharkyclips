@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+from types import ModuleType
 import platform
 import shutil
 
@@ -59,7 +60,7 @@ def require_tool(name: str, install_key: str | None = None) -> str:
     raise SharkyClipsError(f"'{name}' was not found on your PATH.", hint)
 
 
-def require_module(module: str, pip_name: str | None = None):
+def require_module(module: str, pip_name: str | None = None) -> ModuleType:
     """Import a Python module or raise a friendly error with the pip command."""
     try:
         return importlib.import_module(module)
