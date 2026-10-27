@@ -165,3 +165,31 @@ Fixed:
 - The scrollable What's new text can be reached and scrolled with the keyboard.
 
 Not automated: a real screen reader run (NVDA / VoiceOver). Worth doing once by hand.
+
+## Task 6: performance
+
+Measured headless on a throwaway settings folder (fake `APPDATA`, so the Ollama start-up
+shortcut logic never touched the real Startup folder), old code vs new, warm caches, 2 runs each:
+
+| | Before | After |
+|---|---|---|
+| `import sharkyclips.web.app` | 1.22 s | 0.53 s |
+| `cli.py serve` start → `/api/meta` answers | 3.2 s | 2.7 s |
+| Memory of the running server (all processes) | 220 MB | 162 MB |
+| Idle CPU (no job, no open tab, 30-45 s) | 0.1-0.26 % of one core | 0.16 % of one core (same, noise) |
+| Main JS bundle | 743 KB (251 KB gzip) | 380 KB (119 KB gzip) |
+
+What changed:
+
+- `highlights/__init__.py` loads the pipeline lazily. The server only needs the mode table at
+  start, but importing it pulled in SciPy (~0.65 s, ~60 MB). SciPy now loads when highlights are
+  really computed.
+- The UI ships English (the fallback) in the main bundle and loads the other 6 languages on demand
+  (~50 KB each, one per user). It renders nothing for the few ms the file takes on first start,
+  instead of flashing English. Language switching still works instantly-ish (checked de, ar/RTL).
+- Settings, Studio, Queue, Stats, Best-of, Stories and Game detection are separate chunks loaded
+  when first opened. Library and Project (the main screens) stay in the main bundle.
+
+Looked at, left alone: the remaining ~1.3 s before the server answers is the supervisor starting
+a second Python (needed for in-place updates) plus FastAPI's own import (~0.2 s). The idle server
+was already cheap (the governor does light ticks without GPU reads when nothing runs).

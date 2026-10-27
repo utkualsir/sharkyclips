@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { api } from "./api";
 import { GovernorWidget } from "./components/Governor";
 import { useAppState } from "./appstate";
@@ -12,14 +12,15 @@ import { UI_LANGUAGES, useI18n } from "./i18n";
 import { isActive, useJobs } from "./jobs";
 import { chooseLanguage } from "./meta";
 import Library from "./pages/Library";
-import BestOf from "./pages/BestOf";
-import GameDebug from "./pages/GameDebug";
 import ProjectPage from "./pages/Project";
-import Studio from "./pages/Studio";
-import Queue from "./pages/Queue";
-import Stats from "./pages/Stats";
-import Stories from "./pages/Stories";
-import Settings from "./pages/Settings";
+// Less used screens load when first opened (smaller start-up bundle).
+const BestOf = lazy(() => import("./pages/BestOf"));
+const GameDebug = lazy(() => import("./pages/GameDebug"));
+const Studio = lazy(() => import("./pages/Studio"));
+const Queue = lazy(() => import("./pages/Queue"));
+const Stats = lazy(() => import("./pages/Stats"));
+const Stories = lazy(() => import("./pages/Stories"));
+const Settings = lazy(() => import("./pages/Settings"));
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
 
@@ -161,6 +162,7 @@ export default function App() {
       <DevBanner />
       <ShutdownBanner />
       <div className="page-fx" key={route.name + ("id" in route ? `:${route.id}` : "")}>
+        <Suspense fallback={null}>
         {route.name === "library" && <Library />}
         {route.name === "settings" && <Settings />}
         {route.name === "studio" && <Studio tab={route.tab} />}
@@ -170,6 +172,7 @@ export default function App() {
         {route.name === "stories" && <Stories key={route.id} id={route.id} />}
         {route.name === "queue" && <Queue />}
         {route.name === "stats" && <Stats />}
+        </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />
       {(autoWhatsNew || manualWhatsNew) && state && (

@@ -1,13 +1,26 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import ar from "./locales/ar";
-import de from "./locales/de";
 import en from "./locales/en";
-import hu from "./locales/hu";
-import ru from "./locales/ru";
-import tr from "./locales/tr";
-import zh from "./locales/zh";
 
-export const CATALOGS: Record<string, Record<string, string>> = { tr, en, ru, hu, de, ar, zh };
+type Catalog = Record<string, string>;
+// English is built in (it's the fallback for every key); the other languages are separate files
+// that load on demand, so the app only downloads the one it shows (~60 KB each).
+const LOADERS: Record<string, () => Promise<{ default: Catalog }>> = {
+  tr: () => import("./locales/tr"),
+  ru: () => import("./locales/ru"),
+  hu: () => import("./locales/hu"),
+  de: () => import("./locales/de"),
+  ar: () => import("./locales/ar"),
+  zh: () => import("./locales/zh"),
+};
+const loaded: Record<string, Catalog> = { en };
+const SUPPORTED = new Set(["en", ...Object.keys(LOADERS)]);
+
+function loadCatalog(code: string): Promise<Catalog> {
+  if (loaded[code]) return Promise.resolve(loaded[code]);
+  return LOADERS[code]()
+    .then((m) => (loaded[code] = m.default))
+    .catch(() => en); // offline / old cached page: English keeps the app usable
+}
 export const UI_LANGUAGES = [
   { code: "tr", name: "Türkçe" },
   { code: "en", name: "English" },
@@ -38,7 +51,7 @@ const Ctx = createContext<I18n | null>(null);
 function stored(): string {
   try {
     const l = localStorage.getItem("cf-lang");
-    if (l && CATALOGS[l]) return l;
+    if (l && SUPPORTED.has(l)) return l;
   } catch {
     /* private mode */
   }
@@ -47,6 +60,15 @@ function stored(): string {
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState(stored);
+  const [cat, setCat] = useState<Catalog | null>(() => loaded[lang] ?? null);
+
+  useEffect(() => {
+    let live = true;
+    loadCatalog(lang).then((c) => live && setCat(c));
+    return () => {
+      live = false;
+    };
+  }, [lang]);
 
   useEffect(() => {
     const el = document.documentElement;
@@ -60,11 +82,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [lang]);
 
   const setLang = useCallback((code: string) => {
-    if (CATALOGS[code]) setLangState(code);
+    if (SUPPORTED.has(code)) loadCatalog(code).then(() => setLangState(code));
   }, []);
 
   const value = useMemo<I18n>(() => {
-    const cat = CATALOGS[lang];
+    const cat = (loaded[lang] ?? en) as Catalog;
     const plural = new Intl.PluralRules(lang);
     const t: T = (key, vars) => {
       let s: string | undefined;
@@ -93,8 +115,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       return rtf.format(Math.round(diff / 86400), "day");
     };
     return { lang, dir: RTL.has(lang) ? "rtl" : "ltr", t, setLang, num, relTime };
-  }, [lang, setLang]);
+  }, [lang, setLang, cat]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // A few ms on first start: render nothing rather than flash English before the user's language.
+  if (!cat) return null;
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
