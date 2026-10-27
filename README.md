@@ -116,13 +116,14 @@ More screenshots, in both themes, are in [docs/screenshots](docs/screenshots).
 
 ## Privacy
 
-**Everything runs on your computer. Nothing is uploaded.** There is no account, no cloud service,
-no paid API and no telemetry. Transcription (Whisper), the language model (Qwen 3.5 via Ollama),
+**Everything runs on your computer. Nothing leaves it unless you press Upload.** There is no
+account, no cloud service, no paid API and no telemetry. Transcription (Whisper), the language model (Qwen 3.5 via Ollama),
 highlight detection and rendering all run locally. Your videos, transcripts and clips stay in
 the `workspace` folder. SharkyClips only goes online to download what you ask it to (a VOD, its
 chat replay), the AI models (once), and updates (when you click "Check for updates"). The optional
 YouTube upload talks only to Google's official API, with a key you create yourself and that never
-leaves your computer.
+leaves your computer. Details: [privacy policy](docs/site/privacy.html) ·
+[terms](docs/site/terms.html).
 
 ## Supported hardware
 
@@ -139,7 +140,7 @@ SharkyClips checks your hardware every time it starts and picks the fastest setu
   **Recommended:** an NVIDIA RTX GPU with 8 GB VRAM, or an Apple Silicon Mac with 16 GB RAM.
 - No CUDA Toolkit needed: the CUDA libraries come with the Python packages. If a model doesn't fit,
   SharkyClips steps down by itself (float16 → int8 → smaller model → CPU).
-- Measured on an RTX 5070 Laptop (8 GB): AI analysis ~28 s per clip (15 s with *Fast analysis*),
+- Measured on a mid-range laptop GPU (RTX 5070 Laptop, 8 GB): AI analysis ~28 s per clip (15 s with *Fast analysis*),
   rendering a 30 s 9:16 clip ~6 s with NVENC.
 
 ## Languages
@@ -256,7 +257,7 @@ just more slowly. The AI titles use the smaller model on weaker machines.
 
 **How long does a stream take?**
 It depends on your hardware and the stream length. Transcription is the longest step on the CPU.
-On an RTX 5070 Laptop the AI analysis takes ~28 s per clip. Long streams are processed in chunks
+On a mid-range laptop GPU (8 GB) the AI analysis takes ~28 s per clip. Long streams are processed in chunks
 and resume where they stopped if you close SharkyClips.
 
 **Which sites can I import from?**
@@ -265,7 +266,9 @@ local video file. The chat replay is fetched automatically for Twitch and YouTub
 can import a chat log.
 
 **Does it post to TikTok / YouTube for me?**
-No. SharkyClips never uploads anything. You download the clips and post them yourself.
+Only if you want it to, and only to YouTube: connect your channel once (Settings → YouTube) and
+press Upload on a clip. SharkyClips never posts by itself. For TikTok, Instagram and X you
+download the clip and post it yourself.
 
 **Where are my files?**
 In the `workspace` folder inside the SharkyClips folder (each project in its own subfolder, rendered
@@ -311,7 +314,8 @@ Ideas and votes are welcome in [Issues](https://github.com/utkualsir/sharkyclips
 
 ## Contributing
 
-Bug reports, translations and pull requests are welcome.
+Bug reports, translations and pull requests are welcome. The full guide is in
+**[CONTRIBUTING.md](CONTRIBUTING.md)**; security issues go to [SECURITY.md](SECURITY.md).
 
 - **Bugs:** open an [issue](https://github.com/utkualsir/sharkyclips/issues/new/choose) with the output of
   `python cli.py doctor`. Please don't attach private videos.
@@ -381,7 +385,7 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
 
 ### Gizlilik
 
-**Her şey bilgisayarınızda çalışır; hiçbir şey internete yüklenmez.** Hesap, bulut, ücretli servis
+**Her şey bilgisayarınızda çalışır; siz Yükle'ye basmadıkça hiçbir şey dışarı çıkmaz.** Hesap, bulut, ücretli servis
 veya veri toplama yoktur. İnternet yalnızca sizin istediğiniz videoyu, yapay zekâ modellerini (bir
 kez) ve güncellemeleri indirmek için kullanılır. İsteğe bağlı YouTube yüklemesi yalnızca Google'ın
 resmî API'siyle, sizin oluşturduğunuz ve bilgisayarınızdan çıkmayan bir anahtarla konuşur.
@@ -432,7 +436,8 @@ değiştirin. Ollama, Ayarlar'dan açmadığınız sürece Windows ile başlamaz
 - **Ücretsiz mi?** Evet, tamamen ücretsiz ve açık kaynaklıdır (MIT). Filigran veya kredi yoktur.
 - **Güçlü bir bilgisayar gerekir mi?** Şart değil. NVIDIA ekran kartı veya Apple Silicon ile çok daha
   hızlıdır; ekran kartı olmadan da çalışır, sadece daha yavaştır.
-- **Klipleri benim yerime paylaşır mı?** Hayır. SharkyClips hiçbir şey yüklemez; klipleri siz indirip
-  paylaşırsınız.
+- **Klipleri benim yerime paylaşır mı?** Yalnızca siz isterseniz ve yalnızca YouTube'a: kanalınızı bir
+  kez bağlayıp (Ayarlar → YouTube) klipte Yükle'ye basarsınız. Kendiliğinden hiçbir şey
+  paylaşmaz. TikTok, Instagram ve X için klibi indirip kendiniz paylaşırsınız.
 - **Bir sorun mu var?** Kurulum aracını tekrar çalıştırın (eksikleri onarır) veya
   [bir hata kaydı açın](https://github.com/utkualsir/sharkyclips/issues/new/choose).

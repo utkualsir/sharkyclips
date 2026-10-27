@@ -136,12 +136,12 @@ def test_rerun_keeps_ai_results_for_unchanged_cuts(tmp_path):
 
 
 def test_description_finishing_and_hashtags():
-    tags = analyze.clean_hashtags(["#UtkuAlsir", "fps", "#FPS"], "Delta Force", exclude=["utku alsir"])
+    tags = analyze.clean_hashtags(["#SharkyStreamer", "fps", "#FPS"], "Delta Force", exclude=["sharky streamer"])
     assert tags == ["#shorts", "#DeltaForce", "#fps"]
     out = analyze.finish_description("“Bu klipte üç kişiyi indirdim #wow 🔥 . Sizce nasıl ?”", "tr", None, tags)
     assert out == "Bu klipte üç kişiyi indirdim. Sizce nasıl?\n\n#shorts #DeltaForce #fps"
-    soft = analyze._description_soft_checker("tr", ["utku alsir"])
-    assert soft({"description": "Utku Alsir burada düşmektedir."})  # name + news style
+    soft = analyze._description_soft_checker("tr", ["sharky streamer"])
+    assert soft({"description": "Sharky Streamer burada düşmektedir."})  # name + news style
     assert soft({"description": "Lobiye daldım, üç kişiyi indirdim."}) == []
     hard = analyze._description_checker("en")
     assert hard({"description": "One sentence only."})

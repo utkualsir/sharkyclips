@@ -191,7 +191,7 @@ names...), or from the per-project picker (Auto / Delta Force / League of Legend
 
 **Sampling.** ffmpeg decodes only reference frames (`-skip_frame noref`) at 2 fps, on NVDEC when there
 is an NVIDIA GPU, in 3 parallel segments, and hands over raw NV12 (luma = free grayscale, chroma =
-colour tests). Measured on an RTX 5070 Laptop: decoding alone ~35x realtime for 1080p60; a full scan
+colour tests). Measured on a mid-range laptop GPU (RTX 5070 Laptop): decoding alone ~35x realtime for 1080p60; a full scan
 20-45x realtime depending on how much text there is to read, so a 4 h stream takes roughly 6-12 min.
 Without NVDEC (CPU decode) expect about 6-10x.
 

@@ -5,7 +5,7 @@
   what's new   config `seen_version`; after an update the UI shows this version's CHANGELOG.md
                entry once, in the UI language (<!-- lang:xx --> blocks, English fallback).
   dev flag     <config dir>/dev_in_progress.json {"started_at", "task"}: written by the developer
-               (Claude Code) while an update is being built; the UI shows an "under construction"
+               (a development session) while an update is being built; the UI shows an "under construction"
                banner. Older than 12 hours = stale: no banner, only a note in Settings.
   splash       the launcher opens splash.html (a local file) right away; it polls the starting
                server and hands over to the app, so the splash never adds waiting time.
