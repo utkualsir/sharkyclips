@@ -14,10 +14,13 @@ import {
   type UploadBody,
   type YoutubeStatus,
   type YoutubeUpload,
+  type HookTest,
+  type HookTests,
 } from "../api";
 import { fmtBytes, fmtTime } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { useToast } from "../toast";
+import { RealTestNote } from "./HookTest";
 import { Icon } from "./Icons";
 import { Modal, Segmented, Toggle } from "./ui";
 
@@ -423,6 +426,9 @@ export function UploadDialog({
   clip,
   exports,
   initialSource,
+  hookTest = null,
+  realTest = null,
+  uploads = [],
   onClose,
 }: {
   projectId: string;
@@ -430,21 +436,35 @@ export function UploadDialog({
   clip: RenderedClip | null;
   exports: ClipExport[];
   initialSource?: string;
+  /** the clip's A/B hook variants (1.2.5): uploading one of them is the real test */
+  hookTest?: HookTest | null;
+  realTest?: HookTests["real_test"] | null;
+  uploads?: YoutubeUpload[];
   onClose: () => void;
 }) {
   const { t, num } = useI18n();
   const toast = useToast();
   const pub = cand.publish;
+  const live = uploads.find((u) => u.video_id && !u.missing) ?? null;
   const sources = useMemo(() => {
     const out: { value: string; label: string; wide: boolean }[] = [];
+    if (hookTest?.files_ok) {
+      for (const label of ["A", "B"] as const) {
+        const v = hookTest.variants[label];
+        const tag = hookTest.upload_pick.label === label ? ` · ${t(hookTest.upload_pick.how === "bandit" ? "yt.ab_tested" : "yt.ab_predicted")}` : "";
+        out.push({ value: `ab:${label}`, label: `${t("yt.source_ab", { label, style: t(`ab.style.${v.style}`) })}${tag}`, wide: false });
+      }
+    }
     if (clip) out.push({ value: "clip", label: t("yt.source_clip"), wide: false });
     for (const e of exports.filter((x) => x.clip_id === cand.id)) {
       const m = e.files.find((f) => f.role === "media" && /\.(mp4|mov|webm)$/i.test(f.name));
       if (m) out.push({ value: m.name, label: `${m.name} · ${fmtBytes(m.size_bytes)}`, wide: e.frame === "wide" });
     }
     return out;
-  }, [clip, exports, cand.id, t]);
-  const [source, setSource] = useState(initialSource ?? sources[0]?.value ?? "clip");
+  }, [clip, exports, cand.id, t, hookTest]);
+  const [source, setSource] = useState(
+    initialSource ?? (hookTest?.files_ok && hookTest.upload_pick.label ? `ab:${hookTest.upload_pick.label}` : sources[0]?.value ?? "clip"),
+  );
   const [title, setTitle] = useState(pub.titles[0] ?? cand.text.slice(0, 90));
   const [description, setDescription] = useState(pub.description ?? "");
   const [tags, setTags] = useState((pub.hashtags ?? []).map((h) => h.replace(/^#/, "")).join(", "));
@@ -503,6 +523,9 @@ export function UploadDialog({
         thumbnail: wide ? thumb : "none",
         language: pub.language,
       };
+      if (source.startsWith("ab:") && hookTest) {
+        body.ab_how = source === `ab:${hookTest.upload_pick.label}` ? hookTest.upload_pick.how ?? "manual" : "manual";
+      }
       await api.uploadClip(projectId, cand.id, body);
       toast({ kind: "ok", text: t("yt.queued") });
       onClose();
@@ -531,7 +554,7 @@ export function UploadDialog({
           <button className="btn btn-ghost" onClick={onClose}>
             {t("common.cancel")}
           </button>
-          <button className="btn btn-primary" onClick={submit} disabled={busy || !!notConnected || !!noQuota || !title.trim() || !sources.length}>
+          <button className="btn btn-primary" onClick={submit} disabled={busy || !!live || !!notConnected || !!noQuota || !title.trim() || !sources.length}>
             <Icon name="upload" />
             {t("yt.upload")}
           </button>
@@ -539,6 +562,18 @@ export function UploadDialog({
       }
     >
       <div className="export-dialog">
+        {live && (
+          <div className="notice notice-warn">
+            <Icon name="alert" />
+            <span>
+              {t("yt.already")}{" "}
+              <a href={live.url} target="_blank" rel="noreferrer">
+                {live.url}
+              </a>
+            </span>
+          </div>
+        )}
+        {hookTest && !live && <RealTestNote realTest={realTest} />}
         {notConnected && (
           <div className="notice notice-warn">
             <Icon name="alert" />
@@ -762,6 +797,18 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
                 </button>
               )}
             </div>
+            {yt.uploads_locked && (
+              <div className="notice notice-warn">
+                <Icon name="alert" />
+                <span>{t("yt.locked")}</span>
+              </div>
+            )}
+            {yt.analytics === false && (
+              <div className="notice">
+                <Icon name="chart" />
+                <span>{t("yt.no_analytics")}</span>
+              </div>
+            )}
             <div className="yt-quota">
               <div className="bar">
                 <span style={{ width: `${Math.min(100, (yt.quota.used / yt.quota.limit) * 100)}%` }} />

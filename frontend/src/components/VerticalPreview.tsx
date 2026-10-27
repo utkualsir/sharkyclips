@@ -180,7 +180,8 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
           }
         }
         // hook
-        if (options.hook && hookText && t - start < 3.2) {
+        // (a seamless loop shows it for the last moment too: it is already there when the clip starts over)
+        if (options.hook && hookText && (t - start < 3.2 || (options.loop && t <= end && end - t < 0.8))) {
           const hookY = (layout === "fit" ? 330 : 120) * S;
           const size = 64 * S;
           ctx.font = `800 ${size}px ${fontFam}`;

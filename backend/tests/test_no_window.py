@@ -101,9 +101,15 @@ def test_governor_loop_starts_no_processes(monkeypatch):
     monkeypatch.setattr(os, "system", lambda *a: spawned.append(a) or 1)
     sysmon.read_user()
     g = governor.Governor(busy=lambda: True)  # not started: tick by hand
-    for i in range(6):
-        g._viewer_at = 1e18 if i % 2 else 0  # full ticks (UI open) and light ticks
-        g.tick()
+    try:
+        for i in range(6):
+            g._viewer_at = 1e18 if i % 2 else 0  # full ticks (UI open) and light ticks
+            g.tick()
+    finally:
+        # Real sensors: while someone uses this PC the governor may decide to pause, which
+        # suspends every tracked child - later tests' ffmpeg calls would hang. Undo it.
+        monkeypatch.undo()
+        procs.resume_all()
     assert spawned == []
     assert g.sample is not None
 

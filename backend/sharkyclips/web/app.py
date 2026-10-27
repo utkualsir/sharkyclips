@@ -251,6 +251,11 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
         edit_fp = state.edit_fingerprint(cand, review, opts.to_dict())
         cand = state.effective_cand(cand, review)  # trims, transcript cuts, music choice
         name = f"{cand['rank']:02d}_{cand['id']}.mp4"
+        if opts.loop:  # the local AI picks the seam and writes a loop hook (cached; optional)
+            from .retention import polish_loop
+
+            jobs.update(job, stage="loop_seam", progress=None)
+            polish_loop(project, cand, opts)
         jobs.update(job, stage="rendering", progress=0.0)
         res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
                           on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
@@ -386,9 +391,14 @@ def submit_export(project_id: str, cid: str, request: dict, batch: dict | None =
 
 
 def _upload_source(project: Project, cid: str, source: str) -> Path:
-    """'clip' = the rendered 9:16 clip, else the name of an export file of this clip."""
+    """'clip' = the rendered 9:16 clip, 'ab:A' / 'ab:B' = a hook variant, else the name of an
+    export file of this clip."""
     from .. import export
+    from .retention import upload_source
 
+    ab = upload_source(project, cid, source)
+    if ab is not None:
+        return ab[0]
     if source == "clip":
         clip = state.load_clips(project).get(cid)
         if not clip:
@@ -404,10 +414,25 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
     """YouTube upload (network lane: runs while the GPU renders)."""
     from .. import youtube
 
+    from .. import abtest
+    from .retention import upload_source
+
     project = get_project(project_id)
     cand = _cand(project, cid)
-    path = _upload_source(project, cid, str(body.get("source") or "clip"))
+    source = str(body.get("source") or "clip")
+    path = _upload_source(project, cid, source)
+    _never_twice(project, cid, job_id)
     mode = project.load_meta().get("mode") or "gaming"
+    # The hook style this upload tests (A/B variant, or the plain clip's own style).
+    ab = upload_source(project, cid, source)
+    if ab is not None:
+        hook = {**ab[1], "hook_chosen_by": str(body.get("ab_how") or "manual")[:12]}
+    else:
+        review = state.load_review(project)
+        clip = state.load_clips(project).get(cid) or {}
+        o = clip.get("options") or review["options"]
+        text = (o.get("hook_text") if clip else None) or review["hooks"].get(cid) or (cand.get("publish") or {}).get("hook_text") or ""
+        hook = {"hook_style": abtest.style_of(o, text), "hook_variant": None, "hook_chosen_by": "clip"}
     yt = youtube.build_body(str(body.get("title") or ""), str(body.get("description") or ""),
                             [str(t) for t in body.get("tags") or []], str(body.get("privacy") or "private"),
                             body.get("publish_at") or None, bool(body.get("made_for_kids")),
@@ -415,7 +440,13 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
     thumb = str(body.get("thumbnail") or "none")  # none | auto | custom
 
     def run(job: Job):
+        from .. import youtube
+
         project = get_project(project_id)
+        live = state.live_upload(project, cid)
+        if live:  # e.g. the other A/B variant was uploaded meanwhile
+            raise SharkyClipsError("This clip is already on YouTube: SharkyClips uploads each clip once.",
+                                   f"It is here: {live.get('url')}")
         jobs.update(job, stage="uploading", progress=0.0)
         key = f"{project_id}:{cid}:{path.name}:{path.stat().st_size}"
         video = youtube.upload(path, yt, key, on_progress=lambda f: jobs.update(job, progress=f),
@@ -432,10 +463,14 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
             except SharkyClipsError as exc:  # the video is up; a missing thumbnail is only a note
                 thumb_note = exc.message + (f" {exc.hint}" if exc.hint else "")
         st = video.get("status") or {}
+        requested = yt["status"]["privacyStatus"]
+        got = st.get("privacyStatus") or requested
+        if requested in ("public", "unlisted") and not yt["status"].get("publishAt") and got == "private":
+            youtube.mark_locked(vid)  # Google keeps uploads of an unaudited project private
         entry = {"video_id": vid, "url": f"https://youtu.be/{vid}", "title": yt["snippet"]["title"],
-                 "privacy": st.get("privacyStatus") or yt["status"]["privacyStatus"],
+                 "privacy": got, "requested_privacy": requested,
                  "publish_at": yt["status"].get("publishAt"), "file": path.name, "uploaded_at": state.now_iso(),
-                 "made_for_kids": yt["status"]["selfDeclaredMadeForKids"], "thumbnail_error": thumb_note}
+                 "made_for_kids": yt["status"]["selfDeclaredMadeForKids"], "thumbnail_error": thumb_note, **hook}
         state.save_upload(project, cid, entry)
         return {**entry, "clip_id": cid}
 
@@ -444,6 +479,18 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
               "project_title": project.load_meta().get("title") or project_id}
     return jobs.submit("upload", "net", project_id, params, run, key=f"upload:{project_id}:{cid}:{path.name}",
                        persist=True, job_id=job_id, attempt=attempt)
+
+
+def _never_twice(project: Project, cid: str, job_id: str | None) -> None:
+    """A clip goes to YouTube once: not again, and not its other A/B variant."""
+    live = state.live_upload(project, cid)
+    if live:
+        raise SharkyClipsError("This clip is already on YouTube: SharkyClips uploads each clip once.",
+                               f"It is here: {live.get('url')} (the A/B test compares hook styles across different clips).")
+    for j in jobs.jobs():
+        if (j.kind == "upload" and j.project_id == project.id and j.params.get("clip_id") == cid
+                and j.status in ("queued", "running") and j.id != job_id):
+            raise SharkyClipsError("This clip is already being uploaded.", "See the queue.")
 
 
 def _thumbnail_file(project: Project, cid: str, cand: dict, kind: str) -> Path:
@@ -472,6 +519,9 @@ def submit_youtube_stats(force: bool = False) -> Job:
         if not ids:
             return {"videos": 0, "calibrated": 0}
         stats = youtube.video_stats(list(ids))
+        for vid, (p, cid) in ids.items():
+            if vid not in stats:  # deleted on YouTube: the clip may be uploaded again
+                state.patch_upload(p, cid, vid, {"missing": True})
         calibrated = 0
         by_project: dict[str, dict] = {}
         for vid, s in stats.items():
@@ -611,6 +661,16 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
         from .studio import submit_music_analysis
 
         return submit_music_analysis()
+    if kind in ("ab", "story_render", "story", "hook_fetch"):
+        from . import retention
+
+        if kind == "ab":
+            return retention.submit_ab(pid, p["clip_id"], job_id=keep_id, attempt=attempt)
+        if kind == "story_render":
+            return retention.submit_story_render(pid, p["story_id"], job_id=keep_id, attempt=attempt)
+        if kind == "story":
+            return retention.submit_story(pid, p.get("lang"))
+        return retention.submit_hook_fetch()
     if kind == "import":
         from ..ingest import is_url
 
@@ -2048,8 +2108,10 @@ def api_update_restart(request: Request) -> dict:
 
 
 from .studio import router as _studio_router  # noqa: E402 - editing tools API (1.2.4)
+from .retention import router as _retention_router  # noqa: E402 - stories, A/B hooks, loops (1.2.5)
 
 app.include_router(_studio_router)
+app.include_router(_retention_router)
 
 
 @app.get("/api/{rest:path}")
@@ -2113,7 +2175,8 @@ def _restore_queue() -> None:
 
 
 def _schedule_stats_sync() -> None:
-    """Twice a day, a minute after start: fetch the views of uploaded clips (network lane)."""
+    """Twice a day, a minute after start: fetch the views of uploaded clips (network lane).
+    Every hour: the hook test's uploads that are 48 hours public (retention -> the bandit)."""
     from .. import youtube
 
     if os.environ.get("SHARKYCLIPS_NO_GOVERNOR") == "1":  # tests
@@ -2125,6 +2188,15 @@ def _schedule_stats_sync() -> None:
                 if any(state.load_uploads(p) for p in list_projects()):
                     submit_youtube_stats()
         except Exception:  # noqa: BLE001 - offline etc.: try again next time
+            pass
+        try:  # the A/B hook test: uploads that are 48 h public teach the bandit by themselves
+            from .. import abtest
+
+            if youtube.connected() and abtest.due_uploads(list_projects()):
+                from .retention import submit_hook_fetch
+
+                submit_hook_fetch()
+        except Exception:  # noqa: BLE001
             pass
         t = threading.Timer(3600, tick)
         t.daemon = True

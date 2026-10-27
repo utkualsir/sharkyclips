@@ -29,7 +29,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -278,6 +278,37 @@ export interface ClipOptions {
   zoom: ZoomLevel;
   music: boolean;
   brand: boolean;
+  /** seamless loop (1.2.5): the end flows back into the start */
+  loop: boolean;
+}
+
+/** The seam of a seamless loop (source times). */
+export interface LoopSeam {
+  start: number;
+  end: number;
+  orig_start: number;
+  orig_end: number;
+  audio_xfade: number;
+  video_xfade: number;
+  music_like: boolean;
+  tail_ok: boolean;
+  gain_db: number;
+  score: number;
+  reasons: string[];
+  last_word: string | null;
+  first_word: string | null;
+  hook_text: string | null;
+  source: "signals" | "ai";
+}
+
+export interface SeamMeasure {
+  click_ratio: number;
+  hf_burst_db: number;
+  lufs_end: number;
+  lufs_start: number;
+  loudness_step_lu: number;
+  typical_step_lu: number;
+  ok: boolean;
 }
 
 /** One clip's edits (transcript editor): trims and deleted source-time ranges. */
@@ -332,6 +363,7 @@ export interface EditPlanView {
   brand_preset: BrandPreset | null;
   intro_s: number;
   outro_s: number;
+  loop: LoopSeam | null;
 }
 
 export type Mood = "hype" | "chill" | "sad" | "funny";
@@ -408,6 +440,8 @@ export interface RenderEdits {
   music?: (PlanMusic & { offset: number }) | null;
   lufs?: number | null;
   brand?: string | null;
+  loop?: (LoopSeam & { duration: number; audio_seam: SeamMeasure | null; dissolve: boolean;
+    video_seam: { seam_step: number; typical_step: number } | null }) | null;
 }
 
 export interface Facecam {
@@ -675,6 +709,8 @@ export interface YoutubeStatus {
   connected_at: string | null;
   quota: YoutubeQuota;
   last_synced: number | null;
+  analytics?: boolean;
+  uploads_locked?: null | { at: string; video_id: string };
 }
 
 export type Privacy = "private" | "unlisted" | "public";
@@ -691,6 +727,126 @@ export interface YoutubeUpload {
   likes?: number | null;
   stats_at?: string;
   thumbnail_error?: string | null;
+  hook_style?: HookStyle | null;
+  hook_variant?: "A" | "B" | null;
+  retention?: number;
+  missing?: boolean;
+}
+
+// ------------------------------------------------------------- stories + A/B hooks (1.2.5)
+
+export type StoryArc = "fail_comeback" | "setup_payoff" | "running_joke" | "escalation" | "other";
+
+export interface StorySegment {
+  cid: string;
+  start: number;
+  end: number;
+  card: string;
+  role: string;
+  rank: number | null;
+}
+
+export interface StoryPublish {
+  titles: string[];
+  description: string;
+  hashtags: string[];
+  hook_text: string;
+  cover_text: string;
+  cover_prompt: string;
+  language: string;
+  source: "ai" | "clips";
+}
+
+export interface Story {
+  id: string;
+  title: string;
+  arc: StoryArc;
+  pitch: string;
+  segments: StorySegment[];
+  cards: boolean;
+  duration: number;
+  publish: StoryPublish | null;
+  created_at: string;
+  cut_text: { cid: string; card: string; text: string }[];
+  render: null | {
+    file: string;
+    rendered_at: string;
+    size_bytes: number;
+    encoder: string;
+    info: { duration: number; lufs: number; segment_lufs_before: number[]; segment_lufs_after: number[]; cards: number };
+  };
+}
+
+export interface StoriesView {
+  stories: Story[];
+  reason: null | "too_few_moments" | "too_short" | "no_arc";
+  none_reason?: string | null;
+  good: number | null;
+  created_at: string | null;
+  source: "ai" | "rules" | null;
+  llm: boolean;
+  job: Job | null;
+  limits: { min: number; max: number };
+}
+
+export type HookStyle = "flash" | "question" | "cold_open" | "statement";
+
+export interface HookReason {
+  code: string;
+  points: number;
+  value: number | string | null;
+}
+
+export interface HookVariant {
+  style: HookStyle;
+  hook_text: string;
+  hook_flash: boolean;
+  start: number;
+  file: string;
+  score: number;
+  reasons: HookReason[];
+  judge: { score: number; why: string } | null;
+  rendered_at: string;
+  duration: number;
+}
+
+export type RealTestReason = null | "not_connected" | "locked_private" | "no_analytics";
+
+export interface HookTest {
+  variants: Record<"A" | "B", HookVariant>;
+  winner: "A" | "B";
+  margin: number;
+  created_at: string;
+  stale: boolean;
+  files_ok: boolean;
+  upload_pick: { label: "A" | "B" | null; how: "bandit" | "pretest" | null };
+  uploaded: null | { video_id: string; variant: "A" | "B" | null; style: HookStyle | null; url: string };
+}
+
+export interface HookTests {
+  clips: Record<string, HookTest>;
+  real_test: { active: boolean; reason: RealTestReason };
+}
+
+export interface HookStyleStats {
+  style: HookStyle;
+  n: number;
+  mean_reward: number;
+  ci90: [number, number];
+  mean_retention: number | null;
+  median_views: number | null;
+  p_best: number;
+}
+
+export interface HookStats {
+  styles: HookStyleStats[];
+  observations: number;
+  verdict: null | { style: HookStyle; confidence: number };
+  min_samples: number;
+  reward_cap: number;
+  real_test: { active: boolean; reason: RealTestReason };
+  youtube: { connected: boolean; analytics: boolean; locked: null | { at: string; video_id: string } };
+  min_age_hours: number;
 }
 
 export interface UploadBody {
@@ -703,6 +859,8 @@ export interface UploadBody {
   made_for_kids: boolean;
   thumbnail: "none" | "auto" | "custom";
   language?: string | null;
+  /** an A/B variant upload ("ab:A" source): how it was chosen */
+  ab_how?: "bandit" | "pretest" | "manual";
 }
 
 export type PerfMode = "silent" | "balanced" | "turbo";
@@ -981,6 +1139,18 @@ export const api = {
     silence_ms?: Partial<{ light: number; strong: number }>;
   }) => req<WordLists>("PUT", "/api/wordlists", body),
   jobs: () => req<Job[]>("GET", "/api/jobs"),
+  // stories, A/B hooks (1.2.5)
+  stories: (id: string) => req<StoriesView>("GET", `${P(id)}/stories`),
+  proposeStories: (id: string, lang?: string) => req<Job>("POST", `${P(id)}/stories`, { lang }),
+  updateStory: (id: string, sid: string, body: { segments?: (string | { cid: string; card?: string })[]; cards?: boolean; title?: string }) =>
+    req<Story>("PUT", `${P(id)}/stories/${sid}`, body),
+  deleteStory: (id: string, sid: string) => req<{ removed: boolean }>("DELETE", `${P(id)}/stories/${sid}`),
+  renderStory: (id: string, sid: string) => req<Job>("POST", `${P(id)}/stories/${sid}/render`),
+  hookTests: (id: string) => req<HookTests>("GET", `${P(id)}/ab`),
+  makeHookTest: (id: string, cid: string) => req<Job>("POST", `${P(id)}/clips/${cid}/ab`),
+  deleteHookTest: (id: string, cid: string) => req<{ removed: boolean }>("DELETE", `${P(id)}/clips/${cid}/ab`),
+  hookStats: () => req<HookStats>("GET", "/api/hooks"),
+  fetchHookStats: () => req<Job>("POST", "/api/hooks/fetch"),
   updateStatus: () => req<UpdateStatus>("GET", "/api/update"),
   updateApply: () => req<Job>("POST", "/api/update"),
   updateRestart: () => req<{ restarting: boolean }>("POST", "/api/update/restart"),
@@ -1011,6 +1181,10 @@ export const urls = {
   clipExportFile: (id: string, name: string, download = false) =>
     `${P(id)}/clip-exports/file/${encodeURIComponent(name)}${download ? "?download=true" : ""}`,
   thumbnail: (id: string, cid: string, kind: "auto" | "custom", v = 0) => `${P(id)}/clips/${cid}/thumbnail.jpg?kind=${kind}&v=${v}`,
+  story: (id: string, sid: string, stamp: string, download = false) =>
+    `${P(id)}/stories/${sid}/video?v=${encodeURIComponent(stamp)}${download ? "&download=true" : ""}`,
+  hookVariant: (id: string, cid: string, label: string, stamp: string, download = false) =>
+    `${P(id)}/clips/${cid}/ab/${label}/video?v=${encodeURIComponent(stamp)}${download ? "&download=true" : ""}`,
   musicAudio: (name: string) => `/api/music/${encodeURIComponent(name)}/audio`,
   brandLogo: (pid: string, rev = 0) => `/api/brand/${encodeURIComponent(pid)}/logo?v=${rev}`,
 };

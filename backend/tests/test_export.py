@@ -91,8 +91,12 @@ class FakeProject:
     id = "p1"
 
     def __init__(self, tmp: Path, fps: float):
+        self.dir = tmp
         self.source_path = tmp / "my video.mp4"
         self.source_path.write_bytes(b"x")
+        self.transcript_path = tmp / "transcript.json"  # missing: no words
+        self.audio_path = tmp / "audio.wav"
+        self.cache_dir = tmp / "cache"
         self._meta = {"width": 1920, "height": 1080, "fps": fps, "duration": 600.0, "audio_codec": "aac",
                       "title": "Test & <stream>"}
 
@@ -105,36 +109,42 @@ CAND = {"id": "c01", "rank": 1, "start": 120.5, "end": 141.2, "duration": 20.7,
                                                                          "value": "kanka", "strength": 0.3},
                     {"code": "laughter", "t": 300.0, "strength": 1}]}
 CUES = [{"start": 0.5, "end": 2.0, "text": "Hello there"}, {"start": 2.0, "end": 4.25, "text": "General Kenobi"}]
+PLAIN = ClipOptions.from_dict({"profanity": "off", "hook": False})
+
+
+def _timeline(tmp_path, fps):
+    return editors.build(FakeProject(tmp_path, fps), CAND, PLAIN, tmp_path / "x", cues_for=lambda plan, lead: CUES)
 
 
 @pytest.mark.parametrize("fps", [30.0, 60.0, 29.97])
 def test_fcpxml_valid_and_frame_aligned(tmp_path, fps):
-    proj = FakeProject(tmp_path, fps)
-    text = editors.fcpxml(proj, CAND, CUES, "en")
+    from fractions import Fraction
+
+    tl = _timeline(tmp_path, fps)
+    text = editors.fcpxml(tl, "en")
     assert editors.validate(text, "fcpxml") == []
     root = editors.ET.fromstring(text.split("\n", 2)[2])
-    clk = editors.Clock(fps)
-    for e in root.iter():
-        for attr in ("offset", "start", "duration"):
-            v = e.get(attr)
-            if v and v != "0s" and e.tag != "caption" or (v and attr != "start" and e.tag == "caption"):
-                from fractions import Fraction
-
-                frames = Fraction(v[:-1]) * clk.num / clk.den
-                assert frames.denominator == 1, (e.tag, attr, v)
+    seq = editors.Clock(tl.fps)
+    for e in root.find(".//spine"):  # the timeline items sit on the sequence's frame grid
+        for attr in ("offset", "duration"):
+            frames = Fraction(e.get(attr)[:-1]) * seq.num / seq.den if e.get(attr) != "0s" else 0
+            assert Fraction(frames).denominator == 1, (e.tag, attr, e.get(attr))
+    src = editors.Clock(fps)
+    start = Fraction(root.find(".//spine/asset-clip").get("start")[:-1])
+    assert (start * src.num / src.den).denominator == 1  # the source in-point on the source's frame grid
     assert [m.get("value") for m in root.iter("marker")] == ["Kill", "Reaction word: kanka"]  # 300 s is outside
     assert len(list(root.iter("caption"))) == 2
     assert "my%20video.mp4" in root.find(".//media-rep").get("src")
 
 
 def test_premiere_xml_valid(tmp_path):
-    proj = FakeProject(tmp_path, 29.97)
-    text = editors.premiere_xml(proj, CAND, CUES, "en")
+    tl = _timeline(tmp_path, 29.97)
+    text = editors.premiere_xml(tl)
     assert editors.validate(text, "premiere") == []
     root = editors.ET.fromstring(text.split("\n", 2)[2])
     ci = root.find(".//clipitem")
-    assert int(ci.findtext("in")) == round(120.5 * 30000 / 1001)
-    assert root.find(".//rate/ntsc").text == "TRUE"
+    assert int(ci.findtext("in")) == round(round(120.5 * 30000 / 1001) * 1001 / 30000 * 30)
+    assert root.find(".//rate/timebase").text == "30"  # the render's frame grid (29.97 renders at 30)
     assert root.findtext(".//pathurl").startswith("file://localhost/")
     assert len(root.findall("./sequence/marker")) == 2
 

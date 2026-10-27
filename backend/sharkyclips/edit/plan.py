@@ -21,6 +21,7 @@ from .. import config
 from ..errors import SharkyClipsError
 from ..project import Project, read_json
 from . import fillers, profanity, silence, zoom
+from .loop import Seam
 
 CUT_DEFAULT_MS = {"light": 800, "strong": 450}
 CUT_PAD = {"light": 0.18, "strong": 0.10}  # silence kept next to speech
@@ -115,6 +116,7 @@ class EditPlan:
     brand: dict | None = None
     intro_s: float = 0.0
     outro_s: float = 0.0
+    loop: Seam | None = None  # seamless loop: the seam (end flows back into the start)
     _starts: list[float] = field(default_factory=list, repr=False)
     _offsets: list[float] = field(default_factory=list, repr=False)
 
@@ -144,11 +146,12 @@ class EditPlan:
 
     @property
     def audio_active(self) -> bool:
-        return self.cuts or bool(self.bleeps and self.bleep_mode != "off") or self.music is not None
+        return (self.cuts or bool(self.bleeps and self.bleep_mode != "off") or self.music is not None
+                or self.loop is not None)
 
     @property
     def active(self) -> bool:
-        return self.audio_active or self.zooms or self.brand is not None
+        return self.audio_active or self.zooms or self.brand is not None or self.loop is not None
 
     def frames(self) -> list[tuple[int, int]]:
         """Kept frame ranges [fa, fb) counted from the clip start."""
@@ -204,6 +207,9 @@ class EditPlan:
             if p.target != target:
                 continue
             a, b = self.to_out(p.t0, "fwd"), self.to_out(p.t1, "back")
+            if self.loop is not None and a is not None and b is not None \
+                    and (a < 0.35 or b > self.out_duration - 0.35):
+                continue  # a zoom across the loop seam would jump
             if a is not None and b is not None and b - a >= 0.6:
                 out.append((a, b))
         return merge(out)
@@ -219,7 +225,8 @@ class EditPlan:
         d = {"keep": [(round(a, 2), round(b, 2)) for a, b in self.keep], "bleep": self.bleep_mode,
              "b": [(round(a, 2), round(b, 2)) for a, b in self.bleeps], "mask": self.mask_captions,
              "z": self.zoom_level, "p": [p.to_dict() for p in self.pulses],
-             "m": (self.music or {}).get("name"), "brand": f"{(self.brand or {}).get('id')}:{(self.brand or {}).get('rev')}"}
+             "m": (self.music or {}).get("name"), "brand": f"{(self.brand or {}).get('id')}:{(self.brand or {}).get('rev')}",
+             "loop": None if self.loop is None else [self.loop.start, self.loop.end, self.loop.hook_text]}
         return hashlib.sha1(json.dumps(d, sort_keys=True).encode()).hexdigest()[:12]
 
     def to_dict(self) -> dict:
@@ -235,23 +242,45 @@ class EditPlan:
             "zoom_level": self.zoom_level, "pulses": [p.to_dict() for p in self.pulses],
             "music": self.music, "brand": self.brand is not None,
             "intro_s": self.intro_s, "outro_s": self.outro_s,
+            "loop": self.loop.to_dict() if self.loop is not None else None,
         }
 
 
 def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: float = 30.0,
-          edit: dict | None = None, words: list[dict] | None = None, lang: str | None = None) -> EditPlan:
+          edit: dict | None = None, words: list[dict] | None = None, lang: str | None = None,
+          max_len: float | None = None) -> EditPlan:
     """opts: clips.ClipOptions. edit: {"deleted": [[a, b]...], "music": name | "" | None}
-    (default: cand["edit"]). words / lang: transcript words (tests), else read from disk."""
+    (default: cand["edit"]). words / lang: transcript words (tests), else read from disk.
+    max_len: the platform's length limit (seamless loop: the end never moves past it)."""
     start, end = float(cand["start"]), float(cand["end"])
     edit = edit if edit is not None else (cand.get("edit") or {})
+    given = words is not None
     if words is None:
         words, lang = transcript_words(project, start, end)
-    words = [dict(w) for w in words]
     fps = max(1.0, float(fps))
+    raw_deleted = [(float(a), float(b)) for a, b in (edit.get("deleted") or []) if float(b) > float(a)]
+
+    # ---- seamless loop: move the end (and a start inside a word) to the best seam first
+    seam = None
+    if getattr(opts, "loop", False):
+        from . import loop
+
+        swear = []
+        if profanity.resolve(getattr(opts, "profanity", "off"), vertical) != "off":
+            near, _l = (words, lang) if given else transcript_words(project, end - loop.SEARCH_BACK - 1,
+                                                                    end + loop.SEARCH_FWD + 1)
+            swear = [(near[i]["start"], near[i]["end"]) for i in profanity.find_words(near, lang)]
+        seam = loop.seam_for(project, start, end, max_len=float(max_len or loop.DEFAULT_MAX_SECONDS),
+                             deleted=raw_deleted, bleeps=swear, words=words if given else None)
+        start, end = seam.start, seam.end
+        if given:
+            words = [w for w in words if start <= (w["start"] + w["end"]) / 2 <= end]
+        else:
+            words, lang = transcript_words(project, start, end)
+    words = [dict(w) for w in words]
 
     # ---- cuts
-    deleted = merge([(max(start, float(a)), min(end, float(b))) for a, b in (edit.get("deleted") or [])
-                     if float(b) > float(a)])
+    deleted = merge([(max(start, a), min(end, b)) for a, b in raw_deleted])
     auto: list[tuple[float, float, str]] = []
     level = getattr(opts, "cuts", "off")
     if level in ("light", "strong"):
@@ -303,6 +332,7 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
             w["removed"] = True
 
     plan = EditPlan(start, end, fps, keep, removed, words, lang)
+    plan.loop = seam
 
     # ---- swear words
     mode = profanity.resolve(getattr(opts, "profanity", "off"), vertical)
@@ -346,4 +376,6 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
 
         plan.brand = brand.active_preset()
         plan.intro_s, plan.outro_s = brand.card_seconds(plan.brand)
+        if seam is not None:  # a card would break the loop (the watermark / handle stay)
+            plan.intro_s = plan.outro_s = 0.0
     return plan

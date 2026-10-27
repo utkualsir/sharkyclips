@@ -59,16 +59,17 @@ class ClipOptions:
     zoom: str = "off"  # off | subtle | strong
     music: bool = False  # background music from the user's library
     brand: bool = False  # the active brand kit preset
+    loop: bool = False  # seamless loop (1.2.5): the end flows back into the start
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
-                "profanity_captions", "cuts", "zoom", "music", "brand")
+                "profanity_captions", "cuts", "zoom", "music", "brand", "loop")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.hook_flash = bool(opts.hook_flash)
         opts.profanity_captions = bool(opts.profanity_captions)
-        opts.music, opts.brand = bool(opts.music), bool(opts.brand)
+        opts.music, opts.brand, opts.loop = bool(opts.music), bool(opts.brand), bool(opts.loop)
         for name, allowed in (("profanity", ("auto", "bleep", "mute", "off")), ("cuts", ("off", "light", "strong")),
                               ("zoom", ("off", "subtle", "strong"))):
             if getattr(opts, name) not in allowed:
@@ -133,6 +134,7 @@ class OutputSpec:
     container: str = "mp4"  # mp4 | mov | webm
     burn_captions: bool = True
     safe: tuple[int, int, int, int] = (0, 0, 0, 0)
+    max_seconds: float | None = None  # the platform's length limit (a seamless loop stays under it)
 
     @property
     def canvas(self) -> tuple[int, int]:
@@ -167,6 +169,18 @@ class Geometry:
                 cap = min(cap, h - bottom - 120)
             geo = cls(w, h, (left + w - right) // 2, cap, max(hook, top + 30), 1.0, 70 + left, 70 + right)
         return geo
+
+
+def flash_from(peak: float, src_duration: float, src_fps: float) -> float:
+    """Where the hook flash starts: just before the peak, on a source frame."""
+    t = min(max(0.0, peak - 0.45), max(0.0, src_duration - FLASH_SECONDS))
+    return round(t * src_fps) / src_fps if src_fps > 0 else t
+
+
+def seek_at(t: float, src_fps: float) -> str:
+    """-ss value whose first kept frame is the source frame NEAREST to t (the editors' timelines
+    round the same way), so every piece starts exactly where its timeline clip does."""
+    return f"{max(0.0, t - 0.45 / max(1.0, src_fps)):.4f}"
 
 
 def resolve_layout(layout: str, facecam: Facecam | None) -> str:
@@ -287,7 +301,8 @@ def translated_words(lines: list[dict], start: float, end: float, lang: str) -> 
 def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str,
               lang: str | None, hook_text: str, offset: float = 0.0,
               hook_lang: str | None = None, geo: Geometry | None = None,
-              style: dict | None = None, hook_start: float = 0.0, extra: list[str] | None = None) -> str:
+              style: dict | None = None, hook_start: float = 0.0, extra: list[str] | None = None,
+              hook_fade_in: int = 150) -> str:
     """offset: seconds before the clip's main part (intro card + hook flash); subtitles start
     after it. geo: canvas size and text positions (default: the 1080x1920 clip).
     style: brand kit caption look {"font", "primary", "highlight", "outline"} (#RRGGBB).
@@ -378,7 +393,7 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
         if rtl:
             text = "‫" + text + "‬"  # keep punctuation on the right side
         event(hook_start, hook_start + min(3.2, duration) + (offset - hook_start) * 0.6, "hook",
-              f"{{\\an8\\pos({geo.cap_x},{hook_y})\\fad(150,300)}}{text}", layer=1, shift=False)
+              f"{{\\an8\\pos({geo.cap_x},{hook_y})\\fad({hook_fade_in},300)}}{text}", layer=1, shift=False)
     lines += extra or []
     return "\n".join(lines) + "\n"
 
@@ -519,11 +534,11 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
     geo = Geometry.for_spec(spec, layout)
     has_audio = (bool(meta.get("audio_codec")) or meta.get("audio_codec") is None) and spec.audio != "none"
 
-    # Hook flash: ~1 s around the peak, shown first.
-    flash = FLASH_SECONDS if opts.hook_flash else 0.0
+    # Hook flash: ~1 s around the peak, shown first (never in a seamless loop: it would repeat).
+    flash = FLASH_SECONDS if opts.hook_flash and not opts.loop else 0.0
     src_dur = float(meta.get("duration") or end)
     peak = float(cand.get("peak") or (start + end) / 2)
-    flash_start = min(max(0.0, peak - 0.45), max(0.0, src_dur - FLASH_SECONDS))
+    flash_start = flash_from(peak, src_dur, fps)
     plan = edit_plan(project, cand, opts, spec, max(1, round(min(60.0, fps, float(spec.fps or 60)))))
     if plan is not None:  # editing tools at work: cuts, bleeps, zoom, music, brand kit
         return _render_planned(project, cand, opts, facecam, dest, on_progress, spec, plan, layout=layout,
@@ -616,8 +631,20 @@ def edit_plan(project: Project, cand: dict, opts: ClipOptions, spec: OutputSpec 
     from .edit import plan as plan_mod
 
     spec = spec or OutputSpec()
-    plan = plan_mod.build(project, cand, opts, vertical=spec.frame != "wide", fps=fps)
+    plan = plan_mod.build(project, cand, opts, vertical=spec.frame != "wide", fps=fps, max_len=spec.max_seconds)
     return plan if plan.active else None
+
+
+def loop_hook_line(hook_text: str, geo: Geometry, layout: str, total: float, rtl: bool) -> str:
+    """In a seamless loop the hook text is also on screen for the last moment, so it is
+    already there when the clip starts over (no pop at the seam)."""
+    hook_y = geo.hook_y if geo.hook_y is not None else (120 if layout != "fit" else 330)
+    text = _ass_escape(hook_text)
+    if rtl:
+        text = "\u202b" + text + "\u202c"
+    a = max(0.0, total - 0.8)
+    return (f"Dialogue: 1,{_ass_time(a)},{_ass_time(total + 0.05)},hook,,0,0,0,,"
+            f"{{\\an8\\pos({geo.cap_x},{hook_y})\\fad(300,0)}}{text}")
 
 
 def _logo_size(path: Path) -> tuple[int, int]:
@@ -684,7 +711,7 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
 
     ffmpeg = require_tool("ffmpeg")
     source = project.source_path
-    start, end = float(cand["start"]), float(cand["end"])
+    start, end = plan.start, plan.end  # the plan may move them (seamless loop)
     duration = max(0.5, end - start)
     F = int(plan.fps)
     W, H = spec.canvas
@@ -694,7 +721,10 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
     total = lead + main + outro
 
     # Text: captions in output time (translated subtitles too), hook after the intro card.
-    words, lang, hook_text, hook_lang = clip_text(project, cand, opts)
+    words, lang, hook_text, hook_lang = clip_text(project, {**cand, "start": start, "end": end}, opts)
+    seam = plan.loop
+    if seam is not None and seam.hook_text and not opts.hook_text:  # the AI's loop hook
+        hook_text, hook_lang = seam.hook_text, (cand.get("publish") or {}).get("language") or lang
     if opts.subtitle_lang and lang == opts.subtitle_lang and lang != plan.lang:
         mapped = []
         for w in words:  # translated pseudo-words (relative to the clip start)
@@ -714,8 +744,10 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         brand_info, extra = _brand_layers(p, geo, spec, (W, H), lead, lead + main, total, intro, outro)
     if not spec.burn_captions:
         opts = ClipOptions.from_dict({**opts.to_dict(), "subtitles": "none"})
+    if seam is not None and opts.hook and hook_text:
+        extra = extra + [loop_hook_line(hook_text, geo, layout, total, languages.is_rtl(hook_lang or lang))]
     ass = build_ass(words, main, opts, layout, lang, hook_text, offset=lead, hook_lang=hook_lang, geo=geo,
-                    style=style, hook_start=intro, extra=extra)
+                    style=style, hook_start=intro, extra=extra, hook_fade_in=0 if seam is not None else 150)
 
     final = ""
     if spec.width and spec.height and (spec.width, spec.height) != (W, H):
@@ -732,11 +764,11 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
             mix = audiomix.build(source, plan, work / "mix.wav", has_audio=has_audio,
                                  flash=(flash_start, flash) if flash else None)
 
-        inputs = ["-ss", f"{start:.3f}", "-t", f"{duration + 0.05:.3f}", "-i", src]
+        inputs = ["-ss", seek_at(start, fps), "-t", f"{duration + 0.05:.3f}", "-i", src]
         n_in = 1
         fl_i = logo_i = in_i = out_i = a_i = None
         if flash:
-            inputs += ["-ss", f"{flash_start:.3f}", "-t", f"{flash:.3f}", "-i", src]
+            inputs += ["-ss", seek_at(flash_start, fps), "-t", f"{flash + 0.1:.3f}", "-i", src]
             fl_i, n_in = n_in, n_in + 1
         if brand_info.get("logo") is not None:
             inputs += ["-i", str(brand_info["logo"])]
@@ -751,13 +783,22 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         if mix is not None:
             inputs += ["-i", "mix.wav"]
             a_i, n_in = n_in, n_in + 1
+        tail_i = None
+        tail_frames = 0
+        if seam is not None and seam.tail_ok and seam.video_xfade > 0:
+            # The picture right after the end point: it dissolves into the first frames.
+            tail_frames = max(2, round(seam.video_xfade * F))
+            tail_at = start + plan.frames()[-1][1] / F
+            inputs += ["-ss", seek_at(tail_at, fps), "-t", f"{tail_frames / F + 0.2:.3f}", "-i", src]
+            tail_i, n_in = n_in, n_in + 1
 
         g: list[str] = []
         sel = ""
         if plan.cuts:
             expr = "+".join(f"between(n,{fa},{fb - 1})" for fa, fb in plan.frames())
             sel = f"select='{expr}',"
-        g.append(f"[0:v]fps={F},{sel}setpts=N/({F}*TB)[src]")
+        main_frames = sum(fb - fa for fa, fb in plan.frames())
+        g.append(f"[0:v]fps={F},{sel}setpts=N/({F}*TB),trim=end_frame={main_frames}[src]")
         fx: dict = {}
         if plan.zooms:
             z = plan.zoom_level
@@ -770,7 +811,14 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
                 fx["full"] = zoom.perspective_filter(merge(plan.out_pulses("scene") + plan.out_pulses("cam")), z, F)
         g.append(_filter_graph(layout, src_w, src_h, facecam, "src", "base", (W, H), fx=fx))
         white = ",fade=t=in:st=0:d=0.18:color=white" if flash else ""
-        g.append(f"[base]setsar=1{white},format=yuv420p[mainv]")
+        if tail_i is not None:
+            g.append("[base]setsar=1,format=yuv420p[mainv0]")
+            g.append(f"[{tail_i}:v]fps={F},trim=end_frame={tail_frames},setpts=N/({F}*TB)[tlsrc]")
+            g.append(_filter_graph(layout, src_w, src_h, facecam, "tlsrc", "tlb", (W, H)))
+            g.append("[tlb]setsar=1,format=yuv420p[tlv]")
+            g.append(f"[tlv][mainv0]xfade=transition=fade:duration={tail_frames / F:.4f}:offset=0[mainv]")
+        else:
+            g.append(f"[base]setsar=1{white},format=yuv420p[mainv]")
         logos: list[str] = []
         if logo_i is not None:
             n_logo = 1 + bool(intro) + bool(outro)
@@ -779,7 +827,7 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         seq = []
 
         def card_chain(idx: int, name: str, d: float, logo_pad: str | None) -> None:
-            base = f"[{idx}:v]format=yuv420p,setsar=1"
+            base = f"[{idx}:v]trim=end_frame={round(d * F)},format=yuv420p,setsar=1"
             if logo_pad:
                 cw = _even(W * 0.36)
                 g.append(f"[{logo_pad}]scale={cw}:-2[{name}_l]")
@@ -794,7 +842,8 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         if flash:
             punch = f"scale={int(W * 1.08) // 2 * 2}:{int(H * 1.08) // 2 * 2},crop={W}:{H}"
             g.append(_filter_graph(layout, src_w, src_h, facecam, f"{fl_i}:v", "fl", (W, H)))
-            g.append(f"[fl]{punch},setsar=1,fps={F},format=yuv420p[flv]")
+            g.append(f"[fl]{punch},setsar=1,fps={F},trim=end_frame={round(flash * F)},setpts=N/({F}*TB),"
+                     f"format=yuv420p[flv]")
             seq.append("[flv]")
         seq.append("[mainv]")
         if outro:
@@ -856,6 +905,15 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
                 "zoom_pulses": len(plan.out_pulses("scene")) + len(plan.out_pulses("cam")) if plan.zooms else 0,
                 "music": mix.music if mix else None, "lufs": mix.lufs if mix else None,
                 "brand": (plan.brand or {}).get("name"), "intro": intro, "outro": outro}
+        if seam is not None:
+            from .edit import loop as loop_mod
+
+            # The picture band without text: the gameplay part of a split, else between hook and captions.
+            rows = (0.46, 0.97) if layout == "split" else (0.27, 0.66)
+            info["loop"] = {**seam.to_dict(), "duration": round(total, 2),
+                            "audio_seam": mix.seam if mix is not None else None,
+                            "file_audio_seam": loop_mod.measure(dest) if mix is not None else None,
+                            "video_seam": loop_mod.video_seam(dest, rows), "dissolve": tail_i is not None}
         return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc.label, info)
     finally:
         shutil.rmtree(work, ignore_errors=True)

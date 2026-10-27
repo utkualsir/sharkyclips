@@ -7,6 +7,7 @@ export type Route =
   | { name: "project"; id: string }
   | { name: "bestof"; id: string }
   | { name: "game"; id: string }
+  | { name: "stories"; id: string }
   | { name: "settings" }
   | { name: "studio"; tab: StudioTab }
   | { name: "queue" }
@@ -17,6 +18,7 @@ function parse(): Route {
   const [a, b, c] = h.split("/");
   if (a === "p" && b && c === "bestof") return { name: "bestof", id: decodeURIComponent(b) };
   if (a === "p" && b && c === "game") return { name: "game", id: decodeURIComponent(b) };
+  if (a === "p" && b && c === "stories") return { name: "stories", id: decodeURIComponent(b) };
   if (a === "p" && b) return { name: "project", id: decodeURIComponent(b) };
   if (a === "settings") return { name: "settings" };
   if (a === "studio") return { name: "studio", tab: b === "brand" || b === "words" ? b : "music" };
@@ -47,6 +49,7 @@ export const href = {
   project: (id: string) => `#/p/${encodeURIComponent(id)}`,
   bestof: (id: string) => `#/p/${encodeURIComponent(id)}/bestof`,
   game: (id: string) => `#/p/${encodeURIComponent(id)}/game`,
+  stories: (id: string) => `#/p/${encodeURIComponent(id)}/stories`,
 };
 
 export function go(to: string) {

@@ -203,7 +203,8 @@ class JobManager:
 
     def list(self) -> list[dict]:
         with self._lock:
-            return [j.to_dict() for j in self._jobs.values()]
+            jobs = list(self._jobs.values())
+        return [j.to_dict() for j in jobs]  # outside the lock: to_dict asks the governor
 
     def lane_order(self, lane: str) -> list[Job]:
         """Running job first, then the queued ones in the order they will run."""

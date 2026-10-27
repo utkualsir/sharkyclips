@@ -7,6 +7,176 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.5] - 2026-10-27
+
+Retention tools: seamless loops, story clips from the whole stream, A/B hooks that learn what
+works on your channel, and editor timelines that match the rendered video exactly.
+
+### Added
+- **Seamless loop** (render option "Seamless loop"): the end flows back into the start, so viewers
+  rewatch without noticing. SharkyClips moves the end (a few seconds at most, never past the
+  platform's length limit) into a pause where the sound level, the picture and the motion match
+  the opening, never in the middle of a word. What comes right after the end is blended under the
+  first moment (sound and picture), the last second is brought to the opening's level, and there
+  is no fade to black, no outro card and no hook flash. The local AI can pick the most natural
+  ending and write a hook text that works as the end and the beginning. **Loop preview** in the
+  editor plays the end into the start again and again, and looped clips repeat in the Clips tab.
+  Every loop render measures its seam (click and loudness step).
+- **Story clips** (the new **Story** button on a project): the AI reads all moments of the stream
+  and proposes 2–3 mini stories ("fail → comeback", "setup → payoff", "running joke"), each 2–4
+  moments, 30–60 seconds, with a one-line pitch. Reorder or remove moments, turn the short text
+  cards between the acts on or off, and render one Short with quick transitions, captions that
+  continue across the moments and the same loudness for every part. Each story gets its own
+  titles, description, hashtags and thumbnail prompt, and you can read what the finished story
+  says before you post it. A stream with only one good moment gets no story, with the reason.
+- **A/B hooks**: any rendered clip can get two versions with different openings (peak flash,
+  question, cold open or text hook). A hook model scores the first 3 seconds of both right away
+  (motion, loudness, face and smile on your facecam, the on-screen text, trigger words, the AI's
+  opinion and your channel's results) and shows the predicted winner with the reasons.
+- **Real hook test on YouTube**: when you upload from SharkyClips, the hook styles take turns
+  fairly across your clips (Thompson sampling); 48 hours after publishing, views and retention
+  are fetched by themselves, and **Stats > Hook styles that work for you** shows each style with
+  its number of videos, a likely range and the chance that it's the best. A clip is never uploaded
+  twice. If Google keeps your uploads private (an unaudited API project), SharkyClips says so and
+  uses only the pre-test. Reconnect YouTube once so it may read retention.
+
+### Fixed
+- **Editor timelines (DaVinci Resolve, Final Cut Pro, Premiere Pro) now contain everything the
+  render has**: transcript cuts and silence / filler cuts as separate clips with the same
+  crossfades, bleeps (their own audio track + markers), zoom keyframes, the music with its
+  ducking, the brand kit on separate tracks, the intro / outro cards and the hook flash. Every cut
+  sits on the same frame as in the rendered MP4. Final Cut no longer rejects files with captions
+  and markers (wrong element order).
+- Subtitle files (SRT / VTT) now follow the cuts and the intro card of the exported video.
+- The hook flash and intro / outro cards are exactly as long as planned (they could be a frame
+  or two longer).
+
+<!-- lang:tr -->
+**Türkçe**
+
+İzlenme süresini artıran araçlar: kusursuz döngüler, yayının tamamından hikâye klipleri, kanalında
+neyin işe yaradığını öğrenen A/B kancalar ve render ile birebir aynı düzenleyici zaman çizelgeleri.
+
+### Eklendi
+- **Kusursuz döngü** (render seçeneği "Kusursuz döngü"): son, başa akıcı şekilde bağlanır; izleyici
+  fark etmeden tekrar izler. SharkyClips bitişi (en fazla birkaç saniye, platformun süre sınırını
+  asla aşmadan) ses seviyesi, görüntü ve hareketin açılışla uyuştuğu bir duraklamaya taşır; asla bir
+  kelimenin ortasına değil. Bitişten hemen sonra gelen kısım ilk ana karışır (ses ve görüntü), son
+  saniye açılışın seviyesine getirilir; karartma, kapanış kartı ve kanca flaşı yok. Yerel yapay zekâ
+  en doğal bitişi seçip hem son hem başlangıç olarak işe yarayan bir kanca yazısı yazabilir.
+  Düzenleyicideki **Döngü önizleme** sonu tekrar tekrar başa bağlayarak oynatır; döngülü klipler
+  Klipler sekmesinde de tekrar eder. Her döngü render'ı geçişini ölçer (tık ve ses farkı).
+- **Hikâye klipleri** (projedeki yeni **Hikâye** düğmesi): yapay zekâ yayının tüm anlarını okur ve
+  2–3 mini hikâye önerir ("başarısızlık → geri dönüş", "hazırlık → karşılık", "tekrar eden şaka");
+  her biri 2–4 an, 30–60 saniye ve tek satırlık bir özetle. Anların sırasını değiştir ya da çıkar,
+  bölümler arasındaki kısa yazı kartlarını aç / kapat ve hızlı geçişli, altyazısı anlar boyunca
+  süren, her bölümü aynı ses seviyesinde tek bir Short oluştur. Her hikâyenin kendi başlıkları,
+  açıklaması, hashtag'leri ve kapak istemi var; paylaşmadan önce bitmiş hikâyenin ne söylediğini
+  okuyabilirsin. Tek iyi anı olan bir yayın, nedeniyle birlikte hikâyesiz kalır.
+- **A/B kancalar**: render edilmiş her klibin farklı açılışlı iki versiyonu olabilir (zirve flaşı,
+  soru, doğrudan aksiyon ya da yazı kancası). Bir kanca modeli ikisinin de ilk 3 saniyesini hemen
+  puanlar (hareket, ses seviyesi, facecam'deki yüz ve gülümseme, ekrandaki yazı, tetikleyici
+  kelimeler, yapay zekânın görüşü ve kanalının sonuçları) ve tahmini kazananı nedenleriyle gösterir.
+- **YouTube'da gerçek kanca testi**: SharkyClips'ten yükleme yapınca kanca stilleri klipler arasında
+  adil şekilde sırayla denenir (Thompson örneklemesi); yayından 48 saat sonra izlenme ve izleyici
+  tutma kendiliğinden alınır, **İstatistikler > Sana uyan kanca stilleri** her stili video sayısı,
+  olası aralığı ve en iyi olma olasılığıyla gösterir. Bir klip asla iki kez yüklenmez. Google
+  yüklemelerini gizli tutuyorsa (denetlenmemiş API projesi) SharkyClips bunu söyler ve yalnızca ön
+  testi kullanır. İzleyici tutmayı okuyabilmesi için YouTube'u bir kez yeniden bağla.
+
+### Düzeltildi
+- **Düzenleyici zaman çizelgeleri (DaVinci Resolve, Final Cut Pro, Premiere Pro) artık render'daki
+  her şeyi içeriyor**: metin kesimleri ve sessizlik / dolgu kesimleri aynı geçişlerle ayrı klipler
+  olarak, bipler (kendi ses izi + işaretçiler), zoom anahtar kareleri, ses kısmalı müzik, ayrı izlerde
+  marka kiti, giriş / kapanış kartları ve kanca flaşı. Her kesim, render edilen MP4'teki kareyle aynı
+  karede. Final Cut altyazı ve işaretçili dosyaları artık reddetmiyor (yanlış öğe sırası).
+- Altyazı dosyaları (SRT / VTT) artık dışa aktarılan videonun kesimlerine ve giriş kartına uyuyor.
+- Kanca flaşı ve giriş / kapanış kartları tam planlandığı uzunlukta (bir iki kare uzun olabiliyordu).
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Werkzeuge für mehr Wiedergabezeit: nahtlose Loops, Story-Clips aus dem ganzen Stream, A/B-Hooks,
+die lernen, was auf deinem Kanal funktioniert, und Editor-Timelines, die genau dem Render entsprechen.
+
+- **Neu: nahtloser Loop**: Das Ende fließt zurück in den Anfang (Ende in einer passenden Pause, nie
+  mitten im Wort, kein Schwarzbild), mit **Loop-Vorschau** im Editor und gemessener Naht.
+- **Neu: Story-Clips** (Knopf **Story**): 2–3 Mini-Stories aus Momenten des ganzen Streams, 30–60 s,
+  umsortierbar, mit schnellen Übergängen, durchgehenden Untertiteln, gleicher Lautstärke und eigenem
+  Veröffentlichungspaket.
+- **Neu: A/B-Hooks**: zwei Anfänge pro Clip, sofort bewertet mit Begründung; beim Hochladen aus der
+  App lernt ein echter Test nach 48 Stunden, welcher Hook-Stil bei dir funktioniert (Statistik).
+- **Behoben:** Editor-Timelines enthalten jetzt alles aus dem Render, framegenau; Untertiteldateien
+  folgen den Schnitten.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Nézési időt növelő eszközök: zökkenőmentes hurkok, történetklipek az egész streamből, A/B horgok,
+amelyek megtanulják, mi működik a csatornádon, és a renderrel pontosan egyező vágóprogram-idővonalak.
+
+- **Új: zökkenőmentes hurok**: a vége visszafolyik az elejébe (illő szünetben, soha nem szó közepén,
+  elsötétítés nélkül), **hurok-előnézettel** és mért illesztéssel.
+- **Új: történetklipek** (**Történet** gomb): 2–3 mini történet az egész stream pillanataiból,
+  30–60 mp, átrendezhető, gyors áttűnésekkel, folyamatos feliratokkal, egyforma hangerővel és saját
+  közzétételi csomaggal.
+- **Új: A/B horgok**: két kezdés klipenként, azonnali pontozással és indoklással; az alkalmazásból
+  feltöltve egy éles teszt 48 óra után megtanulja, melyik horogstílus működik nálad (Statisztika).
+- **Javítva:** a vágóprogram-idővonalak mindent tartalmaznak, ami a renderben van, képkockára
+  pontosan; a feliratfájlok követik a vágásokat.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Инструменты для удержания: бесшовные петли, клипы-истории из всего стрима, A/B-хуки, которые
+учатся на вашем канале, и таймлайны для монтажа, точно совпадающие с рендером.
+
+- **Новое: бесшовная петля**: конец перетекает в начало (стык в подходящей паузе, никогда посреди
+  слова, без затемнения), с **предпросмотром петли** и измерением стыка.
+- **Новое: клипы-истории** (кнопка **История**): 2–3 мини-истории из моментов всего стрима, 30–60 с,
+  с перестановкой, быстрыми переходами, сквозными субтитрами, одинаковой громкостью и своим пакетом
+  для публикации.
+- **Новое: A/B-хуки**: два начала на клип, сразу с оценкой и причинами; при загрузке из приложения
+  реальный тест через 48 часов узнаёт, какой стиль хука работает у вас (Статистика).
+- **Исправлено:** таймлайны для монтажа содержат всё, что есть в рендере, с точностью до кадра;
+  файлы субтитров следуют за вырезками.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+أدوات لزيادة مدة المشاهدة: حلقات سلسة، ومقاطع قصص من البث كله، وخطافات A/B تتعلم ما ينجح على
+قناتك، ومخططات زمنية لبرامج المونتاج تطابق الإخراج تمامًا.
+
+- **جديد: حلقة سلسة**: تنساب النهاية إلى البداية (في وقفة مناسبة، لا وسط كلمة أبدًا، بلا تعتيم)،
+  مع **معاينة الحلقة** وقياس نقطة الوصل.
+- **جديد: مقاطع القصص** (زر **قصة**): 2–3 قصص قصيرة من لحظات البث كله، 30–60 ثانية، قابلة لإعادة
+  الترتيب، بانتقالات سريعة وترجمة متصلة ومستوى صوت موحّد وحزمة نشر خاصة.
+- **جديد: خطافات A/B**: بدايتان لكل مقطع مع تقييم فوري وأسبابه؛ وعند الرفع من التطبيق يتعلّم اختبار
+  حقيقي بعد 48 ساعة أي نمط خطاف ينجح معك (الإحصاءات).
+- **إصلاح:** المخططات الزمنية لبرامج المونتاج تحتوي الآن كل ما في الإخراج بدقة الإطار؛ وملفات
+  الترجمة تتبع عمليات القص.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+提升观看时长的工具：无缝循环、用整场直播组成的故事剪辑、能学习你频道偏好的 A/B 开头，以及与渲染结果完全一致的剪辑软件时间线。
+
+- **新增：无缝循环**：结尾自然接回开头（落在合适的停顿处，绝不在词语中间，没有黑场），编辑器中可**循环预览**，并测量接缝。
+- **新增：故事剪辑**（**故事**按钮）：用整场直播的精彩时刻组成 2–3 个 30–60 秒的迷你故事，可调整顺序，转场快速，字幕连贯，音量统一，并有专属发布素材包。
+- **新增：A/B 开头**：每个剪辑两个开头，立即打分并说明原因；从应用上传时，真实测试会在 48 小时后了解哪种开头风格最适合你（统计页）。
+- **修复：**剪辑软件时间线现在包含渲染中的全部内容，精确到帧；字幕文件也会跟随剪切。
+
+</details>
+
+
 ## [1.2.4] - 2026-10-26
 
 Editing power tools: bleep swear words, cut silences, smart zoom, edit by transcript, your own

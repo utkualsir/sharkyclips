@@ -269,3 +269,26 @@ def test_ollama_autostart_link_is_parked_and_restored(tmp_path, monkeypatch):
     assert not (start / "Ollama.lnk").exists() and (tmp_path / "parked" / "Ollama.lnk").is_file()
     assert startup.apply_ollama_autostart(True) is True
     assert (start / "Ollama.lnk").read_bytes() == b"lnk"
+
+
+def test_tick_asks_the_job_manager_outside_its_lock():
+    """The job list holds its lock and asks the governor (paused_total); the governor's tick
+    asks the job list (busy). Holding the governor lock there deadlocked the server."""
+    import threading
+
+    seen = []
+
+    def busy():
+        free = []
+        t = threading.Thread(target=lambda: free.append(g._lock.acquire(timeout=1) and (g._lock.release() or True)))
+        t.start()
+        t.join()
+        seen.append(free[0])
+        return False
+
+    g = governor.Governor(busy=busy)
+    try:
+        g.tick()
+    finally:
+        procs.resume_all()  # real sensors: a busy PC may make it pause; never leak that
+    assert seen and all(seen)

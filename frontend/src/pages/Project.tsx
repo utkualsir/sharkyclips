@@ -12,6 +12,7 @@ import {
   type Facecam,
   type GameChoice,
   type GameId,
+  type HookTests,
   type HypeCurve,
   type Layout,
   type Mode,
@@ -38,7 +39,8 @@ import { useMeta } from "../meta";
 import { CountUp } from "../motion";
 import { href } from "../router";
 import { useToast } from "../toast";
-import { effectiveRange, maskWord, typing, useHistory, usePlan, usePreviewPlayback } from "../editing";
+import { effectiveRange, maskWord, renderRange, typing, useHistory, usePlan, usePreviewPlayback } from "../editing";
+import HookTestDialog from "../components/HookTest";
 import { gameReasonLabel, whyText } from "./GameDebug";
 
 const MODES: Mode[] = ["gaming", "study", "music"];
@@ -317,6 +319,9 @@ export default function ProjectPage({ id }: { id: string }) {
   const [keysOpen, setKeysOpen] = useState(false);
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
   const [brand, setBrand] = useState<BrandState | null>(null);
+  const [loopPlay, setLoopPlay] = useState(false);
+  const [hookTests, setHookTests] = useState<HookTests | null>(null);
+  const [hookFor, setHookFor] = useState<string | null>(null);
   const history = useHistory<Snapshot>();
   useEffect(() => {
     api.music().then((m) => setTracks(m.tracks)).catch(() => {});
@@ -325,6 +330,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const loadExports = useCallback(() => {
     api.clipExports(id).then(setClipExports).catch(() => {});
     api.uploads(id).then(setUploads).catch(() => {});
+    api.hookTests(id).then(setHookTests).catch(() => {});
   }, [id]);
 
   const load = useCallback(async () => {
@@ -351,7 +357,11 @@ export default function ProjectPage({ id }: { id: string }) {
   useEffect(() => {
     if (!lastFinished || lastFinished.project_id !== id) return;
     load();
-    if (["export", "upload", "render"].includes(lastFinished.kind)) loadExports();
+    if (["export", "upload", "render", "ab"].includes(lastFinished.kind)) loadExports();
+    if (lastFinished.kind === "ab" && lastFinished.status === "done" && lastFinished.result?.clip_id) {
+      const cid = lastFinished.result.clip_id as string;
+      toast({ kind: "ok", text: t("ab.done", { label: lastFinished.result.winner }), action: { label: t("ab.open"), run: () => setHookFor(cid) } });
+    }
     const stillExporting = jobs.some((j) => j.kind === "export" && j.project_id === id && isActive(j));
     if (lastFinished.kind === "export" && lastFinished.status === "done" && !stillExporting) {
       toast({ kind: "ok", text: t("export.done"), action: { label: t("render.view"), run: () => setTab("clips") } });
@@ -395,7 +405,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const accepted = useMemo(() => new Set(review?.accepted ?? []), [review]);
   const options: ClipOptions = review?.options ?? {
     layout: "auto", subtitles: "bold", hook: true, hook_flash: false, subtitle_lang: "", profanity: "auto",
-    profanity_captions: true, cuts: "off", zoom: "off", music: false, brand: false,
+    profanity_captions: true, cuts: "off", zoom: "off", music: false, brand: false, loop: false,
   };
   const rejected = useMemo(() => new Set(review?.rejected ?? []), [review]);
   const edit: ClipEdit | undefined = selected ? review?.edits?.[selected.id] : undefined;
@@ -408,6 +418,8 @@ export default function ProjectPage({ id }: { id: string }) {
     music: musicChoice === undefined ? null : musicChoice,
     rev: (activeBrand?.rev ?? 0) + tracks.length * 1000,
   });
+  // A seamless loop moves the end to its seam (and a start out of a word): preview what the render does.
+  const shownRange = renderRange(range, options, plan);
   const subLangs = [...new Set(cands.flatMap((c) => c.subtitle_languages ?? []))].filter((l) => l !== project?.language);
   const hookText = selected ? review?.hooks[selected.id] ?? selected.default_hook : "";
   const hookEdited = !!(selected && review?.hooks[selected.id] != null);
@@ -477,7 +489,10 @@ export default function ProjectPage({ id }: { id: string }) {
     const v = video.current;
     if (!v) return;
     const on = () => setTime(v.currentTime);
-    const onPause = () => setPlayingClip(false);
+    const onPause = () => {
+      setPlayingClip(false);
+      setLoopPlay(false);
+    };
     v.addEventListener("timeupdate", on);
     v.addEventListener("seeked", on);
     v.addEventListener("pause", onPause);
@@ -488,7 +503,27 @@ export default function ProjectPage({ id }: { id: string }) {
     };
   }, [playingClip, selected, project?.highlights]);
 
-  usePreviewPlayback(video, playingClip, plan, range?.end ?? null, () => setPlayingClip(false));
+  usePreviewPlayback(
+    video,
+    playingClip,
+    plan,
+    shownRange?.end ?? null,
+    () => setPlayingClip(false),
+    loopPlay && shownRange ? shownRange.start : null,
+  );
+
+  /** Loop preview: from 3 s before the seam, the end plays into the start, repeating. */
+  const loopPreview = () => {
+    const v = video.current;
+    if (!v || !shownRange) return;
+    v.currentTime = Math.max(shownRange.start, shownRange.end - 3);
+    setLoopPlay(true);
+    setPlayingClip(true);
+    v.play().catch(() => {
+      setPlayingClip(false);
+      setLoopPlay(false);
+    });
+  };
 
   const seek = (s: number) => {
     const v = video.current;
@@ -508,7 +543,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const playClip = (c: Candidate | null = selected) => {
     const v = video.current;
     if (!v || !c) return;
-    const r = rangeOf(c);
+    const r = c.id === selected?.id && shownRange ? shownRange : rangeOf(c);
     if (c.id !== selected?.id || v.currentTime < r.start - 0.5 || v.currentTime >= r.end - 0.2) v.currentTime = r.start;
     setPlayingClip(true);
     v.play().catch(() => setPlayingClip(false));
@@ -859,6 +894,12 @@ export default function ProjectPage({ id }: { id: string }) {
               </div>
             )}
             {project.highlights && (
+              <a className="btn btn-sm" href={href.stories(id)} title={t("story.button_hint")}>
+                <Icon name="book" />
+                {t("story.button")}
+              </a>
+            )}
+            {project.highlights && (
               <a className="btn btn-sm" href={href.bestof(id)}>
                 <Icon name="layers" />
                 {t("bestof.button")}
@@ -939,7 +980,7 @@ export default function ProjectPage({ id }: { id: string }) {
                       <VerticalPreview
                         video={video}
                         clip={selected}
-                        range={range}
+                        range={shownRange}
                         options={options}
                         facecam={fc}
                         words={previewWords}
@@ -958,8 +999,8 @@ export default function ProjectPage({ id }: { id: string }) {
                 </button>
                 {playingClip ? (
                   <button className="btn btn-sm" onClick={() => video.current?.pause()}>
-                    <Icon name="pause" />
-                    {t("player.stop")}
+                    <Icon name={loopPlay ? "repeat" : "pause"} />
+                    {loopPlay ? t("loop.stop") : t("player.stop")}
                   </button>
                 ) : (
                   <button className="btn btn-sm btn-primary" onClick={() => playClip()} disabled={!selected}>
@@ -970,9 +1011,10 @@ export default function ProjectPage({ id }: { id: string }) {
                 <button className="btn btn-sm icon-btn" onClick={() => step(1)} aria-label={t("player.next")} title={t("player.next")}>
                   <Icon name="chevron-right" className="icon flip-rtl" />
                 </button>
-                {selected && range && (
+                {selected && shownRange && (
                   <span className="tc" style={{ marginInlineStart: 4 }}>
-                    #{String(selected.rank).padStart(2, "0")} · {fmtTime(range.start)} – {fmtTime(range.end)}
+                    #{String(selected.rank).padStart(2, "0")} · {fmtTime(shownRange.start)} – {fmtTime(shownRange.end)}
+                    {options.loop && plan?.loop && <Icon name="repeat" size={12} />}
                   </span>
                 )}
                 <span style={{ flex: 1 }} />
@@ -1235,6 +1277,7 @@ export default function ProjectPage({ id }: { id: string }) {
                     setMusicChoice={(v) => selected && setMusicChoice(selected.id, v)}
                     brand={brand}
                     hasClip={!!selected}
+                    onLoopPreview={loopPreview}
                   />
                   <div className="facecam-line">
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -1305,7 +1348,7 @@ export default function ProjectPage({ id }: { id: string }) {
                   <div className="clips-grid">
                     {clips.map((c) => (
                       <div className="clip-card" key={c.id}>
-                        <video src={urls.clip(id, c.id, c.rendered_at)} controls playsInline preload="metadata" />
+                        <video src={urls.clip(id, c.id, c.rendered_at)} controls playsInline preload="metadata" loop={!!c.options.loop} />
                         <div className="foot">
                           <div style={{ display: "grid", minWidth: 0 }}>
                             <span className="tc">
@@ -1314,6 +1357,22 @@ export default function ProjectPage({ id }: { id: string }) {
                             <span className="muted" style={{ fontSize: 11 }} title={`${c.encoder} · ${fmtBytes(c.size_bytes)}`}>
                               {t("clips.rendered", { when: relTime(c.rendered_at) })}
                             </span>
+                            {c.edits?.loop && (
+                              <span
+                                className={`chip ${c.edits.loop.audio_seam?.ok === false ? "chip-outline warn-text" : "chip-outline"} loop-chip`}
+                                title={
+                                  c.edits.loop.audio_seam
+                                    ? t("loop.measured", {
+                                        click: num(c.edits.loop.audio_seam.click_ratio, 2),
+                                        step: num(c.edits.loop.audio_seam.loudness_step_lu, 1),
+                                      })
+                                    : t("loop.label")
+                                }
+                              >
+                                <Icon name="repeat" size={11} />
+                                {c.edits.loop.audio_seam?.ok === false ? t("loop.seam_check") : t("loop.seamless")}
+                              </span>
+                            )}
                           </div>
                           <a
                             className="btn btn-sm icon-btn"
@@ -1334,6 +1393,29 @@ export default function ProjectPage({ id }: { id: string }) {
                             <Icon name="upload" />
                             YouTube
                           </button>
+                          {hookTests?.clips[c.id] ? (
+                            <button className="btn btn-sm btn-ghost" onClick={() => setHookFor(c.id)} title={t("ab.open")}>
+                              <Icon name="split" />
+                              {t("ab.short_result", { label: hookTests.clips[c.id].winner })}
+                            </button>
+                          ) : (
+                            <button
+                              className="btn btn-sm btn-ghost"
+                              disabled={jobs.some((j) => j.kind === "ab" && j.project_id === id && j.params?.clip_id === c.id && isActive(j))}
+                              onClick={() =>
+                                api
+                                  .makeHookTest(id, c.id)
+                                  .then(() => toast({ kind: "ok", text: t("ab.queued") }))
+                                  .catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }))
+                              }
+                              title={t("ab.make_hint")}
+                            >
+                              <Icon name="split" />
+                              {jobs.some((j) => j.kind === "ab" && j.project_id === id && j.params?.clip_id === c.id && isActive(j))
+                                ? t("ab.making")
+                                : t("ab.make")}
+                            </button>
+                          )}
                         </div>
                         <UploadsLine uploads={uploads[c.id] ?? []} />
                         <PerformanceForm projectId={id} clip={c} onSaved={load} />
@@ -1374,7 +1456,25 @@ export default function ProjectPage({ id }: { id: string }) {
           clip={project.clips[uploadFor.cid] ?? null}
           exports={clipExports}
           initialSource={uploadFor.source}
+          hookTest={hookTests?.clips[uploadFor.cid] ?? null}
+          realTest={hookTests?.real_test ?? null}
+          uploads={uploads[uploadFor.cid] ?? []}
           onClose={() => setUploadFor(null)}
+        />
+      )}
+      {hookFor && hookTests?.clips[hookFor] && cands.find((c) => c.id === hookFor) && (
+        <HookTestDialog
+          projectId={id}
+          cand={cands.find((c) => c.id === hookFor)!}
+          test={hookTests.clips[hookFor]}
+          realTest={hookTests.real_test}
+          busy={jobs.some((j) => j.kind === "ab" && j.project_id === id && j.params?.clip_id === hookFor && isActive(j))}
+          onUpload={(source) => {
+            setHookFor(null);
+            setUploadFor({ cid: hookFor, source });
+          }}
+          onChanged={loadExports}
+          onClose={() => setHookFor(null)}
         />
       )}
       {fastOpen && (
@@ -1388,7 +1488,7 @@ export default function ProjectPage({ id }: { id: string }) {
             <VerticalPreview
               video={video}
               clip={selected}
-              range={range}
+              range={shownRange}
               options={options}
               facecam={fc}
               words={previewWords}

@@ -213,6 +213,20 @@ def save_upload(project: Project, cid: str, entry: dict) -> None:
         write_json_atomic(project.dir / "uploads.json", {"version": 1, "uploads": ups})
 
 
+def patch_upload(project: Project, cid: str, video_id: str, changes: dict) -> None:
+    with _lock:
+        ups = load_uploads(project)
+        for u in ups.get(cid, []):
+            if u.get("video_id") == video_id:
+                u.update(changes)
+        write_json_atomic(project.dir / "uploads.json", {"version": 1, "uploads": ups})
+
+
+def live_upload(project: Project, cid: str) -> dict | None:
+    """This clip's upload that is still on YouTube (a clip is uploaded once, never twice)."""
+    return next((u for u in load_uploads(project).get(cid, []) if u.get("video_id") and not u.get("missing")), None)
+
+
 def update_upload_stats(project: Project, stats: dict[str, dict]) -> int:
     """Store fetched views/likes on the matching uploads. Returns how many changed."""
     with _lock:

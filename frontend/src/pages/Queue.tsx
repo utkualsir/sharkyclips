@@ -23,6 +23,10 @@ const KIND_ICON: Record<string, string> = {
   export: "download",
   upload: "upload",
   yt_stats: "chart",
+  story: "book",
+  story_render: "book",
+  ab: "split",
+  hook_fetch: "chart",
 };
 
 function jobTitle(job: Job, t: T, projects: Map<string, string>): { title: string; sub: string | null } {
@@ -35,6 +39,8 @@ function jobTitle(job: Job, t: T, projects: Map<string, string>): { title: strin
     return { title: `#${String(p.rank ?? "?").padStart(2, "0")} · ${p.title || t("kind.render")}`, sub: projectTitle };
   }
   if (job.kind === "montage") return { title: t("queue.montage_title", { n: p.count ?? 0 }), sub: projectTitle };
+  if (job.kind === "ab") return { title: `#${String(p.rank ?? "?").padStart(2, "0")} · ${p.title || t("kind.ab")}`, sub: `${t("kind.ab")} · ${projectTitle ?? ""}` };
+  if (job.kind === "story_render") return { title: p.title || t("kind.story_render"), sub: `${t("kind.story_render")} · ${projectTitle ?? ""}` };
   if (job.kind === "import") return { title: t("kind.import"), sub: p.title ?? null };
   return { title: t(`kind.${job.kind}`), sub: projectTitle };
 }
@@ -42,6 +48,7 @@ function jobTitle(job: Job, t: T, projects: Map<string, string>): { title: strin
 function openLink(job: Job): string | null {
   if (job.kind === "montage" && job.project_id) return href.bestof(job.project_id);
   if (job.kind === "benchmark") return href.settings;
+  if ((job.kind === "story" || job.kind === "story_render") && job.project_id) return href.stories(job.project_id);
   return job.project_id ? href.project(job.project_id) : null;
 }
 

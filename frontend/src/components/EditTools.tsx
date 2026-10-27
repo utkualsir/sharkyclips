@@ -18,11 +18,15 @@ interface Props {
   setMusicChoice: (v: string | null) => void;
   brand: BrandState | null;
   hasClip: boolean;
+  /** start the loop preview (the end plays into the start, repeating) */
+  onLoopPreview?: () => void;
 }
 
 /** Render options of the editing tools (swear words, cuts, zoom, music, brand kit). */
-export default function EditTools({ options, setOption, plan, tracks, musicChoice, setMusicChoice, brand, hasClip }: Props) {
+export default function EditTools({ options, setOption, plan, tracks, musicChoice, setMusicChoice, brand, hasClip, onLoopPreview }: Props) {
   const { t, num } = useI18n();
+  const seam = plan?.loop ?? null;
+  const moved = seam ? Math.round((seam.end - seam.orig_end) * 10) / 10 : 0;
   const bleeps = plan ? plan.words.filter((w) => w.bleep && !w.removed).length : 0;
   const autoCut = plan ? plan.removed.filter((r) => r.kind !== "deleted").reduce((s, r) => s + r.b - r.a, 0) : 0;
   const pulses = plan ? plan.pulses.length : 0;
@@ -121,6 +125,38 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
             </a>
           )}
           {options.music && plan?.music && <span className="edit-note">{t("edit.music_ducking")}</span>}
+        </div>
+      </div>
+      <div className="render-row">
+        <label>{t("loop.label")}</label>
+        <div className="edit-cell">
+          <div className="edit-line">
+            <Toggle checked={options.loop} onChange={(v) => setOption({ loop: v })} label={t("loop.label")} />
+            {options.loop && hasClip && onLoopPreview && (
+              <button className="btn btn-sm btn-ghost" onClick={onLoopPreview} disabled={!seam} title={t("loop.preview_hint")}>
+                <Icon name="repeat" size={13} />
+                {t("loop.preview")}
+              </button>
+            )}
+          </div>
+          {!options.loop && <span className="edit-note">{t("loop.hint")}</span>}
+          {options.loop && hasClip && seam && (
+            <span className="edit-note" data-testid="loop-seam">
+              {moved === 0
+                ? t("loop.end_kept")
+                : moved > 0
+                  ? t("loop.end_later", { s: num(moved, 1) })
+                  : t("loop.end_earlier", { s: num(-moved, 1) })}
+              {seam.last_word && seam.first_word && ` · “${seam.last_word}” → “${seam.first_word}”`}
+              {seam.reasons.filter((r) => r !== "mid_speech").length > 0 &&
+                ` · ${seam.reasons.filter((r) => r !== "mid_speech").map((r) => t(`loop.why.${r}`)).join(", ")}`}
+              {seam.reasons.includes("mid_speech") && ` · ${t("loop.why.mid_speech")}`}
+              {seam.source === "ai" && ` · ${t("loop.ai")}`}
+            </span>
+          )}
+          {options.loop && (options.hook_flash || (options.brand && (plan?.brand_preset?.intro.enabled || plan?.brand_preset?.outro.enabled))) && (
+            <span className="edit-note warn-text">{t("loop.no_flash_cards")}</span>
+          )}
         </div>
       </div>
       <div className="render-row">

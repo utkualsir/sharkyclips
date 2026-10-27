@@ -181,7 +181,7 @@ def resolve_spec(fmt: Format, preset: Preset | None, src_fps: float, burn: bool)
                           codec=fmt.codec or "h264", bitrate_k=preset.bitrate_k,
                           audio="opus" if fmt.audio == "opus" else "aac", audio_k=preset.audio_k,
                           container=fmt.container if fmt.kind == "video" else "mp4", burn_captions=burn,
-                          safe=preset.safe)
+                          safe=preset.safe, max_seconds=preset.max_seconds)
     return OutputSpec(codec=fmt.codec or "h264", audio="opus" if fmt.audio == "opus" else "aac",
                       container=fmt.container if fmt.kind == "video" else "mp4", burn_captions=burn,
                       fps=min(60.0, src_fps or 30))
@@ -253,11 +253,14 @@ def to_vtt(cues: list[dict], lang: str | None = None) -> str:
 
 
 def clip_cues(project: Project, cand: dict, opts: ClipOptions, lang: str | None,
-              translate: Callable[[str], list[dict]] | None = None, offset: float = 0.0) -> tuple[list[dict], str | None]:
+              translate: Callable[[str], list[dict]] | None = None, offset: float = 0.0,
+              plan=None) -> tuple[list[dict], str | None]:
     """Cues of one clip in `lang` ("" / None = the spoken language). `translate(lang)` returns
-    translated subtitle lines when the clip has none in that language yet (local LLM)."""
-    start, end = float(cand["start"]), float(cand["end"])
-    duration = max(0.5, end - start)
+    translated subtitle lines when the clip has none in that language yet (local LLM).
+    plan: the render's EditPlan - the cues then follow its cuts (and a moved loop end), so
+    they match the finished video; `offset` = what comes before its main part."""
+    start, end = (plan.start, plan.end) if plan is not None else (float(cand["start"]), float(cand["end"]))
+    duration = max(0.5, plan.out_duration if plan is not None else end - start)
     spoken = None
     if project.transcript_path.is_file():
         spoken = read_json(project.transcript_path).get("language")
@@ -272,6 +275,15 @@ def clip_cues(project: Project, cand: dict, opts: ClipOptions, lang: str | None,
     if want and want != spoken:
         words = translated_words(cand["translations"][want], start, end, want)
         w_lang = want
+        if plan is not None:  # evenly timed pseudo-words: map them through the cuts
+            mapped = []
+            for w in words:
+                s0, e0 = plan.to_out(w["start"] + start, "fwd"), plan.to_out(w["end"] + start, "back")
+                if s0 is not None and e0 is not None and e0 > s0:
+                    mapped.append({**w, "start": s0, "end": e0})
+            words = mapped
+    elif plan is not None:
+        words, w_lang = plan.out_words(), plan.lang or spoken
     else:
         words, w_lang, _h, _hl = clip_text(project, cand, o)
     return subtitle_cues(words, duration, w_lang, offset), w_lang
@@ -508,7 +520,7 @@ def run_export(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam
     files: list[dict] = []
     extra: dict = {}
     duration = float(cand["duration"])
-    flash = bool(opts.hook_flash) and fmt is not None and fmt.kind != "audio"
+    flash = bool(opts.hook_flash) and not opts.loop and (fmt is None or fmt.kind != "audio")
 
     def stage(name: str, frac: float | None = None) -> None:
         if on_progress:
@@ -546,25 +558,45 @@ def run_export(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam
 
     sub_lang = None
     if req.subtitles or req.editors:
+        from . import editors
+        from .edit import plan as plan_mod
+
         stage("subtitles", None)
-        offset = FLASH_SECONDS if flash else 0.0
-        cues, sub_lang = clip_cues(project, cand, opts, req.subtitle_lang or None, translate, offset)
+        # The cues follow the render's plan: its cuts, the intro card, the flash, a moved loop end.
+        vertical = (preset.frame != "wide") if preset else True
+        spec_fps = preset.fps if preset else None
+        max_len = preset.max_seconds if preset else None
+        fps = editors.render_fps(src_fps, spec_fps)
+        plan = plan_mod.build(project, cand, opts, vertical=vertical, fps=fps, max_len=max_len)
+        if fmt is not None and fmt.kind == "audio":
+            plan.brand, plan.intro_s, plan.outro_s = None, 0.0, 0.0
+        lead = (plan.intro_s if plan.active else 0.0) + (FLASH_SECONDS if flash else 0.0)
+        cues, sub_lang = clip_cues(project, cand, opts, req.subtitle_lang or None, translate, lead, plan=plan)
         for p in write_subtitles(root / stem, cues, sub_lang, list(req.subtitles)):
             files.append(_file_entry(p, p.suffix[1:], "text/vtt" if p.suffix == ".vtt" else "application/x-subrip",
                                      {"language": sub_lang}))
         if req.editors:
-            from . import editors
-
             stage("editor_files", None)
-            # Editors cut the original video (full quality, re-editable): no flash offset.
-            ed_cues, _ = clip_cues(project, cand, opts, req.subtitle_lang or None, translate, 0.0)
-            for kind in req.editors:
-                path = editors.write(kind, project, cand, ed_cues, root / stem, sub_lang)
-                files.append(_file_entry(path, kind, "application/xml"))
+            # The same plan as the render, rebuilt for the editor (brand cards on, like the video).
+            ed_plan = plan_mod.build(project, cand, opts, vertical=vertical, fps=fps, max_len=max_len)
+            tl = editors.build(project, cand, opts, root / stem, vertical=vertical, spec_fps=spec_fps,
+                               max_len=max_len, plan=ed_plan,
+                               cues_for=lambda pl, lead_s: clip_cues(project, cand, opts, req.subtitle_lang or None,
+                                                                     translate, lead_s, plan=pl)[0])
+            for path in editors.write(list(req.editors), tl, root / stem, sub_lang):
+                files.append(_file_entry(path, path.suffix[1:] if path.suffix == ".fcpxml" else "premiere",
+                                         "application/xml"))
+            for path in tl.files:  # the timeline's own media: overlays, cards, bleep track
+                files.append(_file_entry(path, "editor_media", "image/png" if path.suffix == ".png" else "audio/wav",
+                                         {"editor": True}))
             if "srt" not in req.subtitles:  # Premiere / Resolve import captions from an SRT next to it
-                srt = write_subtitles(root / (stem + ".editor"), ed_cues, sub_lang, ["srt"])[0]
+                srt = write_subtitles(root / (stem + ".editor"), tl.cues, sub_lang, ["srt"])[0]
                 files.append(_file_entry(srt, "srt", "application/x-subrip", {"language": sub_lang, "editor": True}))
+            extra["editor_timeline"] = {"fps": tl.fps, "frames": tl.total, "parts": sum(p.kind == "main" for p in tl.pieces),
+                                        "layers": sorted({ly.kind for ly in tl.layers}), "loop": tl.loop}
 
+    if (extra.get("edits") or {}).get("duration"):
+        duration = float(extra["edits"]["duration"])
     warnings = check_length(req.preset, duration)
     if extra.get("gif_over_limit"):
         warnings.append({"code": "gif_over_limit", "max_mb": req.gif_max_mb})

@@ -344,6 +344,40 @@ The scorer and candidate picker don't change.
   title drafts. "Run speed test" measures both setups on your newest project's best clip
   (RTX 5070 Laptop: 28 s vs 15 s per clip).
 
+### Retention tools (1.2.5)
+
+* **Editor timelines** (`editors.py`): built from the same `EditPlan` as the render, on its frame
+  grid. Every kept part is its own clip on the original video; the sound crossfades at each join
+  (FCPXML: `audioStart`/`audioDuration` split edits + fades; Premiere: "Cross Fade (+3dB)" centered
+  on the cut). Bleeps: `<stem>.editor-bleeps.wav` on its own track + volume keyframes muting the
+  dialogue. Music: the library song with ducking keyframes. Zoom: scale keyframes. Brand kit, hook
+  text and cards: full-frame PNGs (text drawn by libass on black and white, alpha recovered by
+  difference matting) on separate tracks. FCPXML child order follows Apple's DTD; tests validate
+  with a DTD subset (`backend/tests/data/fcpxml_subset.dtd`, lxml) and match every timeline piece
+  to a real render frame by frame (a source whose frames encode their own number in the luma).
+* **Seamless loop** (`edit/loop.py`): the end moves (≤ 6 s back / 3 s forward, never past
+  `OutputSpec.max_seconds`) to a pause after a word, scored by sound level, picture and motion
+  match with the opening, sentence ends and pause length. The render blends the source right after
+  the end point under the first 60 ms (250 ms on music) of sound and the first 0.2 s of picture
+  (`xfade`), ramps the last 1.2 s toward the opening's level, ducks the music periodically, drops
+  zoom pulses at the seam, and has no fades, cards or flash. `measure_audio()` reports the seam's
+  click ratio, HF burst and loudness step on the mix (lossy codecs add their own start-up noise to
+  any file's first and last ~20 ms, so the decoded file is reported separately). The optional AI
+  step picks among the 3 best ends and writes a hook for both ends (cache: `cache/loop/`).
+* **Story clips** (`story.py`): good moments (viral or hype score ≥ 30, overlaps removed) go to the
+  LLM, which proposes up to 3 stories (2-4 ids in stream order, arc, pitch, cards); rules without
+  the LLM. `finalize()` snaps segments to word boundaries, trims overlaps, fits 30-60 s and drops
+  invalid stories. The render is one ffmpeg pass (segments + cards joined by 0.25 s `xfade`), the
+  sound per segment brought to the median loudness (±15 dB), then -14 LUFS. `stories.json`.
+* **A/B hooks** (`abtest.py`): styles flash / question / cold_open / statement. Pairs are the top
+  two Thompson samples; the hook model scores the first 3 s of each rendered variant (motion,
+  loudness, Haar face + smile on the facecam, text, trigger words, LLM judgment, channel
+  posterior). Real test: every app upload records its hook style; 48 h after publishing the
+  hourly tick fetches retention (YouTube Analytics, `yt-analytics.readonly`), reward =
+  min(1, average view percentage / 150), Beta posteriors per style (`~/.sharkyclips/hook_tests.json`).
+  Uploads that come back private although asked public mark the project as locked (pre-test only).
+  A clip with a live upload is never uploaded again.
+
 ### Long streams (3-6 hours)
 
 Audio is processed in ~10-minute chunks, split at quiet moments so words aren't cut. Only one

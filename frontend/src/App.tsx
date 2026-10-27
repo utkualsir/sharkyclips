@@ -18,6 +18,7 @@ import ProjectPage from "./pages/Project";
 import Studio from "./pages/Studio";
 import Queue from "./pages/Queue";
 import Stats from "./pages/Stats";
+import Stories from "./pages/Stories";
 import Settings from "./pages/Settings";
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
@@ -41,7 +42,7 @@ function TopBar() {
       <nav className="nav">
         <a
           href={href.library}
-          aria-current={["library", "project", "bestof", "game"].includes(route.name) ? "page" : undefined}
+          aria-current={["library", "project", "bestof", "game", "stories"].includes(route.name) ? "page" : undefined}
         >
           {t("nav.library")}
         </a>
@@ -166,6 +167,7 @@ export default function App() {
         {route.name === "project" && <ProjectPage key={route.id} id={route.id} />}
         {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
         {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
+        {route.name === "stories" && <Stories key={route.id} id={route.id} />}
         {route.name === "queue" && <Queue />}
         {route.name === "stats" && <Stats />}
       </div>

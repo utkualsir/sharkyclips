@@ -1,0 +1,67 @@
+<!-- The part of Apple's FCPXML DTD (1.9 / 1.10) that SharkyClips' editor timelines use.
+     Content models and their ORDER follow developer.apple.com "Document Type Definition";
+     elements we never write are left out of the models, which only makes this stricter. -->
+<!ENTITY % time "CDATA">
+
+<!ELEMENT fcpxml (resources?, library)>
+<!ATTLIST fcpxml version CDATA #REQUIRED>
+
+<!ELEMENT resources (asset | format)*>
+<!ELEMENT format EMPTY>
+<!ATTLIST format id ID #REQUIRED name CDATA #IMPLIED frameDuration %time; #IMPLIED width CDATA #IMPLIED
+                 height CDATA #IMPLIED colorSpace CDATA #IMPLIED>
+<!ELEMENT asset (media-rep+)>
+<!ATTLIST asset id ID #REQUIRED name CDATA #IMPLIED start %time; #IMPLIED duration %time; #IMPLIED
+                hasVideo CDATA #IMPLIED format IDREF #IMPLIED hasAudio CDATA #IMPLIED videoSources CDATA #IMPLIED
+                audioSources CDATA #IMPLIED audioChannels CDATA #IMPLIED audioRate CDATA #IMPLIED>
+<!ELEMENT media-rep EMPTY>
+<!ATTLIST media-rep kind (original-media | proxy-media) "original-media" src CDATA #REQUIRED>
+
+<!ELEMENT library (event)*>
+<!ELEMENT event (project)*>
+<!ATTLIST event name CDATA #IMPLIED>
+<!ELEMENT project (sequence)>
+<!ATTLIST project name CDATA #IMPLIED>
+<!ELEMENT sequence (spine)>
+<!ATTLIST sequence format IDREF #REQUIRED duration %time; #IMPLIED tcStart %time; #IMPLIED tcFormat (DF | NDF) #IMPLIED
+                   audioLayout (mono | stereo | surround) #IMPLIED audioRate (32k | 44.1k | 48k | 88.2k | 96k | 176.4k | 192k) #IMPLIED>
+<!ELEMENT spine (video | asset-clip)*>
+
+<!ENTITY % anchor_item "video | caption | asset-clip">
+<!ENTITY % fadeType "(linear | easeIn | easeOut | easeInOut)">
+<!ELEMENT fadeIn EMPTY>
+<!ATTLIST fadeIn type %fadeType; #IMPLIED duration %time; #REQUIRED>
+<!ELEMENT fadeOut EMPTY>
+<!ATTLIST fadeOut type %fadeType; #IMPLIED duration %time; #REQUIRED>
+<!ELEMENT keyframeAnimation (keyframe*)>
+<!ELEMENT keyframe EMPTY>
+<!ATTLIST keyframe time %time; #REQUIRED value CDATA #REQUIRED interp (linear | ease | easeIn | easeOut) "linear"
+                   curve (linear | smooth) "smooth">
+<!ELEMENT param (fadeIn?, fadeOut?, keyframeAnimation?)>
+<!ATTLIST param name CDATA #REQUIRED value CDATA #IMPLIED>
+<!ELEMENT adjust-transform (param*)>
+<!ELEMENT adjust-volume (param*)>
+<!ATTLIST adjust-volume amount CDATA "0dB">
+
+<!-- asset-clip: (note?, timing, intrinsic-video, intrinsic-audio, anchors*, markers*, ...) -->
+<!ELEMENT asset-clip (adjust-transform?, adjust-volume?, (%anchor_item;)*, marker*)>
+<!ATTLIST asset-clip ref IDREF #REQUIRED lane CDATA #IMPLIED offset %time; #IMPLIED name CDATA #IMPLIED
+                     start %time; #IMPLIED duration %time; #IMPLIED srcEnable (all | audio | video) "all"
+                     audioStart %time; #IMPLIED audioDuration %time; #IMPLIED format IDREF #IMPLIED
+                     tcFormat (DF | NDF) #IMPLIED audioRole CDATA #IMPLIED>
+<!-- video: (param*, note?, timing, intrinsic-video, anchors*, markers*, filters*, reserved?) -->
+<!ELEMENT video ((%anchor_item;)*, marker*)>
+<!ATTLIST video ref IDREF #REQUIRED lane CDATA #IMPLIED offset %time; #IMPLIED name CDATA #IMPLIED
+                start %time; #IMPLIED duration %time; #REQUIRED>
+<!ELEMENT caption (text*, text-style-def*)>
+<!ATTLIST caption lane CDATA #IMPLIED offset %time; #IMPLIED name CDATA #IMPLIED start %time; #IMPLIED
+                  duration %time; #REQUIRED role CDATA #IMPLIED>
+<!ELEMENT text (#PCDATA | text-style)*>
+<!ATTLIST text placement (left | right | top | bottom) #IMPLIED>
+<!ELEMENT text-style-def (text-style)>
+<!ATTLIST text-style-def id ID #REQUIRED>
+<!ELEMENT text-style (#PCDATA)>
+<!ATTLIST text-style ref IDREF #IMPLIED font CDATA #IMPLIED fontSize CDATA #IMPLIED fontFace CDATA #IMPLIED
+                     fontColor CDATA #IMPLIED backgroundColor CDATA #IMPLIED>
+<!ELEMENT marker EMPTY>
+<!ATTLIST marker start %time; #REQUIRED duration %time; #IMPLIED value CDATA #REQUIRED note CDATA #IMPLIED>

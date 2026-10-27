@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, type CalibrationGroup, type CalibrationStats, type YoutubeStatus } from "../api";
+import { api, type CalibrationGroup, type CalibrationStats, type HookStats, type YoutubeStatus } from "../api";
 import { Icon } from "../components/Icons";
 import { ProgressBar } from "../components/ui";
 import { fmtCompact, fmtInt } from "../format";
@@ -149,6 +149,82 @@ function Groups({ title, groups, label, note }: { title: string; groups: Calibra
   );
 }
 
+// ------------------------------------------------------------------ hook styles (A/B test, 1.2.5)
+
+function HookStyles() {
+  const { t, num } = useI18n();
+  const toast = useToast();
+  const { jobs, finishedTick } = useJobs();
+  const [data, setData] = useState<HookStats | null>(null);
+  useEffect(() => {
+    api.hookStats().then(setData).catch(() => {});
+  }, [finishedTick]);
+  const fetching = jobs.some((j) => j.kind === "hook_fetch" && isActive(j));
+  if (!data) return null;
+  const fetchNow = () => api.fetchHookStats().catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
+  const pct = (x: number) => `${num(Math.round(x * 100))}%`;
+  return (
+    <section className="card hook-stats" aria-labelledby="hook-title" style={{ padding: 20 }}>
+      <div className="panel-head">
+        <h2 className="section-title" id="hook-title">
+          {t("hooks.title")}
+        </h2>
+        {data.youtube.connected && (
+          <button className="btn btn-sm btn-ghost" onClick={fetchNow} disabled={fetching} title={t("hooks.fetch_hint", { h: data.min_age_hours })}>
+            {fetching ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <Icon name="refresh" />}
+            {t("hooks.fetch")}
+          </button>
+        )}
+      </div>
+      <p className="muted" style={{ margin: "0 0 12px", fontSize: 13 }}>
+        {data.real_test.active
+          ? t("hooks.how_active", { h: data.min_age_hours })
+          : t(`ab.real_off.${data.real_test.reason ?? "not_connected"}`)}
+      </p>
+      {data.verdict ? (
+        <div className="notice" style={{ marginBottom: 12 }}>
+          <Icon name="sparkles" />
+          <span>{t("hooks.verdict", { style: t(`ab.style.${data.verdict.style}`), p: pct(data.verdict.confidence) })}</span>
+        </div>
+      ) : (
+        <p className="muted" style={{ margin: "0 0 12px", fontSize: 12.5 }}>
+          {data.observations === 0 ? t("hooks.no_data") : t("hooks.not_yet", { n: data.min_samples })}
+        </p>
+      )}
+      <table className="hook-table">
+        <thead>
+          <tr>
+            <th>{t("hooks.col_style")}</th>
+            <th className="num">{t("hooks.col_n")}</th>
+            <th className="num">{t("hooks.col_retention")}</th>
+            <th>{t("hooks.col_ci")}</th>
+            <th className="num">{t("hooks.col_best")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.styles.map((s) => (
+            <tr key={s.style}>
+              <td>{t(`ab.style.${s.style}`)}</td>
+              <td className="num mono">{num(s.n)}</td>
+              <td className="num mono">{s.mean_retention != null ? `${num(s.mean_retention, 1)}%` : "–"}</td>
+              <td>
+                <div className="ci-bar" title={t("hooks.ci_tip", { lo: pct(s.ci90[0]), hi: pct(s.ci90[1]) })}>
+                  <span style={{ insetInlineStart: `${s.ci90[0] * 100}%`, width: `${Math.max(1, (s.ci90[1] - s.ci90[0]) * 100)}%` }} />
+                  <i style={{ insetInlineStart: `${s.mean_reward * 100}%` }} />
+                </div>
+              </td>
+              <td className="num mono">{s.n ? pct(s.p_best) : "–"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>
+        {t("hooks.note", { cap: num(data.reward_cap) })}
+      </p>
+    </section>
+  );
+}
+
 // ------------------------------------------------------------------ page
 
 export default function Stats() {
@@ -202,6 +278,8 @@ export default function Stats() {
           </span>
         )}
       </div>
+
+      <HookStyles />
 
       {!data ? (
         <div className="skeleton" style={{ height: 320, borderRadius: 16 }} />

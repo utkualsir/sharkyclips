@@ -7,6 +7,16 @@ import { api, type Candidate, type ClipEdit, type ClipOptions, type EditPlanView
 const RAMP_IN = 0.35;
 const RAMP_OUT = 0.55;
 
+/** The range the render uses: a seamless loop may move the start out of a word and the end to its seam. */
+export function renderRange(
+  range: { start: number; end: number } | null,
+  options: ClipOptions,
+  plan: EditPlanView | null,
+): { start: number; end: number } | null {
+  if (range && options.loop && plan?.loop) return { start: plan.loop.start, end: plan.loop.end };
+  return range;
+}
+
 export function effectiveRange(c: Candidate, edit: ClipEdit | undefined): { start: number; end: number } {
   const start = edit?.start ?? c.start;
   const end = edit?.end ?? c.end;
@@ -61,13 +71,15 @@ export function usePlan(
 }
 
 /** While a clip plays in the preview: jump over cut parts, bleep / mute swear words, stop at
- * the clip's end. Runs every frame (timeupdate only fires ~4x a second). */
+ * the clip's end - or, in a loop preview, jump from the end back to `loopStart` and keep going.
+ * Runs every frame (timeupdate only fires ~4x a second). */
 export function usePreviewPlayback(
   video: RefObject<HTMLVideoElement>,
   active: boolean,
   plan: EditPlanView | null,
   end: number | null,
   onEnd: () => void,
+  loopStart: number | null = null,
 ) {
   const audio = useRef<{ ctx: AudioContext; osc: OscillatorNode; gain: GainNode } | null>(null);
   useEffect(() => {
@@ -112,9 +124,13 @@ export function usePreviewPlayback(
         beep(b);
       }
       if (end != null && t >= end) {
-        v.pause();
-        onEnd();
-        return;
+        if (loopStart != null) {
+          v.currentTime = loopStart; // the end flows into the start, again and again
+        } else {
+          v.pause();
+          onEnd();
+          return;
+        }
       }
       if (!v.paused) raf = requestAnimationFrame(tick);
     };
@@ -132,7 +148,7 @@ export function usePreviewPlayback(
         beep(false);
       }
     };
-  }, [video, active, plan, end]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [video, active, plan, end, loopStart]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(
     () => () => {
       audio.current?.ctx.close().catch(() => {});

@@ -8,6 +8,9 @@
 - music: starts at the song's strongest part, ducks under speech (word timestamps,
   smooth attack / release) and comes back in pauses, fades out at the end. With music
   the whole mix is normalized to -14 LUFS with peaks under -1 dBFS.
+- seamless loop (loop.py): no fades at the edges; what the source says right after the end
+  point is crossfaded under the first samples, the end is gained toward the opening's level,
+  the music bed loops the same way and ducks as if the clip repeated.
 """
 
 from __future__ import annotations
@@ -19,6 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from .. import governor
+from . import loop as loop_mod
 from . import loudness
 from .music import decode
 from .plan import EditPlan
@@ -29,6 +33,7 @@ BLEEP_HZ = 1000.0
 MUSIC_UNDER_SPEECH_DB = -20.0  # music level under speech, relative to the clip's speech loudness
 MUSIC_IN_PAUSES_DB = -9.0
 TARGET_LUFS = -14.0
+MUSIC_LOOP_XFADE = 0.3
 
 
 @dataclass
@@ -37,6 +42,7 @@ class MixResult:
     seconds: float
     lufs: float | None
     music: dict | None
+    seam: dict | None = None  # seamless loop: the seam measured on the finished mix
 
 
 def _n(t: float) -> int:
@@ -132,15 +138,22 @@ def duck_envelope(n: int, speech: list[tuple[float, float]], duck_db: float,
     return np.interp(np.arange(n) / SR, np.arange(m) * step, env).astype(np.float32)
 
 
-def music_bed(path: Path, best_start: float | None, duration: float | None, total: float) -> tuple[np.ndarray, float]:
-    """The song from its strongest part (earlier if what's left is too short), faded."""
+def music_bed(path: Path, best_start: float | None, duration: float | None, total: float,
+              looped: bool = False) -> tuple[np.ndarray, float]:
+    """The song from its strongest part (earlier if what's left is too short), faded.
+    looped: no fades; the song's continuation past the end is crossfaded under its start."""
     dur = float(duration or 0)
     off = float(best_start or 0)
-    if dur and dur - off < total:
-        off = max(0.0, dur - total)
-    y = decode(path, off, total + 0.1, sr=SR, channels=2)
-    if len(y) < _n(total):
-        y = np.concatenate([y, np.zeros((_n(total) - len(y), 2), np.float32)])
+    extra = MUSIC_LOOP_XFADE if looped else 0.0
+    if dur and dur - off < total + extra:
+        off = max(0.0, dur - total - extra)
+    y = decode(path, off, total + extra + 0.1, sr=SR, channels=2)
+    if len(y) < _n(total + extra):
+        y = np.concatenate([y, np.zeros((_n(total + extra) - len(y), 2), np.float32)])
+    if looped:
+        cont = y[_n(total): _n(total + extra)]
+        y = loop_mod.crossfade_head(y[: _n(total)].copy(), cont, extra, SR)
+        return y, off
     y = y[: _n(total)]
     fade_out = min(2.0, max(0.6, total * 0.12))
     return _fade(y, 0.3, fade_out), off
@@ -161,14 +174,26 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
     from .music import path_of
 
     governor.checkpoint()
+    seam = plan.loop
+    cont = None
     if has_audio:
         t0 = max(0.0, plan.start - 0.1)
-        src = decode(source, t0, plan.end - t0 + 0.1, sr=SR, channels=2)
+        after = (seam.audio_xfade + 0.05) if seam is not None else 0.1
+        src = decode(source, t0, plan.end - t0 + max(0.1, after), sr=SR, channels=2)
         main = cut_and_join(src, t0, plan)
+        if seam is not None and seam.tail_ok:  # the sound right after the end point
+            b = _n(plan.start - t0 + plan.frames()[-1][1] / plan.fps)
+            cont = src[b: b + _n(seam.audio_xfade)]
     else:
         main = np.zeros((_n(plan.out_duration), 2), np.float32)
     main = apply_bleeps(main, plan.bleeps, plan.bleep_mode)
-    main = _fade(main, 0.12, 0.2)
+    if seam is not None:
+        main, end_gain = loop_mod.meet_levels(main, SR)
+        if cont is not None and end_gain:
+            cont = cont * np.float32(10 ** (end_gain / 20))  # it continues the (re-leveled) end
+        main = loop_mod.crossfade_head(main, cont, seam.audio_xfade, SR)
+    else:
+        main = _fade(main, 0.12, 0.2)
     speech_ref = loudness.integrated_lufs(main)
     governor.checkpoint()
 
@@ -188,13 +213,20 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
     lufs = None
     mpath = path_of(plan.music["name"]) if plan.music else None
     if mpath is not None:
-        bed, off = music_bed(mpath, plan.music.get("best_start"), plan.music.get("duration"), total)
+        bed, off = music_bed(mpath, plan.music.get("best_start"), plan.music.get("duration"), total,
+                             looped=seam is not None)
         governor.checkpoint()
         m_lufs = loudness.integrated_lufs(bed)
         ref = speech_ref if speech_ref > -60 else -20.0
         gain = 10 ** ((ref + MUSIC_IN_PAUSES_DB - m_lufs) / 20) if m_lufs > -69 else 0.0
         speech = [(a + lead, b + lead) for a, b in plan.speech_out()]
-        env = duck_envelope(len(bed), speech, MUSIC_UNDER_SPEECH_DB - MUSIC_IN_PAUSES_DB)
+        duck = MUSIC_UNDER_SPEECH_DB - MUSIC_IN_PAUSES_DB
+        if seam is not None:  # duck as if the clip repeated: the end already dips for the opening
+            n = len(bed)
+            env = duck_envelope(3 * n, [(a + total, b + total) for a, b in loop_mod.periodic(speech, total)],
+                                duck)[n: 2 * n]
+        else:
+            env = duck_envelope(len(bed), speech, duck)
         mix = mix + bed * (gain * env)[:, None]
         music_info = {**plan.music, "offset": round(off, 2)}
         mix, _before = loudness.normalize(mix, TARGET_LUFS)
@@ -203,4 +235,5 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
         mix = loudness.limit(mix, -1.0)
     governor.checkpoint()
     write_wav(dest, mix)
-    return MixResult(dest, total, lufs, music_info)
+    seam_m = loop_mod.measure_audio(np.clip(mix, -1.0, 1.0), SR) if seam is not None and len(mix) >= SR else None
+    return MixResult(dest, total, lufs, music_info, seam_m)

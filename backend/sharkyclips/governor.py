@@ -352,9 +352,12 @@ class Governor:
 
     def tick(self) -> None:
         t0 = time.perf_counter()
+        # Ask the job manager BEFORE taking our lock: the job list takes its lock and then ours
+        # (paused_total for the ETAs), so the other order would deadlock the whole server.
+        idle = self.idle()
         with self._lock:
             cfg = self._cfg.get()
-            if self.idle():
+            if idle:
                 s = self.monitor.sample(set(self._ours), light=True)
                 self.sample, self.light = s, True
                 self.decision = Decision("idle", priority=self.decision.priority, cores=self.decision.cores)

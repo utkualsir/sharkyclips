@@ -7,6 +7,8 @@ of type "Desktop app" and loads its JSON in Settings. Files in ~/.sharkyclips/yo
   token.json     access + refresh token (never leaves this PC)
   quota.json     API units used today (resets at midnight Pacific Time, like Google's counter)
   sessions.json  resumable upload URLs, so a restart continues an upload instead of restarting it
+  locked.json    set when Google keeps our uploads private (an unaudited API project: since 2020,
+                 videos uploaded through such a project stay private until Google audits it)
 
 OAuth: authorization code + PKCE with a loopback redirect to this server
 (http://127.0.0.1:<port>/), which Google allows for Desktop app clients on any port.
@@ -39,7 +41,9 @@ REVOKE_URL = "https://oauth2.googleapis.com/revoke"
 API = "https://www.googleapis.com/youtube/v3"
 UPLOAD_API = "https://www.googleapis.com/upload/youtube/v3"
 SCOPES = ("https://www.googleapis.com/auth/youtube.upload",
-          "https://www.googleapis.com/auth/youtube.readonly")
+          "https://www.googleapis.com/auth/youtube.readonly",
+          "https://www.googleapis.com/auth/yt-analytics.readonly")  # retention for the A/B hook test
+ANALYTICS_API = "https://youtubeanalytics.googleapis.com/v2/reports"
 COST = {"upload": 1600, "thumbnail": 50, "list": 1}
 DEFAULT_DAILY_QUOTA = 10_000
 CHUNK = 8 * 1024 * 1024  # resumable upload chunk (multiple of 256 KiB)
@@ -198,7 +202,28 @@ def status() -> dict:
     return {"client": bool(client), "client_id": (client or {}).get("client_id"),
             "project_id": (client or {}).get("project_id"), "connected": connected(),
             "channel": tok.get("channel"), "connected_at": tok.get("connected_at"),
-            "quota": quota_view(), "scopes": list(SCOPES)}
+            "quota": quota_view(), "scopes": list(SCOPES), "analytics": has_analytics(),
+            "uploads_locked": uploads_locked()}
+
+
+def has_analytics() -> bool:
+    """The token includes YouTube Analytics (connected with 1.2.5 or later)."""
+    tok = _token() or {}
+    return connected() and "yt-analytics.readonly" in str(tok.get("scope") or "")
+
+
+def uploads_locked() -> dict | None:
+    return _read("locked.json")
+
+
+def mark_locked(video_id: str) -> None:
+    """A video we asked to be public / unlisted came back private: Google locks this project's uploads."""
+    if not uploads_locked():
+        _write("locked.json", {"at": _now(), "video_id": video_id})
+
+
+def clear_locked() -> None:
+    (folder() / "locked.json").unlink(missing_ok=True)
 
 
 def auth_url(redirect_uri: str) -> str:
@@ -513,6 +538,33 @@ def video_stats(ids: list[str]) -> dict[str, dict]:
                              "likes": int(stat["likeCount"]) if "likeCount" in stat else None,
                              "privacy": st.get("privacyStatus"), "published_at": sn.get("publishedAt"),
                              "upload_status": st.get("uploadStatus")}
+    return out
+
+
+def retention(ids: list[str], start_date: str, end_date: str | None = None) -> dict[str, dict]:
+    """Views and average view percentage of our own videos (YouTube Analytics API, its own
+    free quota). start_date / end_date: YYYY-MM-DD."""
+    out: dict[str, dict] = {}
+    end_date = end_date or datetime.now(timezone.utc).date().isoformat()
+    for i in range(0, len(ids), 40):
+        chunk = ids[i:i + 40]
+        res = _http().get(ANALYTICS_API, params={
+            "ids": "channel==MINE", "startDate": start_date, "endDate": end_date, "dimensions": "video",
+            "metrics": "views,averageViewDuration,averageViewPercentage", "filters": "video==" + ",".join(chunk),
+            "maxResults": 200}, headers={"Authorization": f"Bearer {access_token()}"}, timeout=30)
+        if res.status_code != 200:
+            err = _api_error(res, "analytics request")
+            if res.status_code == 403:
+                raise SharkyClipsError(err.message, "Reconnect YouTube in Settings so SharkyClips may read "
+                                                    "your channel's retention (YouTube Analytics).")
+            raise err
+        data = _json(res)
+        cols = [c.get("name") for c in data.get("columnHeaders") or []]
+        for row in data.get("rows") or []:
+            r = dict(zip(cols, row))
+            out[str(r.get("video"))] = {"views": int(r.get("views") or 0),
+                                        "avg_view_duration": float(r.get("averageViewDuration") or 0),
+                                        "avg_view_percentage": float(r.get("averageViewPercentage") or 0)}
     return out
 
 
