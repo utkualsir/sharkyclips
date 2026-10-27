@@ -242,7 +242,8 @@ VRAM and temperature (click it for 5-minute charts, SharkyClips vs. other apps).
 exactly where it stopped. Ollama no longer starts with Windows unless you turn it on in Settings.
 
 To use SharkyClips from your phone, start it with `python cli.py serve --lan` (from the `backend`
-folder) and open the address it prints. A command line for every step and the full technical
+folder) and open the address it prints. Set an **access PIN** first (Settings → Other devices, or
+`python cli.py lan-pin`): without one, anyone on your network can use it. A command line for every step and the full technical
 details are in **[docs/how-it-works.md](docs/how-it-works.md)**.
 
 ## FAQ

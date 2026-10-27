@@ -78,3 +78,26 @@ history for keys/tokens):
   Google rejects it you need a custom domain.
 - **Stored statistics after Disconnect** stay in the project files. Google's policies want them
   deleted on revocation; suggested follow-up in the verification doc.
+
+## Task 3: LAN access PIN
+
+- `backend/sharkyclips/lanauth.py`: PIN or password (digits only = PIN, 4-128 chars), stored as a
+  salted **scrypt** hash in `~/.sharkyclips/lan_auth.json` (separate from `config.json`, so the
+  settings API can never return it). Sessions: random 256-bit token in an `HttpOnly`,
+  `SameSite=Strict` cookie (30 days); only its SHA-256 is stored. A new PIN logs every device out.
+- **Rate limit:** 5 misses per device within 15 min, then a lock of 30 s that doubles per miss (max
+  15 min); plus at most 20 misses a minute from all devices together. While locked, even the right
+  PIN gets HTTP 429 with `Retry-After`.
+- `backend/sharkyclips/web/auth.py`: `/api/auth/status|login|logout|secret` and a pure-ASGI guard
+  (doesn't buffer, so the live event stream is fine). Off by default; requests from this computer
+  never need it; other devices need a session for every `/api/` path and `/openapi.json`. The UI
+  shell stays public so the login screen can load. Only this computer can set/remove the PIN.
+- UI: login screen for other devices (numeric keypad for PINs, countdown when locked), and a PIN
+  box in Settings → Other devices; red warning when LAN mode runs without a PIN. CLI:
+  `python cli.py lan-pin [--clear]`, and `serve --lan` prints a warning without a PIN.
+- Tests: `backend/tests/test_lanauth.py` (10 tests). Headless E2E on a throwaway settings folder:
+  login screen shown, API 401 before login, wrong PIN error, right PIN opens the app.
+
+**Decisions:** "recommended on LAN" = warning, not forced, so existing LAN users aren't locked out
+after the update. No HTTPS (would need certificates); SECURITY.md says to use LAN mode only on
+trusted networks.

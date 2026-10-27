@@ -95,6 +95,7 @@ python cli.py list         # projects in the workspace
 python cli.py languages    # supported languages
 python cli.py doctor       # check everything; --download-models also fetches Whisper now
 python cli.py serve        # web UI on :8000 (--lan for phones, --port, --no-browser)
+python cli.py lan-pin      # access PIN / password other devices need in --lan mode (--clear)
 python cli.py launch       # what the desktop shortcut runs: reuse a running SharkyClips or
                            # start one on a free port, then open the browser
 ```

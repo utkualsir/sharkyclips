@@ -12,6 +12,7 @@
     python cli.py list
     python cli.py languages
     python cli.py serve [--lan] [--port 8000]
+    python cli.py lan-pin [--clear]      (access PIN / password other devices need in --lan mode)
     python cli.py launch [--tray]        (desktop shortcut: reuse a running server or start one)
 
 Started with pythonw.exe (the Windows shortcut), there is no console: output goes to
@@ -465,6 +466,26 @@ def _signal_group(pgid: int, name: str) -> None:
         pass
 
 
+def cmd_lan_pin(args) -> int:
+    """Set or remove the access PIN / password other devices need in --lan mode."""
+    import getpass
+
+    from sharkyclips import lanauth
+
+    if args.clear:
+        lanauth.clear_secret()
+        console.print("Access PIN removed. In --lan mode anyone on your network can use SharkyClips.")
+        return 0
+    first = getpass.getpass(f"New PIN or password ({lanauth.MIN_LEN}+ characters): ")
+    if getpass.getpass("Repeat it: ") != first:
+        console.print("[red]The two entries don't match.[/] Nothing changed.")
+        return 1
+    kind = lanauth.set_secret(first)
+    console.print(f"Access {'PIN' if kind == 'pin' else 'password'} saved (only a salted hash is stored). "
+                  "Every device has to log in again.")
+    return 0
+
+
 def cmd_serve(args) -> int:
     import subprocess
 
@@ -495,8 +516,16 @@ def cmd_serve(args) -> int:
         if ip:
             lan_url = f"http://{ip}:{args.port}"
             console.print(f"On your phone / other computers (same Wi-Fi): [cyan]{lan_url}[/]")
-            console.print("[dim]Anyone on this network can open it. Windows may ask to allow "
-                          "Python through the firewall: allow it for private networks.[/]")
+            from sharkyclips import lanauth
+
+            if lanauth.enabled():
+                console.print("[dim]Other devices log in with your access PIN. Windows may ask to allow "
+                              "Python through the firewall: allow it for private networks.[/]")
+            else:
+                console.print("[yellow]No access PIN set: anyone on this network can use SharkyClips.[/] "
+                              "Set one in Settings > Network access, or run [bold]python cli.py lan-pin[/].")
+                console.print("[dim]Windows may ask to allow Python through the firewall: allow it for "
+                              "private networks.[/]")
         else:
             console.print("[yellow]Couldn't find this computer's network address.[/]")
     use_tray = bool(getattr(args, "tray", False))
@@ -744,6 +773,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--no-browser", action="store_true", help="don't open the browser")
     s.add_argument("--tray", action="store_true", help="show a tray icon (Open / mode / Quit)")
     s.set_defaults(func=cmd_serve)
+
+    lp = sub.add_parser("lan-pin", help="set the access PIN other devices need in --lan mode")
+    lp.add_argument("--clear", action="store_true", help="remove the PIN")
+    lp.set_defaults(func=cmd_lan_pin)
 
     la = sub.add_parser("launch", help="open SharkyClips (what the desktop shortcut runs): reuses a running "
                                        "server or starts one on a free port")

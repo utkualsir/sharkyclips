@@ -933,6 +933,29 @@ async function guardHeavy(method: string, path: string) {
   if (heavyGuard && HEAVY.some(([m, re]) => m === method && re.test(p))) await heavyGuard();
 }
 
+/** Fired when the server says this device has to log in (LAN access PIN). */
+export const AUTH_EVENT = "sharkyclips-auth-required";
+
+export interface AuthStatus {
+  enabled: boolean;
+  kind: "pin" | "password" | null;
+  is_local: boolean;
+  required: boolean;
+  authenticated: boolean;
+  lan: boolean;
+}
+
+async function authLogin(secret: string): Promise<{ ok: boolean; code?: string; retry_after?: number | null }> {
+  const res = await fetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ secret }),
+  });
+  if (res.ok) return { ok: true };
+  const data = await res.json().catch(() => ({}));
+  return { ok: false, code: data.code, retry_after: data.retry_after ?? null };
+}
+
 async function req<T>(method: string, path: string, body?: unknown): Promise<T> {
   await guardHeavy(method, path);
   const res = await fetch(path, {
@@ -947,6 +970,7 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
       const data = await res.json();
       msg = data.error || data.detail || msg;
       hint = data.hint || null;
+      if (res.status === 401 && data.code === "auth_required") window.dispatchEvent(new Event(AUTH_EVENT));
     } catch {
       /* not JSON */
     }
@@ -998,6 +1022,10 @@ export interface HardwareCheck {
 }
 
 export const api = {
+  authStatus: () => req<AuthStatus>("GET", "/api/auth/status"),
+  authLogin,
+  authSetSecret: (secret: string) => req<AuthStatus>("PUT", "/api/auth/secret", { secret }),
+  authClearSecret: () => req<AuthStatus>("DELETE", "/api/auth/secret"),
   appState: () => req<AppState>("GET", "/api/app"),
   changelog: (version: string, lang: string) =>
     req<ChangelogEntry>("GET", `/api/changelog/${encodeURIComponent(version)}?lang=${encodeURIComponent(lang)}`),

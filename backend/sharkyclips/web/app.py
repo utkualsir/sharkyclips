@@ -30,6 +30,8 @@ from ..project import MODES, Project, get_project, list_projects, read_json, slu
 from ..procs import no_window
 from ..render import ENCODERS, pick_encoder
 from . import state
+from .auth import LOCAL_HOSTS, LanGuard
+from .auth import router as _auth_router
 from .jobs import ACTIVE, Job, JobManager
 from .power import ShutdownTimer
 
@@ -45,6 +47,7 @@ power = ShutdownTimer(busy=jobs.busy, changed=jobs.bump)
 jobs.on_finished.append(lambda _job: power.job_finished())
 app = FastAPI(title="SharkyClips", version=__version__, docs_url="/api/docs", redoc_url=None)
 app.state.lan_url = None
+app.add_middleware(LanGuard)  # optional access PIN for other devices (--lan)
 
 
 @app.exception_handler(SharkyClipsError)
@@ -54,7 +57,7 @@ async def _sharkyclips_error(_req: Request, exc: SharkyClipsError):
 
 def _is_local(request: Request) -> bool:
     host = request.client.host if request.client else ""
-    return host in ("127.0.0.1", "::1", "localhost", "testclient")
+    return host in LOCAL_HOSTS
 
 
 def _project(project_id: str) -> Project:
@@ -2110,6 +2113,7 @@ def api_update_restart(request: Request) -> dict:
 from .studio import router as _studio_router  # noqa: E402 - editing tools API (1.2.4)
 from .retention import router as _retention_router  # noqa: E402 - stories, A/B hooks, loops (1.2.5)
 
+app.include_router(_auth_router)
 app.include_router(_studio_router)
 app.include_router(_retention_router)
 

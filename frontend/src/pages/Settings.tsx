@@ -6,6 +6,7 @@ import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { chooseLanguage, useMeta } from "../meta";
+import { LanPinBox } from "../components/LanAccess";
 import { YoutubeCard } from "../components/Publish";
 import { applyMotion, type MotionSetting } from "../motion";
 import { useTheme } from "../theme";
@@ -668,7 +669,7 @@ export default function Settings() {
               <h3>{t("settings.lan")}</h3>
               <p>{t("settings.lan_desc")}</p>
             </div>
-            <div style={{ alignSelf: "center" }}>
+            <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
               {meta?.lan_url ? (
                 <div style={{ display: "grid", gap: 6 }}>
                   <span className="muted">{t("settings.lan_on")}</span>
@@ -688,6 +689,7 @@ export default function Settings() {
                   <CopyButton text="python cli.py serve --lan" />
                 </div>
               )}
+              <LanPinBox lanOn={!!meta?.lan_url} isLocal={!!meta?.is_local} />
             </div>
           </section>
 

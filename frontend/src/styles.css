@@ -3424,3 +3424,57 @@ a.edit-note:hover { text-decoration: underline; }
 .ci-bar { position: relative; height: 8px; border-radius: 4px; background: var(--track); min-width: 120px; }
 .ci-bar span { position: absolute; top: 0; bottom: 0; border-radius: 4px; background: var(--gold-soft); border: 1px solid var(--gold-line); }
 .ci-bar i { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--gold); transform: translateX(-1px); }
+
+/* ------------------------------------------------------------------ LAN access PIN */
+.lan-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+.lan-login-card {
+  width: min(380px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 28px;
+  text-align: center;
+}
+.lan-login-card .field {
+  text-align: start;
+}
+.lan-login-card h1 {
+  margin: 0;
+  font-size: 34px;
+}
+.lan-login-card p {
+  margin: 0;
+}
+.lan-login-mark {
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-lg);
+  background: var(--mark-tile);
+  border: 1px solid var(--mark-tile-border);
+}
+.lan-login-error {
+  color: var(--danger);
+  font-size: 13.5px;
+}
+.lan-pin,
+.lan-pin-form {
+  display: grid;
+  gap: 8px;
+}
+.lan-pin-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.lan-pin-row .input {
+  flex: 1;
+  min-width: 160px;
+}
