@@ -43,6 +43,45 @@ jobs:
       - name: Tests (pytest)
         run: python -m pytest
 
+  backend-macos:
+    # macOS runners are free for public repositories but cost 10x minutes on private ones, so
+    # this job only runs once the repository is public. Non-blocking until it has passed once.
+    name: Backend (macOS)
+    if: ${{ !github.event.repository.private }}
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt -r backend/requirements-dev.txt
+      - name: Install ffmpeg
+        run: brew install ffmpeg
+      - name: Installer dry run (macOS)
+        run: bash install.sh --dry-run --lang en
+      - name: macOS code paths load (idle time, front app, hardware, encoders)
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          from sharkyclips import hardware, procs, render, sysmon
+          u = sysmon.read_user()
+          print("idle seconds:", u.idle_seconds, "front app:", u.fg_name)
+          hw = hardware.detect_hardware()
+          print(hw.os_name, hw.os_version, hw.arch, "apple silicon:", hw.apple_silicon)
+          enc, notes = render.pick_encoder()
+          print("encoder:", enc.name, notes)
+          procs._darwin_bg(procs.os.getpid(), True)
+          procs._darwin_bg(procs.os.getpid(), False)
+          PY
+      - name: Tests (pytest)
+        run: python -m pytest
+
   frontend:
     name: Frontend
     runs-on: ubuntu-latest

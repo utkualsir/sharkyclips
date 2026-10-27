@@ -193,3 +193,47 @@ What changed:
 Looked at, left alone: the remaining ~1.3 s before the server answers is the supervisor starting
 a second Python (needed for in-place updates) plus FastAPI's own import (~0.2 s). The idle server
 was already cheap (the governor does light ticks without GPU reads when nothing runs).
+
+## Task 7: macOS readiness
+
+Static review of every macOS path: `install.sh`, `installer/macos/*`, and the Python code behind
+`platform.system() == "Darwin"` / `IS_MAC` (procs: background priority via `setpriority`,
+sysmon: idle time + front app via CoreGraphics/CoreFoundation, hardware: Apple Silicon / Rosetta,
+render: VideoToolbox, llm: Ollama paths + brew, power: `osascript` shutdown, migrate: app rename,
+fonts per OS). No test Mac was available, so nothing here ran on real macOS.
+
+**Bugs fixed:**
+
+1. `uninstall.sh` runs with `set -u` but read `$SHARKYCLIPS_HOME` without a default when
+   deciding about the old `~/.clipforge` folder. On a normal Mac (variable unset) the uninstaller
+   would abort with "unbound variable" right after you said yes to deleting settings, leaving a
+   half-uninstalled app.
+2. The launcher (`SharkyClips.command`, also behind the Dock app) didn't load Homebrew's
+   environment. On fresh Apple Silicon Macs `/opt/homebrew/bin` often isn't on a new Terminal
+   window's PATH, so FFmpeg, Git and Deno installed by `install.sh` wouldn't be found when
+   SharkyClips starts. It now runs `brew shellenv` first.
+3. The uninstaller stops SharkyClips with `pkill -f "$APP_DIR/.venv/bin/python"`, but the
+   launcher started Python with a relative path, so the running app was never stopped before its
+   files were deleted. The launcher now uses absolute paths.
+4. `SharkyClips.app` said macOS 11+ in Info.plist; the README (and mlx) need 13+. Now 13.0.
+
+Existing installs get 2 and 3 with the next update (the Desktop/Dock launchers call the file in
+the repo).
+
+`backend/tests/test_installer_scripts.py` checks these as plain text on every OS (they fail on the
+old scripts). shellcheck is clean.
+
+**macOS CI:** new `Backend (macOS)` job in `ci.yml`: installs everything, runs `install.sh
+--dry-run`, exercises the macOS-only code (idle time, front app, hardware detection, encoder pick,
+background priority) and the full test suite. macOS runners are free only for public repos (10×
+minutes on private ones), so the job has `if: !github.event.repository.private` and is skipped
+until you make the repo public. It is `continue-on-error` until it has passed once: **after the
+first green macOS run, remove that line** so it blocks merges like the others.
+
+**Open questions:**
+
+- "Shut down the PC when the queue is finished" on macOS uses `osascript ... System Events to shut
+  down`. macOS asks for Automation permission the first time, which may be exactly when you're
+  away, so the first shutdown can fail (the app reports it). Worth a real-Mac test.
+- macOS has no fullscreen / video-playing detection in the governor (Windows only); Silent mode
+  pauses on Mac only for listed games in front and when you're away/back.

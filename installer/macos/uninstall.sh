@@ -77,7 +77,7 @@ if [ "$delete_models" = 1 ]; then
 fi
 [ "$delete_cfg" = 1 ] && rm -rf "$CONFIG_DIR" && ok "$CONFIG_DIR"
 # the settings folder before 1.2.1, if the app never moved it
-[ "$delete_cfg" = 1 ] && [ -z "$SHARKYCLIPS_HOME" ] && [ -d "$HOME/.clipforge" ] && rm -rf "$HOME/.clipforge"
+[ "$delete_cfg" = 1 ] && [ -z "${SHARKYCLIPS_HOME:-}" ] && [ -d "$HOME/.clipforge" ] && rm -rf "$HOME/.clipforge"
 [ "$delete_ws" = 1 ] && rm -rf "$WORKSPACE" && ok "$(t 'Projeler silindi' 'Projects deleted')"
 if [ -d "$WORKSPACE" ] && [ "$projects" -gt 0 ] && [ "${WORKSPACE#"$APP_DIR"/}" != "$WORKSPACE" ]; then
   find "$APP_DIR" -mindepth 1 -maxdepth 1 ! -path "$WORKSPACE" -exec rm -rf {} +

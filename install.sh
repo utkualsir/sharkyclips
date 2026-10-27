@@ -232,7 +232,7 @@ else
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleExecutable</key><string>SharkyClips</string>
   <key>CFBundleIconFile</key><string>sharkyclips</string>
-  <key>LSMinimumSystemVersion</key><string>11.0</string>
+  <key>LSMinimumSystemVersion</key><string>13.0</string>
 </dict></plist>
 PLIST
   # The app opens the launcher in Terminal (the window keeps the server running).
