@@ -188,7 +188,7 @@ def test_client_json_rules():
     url = youtube.auth_url("http://127.0.0.1:8000/")
     q = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
     assert q["redirect_uri"] == ["http://127.0.0.1:8000/"] and q["code_challenge_method"] == ["S256"]
-    assert "youtube.upload" in q["scope"][0] and q["access_type"] == ["offline"]
+    assert youtube.SCOPE_MANAGE in q["scope"][0].split() and q["access_type"] == ["offline"]
     assert youtube.is_pending(q["state"][0])
     youtube.remove_client()
     assert not youtube.status()["client"]
@@ -215,7 +215,7 @@ class FakeResp:
 
 
 def test_resumable_upload_survives_a_failed_chunk(tmp_path, monkeypatch):
-    youtube._write("token.json", {"access_token": "a", "refresh_token": "r", "expires_at": 9e12})
+    youtube._write_token({"access_token": "a", "refresh_token": "r", "expires_at": 9e12})
     (youtube.folder() / "quota.json").unlink(missing_ok=True)
     (youtube.folder() / "sessions.json").unlink(missing_ok=True)
     monkeypatch.setattr(youtube, "CHUNK", 256 * 1024)
@@ -251,7 +251,7 @@ def test_resumable_upload_survives_a_failed_chunk(tmp_path, monkeypatch):
     assert progress[-1] == 1.0
     assert youtube.quota_used() == youtube.COST["upload"]
     assert "k1" not in youtube._sessions()
-    (youtube.folder() / "token.json").unlink()
+    youtube._forget_token()
 
 
 def test_api_endpoints():

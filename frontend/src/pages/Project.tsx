@@ -25,6 +25,7 @@ import {
 import EditTools from "../components/EditTools";
 import FastReview, { ShortcutSheet } from "../components/FastReview";
 import { ExportDialog, ExportsList, UploadDialog, UploadsLine } from "../components/Publish";
+import { PublishSetupDialog } from "../components/PublishTools";
 import TranscriptEditor from "../components/TranscriptEditor";
 import FacecamEditor from "../components/FacecamEditor";
 import HypeMap from "../components/HypeMap";
@@ -312,6 +313,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const saveTimer = useRef<number>();
   const [exportIds, setExportIds] = useState<string[] | null>(null);
   const [uploadFor, setUploadFor] = useState<{ cid: string; source?: string } | null>(null);
+  const [publishFor, setPublishFor] = useState<string | null>(null);
   const [clipExports, setClipExports] = useState<ClipExport[]>([]);
   const [uploads, setUploads] = useState<Record<string, YoutubeUpload[]>>({});
   const [marks, setMarks] = useState<{ in: number | null; out: number | null }>({ in: null, out: null });
@@ -729,7 +731,7 @@ export default function ProjectPage({ id }: { id: string }) {
   // Keyboard shortcuts ("?" shows them). Fast review has its own while it is open.
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
-      if (typing(e) || facecamOpen || exportIds || uploadFor || keysOpen || fastOpen) return;
+      if (typing(e) || facecamOpen || exportIds || uploadFor || publishFor || keysOpen || fastOpen) return;
       const onVideo = (e.target as HTMLElement)?.tagName === "VIDEO";
       const k = e.key.toLowerCase();
       if ((e.ctrlKey || e.metaKey) && (k === "z" || k === "y")) {
@@ -1391,6 +1393,10 @@ export default function ProjectPage({ id }: { id: string }) {
                             <Icon name="download" />
                             {t("export.short")}
                           </button>
+                          <button className="btn btn-sm btn-ghost" onClick={() => setPublishFor(c.id)} title={t("pub.publish_hint")}>
+                            <Icon name="calendar" />
+                            {t("pub.publish_btn")}
+                          </button>
                           <button className="btn btn-sm btn-ghost" onClick={() => setUploadFor({ cid: c.id })}>
                             <Icon name="upload" />
                             YouTube
@@ -1451,6 +1457,7 @@ export default function ProjectPage({ id }: { id: string }) {
           onClose={() => setExportIds(null)}
         />
       )}
+      {publishFor && <PublishSetupDialog projectId={id} clipId={publishFor} onClose={() => setPublishFor(null)} onDone={load} />}
       {uploadFor && cands.find((c) => c.id === uploadFor.cid) && (
         <UploadDialog
           projectId={id}

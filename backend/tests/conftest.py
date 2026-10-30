@@ -20,6 +20,9 @@ _home = Path(tempfile.mkdtemp(prefix="sharkyclips-test-home-"))
                                                "llm_enabled": False}), encoding="utf-8")
 os.environ["SHARKYCLIPS_HOME"] = str(_home)
 os.environ["SHARKYCLIPS_NO_MIGRATE"] = "1"  # never touch the real shortcuts / ~/.clipforge
+os.environ["SHARKYCLIPS_PUBLISH_LOOP"] = "0"  # tests tick the publish scheduler themselves
+os.environ["SHARKYCLIPS_NO_KEYCHAIN"] = "1"  # macOS: never touch the real login Keychain
+os.environ.pop("SHARKYCLIPS_YT_ENDPOINT", None)
 os.environ.pop("CLIPFORGE_HOME", None)
 os.environ.pop("SHARKYCLIPS_SUPERVISED", None)
 

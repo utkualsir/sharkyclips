@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import urllib.parse
 
 import pytest
@@ -56,11 +55,11 @@ def http(monkeypatch):
         return fake
 
     monkeypatch.setattr(youtube.time, "sleep", lambda s: None)
-    for name in ("token.json", "client.json", "quota.json", "sessions.json"):
+    for name in ("token.json", "token.enc", "client.json", "quota.json", "sessions.json", "locked.json", "unlocked.json"):
         (youtube.folder() / name).unlink(missing_ok=True)
     youtube.set_client({"installed": {"client_id": "1.apps.googleusercontent.com", "client_secret": "sec"}})
     yield install
-    for name in ("token.json", "client.json", "quota.json", "sessions.json"):
+    for name in ("token.json", "token.enc", "client.json", "quota.json", "sessions.json", "locked.json", "unlocked.json"):
         (youtube.folder() / name).unlink(missing_ok=True)
 
 
@@ -80,8 +79,10 @@ def test_sign_in_uses_pkce_and_all_scopes(http):
     token_call = fake.calls[0][2]["data"]
     assert token_call["code"] == "the-code" and len(token_call["code_verifier"]) >= 43
     assert youtube.connected() and youtube.status()["connected"]
-    tok = json.loads((youtube.folder() / "token.json").read_text(encoding="utf-8"))
-    assert tok["channel"]["title"] == "My channel"
+    raw = (youtube.folder() / "token.enc").read_text(encoding="utf-8")
+    assert "refresh_token" not in raw and "My channel" not in raw  # encrypted at rest
+    assert not (youtube.folder() / "token.json").exists()
+    assert youtube._token()["channel"]["title"] == "My channel"
     with pytest.raises(SharkyClipsError):  # a state can only be used once
         youtube.finish_auth("again", q["state"])
 

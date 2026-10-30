@@ -29,7 +29,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -711,6 +711,17 @@ export interface YoutubeStatus {
   last_synced: number | null;
   analytics?: boolean;
   uploads_locked?: null | { at: string; video_id: string };
+  /** the token may manage videos (scheduling, cancel, playlists): connected with 1.2.7+ */
+  manage?: boolean;
+  lock?: YoutubeLock;
+  token_protection?: "dpapi" | "keychain" | "file" | null;
+}
+
+/** Are uploads forced to private (unaudited Google project)? unknown = no upload told us yet. */
+export interface YoutubeLock {
+  state: "locked" | "unlocked" | "unknown";
+  at: string | null;
+  video_id: string | null;
 }
 
 export type Privacy = "private" | "unlisted" | "public";
@@ -849,6 +860,145 @@ export interface HookStats {
   min_age_hours: number;
 }
 
+// ------------------------------------------------------------------ publishing (1.2.7)
+
+export type CoverKind = "peak" | "action" | "face" | "custom" | "none";
+
+export interface PublishMeta {
+  title: string;
+  description: string;
+  hashtags: string[];
+  tags: string[];
+  category: string;
+  language: string | null;
+  made_for_kids: boolean;
+  privacy: Privacy;
+  playlist: { id: string; title: string } | null;
+  cover: { kind: CoverKind; text: string; burn: boolean };
+  preset: PresetId;
+  format: FormatId;
+  burn_captions: boolean;
+  source: "auto" | "export";
+}
+
+export type LibStatus = "draft" | "scheduled" | "published" | "failed" | "locked";
+export type LibStep =
+  | null
+  | "uploaded"
+  | "waiting"
+  | "retrying"
+  | "rendering"
+  | "uploading"
+  | "queued_rendering"
+  | "queued_uploading"
+  | "attention"
+  | "checking";
+export type PublishFix = "retry" | "reconnect" | "edit" | "rerender" | "reschedule" | "wait";
+
+export interface LibraryRow {
+  key: string;
+  project_id: string;
+  project_title: string;
+  clip_id: string;
+  rank: number;
+  title: string;
+  duration: number;
+  viral_score: number | null;
+  viral_label: string | null;
+  accepted: boolean;
+  rendered: boolean;
+  status: LibStatus;
+  step: LibStep;
+  date: string | null;
+  planned: boolean;
+  publish_at: string | null;
+  now: boolean;
+  moved_from: string | null;
+  error: { message: string; hint: string | null; fix: PublishFix; at: string } | null;
+  next_try_at: string | null;
+  upload: {
+    video_id: string;
+    url: string;
+    privacy: Privacy;
+    requested_privacy?: Privacy;
+    publish_at: string | null;
+    published_at?: string | null;
+    uploaded_at: string;
+    views?: number;
+    likes?: number | null;
+    stats_at?: string;
+    thumbnail_error?: string | null;
+    playlist_error?: string | null;
+  } | null;
+  job: { kind: string; stage: string | null; progress: number | null; paused: string | null } | null;
+}
+
+export interface PublishSettings {
+  daily_limit: number;
+  effective_limit: number;
+  quota_capacity: number;
+  times: string[];
+  best_times: { times: string[]; source: "learned" | "default" | "custom"; samples: number; configured: string[] };
+  learn_times: boolean;
+  auto: boolean;
+  quota: YoutubeQuota;
+}
+
+export interface LibraryView extends PublishSettings {
+  rows: LibraryRow[];
+  counts: Partial<Record<LibStatus, number>>;
+  now: string;
+  youtube: {
+    connected: boolean;
+    manage: boolean;
+    client: boolean;
+    channel: YoutubeStatus["channel"];
+    lock: YoutubeLock;
+  };
+}
+
+export interface PublishSetup {
+  key: string;
+  meta: PublishMeta;
+  item: null | { publish_at: string | null; now: boolean; video_id: string | null; attention: boolean };
+  ai: {
+    titles: string[];
+    description: string;
+    hashtags: string[];
+    tags: string[];
+    cover_text: string | null;
+    cover_prompt: string | null;
+    available: boolean;
+  };
+  clip: { rank: number; duration: number; text: string; viral_score: number | null; has_facecam: boolean; has_custom_thumb: boolean };
+  presets: { id: PresetId; label: string; frame: "vertical" | "wide"; max_seconds: number | null }[];
+  warnings: ExportWarning[];
+  categories: string[];
+  ab: null | { labels: string[]; styles: Record<string, HookStyle>; pick: { label: string | null; how: string | null } };
+  upload: LibraryRow["upload"];
+  youtube: { connected: boolean; manage: boolean; channel: YoutubeStatus["channel"]; lock: YoutubeLock };
+  limits: PublishSettings;
+}
+
+export interface CoverInfo {
+  /** t = source time, at = seconds into the clip */
+  face: null | { t: number; at?: number; score: number; reasons: string[]; faces: number };
+  moments: { peak: number; action: number };
+  custom: boolean;
+}
+
+export interface Playlist {
+  id: string;
+  title: string;
+  privacy: Privacy | null;
+  count: number | null;
+}
+
+export interface ScheduleResult {
+  planned: { key: string; publish_at: string; moved: boolean }[];
+  skipped: { key: string; reason: "missing" | "on_youtube" | "uploading" | "no_time" }[];
+}
+
 export interface UploadBody {
   source: string; // "clip" or an export file name
   title: string;
@@ -980,6 +1130,7 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 }
 
 const P = (id: string) => `/api/projects/${encodeURIComponent(id)}`;
+const L = (pid: string, cid: string) => `/api/library/${encodeURIComponent(pid)}/${encodeURIComponent(cid)}`;
 
 export interface DevState {
   task: string;
@@ -1176,6 +1327,27 @@ export const api = {
   renderStory: (id: string, sid: string) => req<Job>("POST", `${P(id)}/stories/${sid}/render`),
   hookTests: (id: string) => req<HookTests>("GET", `${P(id)}/ab`),
   makeHookTest: (id: string, cid: string) => req<Job>("POST", `${P(id)}/clips/${cid}/ab`),
+  // publishing (1.2.7)
+  library: () => req<LibraryView>("GET", "/api/library"),
+  libraryTick: () => req<{ actions: string[] }>("POST", "/api/library/tick"),
+  publishSettings: () => req<PublishSettings>("GET", "/api/library/settings"),
+  savePublishSettings: (body: Partial<{ daily_limit: number; times: string[]; learn_times: boolean; auto: boolean }>) =>
+    req<PublishSettings>("PUT", "/api/library/settings", body),
+  publishSetup: (pid: string, cid: string) => req<PublishSetup>("GET", `${L(pid, cid)}/setup`),
+  savePublish: (pid: string, cid: string, meta: PublishMeta) =>
+    req<{ ok: boolean; applied: "youtube" | null; meta: PublishMeta }>("PUT", L(pid, cid), { meta }),
+  forgetPublish: (pid: string, cid: string) => req<{ ok: boolean }>("DELETE", L(pid, cid)),
+  schedule: (body: { clips: { project_id: string; clip_id: string; publish_at?: string }[]; mode: "auto" | "manual"; dry_run?: boolean }) =>
+    req<ScheduleResult>("POST", "/api/library/schedule", body),
+  reschedule: (pid: string, cid: string, publish_at: string, strict = true) =>
+    req<{ publish_at: string; moved: boolean }>("POST", `${L(pid, cid)}/reschedule`, { publish_at, strict }),
+  publishNow: (pid: string, cid: string) => req<{ ok: boolean; queued?: boolean; privacy?: Privacy }>("POST", `${L(pid, cid)}/publish-now`),
+  cancelPublish: (pid: string, cid: string) => req<{ ok: boolean; deleted: boolean }>("POST", `${L(pid, cid)}/cancel`),
+  retryPublish: (pid: string, cid: string) => req<{ ok: boolean; publish_at: string | null }>("POST", `${L(pid, cid)}/retry`),
+  covers: (pid: string, cid: string) => req<CoverInfo>("GET", `${L(pid, cid)}/covers`),
+  playlists: (refresh = false) => req<{ items: Playlist[]; connected: boolean }>("GET", `/api/youtube/playlists${refresh ? "?refresh=true" : ""}`),
+  createPlaylist: (title: string) => req<Playlist>("POST", "/api/youtube/playlists", { title }),
+  verificationGuide: () => req<{ markdown: string; url: string }>("GET", "/api/youtube/verification"),
   deleteHookTest: (id: string, cid: string) => req<{ removed: boolean }>("DELETE", `${P(id)}/clips/${cid}/ab`),
   hookStats: () => req<HookStats>("GET", "/api/hooks"),
   fetchHookStats: () => req<Job>("POST", "/api/hooks/fetch"),
@@ -1215,6 +1387,9 @@ export const urls = {
     `${P(id)}/clips/${cid}/ab/${label}/video?v=${encodeURIComponent(stamp)}${download ? "&download=true" : ""}`,
   musicAudio: (name: string) => `/api/music/${encodeURIComponent(name)}/audio`,
   brandLogo: (pid: string, rev = 0) => `/api/brand/${encodeURIComponent(pid)}/logo?v=${rev}`,
+  cover: (pid: string, cid: string, kind: CoverKind, frame: "wide" | "tall", text: string, lang: string | null, v = 0) =>
+    `${L(pid, cid)}/cover.jpg?${new URLSearchParams({ kind, frame, text, ...(lang ? { lang } : {}), v: String(v) })}`,
+  clipThumb: (pid: string, cid: string) => `${P(pid)}/clips/${encodeURIComponent(cid)}/thumbnail.jpg?kind=auto`,
 };
 
 /** Upload a file with progress (streamed to disk by the server). */

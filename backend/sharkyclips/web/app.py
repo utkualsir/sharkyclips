@@ -430,6 +430,10 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
     ab = upload_source(project, cid, source)
     if ab is not None:
         hook = {**ab[1], "hook_chosen_by": str(body.get("ab_how") or "manual")[:12]}
+    elif isinstance(body.get("hook_override"), dict):  # a variant with the cover burned in (Library)
+        o = body["hook_override"]
+        hook = {"hook_style": o.get("hook_style"), "hook_variant": o.get("hook_variant"),
+                "hook_chosen_by": str(o.get("hook_chosen_by") or "manual")[:12]}
     else:
         review = state.load_review(project)
         clip = state.load_clips(project).get(cid) or {}
@@ -439,10 +443,23 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
     yt = youtube.build_body(str(body.get("title") or ""), str(body.get("description") or ""),
                             [str(t) for t in body.get("tags") or []], str(body.get("privacy") or "private"),
                             body.get("publish_at") or None, bool(body.get("made_for_kids")),
-                            youtube.CATEGORY.get(mode, "20"), body.get("language") or None)
+                            str(body.get("category")) if str(body.get("category") or "") in youtube.CATEGORIES
+                            else youtube.CATEGORY.get(mode, "20"), body.get("language") or None)
     thumb = str(body.get("thumbnail") or "none")  # none | auto | custom
+    plan_key = body.get("plan_key")  # a clip of the publishing plan (Library / scheduler)
 
     def run(job: Job):
+        if not plan_key:
+            return _run(job)
+        from . import publishing
+
+        try:
+            return _run(job)
+        except BaseException as exc:
+            publishing.on_failed(plan_key, exc)
+            raise
+
+    def _run(job: Job):
         from .. import youtube
 
         project = get_project(project_id)
@@ -468,18 +485,31 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
         st = video.get("status") or {}
         requested = yt["status"]["privacyStatus"]
         got = st.get("privacyStatus") or requested
-        if requested in ("public", "unlisted") and not yt["status"].get("publishAt") and got == "private":
-            youtube.mark_locked(vid)  # Google keeps uploads of an unaudited project private
+        if requested in ("public", "unlisted") and not yt["status"].get("publishAt"):
+            if got == "private":
+                youtube.mark_locked(vid)  # Google keeps uploads of an unaudited project private
+            else:
+                youtube.mark_unlocked(vid)
         entry = {"video_id": vid, "url": f"https://youtu.be/{vid}", "title": yt["snippet"]["title"],
                  "privacy": got, "requested_privacy": requested,
                  "publish_at": yt["status"].get("publishAt"), "file": path.name, "uploaded_at": state.now_iso(),
                  "made_for_kids": yt["status"]["selfDeclaredMadeForKids"], "thumbnail_error": thumb_note, **hook}
         state.save_upload(project, cid, entry)
+        if plan_key:
+            from . import publishing
+
+            extra = publishing.on_uploaded(plan_key, entry, body)
+            if extra:
+                state.patch_upload(project, cid, vid, extra)
+                entry.update(extra)
         return {**entry, "clip_id": cid}
 
     params = {"clip_id": cid, "rank": cand["rank"], "body": body, "duration": cand["duration"],
               "title": yt["snippet"]["title"], "file": path.name, "size_bytes": path.stat().st_size,
-              "project_title": project.load_meta().get("title") or project_id}
+              "project_title": project.load_meta().get("title") or project_id,
+              "publish_at": yt["status"].get("publishAt")}
+    if plan_key:
+        params["plan_key"] = plan_key
     return jobs.submit("upload", "net", project_id, params, run, key=f"upload:{project_id}:{cid}:{path.name}",
                        persist=True, job_id=job_id, attempt=attempt)
 
@@ -522,9 +552,23 @@ def submit_youtube_stats(force: bool = False) -> Job:
         if not ids:
             return {"videos": 0, "calibrated": 0}
         stats = youtube.video_stats(list(ids))
+        now = datetime.now(timezone.utc)
         for vid, (p, cid) in ids.items():
             if vid not in stats:  # deleted on YouTube: the clip may be uploaded again
                 state.patch_upload(p, cid, vid, {"missing": True})
+                continue
+            # Is Google still keeping this project's uploads private? (unaudited API project)
+            u = next((x for x in state.load_uploads(p).get(cid, []) if x.get("video_id") == vid), {})
+            got = stats[vid].get("privacy")
+            try:
+                pa = datetime.fromisoformat(str(u.get("publish_at")).replace("Z", "+00:00")) if u.get("publish_at") else None
+            except ValueError:
+                pa = None
+            wanted_now = (u.get("requested_privacy") or "") in ("public", "unlisted") and pa is None
+            if got in ("public", "unlisted") and (wanted_now or pa is not None):
+                youtube.mark_unlocked(vid)
+            elif got == "private" and (wanted_now or (pa is not None and now - pa > timedelta(minutes=10))):
+                youtube.mark_locked(vid)
         calibrated = 0
         by_project: dict[str, dict] = {}
         for vid, s in stats.items():
@@ -640,6 +684,12 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
         return submit_upload(pid, p["clip_id"], p.get("body") or {}, job_id=keep_id, attempt=attempt)
     if kind == "yt_stats":
         return submit_youtube_stats()
+    if kind == "cover_burn":
+        from .publishing import submit_cover_burn
+
+        if p.get("plan_key") and p.get("info"):
+            return submit_cover_burn(p["plan_key"], p["info"], job_id=keep_id, attempt=attempt)
+        return None
     if kind == "montage":
         return submit_montage(pid, p.get("clip_ids") or [], bool(p.get("intro", True)), bool(p.get("outro", True)),
                               bool(p.get("cards", True)), p.get("lang"), job_id=keep_id, attempt=attempt)
@@ -2113,10 +2163,12 @@ def api_update_restart(request: Request) -> dict:
 
 from .studio import router as _studio_router  # noqa: E402 - editing tools API (1.2.4)
 from .retention import router as _retention_router  # noqa: E402 - stories, A/B hooks, loops (1.2.5)
+from .publishing import router as _publishing_router  # noqa: E402 - Library + scheduled publishing (1.2.7)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
 app.include_router(_retention_router)
+app.include_router(_publishing_router)
 
 
 @app.get("/api/{rest:path}")
@@ -2172,41 +2224,16 @@ def _restore_queue() -> None:
 
         g.on_change.append(_jobs_follow)
     n = jobs.restore(rebuild_job)
-    _schedule_stats_sync()
+    _start_publishing()
     if n:
         from ..ui import console
 
         console.print(f"Resumed [bold]{n}[/] queued job(s) from the last run.")
 
 
-def _schedule_stats_sync() -> None:
-    """Twice a day, a minute after start: fetch the views of uploaded clips (network lane).
-    Every hour: the hook test's uploads that are 48 hours public (retention -> the bandit)."""
-    from .. import youtube
+def _start_publishing() -> None:
+    """The publish loop (web/publishing.py): uploads scheduled clips in advance, fetches views
+    every 6 hours (calibration, the hook bandit, the private lock) and the hook test results."""
+    from .publishing import install
 
-    if os.environ.get("SHARKYCLIPS_NO_GOVERNOR") == "1":  # tests
-        return
-
-    def tick() -> None:
-        try:
-            if youtube.connected() and time.time() - youtube.last_synced() > 12 * 3600:
-                if any(state.load_uploads(p) for p in list_projects()):
-                    submit_youtube_stats()
-        except Exception:  # noqa: BLE001 - offline etc.: try again next time
-            pass
-        try:  # the A/B hook test: uploads that are 48 h public teach the bandit by themselves
-            from .. import abtest
-
-            if youtube.connected() and abtest.due_uploads(list_projects()):
-                from .retention import submit_hook_fetch
-
-                submit_hook_fetch()
-        except Exception:  # noqa: BLE001
-            pass
-        t = threading.Timer(3600, tick)
-        t.daemon = True
-        t.start()
-
-    t = threading.Timer(60, tick)
-    t.daemon = True
-    t.start()
+    install(jobs)

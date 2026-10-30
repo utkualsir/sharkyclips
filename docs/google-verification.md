@@ -5,7 +5,7 @@ Draft material for two separate Google reviews. **Nothing here has been submitte
 into the forms.
 
 1. **OAuth app verification** (Google Cloud Console → Google Auth Platform → Verification Center).
-   Needed because all three scopes are *sensitive*. None is *restricted*, so no paid security
+   Needed because both scopes are *sensitive*. None is *restricted*, so no paid security
    assessment (CASA) is required.
 2. **YouTube API Services audit / quota extension**
    ([form](https://support.google.com/youtube/contact/yt_api_form)). Needed so videos uploaded
@@ -58,21 +58,22 @@ Notes for that change:
 
 **Scope justifications**
 
-`https://www.googleapis.com/auth/youtube.upload`
+`https://www.googleapis.com/auth/youtube`
 
-> Used to upload a clip the user rendered to the user's own channel, when the user presses
-> "Upload" for that clip. The user sets the title, description, tags, privacy status, optional
-> publish schedule and thumbnail in the upload dialog before anything is sent. Uploads are
-> resumable so a large file survives a restart. The app never uploads without that click.
-
-`https://www.googleapis.com/auth/youtube.readonly`
-
-> Used for three read-only calls: (1) `channels.list?mine=true` to show which channel is
-> connected (name and avatar) in Settings; (2) `videos.list` for the IDs of videos the user
-> uploaded *with SharkyClips* to show their views, likes and privacy status next to each clip and
-> to detect when an upload was forced to private; (3) the same numbers calibrate the app's local
-> "viral score" to the user's own channel. `youtube.upload` alone cannot read video status or
-> statistics. No other channels, comments, subscribers or playlists are read.
+> Used only on the user's own channel and only for videos the user publishes with SharkyClips:
+> (1) `videos.insert` (resumable) to upload a clip the user set up in the publish screen (title,
+> description, tags, category, language, made-for-kids, privacy, optional release time and
+> playlist); scheduled clips are uploaded as private with `status.publishAt`, so YouTube itself
+> publishes them at the chosen time; (2) `videos.update` when the user edits the details of such a
+> video or moves its release time in the app's calendar, and to publish a scheduled video now;
+> (3) `videos.delete` when the user cancels a scheduled video before it is public; (4)
+> `playlists.list` / `playlists.insert` / `playlistItems.insert` to put the clip into a playlist
+> the user picks or creates; (5) `thumbnails.set` for 16:9 videos; (6) `channels.list?mine=true`
+> to show the connected channel and `videos.list` for the views, likes and privacy of the user's
+> own SharkyClips uploads (shown next to each clip, used to calibrate the local viral score and to
+> notice when uploads are forced to private). `youtube.upload` cannot change, schedule or delete a
+> video, and `youtube.force-ssl` would add comment access the app doesn't need. Nothing is done
+> without the user setting up and scheduling the clip first.
 
 `https://www.googleapis.com/auth/yt-analytics.readonly`
 
@@ -86,7 +87,8 @@ Notes for that change:
 **How is the data stored and shared?**
 
 > All data stays on the user's computer, in the app's settings folder: the OAuth token
-> (`~/.sharkyclips/youtube/token.json`), the per-project upload list with the latest statistics
+> (`~/.sharkyclips/youtube/token.enc`, encrypted with Windows DPAPI or a key in the macOS
+> Keychain), the per-project upload list with the latest statistics
 > (`uploads.json`) and derived learning data (`calibration.json`, `hook_tests.json`). The app
 > calls Google APIs directly from the user's machine. The developers run no server and never
 > receive, store or share any Google user data. Nothing is used for advertising or sold.
@@ -98,13 +100,14 @@ during the Google sign-in so the client ID is visible):
 1. Open SharkyClips, Settings → YouTube. Show the notice "SharkyClips uses YouTube API
    Services..." with the links to the YouTube Terms, the Google Privacy Policy and the
    SharkyClips privacy policy.
-2. Click **Connect YouTube**. Show the Google consent screen with the app name and all three
+2. Click **Connect YouTube**. Show the Google consent screen with the app name and both
    scopes, then allow.
-3. Back in Settings: the connected channel name and avatar (`youtube.readonly`).
-4. Open a project with a rendered clip → **Upload**. Show the dialog (title, description, tags,
+3. Back in Settings: the connected channel name and avatar (`youtube`).
+4. Library → select clips → **Schedule** (auto-plan), show the calendar and drag one clip to
+   another day (`videos.update`), cancel one (`videos.delete`). Then a project's clip → **Upload**. Show the dialog (title, description, tags,
    privacy = Private, schedule, thumbnail), press Upload, show the progress and the finished
-   link; open the video on YouTube Studio (`youtube.upload`).
-5. Stats → **Fetch views from YouTube**: the clip's views and status appear (`youtube.readonly`).
+   link; open the video on YouTube Studio (`youtube`).
+5. Stats → **Fetch views from YouTube**: the clip's views and status appear (`youtube`).
 6. Show the hook test screen and explain that 48 hours after publishing the app reads the
    average view percentage of that one video (`yt-analytics.readonly`).
 7. Settings → YouTube → **Disconnect**, then show the app gone from
@@ -123,9 +126,11 @@ fields.
 - **Platform:** desktop app (Windows, macOS), local web UI on 127.0.0.1.
 - **Who uses it:** streamers and video creators uploading their own clips to their own channel.
 - **APIs and methods used:**
-  - YouTube Data API v3: `videos.insert` (resumable), `thumbnails.set`, `channels.list`
-    (`mine=true`, `part=snippet`), `videos.list` (`part=statistics,status,snippet`, own video IDs
-    only, up to 50 per call).
+  - YouTube Data API v3: `videos.insert` (resumable, private + `publishAt` for scheduled clips),
+    `videos.update` (details / release time of own videos), `videos.delete` (cancel a scheduled
+    upload), `thumbnails.set`, `playlists.list` / `playlists.insert` (`mine=true`),
+    `playlistItems.insert`, `channels.list` (`mine=true`, `part=snippet`), `videos.list`
+    (`part=statistics,status,snippet`, own video IDs only, up to 50 per call).
   - YouTube Analytics API v2: `reports.query` (`ids=channel==MINE`, `dimensions=video`,
     `metrics=views,averageViewDuration,averageViewPercentage`, filtered to own video IDs).
 - **How do users authenticate?** OAuth 2.0 authorization code flow with PKCE and a loopback
@@ -140,7 +145,8 @@ fields.
   installation only sees its own user's data.
 - **Do you use the data for advertising?** No.
 - **Quota requested:** `<number>` units/day. Reasoning: one upload = 1,600 units (insert) + 50
-  (thumbnail); statistics cost 1 unit per 50 videos. With a shared client and N active users
+  (thumbnail) + 50 (playlist); changing or cancelling a scheduled video 50; statistics cost 1 unit
+  per 50 videos. The app's scheduler never plans more uploads a day than the quota allows. With a shared client and N active users
   uploading ~2 clips a day: N × 3,300 units. Start with a modest request (e.g. 100,000/day ≈ 30
   uploads/day) and increase with real usage. The app already counts units locally, stops before
   the limit and shows the remaining uploads to the user.

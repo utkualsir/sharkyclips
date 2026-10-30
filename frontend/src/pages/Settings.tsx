@@ -8,6 +8,7 @@ import { isActive, useJobs } from "../jobs";
 import { chooseLanguage, useMeta } from "../meta";
 import { LanPinBox } from "../components/LanAccess";
 import { YoutubeCard } from "../components/Publish";
+import { PublishingCard } from "../components/PublishTools";
 import { applyMotion, type MotionSetting } from "../motion";
 import { useTheme } from "../theme";
 import { useToast } from "../toast";
@@ -700,6 +701,8 @@ export default function Settings() {
             quota={settings.youtube_daily_quota}
             onQuota={(n) => save({ youtube_daily_quota: n })}
           />
+
+          <PublishingCard />
 
           <UpdatesCard />
 

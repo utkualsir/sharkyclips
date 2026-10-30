@@ -21,6 +21,7 @@ import { fmtBytes, fmtTime } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { RealTestNote } from "./HookTest";
+import { LockBanner } from "./PublishTools";
 import { Icon } from "./Icons";
 import { Modal, Segmented, Toggle } from "./ui";
 
@@ -799,10 +800,18 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
                 </button>
               )}
             </div>
-            {yt.uploads_locked && (
+            <LockBanner lock={yt.lock} />
+            {yt.manage === false && (
               <div className="notice notice-warn">
                 <Icon name="alert" />
-                <span>{t("yt.locked")}</span>
+                <span>
+                  {t("pub.need_manage")}{" "}
+                  {isLocal && (
+                    <button className="link-btn" onClick={connect}>
+                      {t("yt.reconnect")}
+                    </button>
+                  )}
+                </span>
               </div>
             )}
             {yt.analytics === false && (
@@ -823,6 +832,11 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
                 })}
               </span>
             </div>
+            {yt.token_protection && (
+              <span className="muted" style={{ fontSize: 12 }}>
+                <Icon name="lock" size={12} /> {t(`yt.token_${yt.token_protection}`)}
+              </span>
+            )}
             {yt.last_synced && (
               <span className="muted" style={{ fontSize: 12 }}>
                 {t("yt.synced", { when: relTime(new Date(yt.last_synced * 1000).toISOString()) })}

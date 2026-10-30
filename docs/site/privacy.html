@@ -77,8 +77,7 @@
   <table>
     <thead><tr><th>Permission</th><th>Data</th><th>Used for</th></tr></thead>
     <tbody>
-      <tr><td><code>youtube.upload</code></td><td>Sends the clip, title, description, tags, privacy setting, schedule and thumbnail you chose</td><td>Uploading a clip when you press Upload</td></tr>
-      <tr><td><code>youtube.readonly</code></td><td>Your channel's name, id and avatar; views, likes, privacy status and publish time of videos uploaded with SharkyClips</td><td>Showing which channel is connected; showing your clips' results; calibrating the viral score to your channel</td></tr>
+      <tr><td><code>youtube</code></td><td>The clip, title, description, tags, category, language, privacy setting, release time, playlist and thumbnail you chose; your channel's name, id and avatar; your playlists' names; views, likes, privacy status and publish time of videos uploaded with SharkyClips</td><td>Uploading, scheduling, changing or cancelling clips you publish from SharkyClips; showing which channel is connected; showing your clips' results; calibrating the viral score and the release times to your channel</td></tr>
       <tr><td><code>yt-analytics.readonly</code></td><td>Views, average view duration and average view percentage of videos uploaded with SharkyClips as part of a hook test</td><td>Learning which clip opening style keeps your viewers watching (the A/B hook test)</td></tr>
     </tbody>
   </table>
@@ -87,7 +86,7 @@
 
   <h3>Where it is stored</h3>
   <p>On your computer only: the access and refresh token in
-    <code>~/.sharkyclips/youtube/token.json</code>, upload records and statistics in each project's
+    <code>~/.sharkyclips/youtube/token.enc</code> (encrypted with Windows DPAPI or a key in the macOS Keychain), your publishing plan in <code>~/.sharkyclips/publish/plan.json</code>, upload records and statistics in each project's
     <code>uploads.json</code>, and the derived learning data in
     <code>~/.sharkyclips/calibration.json</code> and <code>~/.sharkyclips/hook_tests.json</code>.
     The app talks directly to Google's servers (<code>googleapis.com</code>); there is no

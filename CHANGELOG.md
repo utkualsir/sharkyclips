@@ -7,6 +7,189 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.7] - 2026-10-30
+
+Publish to YouTube on a schedule: a new Library for every finished clip, one setup screen per
+clip, and automatic uploads at your daily limit.
+
+### Added
+- **Library** (new tab at the top): every clip that's ready to go out, from all your projects, in
+  Drafts, Scheduled, Published, Needs attention and Locked private. Each row shows the thumbnail,
+  title, project, length, viral score, status and date; published clips show their views and
+  likes. Switch to the **calendar** (week or month) to see what goes out each day against your
+  daily limit, and drag a clip to another day to move it.
+- **Publish setup in one screen**: pick one of the AI's titles or write your own, edit the
+  description, hashtags and tags (the AI fills them, 500-character limit), category (Gaming by
+  default), language, "made for kids", visibility and playlist (pick one or create a new one).
+- **Covers**: choose an AI cover idea or the **best facecam frame**: SharkyClips finds the moment
+  with your strongest reaction and adds the cover text in the app's style. 16:9 videos get it as
+  their thumbnail; for Shorts you can put it in as the first 0.3 seconds.
+- **Scheduling**: select clips and press **Schedule**. Auto-plan spreads them over the next free
+  slots (3 a day at 12:00, 18:00 and 21:00 by default; later learned from your own channel's
+  views), or pick a time for each clip. A full day moves the clip to the next free slot.
+- SharkyClips uploads scheduled clips **in advance** as private videos with YouTube's own release
+  time, so your PC can be off when they go public. Uploads only run while your PC is on and not
+  busy, never above your daily limit or Google's API quota (shown in the Library), and never
+  twice. If an upload fails it tries again by itself; if it can't, the clip says why and offers a
+  fix button.
+- Publish now, reschedule, cancel (this also deletes a scheduled video from YouTube), open on
+  YouTube and copy the link, right from the Library.
+- **Settings → Publishing**: daily limit, release times, learning the best times from your
+  channel, and an on/off switch for automatic uploads.
+- A clear note while your Google project is unverified (uploads stay private until Google
+  approves the audit), with a checklist of what to submit. It disappears by itself once an upload
+  really goes public.
+
+### Improved
+- Your YouTube sign-in is now stored **encrypted** (Windows DPAPI, the macOS Keychain).
+- Views and likes are fetched every 6 hours and teach the viral score, the best release times and
+  the A/B hook test by themselves.
+
+### Note
+- Scheduling, cancelling and playlists need one more YouTube permission: if you connected before,
+  press **Reconnect YouTube** once in Settings.
+
+<!-- lang:tr -->
+**Türkçe**
+
+YouTube'a zamanlanmış yayın: her hazır klip için yeni bir Kütüphane, klip başına tek bir ayar
+ekranı ve günlük sınırına göre otomatik yükleme.
+
+### Eklendi
+- **Kütüphane** (üstte yeni sekme): tüm projelerinden yayına hazır her klip; Taslaklar,
+  Zamanlanmış, Yayınlanan, İlgi bekliyor ve Gizli kilitli olarak. Her satırda küçük resim, başlık,
+  proje, süre, viral puanı, durum ve tarih var; yayınlananlarda izlenme ve beğeni sayıları da.
+  **Takvim** görünümüne (hafta veya ay) geçip her gün neyin yayına gireceğini günlük sınırınla
+  birlikte gör, bir klibi başka güne sürükleyerek taşı.
+- **Tek ekranda yayın ayarı**: yapay zekânın başlıklarından birini seç ya da kendin yaz;
+  açıklama, hashtag'ler ve etiketler (yapay zekâ doldurur, 500 karakter sınırı), kategori
+  (varsayılan Oyun), dil, "çocuklara özel", görünürlük ve oynatma listesi (seç ya da yenisini
+  oluştur).
+- **Kapaklar**: yapay zekânın kapak fikrini ya da **en iyi kamera karesini** seç: SharkyClips en
+  güçlü tepkini verdiğin anı bulur ve kapak yazısını uygulamanın tarzında ekler. 16:9 videolarda
+  küçük resim olur; Shorts'ta istersen ilk 0,3 saniyeye yerleştirilir.
+- **Zamanlama**: klipleri seç ve **Zamanla**'ya bas. Otomatik plan klipleri sonraki boş zamanlara
+  yayar (varsayılan günde 3: 12:00, 18:00 ve 21:00; sonra kendi kanalının izlenmelerinden
+  öğrenilir) ya da her klibe kendin zaman seçersin. Dolu bir gün, klibi sonraki boş zamana kaydırır.
+- SharkyClips zamanlanmış klipleri YouTube'un kendi yayın zamanıyla gizli video olarak **önceden**
+  yükler; yayına girdiklerinde bilgisayarın kapalı olabilir. Yüklemeler yalnızca bilgisayar açık ve
+  meşgul değilken çalışır; günlük sınırını ya da Google'ın API kotasını (Kütüphane'de görünür) asla
+  aşmaz ve aynı klibi asla iki kez yüklemez. Yükleme başarısız olursa kendisi yeniden dener;
+  olmazsa klip nedenini söyler ve bir düzeltme düğmesi gösterir.
+- Kütüphane'den doğrudan: şimdi yayınla, yeniden zamanla, iptal et (zamanlanmış videoyu
+  YouTube'dan da siler), YouTube'da aç ve bağlantıyı kopyala.
+- **Ayarlar → Yayınlama**: günlük sınır, yayın saatleri, en iyi saatleri kanalından öğrenme ve
+  otomatik yükleme için aç/kapa düğmesi.
+- Google projen doğrulanmamışken açık bir not (yüklemeler Google denetimi onaylayana kadar gizli
+  kalır) ve neleri göndermen gerektiğini anlatan bir kontrol listesi. Bir yükleme gerçekten herkese
+  açılınca not kendiliğinden kaybolur.
+
+### İyileştirildi
+- YouTube oturumun artık **şifreli** saklanıyor (Windows DPAPI, macOS Anahtar Zinciri).
+- İzlenme ve beğeniler 6 saatte bir alınıyor; viral puanını, en iyi yayın saatlerini ve A/B kanca
+  testini kendiliğinden eğitiyor.
+
+### Not
+- Zamanlama, iptal ve oynatma listeleri bir YouTube izni daha gerektiriyor: daha önce bağladıysan
+  Ayarlar'da bir kez **YouTube'u yeniden bağla**'ya bas.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Geplantes Veröffentlichen auf YouTube: eine neue Bibliothek für alle fertigen Clips, ein
+Einrichtungsbildschirm pro Clip und automatische Uploads im Rahmen deines Tageslimits.
+
+- **Bibliothek** (neuer Tab): alle fertigen Clips aus allen Projekten nach Status, mit Aufrufen und
+  Likes; **Kalender** (Woche/Monat) mit Tageslimit, Clips per Ziehen verschieben.
+- **Alles in einem Bildschirm**: KI-Titel oder eigener Titel, Beschreibung, Hashtags, Tags (von der
+  KI, max. 500 Zeichen), Kategorie, Sprache, „für Kinder“, Sichtbarkeit, Playlist.
+- **Cover**: KI-Idee oder das **beste Facecam-Bild** (stärkste Reaktion) mit Text; bei 16:9 als
+  Thumbnail, bei Shorts optional als erste 0,3 s.
+- **Einplanen**: automatisch auf freie Plätze (3 pro Tag um 12, 18 und 21 Uhr, später von deinem
+  Kanal gelernt) oder mit eigenen Zeiten. Uploads laufen vorab und nur, wenn der PC frei ist; nie
+  über Limit oder Kontingent, nie doppelt; Fehler werden wiederholt oder mit Lösungsknopf gezeigt.
+- YouTube-Anmeldung jetzt **verschlüsselt** gespeichert. Einmal **YouTube neu verbinden**, damit
+  Einplanen, Abbrechen und Playlists funktionieren.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Időzített közzététel a YouTube-on: új Könyvtár minden kész klipnek, egy beállítóképernyő klipenként
+és automatikus feltöltés a napi korláton belül.
+
+- **Könyvtár** (új fül): minden kész klip az összes projektből állapot szerint, nézettséggel és
+  kedvelésekkel; **naptár** (hét/hónap) a napi korláttal, a klipek áthúzással mozgathatók.
+- **Minden egy képernyőn**: MI-cím vagy saját cím, leírás, hashtagek, címkék (MI tölti ki, max. 500
+  karakter), kategória, nyelv, „gyerekeknek szóló”, láthatóság, lejátszási lista.
+- **Borító**: MI-ötlet vagy a **legjobb facecam-képkocka** (legerősebb reakció) szöveggel; 16:9-nél
+  indexkép, Shortsnál opcionálisan az első 0,3 mp.
+- **Időzítés**: automatikusan a szabad időpontokra (napi 3: 12, 18, 21 óra, később a csatornádból
+  tanulva) vagy saját időpontokkal. Előre tölt fel, csak ha a gép szabad; sosem lépi túl a korlátot
+  vagy a kvótát, sosem tölt fel kétszer; a hibákat újrapróbálja vagy javítógombbal jelzi.
+- A YouTube-bejelentkezés most **titkosítva** tárolódik. Egyszer **csatlakoztasd újra a YouTube-ot**
+  az időzítéshez, visszavonáshoz és lejátszási listákhoz.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Публикация на YouTube по расписанию: новая Библиотека для всех готовых клипов, один экран настройки
+на клип и автоматические загрузки в пределах дневного лимита.
+
+- **Библиотека** (новая вкладка): все готовые клипы из всех проектов по статусам, с просмотрами и
+  лайками; **календарь** (неделя/месяц) с дневным лимитом, клипы можно перетаскивать.
+- **Всё на одном экране**: заголовок от ИИ или свой, описание, хештеги, теги (заполняет ИИ, до 500
+  символов), категория, язык, «для детей», доступ, плейлист.
+- **Обложки**: идея ИИ или **лучший кадр с камеры** (самая яркая реакция) с текстом; для 16:9 —
+  значок видео, для Shorts — по желанию первые 0,3 с.
+- **Расписание**: автоматически по свободным слотам (3 в день в 12:00, 18:00 и 21:00, потом по
+  данным вашего канала) или своё время. Загрузка заранее и только когда ПК свободен; без превышения
+  лимита и квоты, без повторов; ошибки повторяются или показываются с кнопкой исправления.
+- Вход в YouTube теперь хранится **в зашифрованном виде**. Один раз **переподключите YouTube** для
+  расписания, отмены и плейлистов.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+النشر المجدول على YouTube: مكتبة جديدة لكل المقاطع الجاهزة، وشاشة إعداد واحدة لكل مقطع، ورفع تلقائي
+ضمن حدك اليومي.
+
+- **المكتبة** (تبويب جديد): كل المقاطع الجاهزة من كل المشاريع حسب الحالة، مع المشاهدات والإعجابات؛
+  و**تقويم** (أسبوع/شهر) مع الحد اليومي، ويمكن سحب المقاطع لنقلها.
+- **كل شيء في شاشة واحدة**: عنوان من الذكاء الاصطناعي أو عنوانك، الوصف، الوسوم، الكلمات المفتاحية
+  (يملؤها الذكاء الاصطناعي، حتى 500 حرف)، الفئة، اللغة، «مخصص للأطفال»، الخصوصية، قائمة التشغيل.
+- **الأغلفة**: فكرة من الذكاء الاصطناعي أو **أفضل لقطة من الكاميرا** (أقوى رد فعل) مع نص؛ صورة مصغّرة
+  لفيديوهات 16:9، وأول 0.3 ثانية اختياريًا في Shorts.
+- **الجدولة**: تلقائيًا على المواعيد الفارغة (3 يوميًا في 12:00 و18:00 و21:00، ثم من بيانات قناتك)
+  أو بأوقات تختارها. الرفع مسبقًا وفقط عندما يكون الحاسوب متفرغًا؛ دون تجاوز الحد أو الحصة ودون
+  تكرار؛ وتُعاد المحاولة عند الخطأ أو يظهر زر إصلاح.
+- تسجيل الدخول إلى YouTube محفوظ الآن **مشفرًا**. أعد ربط YouTube مرة واحدة للجدولة والإلغاء وقوائم
+  التشغيل.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+定时发布到 YouTube：为所有成品片段新增内容库，每个片段一个设置界面，并在每日上限内自动上传。
+
+- **内容库**（新标签页）：所有项目的成品片段按状态分类，显示观看和点赞；**日历**（周/月）显示每日
+  上限，可拖动片段改期。
+- **一个界面搞定**：AI 标题或自定义标题、描述、话题标签、标签（AI 填写，最多 500 字符）、类别、
+  语言、“面向儿童”、公开范围、播放列表。
+- **封面**：AI 创意或**最佳摄像头画面**（反应最强烈的瞬间）加文字；16:9 视频作为缩略图，Shorts
+  可选放在前 0.3 秒。
+- **排期**：自动分配到空档（默认每天 3 个：12:00、18:00、21:00，之后根据你的频道学习）或手动选
+  时间。提前上传且只在电脑空闲时进行；不超上限和配额、不重复上传；失败会自动重试或给出修复按钮。
+- YouTube 登录信息现已**加密保存**。请重新连接一次 YouTube，以使用排期、取消和播放列表。
+
+</details>
+
 ## [1.2.6] - 2026-10-27
 
 A safer phone mode, a faster start, better accessibility, and fixes for Mac.

@@ -19,6 +19,7 @@ const GameDebug = lazy(() => import("./pages/GameDebug"));
 const Studio = lazy(() => import("./pages/Studio"));
 const Queue = lazy(() => import("./pages/Queue"));
 const Stats = lazy(() => import("./pages/Stats"));
+const ClipLibrary = lazy(() => import("./pages/ClipLibrary"));
 const Stories = lazy(() => import("./pages/Stories"));
 const Settings = lazy(() => import("./pages/Settings"));
 import { href, useRoute } from "./router";
@@ -46,6 +47,9 @@ function TopBar() {
           aria-current={["library", "project", "bestof", "game", "stories"].includes(route.name) ? "page" : undefined}
         >
           {t("nav.library")}
+        </a>
+        <a href={href.publish()} aria-current={route.name === "publish" ? "page" : undefined}>
+          {t("nav.publish")}
         </a>
         <a href={href.queue} aria-current={route.name === "queue" ? "page" : undefined}>
           {t("nav.queue")}
@@ -172,6 +176,7 @@ export default function App() {
         {route.name === "stories" && <Stories key={route.id} id={route.id} />}
         {route.name === "queue" && <Queue />}
         {route.name === "stats" && <Stats />}
+        {route.name === "publish" && <ClipLibrary view={route.view} />}
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />
