@@ -202,7 +202,12 @@ def test_suspend_and_resume_tracked_process():
     try:
         procs.track(child)
         procs.suspend_all()
-        assert psutil.Process(child.pid).status() in (psutil.STATUS_STOPPED, "suspended") or os.name == "nt"
+        stopped = (psutil.STATUS_STOPPED, "suspended")
+        # SIGSTOP is asynchronous: give the kernel a moment before reading the state (CI flake)
+        end = time.time() + 3
+        while os.name != "nt" and psutil.Process(child.pid).status() not in stopped and time.time() < end:
+            time.sleep(0.02)
+        assert psutil.Process(child.pid).status() in stopped or os.name == "nt"
         procs.resume_all()
         assert child.poll() is None
     finally:
