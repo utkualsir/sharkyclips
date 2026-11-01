@@ -426,14 +426,19 @@ def _restart_if_outdated(port: int, running: str, wait: float = 40.0) -> bool:
 
 def _wait_for_running(info: dict, wait: float = 30.0) -> tuple[int | None, str | None]:
     """The SharkyClips that holds the server lock (it may be restarting): its port and version."""
-    port = info.get("port")
+    from sharkyclips import instance
+
     end = time.time() + wait
-    while isinstance(port, int):
-        v = _sharkyclips_version_at(port, timeout=0.5)
-        if v or time.time() >= end:
-            return port, v
+    while True:
+        port = info.get("port")
+        if isinstance(port, int):
+            v = _sharkyclips_version_at(port, timeout=0.5)
+            if v:
+                return port, v
+        if time.time() >= end:
+            return (port if isinstance(port, int) else None), None
         time.sleep(0.5)
-    return None, None
+        info = instance.running() or {}  # the port note may be written just after the lock
 
 
 def _port_free(port: int) -> bool:
@@ -540,19 +545,25 @@ def cmd_serve(args) -> int:
 
     # One server per settings folder: a second one would run the publish scheduler and the job
     # queue a second time (the same clip exported / uploaded twice).
-    lock = instance.acquire()
+    lock = instance.acquire(wait=1.0)
     if lock is None:
         port, version = _wait_for_running(instance.running() or {})
-        url = f"http://localhost:{port}" if port else None
-        console.print(f"SharkyClips {version or ''} is already running".replace("  ", " ")
-                      + (f": [cyan]{url}[/]" if url else " (starting up)."))
-        if url and version:
+        if version:  # it runs (maybe it just restarted): open it
+            url = f"http://localhost:{port}"
+            console.print(f"SharkyClips {version} is already running: [cyan]{url}[/]")
             _restart_if_outdated(port, version)
-        if url and not args.no_browser:
-            import webbrowser
+            if not args.no_browser:
+                import webbrowser
 
-            webbrowser.open(url)
-        return 0
+                webbrowser.open(url)
+            return 0
+        # Locked, but nothing answers: the holder died a moment ago (the OS drops its lock
+        # shortly after) or hangs. Take over once the lock is free instead of doing nothing.
+        lock = instance.acquire(wait=5.0)
+        if lock is None:
+            raise SharkyClipsError("Another SharkyClips is still starting or not responding.",
+                                   "Wait a moment and open it again. If it keeps happening, quit "
+                                   "SharkyClips from the tray icon (or restart the computer).")
     try:
         instance.note(args.port)
         return _serve_locked(args, RESTART_CODE)
@@ -767,7 +778,8 @@ def cmd_launch(args) -> int:
             url = f"http://localhost:{port}"
             console.print(_launch_text("already", url=url))
             webbrowser.open(url)
-        return 0
+            return 0
+        # nothing answers: start normally below (serve takes over the lock once it's free)
     for port in range(8000, 8011):  # a running SharkyClips older than 1.2.11 holds no lock
         running = _sharkyclips_version_at(port, timeout=0.5)
         if running:

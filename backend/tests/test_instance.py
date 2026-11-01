@@ -24,8 +24,9 @@ from sharkyclips.project import replace_retry
 BACKEND = Path(__file__).resolve().parents[1]
 HOLD = (
     "import sys; sys.path.insert(0, sys.argv[1]); from sharkyclips import instance\n"
-    "f = instance.acquire(); print('held' if f else 'busy', flush=True)\n"
+    "f = instance.acquire()\n"
     "instance.note(int(sys.argv[2])) if f else None\n"
+    "print('held' if f else 'busy', flush=True)\n"
     "sys.stdin.read()\n"
 )
 
@@ -85,10 +86,40 @@ def test_lock_is_exclusive_and_dies_with_its_process(holder):
     assert instance.running()["port"] == 8123
     p.kill()
     p.wait(5)
-    mine = instance.acquire()  # the OS dropped the dead process's lock: no stale-file trouble
+    mine = instance.acquire(wait=5)  # the OS drops a dead process's lock (Windows: a moment later)
     assert mine is not None
     instance.release(mine)
     assert instance.running() is None
+
+
+def test_waiting_rereads_a_port_note_written_after_the_lock(holder):
+    """A supervisor takes the lock first and writes its port a moment later."""
+    fake = _Meta()
+    try:
+        holder(fake.port)
+        info = instance.running()
+        (config.config_dir() / instance.INFO_FILE).unlink()  # as if not written yet
+        threading.Timer(0.6, lambda: (config.config_dir() / instance.INFO_FILE).write_text(
+            json.dumps(info), encoding="utf-8")).start()
+        assert cli._wait_for_running({}, wait=5) == (fake.port, __version__)
+    finally:
+        fake.stop()
+
+
+def test_serve_takes_over_when_the_lock_holder_died(holder, monkeypatch):
+    """Clicking the shortcut right after a crash: the lock is still held for a moment and nothing
+    answers. serve must start (once the lock is free), not silently do nothing."""
+    p = holder(1)  # nothing answers on its port
+    monkeypatch.setattr(cli, "_wait_for_running", lambda info, wait=30.0: (p.kill(), (None, None))[1])
+    started: list[int] = []
+    monkeypatch.setattr(cli, "_serve_locked", lambda args, code: started.append(args.port) or 0)
+
+    class Args:
+        port, lan, no_browser, tray = 8998, False, True, False
+
+    assert cli.cmd_serve(Args()) == 0
+    assert started == [8998]
+    assert instance.running() is None  # released after serving
 
 
 def test_a_stale_port_note_without_a_lock_is_ignored():

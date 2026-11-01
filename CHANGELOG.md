@@ -7,6 +7,59 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.12] - 2026-11-01
+
+### Fixed
+- Opening SharkyClips right after it crashed or was closed could wait and then show nothing.
+  It now starts normally.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- SharkyClips çöktükten ya da kapatıldıktan hemen sonra açmak bekleyip hiçbir şey göstermeyebiliyordu.
+  Artık normal şekilde açılıyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Behoben: SharkyClips direkt nach einem Absturz oder Beenden zu öffnen, zeigte manchmal nichts an.
+  Jetzt startet es ganz normal.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Javítva: a SharkyClips megnyitása közvetlenül egy összeomlás vagy bezárás után néha semmit sem mutatott.
+  Most normálisan elindul.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Исправлено: запуск SharkyClips сразу после сбоя или закрытия иногда ничего не открывал.
+  Теперь приложение запускается как обычно.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- تم الإصلاح: فتح SharkyClips مباشرة بعد تعطّله أو إغلاقه لم يكن يُظهر شيئًا أحيانًا.
+  الآن يعمل التطبيق بشكل طبيعي.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 已修复：SharkyClips 崩溃或关闭后立即打开时，有时会等待一段时间然后什么都不显示。现在它会像平常一样正常启动，并打开主界面。
+- 如果 SharkyClips 已经在运行（例如更新后正在重启），再次打开只会显示正在运行的那个窗口，而不会启动第二个副本。
+
+</details>
+
 ## [1.2.11] - 2026-11-01
 
 SharkyClips' Google connection is now published, and scheduled uploads are safer.

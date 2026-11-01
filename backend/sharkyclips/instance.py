@@ -41,16 +41,21 @@ def _lock(f: IO[Any]) -> bool:
         return False
 
 
-def acquire() -> IO[Any] | None:
+def acquire(wait: float = 0.0) -> IO[Any] | None:
     """Take the server lock. Returns the open lock file (keep it for the process's life), or None
-    when another SharkyClips holds it."""
+    when another SharkyClips holds it. `wait`: keep trying this long (Windows releases a dead
+    process's lock a moment after it ended, e.g. right after a crash)."""
     folder = config.config_dir()
     folder.mkdir(parents=True, exist_ok=True)
-    f = open(folder / LOCK_FILE, "a+")  # noqa: SIM115 - held open on purpose
-    if _lock(f):
-        return f
-    f.close()
-    return None
+    end = time.monotonic() + wait
+    while True:
+        f = open(folder / LOCK_FILE, "a+")  # noqa: SIM115 - held open on purpose
+        if _lock(f):
+            return f
+        f.close()
+        if time.monotonic() >= end:
+            return None
+        time.sleep(0.1)
 
 
 def release(f: IO[Any] | None) -> None:
