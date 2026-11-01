@@ -1302,33 +1302,36 @@ export default function ProjectPage({ id }: { id: string }) {
                       {t("common.edit")}
                     </button>
                   </div>
-                  {renderJob ? (
-                    <div style={{ display: "grid", gap: 6 }}>
-                      <JobLine job={renderJob} onCancel={() => api.queueCancel({ project_id: id, kind: "render" })} />
-                      <a className="muted render-note" href={href.queue}>
-                        {renderJobs.length > 1 ? t("render.in_queue", { n: renderJobs.length }) : t("bestof.see_queue")}
-                      </a>
-                    </div>
-                  ) : (
-                    <button className="btn btn-primary btn-lg btn-block" disabled={!accepted.size} onClick={render}>
-                      <Icon name="film" />
-                      {accepted.size ? t("render.button", { n: accepted.size }) : t("render.none")}
+                  {/* pinned to the bottom of the panel: the settings above scroll, the buttons stay */}
+                  <div className="render-actions">
+                    {renderJob ? (
+                      <div style={{ display: "grid", gap: 6 }}>
+                        <JobLine job={renderJob} onCancel={() => api.queueCancel({ project_id: id, kind: "render" })} />
+                        <a className="muted render-note" href={href.queue}>
+                          {renderJobs.length > 1 ? t("render.in_queue", { n: renderJobs.length }) : t("bestof.see_queue")}
+                        </a>
+                      </div>
+                    ) : (
+                      <button className="btn btn-primary btn-lg btn-block" disabled={!accepted.size} onClick={render}>
+                        <Icon name="film" />
+                        {accepted.size ? t("render.button", { n: accepted.size }) : t("render.none")}
+                      </button>
+                    )}
+                    <button
+                      className="btn btn-block"
+                      disabled={!cands.length}
+                      onClick={() => setExportIds(accepted.size ? [...accepted] : selected ? [selected.id] : [])}
+                      title={t("export.button_hint")}
+                    >
+                      <Icon name="download" />
+                      {t("export.open")}
                     </button>
-                  )}
-                  <button
-                    className="btn btn-block"
-                    disabled={!cands.length}
-                    onClick={() => setExportIds(accepted.size ? [...accepted] : selected ? [selected.id] : [])}
-                    title={t("export.button_hint")}
-                  >
-                    <Icon name="download" />
-                    {t("export.open")}
-                  </button>
-                  {exportJobs.length > 0 && (
-                    <a className="muted render-note" href={href.queue}>
-                      {t("export.in_queue", { n: exportJobs.length })}
-                    </a>
-                  )}
+                    {exportJobs.length > 0 && (
+                      <a className="muted render-note" href={href.queue}>
+                        {t("export.in_queue", { n: exportJobs.length })}
+                      </a>
+                    )}
+                  </div>
                 </div>
               </>
             ) : (

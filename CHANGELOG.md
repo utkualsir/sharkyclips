@@ -7,6 +7,95 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.13] - 2026-11-01
+
+The project page fits laptop screens: the candidate list no longer disappears under the render
+settings.
+
+### Fixed
+- **Project page on laptops** (for example a 14" screen at 125-150 % scaling): the candidate list
+  was squeezed to a thin strip under the render settings, so you couldn't see your clips. Now the
+  list always keeps a good height and scrolls inside its own panel, the settings scroll in their
+  own area, and the **Render** and **Export** buttons stay visible at the bottom.
+- The tab row (Candidates · Clips · "3 accepted") wraps instead of overlapping, so the counts are
+  always visible.
+- At 1024 px wide, the top bar no longer pushes the page sideways (the theme button was cut off).
+- Clip cards: a long YouTube status ("YouTube · Private · 0 views") wraps instead of being cut off.
+- Phones: Studio → Music with a long music folder path, and the hook test table on the Stats page,
+  no longer make the page scroll sideways.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Proje sayfası artık dizüstü ekranlara sığıyor: aday listesi oluşturma ayarlarının altında
+kaybolmuyor.
+
+### Düzeltildi
+- **Dizüstünde proje sayfası** (örneğin %125-150 ölçeklemeli 14" ekran): aday listesi oluşturma
+  ayarlarının altında ince bir şeride sıkışıyordu, kliplerini göremiyordun. Artık liste her zaman
+  iyi bir yükseklikte kalıyor ve kendi panelinde kayıyor, ayarlar kendi alanında kayıyor,
+  **Oluştur** ve **Dışa aktar** düğmeleri altta hep görünüyor.
+- Sekme satırı (Adaylar · Klipler · "3 kabul edildi") üst üste binmek yerine alta geçiyor; sayılar
+  hep görünüyor.
+- 1024 piksel genişlikte üst çubuk sayfayı yana kaydırmıyor (tema düğmesi kesiliyordu).
+- Klip kartları: uzun bir YouTube durumu ("YouTube · Gizli · 0 izlenme") kesilmek yerine alt satıra
+  geçiyor.
+- Telefonlar: uzun müzik klasörü yolu olan Stüdyo → Müzik ve İstatistikler'deki kanca testi tablosu
+  artık sayfayı yana kaydırmıyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Projektseite auf Laptops (z. B. 14" mit 125-150 % Skalierung): Die Kandidatenliste war unter den
+  Render-Einstellungen zu einem schmalen Streifen zusammengedrückt. Jetzt behält sie immer eine gute
+  Höhe, die Einstellungen scrollen separat, **Rendern** und **Exportieren** bleiben sichtbar.
+- Tab-Zeile, obere Leiste bei 1024 px, Clip-Karten und zwei Seiten auf dem Handy überlappen oder
+  scrollen nicht mehr seitlich.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Projektoldal laptopon (pl. 14" kijelző 125-150 %-os méretezéssel): a jelöltlista vékony csíkká
+  nyomódott a renderelési beállítások alatt. Most mindig jó magasságú marad, a beállítások külön
+  görgethetők, a **Renderelés** és **Exportálás** gomb látható marad.
+- A fülsor, a felső sáv 1024 px-en, a klipkártyák és két oldal telefonon már nem fedik egymást és
+  nem görgetnek oldalra.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Страница проекта на ноутбуке (например, 14" с масштабом 125-150 %): список кандидатов сжимался в
+  тонкую полоску под настройками рендера. Теперь он всегда нормальной высоты, настройки
+  прокручиваются отдельно, кнопки **Рендер** и **Экспорт** всегда видны.
+- Строка вкладок, верхняя панель при 1024 px, карточки клипов и две страницы на телефоне больше не
+  перекрываются и не прокручиваются вбок.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- صفحة المشروع على الحواسيب المحمولة (مثل شاشة 14 بوصة بتكبير 125-150٪): كانت قائمة المرشحين
+  تنضغط إلى شريط رفيع تحت إعدادات الإنشاء. الآن تحتفظ دائمًا بارتفاع جيد، وتمرّر الإعدادات في
+  منطقتها، ويبقى زرّا **الإنشاء** و**التصدير** ظاهرين.
+- لم يعد صف التبويبات والشريط العلوي عند 1024 بكسل وبطاقات المقاطع وصفحتان على الهاتف تتداخل أو
+  تمرّر الصفحة جانبيًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 笔记本上的项目页面（例如 14 英寸、125-150% 缩放）：候选列表被渲染设置挤成一条细线，看不到剪辑。
+  现在列表始终保持合适高度并在自己的面板中滚动，设置单独滚动，**渲染**和**导出**按钮始终可见。
+- 标签行、1024 像素宽时的顶部栏、剪辑卡片以及手机上的两个页面不再重叠或横向滚动。
+
+</details>
+
 ## [1.2.12] - 2026-11-01
 
 ### Fixed

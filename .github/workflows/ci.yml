@@ -107,6 +107,55 @@ jobs:
       - name: Build
         run: npm run build
 
+  layout:
+    # Every screen at laptop / desktop / phone sizes, light + dark, Turkish / Arabic / English:
+    # fails when panels overlap, a list is squeezed, content is cut off or the page scrolls
+    # sideways (frontend/scripts/layout-check.mjs). Runs against the committed frontend/dist.
+    name: Layout (no overlapping panels)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements*.txt
+      - name: Install backend dependencies
+        run: |
+          grep -v nvidia backend/requirements.txt > "$RUNNER_TEMP/requirements-ci.txt"
+          python -m pip install --upgrade pip
+          python -m pip install -r "$RUNNER_TEMP/requirements-ci.txt"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install Playwright + Chromium
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Start SharkyClips on a synthetic project
+        run: |
+          PID=$(python frontend/scripts/layout-fixture.py "$RUNNER_TEMP/layout")
+          echo "LAYOUT_PID=$PID" >> "$GITHUB_ENV"
+          SHARKYCLIPS_HOME="$RUNNER_TEMP/layout/home" SHARKYCLIPS_NO_MIGRATE=1 SHARKYCLIPS_NO_BROWSER=1 \
+            SHARKYCLIPS_PUBLISH_LOOP=0 SHARKYCLIPS_SHARED_CLIENT="$RUNNER_TEMP/none.json" \
+            nohup python backend/cli.py serve --port 8799 --no-browser > "$RUNNER_TEMP/server.log" 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8799/api/meta > /dev/null && exit 0; sleep 1; done
+          cat "$RUNNER_TEMP/server.log"; exit 1
+      - name: Layout check
+        working-directory: frontend
+        run: node scripts/layout-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
+      - name: Screenshots of failing views
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: layout-screenshots
+          path: ${{ runner.temp }}/layout-shots
+          if-no-files-found: ignore
+
   installers:
     name: Installer scripts
     runs-on: windows-latest

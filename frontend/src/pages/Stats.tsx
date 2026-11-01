@@ -191,33 +191,35 @@ function HookStyles() {
           {data.observations === 0 ? t("hooks.no_data") : t("hooks.not_yet", { n: data.min_samples })}
         </p>
       )}
-      <table className="hook-table">
-        <thead>
-          <tr>
-            <th>{t("hooks.col_style")}</th>
-            <th className="num">{t("hooks.col_n")}</th>
-            <th className="num">{t("hooks.col_retention")}</th>
-            <th>{t("hooks.col_ci")}</th>
-            <th className="num">{t("hooks.col_best")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.styles.map((s) => (
-            <tr key={s.style}>
-              <td>{t(`ab.style.${s.style}`)}</td>
-              <td className="num mono">{num(s.n)}</td>
-              <td className="num mono">{s.mean_retention != null ? `${num(s.mean_retention, 1)}%` : "–"}</td>
-              <td>
-                <div className="ci-bar" title={t("hooks.ci_tip", { lo: pct(s.ci90[0]), hi: pct(s.ci90[1]) })}>
-                  <span style={{ insetInlineStart: `${s.ci90[0] * 100}%`, width: `${Math.max(1, (s.ci90[1] - s.ci90[0]) * 100)}%` }} />
-                  <i style={{ insetInlineStart: `${s.mean_reward * 100}%` }} />
-                </div>
-              </td>
-              <td className="num mono">{s.n ? pct(s.p_best) : "–"}</td>
+      <div className="table-wrap">
+        <table className="hook-table">
+          <thead>
+            <tr>
+              <th>{t("hooks.col_style")}</th>
+              <th className="num">{t("hooks.col_n")}</th>
+              <th className="num">{t("hooks.col_retention")}</th>
+              <th>{t("hooks.col_ci")}</th>
+              <th className="num">{t("hooks.col_best")}</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {data.styles.map((s) => (
+              <tr key={s.style}>
+                <td>{t(`ab.style.${s.style}`)}</td>
+                <td className="num mono">{num(s.n)}</td>
+                <td className="num mono">{s.mean_retention != null ? `${num(s.mean_retention, 1)}%` : "–"}</td>
+                <td>
+                  <div className="ci-bar" title={t("hooks.ci_tip", { lo: pct(s.ci90[0]), hi: pct(s.ci90[1]) })}>
+                    <span style={{ insetInlineStart: `${s.ci90[0] * 100}%`, width: `${Math.max(1, (s.ci90[1] - s.ci90[0]) * 100)}%` }} />
+                    <i style={{ insetInlineStart: `${s.mean_reward * 100}%` }} />
+                  </div>
+                </td>
+                <td className="num mono">{s.n ? pct(s.p_best) : "–"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <p className="muted" style={{ margin: "10px 0 0", fontSize: 12 }}>
         {t("hooks.note", { cap: num(data.reward_cap) })}
       </p>

@@ -37,6 +37,11 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   `SHARKYCLIPS_HOME` and set `SHARKYCLIPS_NO_MIGRATE=1`). Lint: `.venv/Scripts/python -m ruff check backend`.
 - Frontend: `cd frontend && npm run build` (also typechecks), `node scripts/check-i18n.mjs` (every
   key in all 7 locales: en, tr, de, hu, ru, ar, zh). Commit the rebuilt `frontend/dist`.
+- Layout check (CI job "Layout"): `python frontend/scripts/layout-fixture.py <dir>`, serve with
+  `SHARKYCLIPS_HOME=<dir>/home ... --port 8799`, then `LAYOUT_CHANNEL=msedge node
+  frontend/scripts/layout-check.mjs http://127.0.0.1:8799 <project-id> [shots]` (`LAYOUT_QUICK=1`
+  for a fast pass). It fails on overlapping panels, squeezed lists, cut-off content and sideways
+  page scroll on every screen at 1024-1920 px, 700-1080 px high and phone width.
 - Icons/logo come from `installer/make_icons.py` (one geometry; `frontend/src/components/Brand.tsx`
   and `backend/sharkyclips/web/splash.html` copy the same paths).
 - Settings folder: `~/.sharkyclips` (`config.config_dir()`); `migrate.py` moves an old `~/.clipforge`
