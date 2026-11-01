@@ -1,0 +1,8 @@
+{
+  "_comment": "SharkyClips' built-in Google OAuth client (type 'Desktop app'). Google: an installed app's client secret is not confidential; PKCE + a 127.0.0.1 redirect protect the sign-in. Paste the downloaded client JSON's client_id / client_secret / project_id here. verification: testing | unverified | in_review | verified. user_cap: Google's limit for unverified apps with sensitive scopes.",
+  "client_id": "",
+  "client_secret": "",
+  "project_id": "",
+  "verification": "unverified",
+  "user_cap": 100
+}

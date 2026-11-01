@@ -23,6 +23,9 @@ os.environ["SHARKYCLIPS_NO_MIGRATE"] = "1"  # never touch the real shortcuts / ~
 os.environ["SHARKYCLIPS_PUBLISH_LOOP"] = "0"  # tests tick the publish scheduler themselves
 os.environ["SHARKYCLIPS_NO_KEYCHAIN"] = "1"  # macOS: never touch the real login Keychain
 os.environ.pop("SHARKYCLIPS_YT_ENDPOINT", None)
+os.environ["SHARKYCLIPS_NO_BROWSER"] = "1"  # "Connect with Google" must not open a real browser
+# no built-in Google client unless a test sets one (the shipped google_client.json may be filled in)
+os.environ["SHARKYCLIPS_SHARED_CLIENT"] = str(_home / "no-shared-client.json")
 os.environ.pop("CLIPFORGE_HOME", None)
 os.environ.pop("SHARKYCLIPS_SUPERVISED", None)
 

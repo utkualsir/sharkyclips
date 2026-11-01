@@ -1,9 +1,17 @@
 """Direct YouTube upload with the official, free YouTube Data API v3.
 
-Everything stays on this computer: the user makes their own (free) Google Cloud OAuth client
-of type "Desktop app" and loads its JSON in Settings. Files in ~/.sharkyclips/youtube/:
+Everything stays on this computer. Two ways to sign in:
 
-  client.json    client id + secret of the user's own OAuth client
+  shared ("easy")  SharkyClips ships one Google OAuth client of type "Desktop app"
+                   (google_client.json next to this file). Google says an installed app's client
+                   secret is not confidential; PKCE + a loopback redirect protect the sign-in.
+  own ("advanced") the user makes their own free Google Cloud client and loads its JSON in
+                   Settings (own quota, no shared limits). It wins over the shared one.
+
+Files in ~/.sharkyclips/youtube/:
+
+  client.json    client id + secret of the user's own OAuth client (advanced mode only)
+  signed_out.json  Google signed us out (revoked / expired): the UI shows a reconnect banner
   token.enc      access + refresh token, encrypted (secretstore.py: DPAPI on Windows, the
                  Keychain on macOS); never leaves this PC
   playlists.json the channel's playlists (cached for the publish screen)
@@ -13,8 +21,8 @@ of type "Desktop app" and loads its JSON in Settings. Files in ~/.sharkyclips/yo
                  videos uploaded through such a project stay private until Google audits it)
   unlocked.json  set when an upload really went public / unlisted: the lock is gone
 
-OAuth: authorization code + PKCE with a loopback redirect to this server
-(http://127.0.0.1:<port>/), which Google allows for Desktop app clients on any port.
+OAuth: authorization code + PKCE with a loopback redirect to a one-shot listener on a random
+port (http://127.0.0.1:<port>/, see ytconnect.py), which Google allows for Desktop app clients.
 
 Quota (default 10,000 units a day per Google Cloud project): an upload costs 1,600 units,
 a thumbnail 50, changing / deleting a video or a playlist 50, reading statistics 1 per 50 videos.
@@ -60,6 +68,8 @@ CATEGORY = {"gaming": "20", "study": "27", "music": "10"}  # Gaming, Education, 
 # Categories a video can be put in (the ones YouTube offers for uploads in every region).
 CATEGORIES = ("1", "2", "10", "15", "17", "19", "20", "22", "23", "24", "25", "26", "27", "28", "29")
 CONSOLE = "https://console.cloud.google.com"
+SHARED_FILE = Path(__file__).with_name("google_client.json")
+CREATE_CHANNEL_URL = "https://www.youtube.com/create_channel"
 
 _lock = threading.RLock()
 _pending: dict[str, dict] = {}  # OAuth state -> {verifier, redirect_uri, created}
@@ -185,34 +195,119 @@ def check_quota(units: int) -> None:
 
 
 def load_client() -> dict | None:
+    """The user's own OAuth client (advanced mode), or None."""
     return _read("client.json")
 
 
-def set_client(raw: str | bytes | dict) -> dict:
-    """Store the user's OAuth client (the JSON downloaded from Google Cloud Console)."""
-    try:
-        data = raw if isinstance(raw, dict) else json.loads(raw)
-    except (ValueError, TypeError):
-        raise SharkyClipsError("That file isn't a Google OAuth client JSON.",
-                               "Download it from Google Cloud Console > Clients > your Desktop app.") from None
-    kind = "installed" if "installed" in data else "web" if "web" in data else None
-    body = data.get(kind) if kind else data
-    cid, secret = str((body or {}).get("client_id") or ""), str((body or {}).get("client_secret") or "")
+def _parse_client(data: Any) -> dict | None:
+    if not isinstance(data, dict):
+        return None
+    body = data.get("installed") or data
+    cid = str(body.get("client_id") or "")
     if not cid.endswith(".apps.googleusercontent.com"):
-        raise SharkyClipsError("That file has no Google OAuth client ID.",
-                               "Download the JSON of an OAuth client of type 'Desktop app'.")
-    if kind == "web":
-        raise SharkyClipsError("This is a 'Web application' client.",
-                               "Create an OAuth client of type 'Desktop app' instead (it allows the local "
-                               "redirect SharkyClips uses).")
-    client = {"client_id": cid, "client_secret": secret, "project_id": (body or {}).get("project_id"),
-              "saved_at": _now()}
+        return None
+    return {"client_id": cid, "client_secret": str(body.get("client_secret") or ""),
+            "project_id": body.get("project_id")}
+
+
+VERIFICATION = ("testing", "unverified", "in_review", "verified")
+
+
+def shared_info() -> dict:
+    """The built-in client's public facts: is it set up, Google's verification state, user cap.
+    SHARKYCLIPS_SHARED_CLIENT may point at another JSON (tests, forks)."""
+    env = os.environ.get("SHARKYCLIPS_SHARED_CLIENT")
+    path = Path(env) if env else SHARED_FILE
+    try:
+        data = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+    except (OSError, ValueError):
+        data = {}
+    client = _parse_client(data)
+    verification = data.get("verification") if data.get("verification") in VERIFICATION else "unverified"
+    return {"available": client is not None, "client": client, "verification": verification,
+            "user_cap": int(data.get("user_cap") or 100), "project_id": (client or {}).get("project_id")}
+
+
+def shared_client() -> dict | None:
+    return shared_info()["client"]
+
+
+def active_client() -> dict | None:
+    """The client a new sign-in uses: the user's own one wins over the built-in one."""
+    return load_client() or shared_client()
+
+
+def client_mode() -> str | None:
+    return "own" if load_client() else "shared" if shared_client() else None
+
+
+def _client_for(tok: dict) -> dict:
+    """The client a token was issued to (a refresh must use the same one)."""
+    want = tok.get("client_id")
+    for c in (load_client(), shared_client()):
+        if c and (not want or c["client_id"] == want):
+            return c
+    return {}
+
+
+def check_client_text(raw: str) -> dict:
+    """Validate a pasted / dropped client_secret.json and explain any problem in plain words.
+    Returns the parsed client (not saved)."""
+    text = (raw or "").strip().lstrip("\ufeff")
+    if not text:
+        raise _err("That's empty.", "Drop the client_secret_....json file here, or paste its contents.",
+                   reason="empty")
+    if text.startswith("AIza"):
+        raise _err("That's an API key, not an OAuth client.",
+                   "SharkyClips needs the OAuth client file: Google Auth Platform > Clients > your Desktop "
+                   "app > Download JSON.", reason="api_key")
+    if text.endswith(".apps.googleusercontent.com") and not any(c in text for c in " {\n"):
+        raise _err("That's only the client ID.",
+                   "Download the whole JSON file (it also holds the client secret): Clients > your "
+                   "Desktop app > Download JSON.", reason="id_only")
+    try:
+        data = json.loads(text)
+    except ValueError:
+        raise _err("That isn't a JSON file.",
+                   "Use the file Google downloads as client_secret_....json, unchanged.",
+                   reason="not_json") from None
+    if not isinstance(data, dict):
+        raise _err("That isn't a Google OAuth client file.", reason="not_client")
+    if data.get("type") == "service_account":
+        raise _err("That's a service account key.",
+                   "YouTube uploads need an OAuth client of type 'Desktop app' (Google Auth Platform > "
+                   "Clients > Create client).", reason="service_account")
+    if "web" in data:
+        raise _err("This is a 'Web application' client.",
+                   "Create an OAuth client of type 'Desktop app' instead (it allows the local "
+                   "redirect SharkyClips uses).", reason="web_client")
+    client = _parse_client(data)
+    if client is None:
+        raise _err("That file has no Google OAuth client ID.",
+                   "Download the JSON of an OAuth client of type 'Desktop app'.", reason="no_client_id")
+    if not client["client_secret"]:
+        raise _err("That file has no client secret.",
+                   "Download the JSON again from Clients > your Desktop app > Download JSON.",
+                   reason="no_secret")
+    return client
+
+
+def set_client(raw: str | bytes | dict) -> dict:
+    """Store the user's own OAuth client (the JSON downloaded from Google Cloud Console)."""
+    if isinstance(raw, dict):
+        text = json.dumps(raw)
+    elif isinstance(raw, bytes):
+        text = raw.decode("utf-8-sig", "replace")
+    else:
+        text = str(raw)
+    client = {**check_client_text(text), "saved_at": _now()}
     _write("client.json", client)
     _forget_token()  # a new client needs a new sign-in
     return client
 
 
 def remove_client() -> None:
+    """Back to the built-in client (easy mode): the own client's token goes too."""
     disconnect()
     (folder() / "client.json").unlink(missing_ok=True)
 
@@ -256,12 +351,30 @@ def connected() -> bool:
 def status() -> dict:
     client = load_client()
     tok = _token() or {}
+    sh = shared_info()
+    conn = connected()
     return {"client": bool(client), "client_id": (client or {}).get("client_id"),
-            "project_id": (client or {}).get("project_id"), "connected": connected(),
-            "channel": tok.get("channel"), "connected_at": tok.get("connected_at"),
+            "project_id": (client or {}).get("project_id"), "connected": conn,
+            "mode": client_mode(), "ready": active_client() is not None,
+            "shared": {k: sh[k] for k in ("available", "verification", "user_cap", "project_id")},
+            "channel": tok.get("channel"), "channels": tok.get("channels") or [],
+            "no_channel": conn and not tok.get("channel") and bool(tok.get("channel_checked")),
+            "create_channel_url": CREATE_CHANNEL_URL, "signed_out": signed_out(),
+            "connected_at": tok.get("connected_at"),
             "quota": quota_view(), "scopes": list(SCOPES), "analytics": has_analytics(),
             "manage": can_manage(), "uploads_locked": uploads_locked(), "lock": lock_state(),
-            "token_protection": token_protection() if connected() else None}
+            "token_protection": token_protection() if conn else None}
+
+
+def signed_out() -> dict | None:
+    """Google signed SharkyClips out (revoked / expired): {at, channel, reason} until reconnected."""
+    if connected():
+        return None
+    return _read("signed_out.json")
+
+
+def dismiss_signed_out() -> None:
+    (folder() / "signed_out.json").unlink(missing_ok=True)
 
 
 def has_analytics() -> bool:
@@ -311,20 +424,31 @@ def clear_locked() -> None:
 
 
 def auth_url(redirect_uri: str) -> str:
-    client = load_client()
+    client = active_client()
     if not client:
-        raise SharkyClipsError("Load your Google OAuth client first (Settings > YouTube, step 5).")
+        raise _err("YouTube sign-in isn't set up in this build.",
+                   "Use Settings > YouTube > Advanced to connect with your own Google project.",
+                   reason="no_client")
     verifier = secrets.token_urlsafe(64)
     challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
     state = secrets.token_urlsafe(24)
     with _lock:
         for k in [k for k, v in _pending.items() if time.time() - v["created"] > 900]:
             _pending.pop(k, None)
-        _pending[state] = {"verifier": verifier, "redirect_uri": redirect_uri, "created": time.time()}
+        _pending[state] = {"verifier": verifier, "redirect_uri": redirect_uri, "created": time.time(),
+                           "client_id": client["client_id"]}
+    # select_account: always show Google's account / channel chooser (wrong account, several
+    # channels); consent: always get a refresh token.
     q = {"client_id": client["client_id"], "redirect_uri": redirect_uri, "response_type": "code",
-         "scope": " ".join(SCOPES), "access_type": "offline", "prompt": "consent", "state": state,
-         "code_challenge": challenge, "code_challenge_method": "S256", "include_granted_scopes": "true"}
+         "scope": " ".join(SCOPES), "access_type": "offline", "prompt": "select_account consent",
+         "state": state, "code_challenge": challenge, "code_challenge_method": "S256",
+         "include_granted_scopes": "true"}
     return url(AUTH_URL) + "?" + urllib.parse.urlencode(q)
+
+
+def forget_pending(state: str | None) -> None:
+    with _lock:
+        _pending.pop(state or "", None)
 
 
 def is_pending(state: str | None) -> bool:
@@ -335,27 +459,59 @@ def finish_auth(code: str, state: str) -> dict:
     with _lock:
         pend = _pending.pop(state, None)
     if pend is None:
-        raise SharkyClipsError("This sign-in link has expired.", "Click Connect YouTube again.")
-    client = load_client() or {}
+        raise _err("This sign-in link has expired.", "Click Connect YouTube again.", reason="expired")
+    client = next((c for c in (load_client(), shared_client())
+                   if c and c["client_id"] == pend.get("client_id")), None) or active_client() or {}
     res = _http().post(url(TOKEN_URL), data={
         "code": code, "client_id": client.get("client_id"), "client_secret": client.get("client_secret"),
         "redirect_uri": pend["redirect_uri"], "grant_type": "authorization_code",
         "code_verifier": pend["verifier"]}, timeout=30)
     data = _json(res)
     if res.status_code != 200 or "refresh_token" not in data:
-        raise SharkyClipsError(f"Google refused the sign-in: {data.get('error_description') or data.get('error') or res.status_code}",
-                               "Check that your Google account is a test user of the OAuth app (step 3).")
+        hint = ("Check that your Google account is a test user of your OAuth app (Advanced, step 3)."
+                if load_client() else "Try again in a minute.")
+        raise _err("Google refused the sign-in: "
+                   f"{data.get('error_description') or data.get('error') or res.status_code}", hint, reason="token")
     tok = {"access_token": data["access_token"], "refresh_token": data["refresh_token"],
            "expires_at": time.time() + int(data.get("expires_in") or 3600) - 60,
-           "scope": data.get("scope"), "connected_at": _now()}
+           "scope": data.get("scope"), "connected_at": _now(), "client_id": client.get("client_id")}
     _write_token(tok)
-    try:
-        ch = channel()
-        tok["channel"] = ch
-        _write_token(tok)
-    except SharkyClipsError:
-        pass
+    dismiss_signed_out()
     (folder() / "playlists.json").unlink(missing_ok=True)
+    _refresh_channels(tok)
+    return status()
+
+
+def _refresh_channels(tok: dict | None = None) -> dict:
+    """Ask YouTube which channel(s) this sign-in may upload to. An API error (e.g. the API is off
+    in the user's own project) is raised; the token stays."""
+    found = channels()
+    tok = _token() or tok or {}  # channels() may have refreshed the access token meanwhile
+    tok["channels"] = found
+    tok["channel_checked"] = True
+    keep = (tok.get("channel") or {}).get("id")
+    tok["channel"] = next((c for c in found if c["id"] == keep), found[0] if found else None)
+    _write_token(tok)
+    return tok
+
+
+def recheck_channel() -> dict:
+    """After the user made a YouTube channel: look again."""
+    if not connected():
+        raise _err("YouTube isn't connected.", reason="not_connected")
+    _refresh_channels()
+    return status()
+
+
+def select_channel(channel_id: str) -> dict:
+    """Several channels listed for the account: the one SharkyClips shows."""
+    tok = _token() or {}
+    pick = next((c for c in tok.get("channels") or [] if c["id"] == channel_id), None)
+    if pick is None:
+        raise _err("That channel isn't on this Google account.", reason="channel")
+    tok["channel"] = pick
+    tok["channel_picked"] = True
+    _write_token(tok)
     return status()
 
 
@@ -367,6 +523,7 @@ def disconnect() -> None:
         except Exception:  # noqa: BLE001 - offline: forget it locally anyway
             pass
     _forget_token()
+    dismiss_signed_out()  # the user chose this: no "signed out" banner
     (folder() / "playlists.json").unlink(missing_ok=True)
 
 
@@ -377,17 +534,20 @@ def access_token() -> str:
             raise _err("YouTube isn't connected.", "Settings > YouTube > Connect YouTube.", reason="not_connected")
         if tok.get("access_token") and time.time() < float(tok.get("expires_at") or 0):
             return tok["access_token"]
-        client = load_client() or {}
+        client = _client_for(tok)
+        if not client:  # the client it was made with is gone
+            _signed_out(tok, "client_removed")
+            raise _err("YouTube isn't connected.", "Connect YouTube again.", reason="signed_out")
         res = _http().post(url(TOKEN_URL), data={
             "client_id": client.get("client_id"), "client_secret": client.get("client_secret"),
             "refresh_token": tok["refresh_token"], "grant_type": "refresh_token"}, timeout=30)
         data = _json(res)
         if res.status_code != 200:
-            if data.get("error") == "invalid_grant":
-                _forget_token()
+            if data.get("error") in ("invalid_grant", "invalid_client", "unauthorized_client"):
+                _signed_out(tok, str(data.get("error")))
                 raise _err("YouTube signed SharkyClips out.",
-                                       "Connect YouTube again. (Apps in Google's 'Testing' mode are signed out "
-                                       "after 7 days - publish the app in the Google Cloud console to stop that.)",
+                           "Click Reconnect: it takes a few seconds. (Google ends the sign-in when you remove "
+                           "access in your Google account, and after 7 days for apps in 'Testing' mode.)",
                            reason="signed_out", status=res.status_code)
             raise _err(f"Could not refresh the YouTube sign-in ({data.get('error') or res.status_code}).",
                        reason="refresh_failed", status=res.status_code)
@@ -395,6 +555,12 @@ def access_token() -> str:
         tok["expires_at"] = time.time() + int(data.get("expires_in") or 3600) - 60
         _write_token(tok)
         return tok["access_token"]
+
+
+def _signed_out(tok: dict, reason: str) -> None:
+    """Forget a dead token but remember whose it was, for the one-click reconnect banner."""
+    _forget_token()
+    _write("signed_out.json", {"at": _now(), "channel": tok.get("channel"), "reason": reason})
 
 
 def _expire_access() -> None:
@@ -435,8 +601,10 @@ def _api_error(res: Any, what: str) -> SharkyClipsError:
         "quotaExceeded": "Google's daily API quota is used up; it resets at midnight Pacific Time.",
         "uploadLimitExceeded": "YouTube's own daily upload limit for this channel is reached.",
         "youtubeSignupRequired": "This Google account has no YouTube channel yet: create one on youtube.com.",
-        "forbidden": "Is the YouTube Data API v3 enabled in your Google Cloud project (step 2)?",
-        "accessNotConfigured": "Enable the YouTube Data API v3 in your Google Cloud project (step 2).",
+        "forbidden": "Is the YouTube Data API v3 enabled in your Google Cloud project (Advanced, step 2)?",
+        "accessNotConfigured": "Enable the YouTube Data API v3 in your Google Cloud project (Advanced, step 2).",
+        "SERVICE_DISABLED": "Enable the YouTube Data API v3 in your Google Cloud project (Advanced, step 2).",
+        "PERMISSION_DENIED": "Is the YouTube Data API v3 enabled in your Google Cloud project (Advanced, step 2)?",
         "invalidPublishAt": "The scheduled time must be in the future.",
         "insufficientPermissions": "Reconnect YouTube in Settings so SharkyClips may manage your scheduled videos.",
         "ACCESS_TOKEN_SCOPE_INSUFFICIENT": "Reconnect YouTube in Settings so SharkyClips may manage your scheduled videos.",
@@ -474,13 +642,20 @@ def _call(method: str, path: str, params: dict, body: dict | None = None, *, cos
     raise _err(f"YouTube {what} failed: signed out.", reason="signed_out", status=401)
 
 
+def channels() -> list[dict]:
+    """The YouTube channel(s) of the signed-in account (empty: the account has no channel yet)."""
+    items = _get("channels", {"part": "snippet", "mine": "true", "maxResults": 50}).get("items") or []
+    out = []
+    for it in items:
+        sn = it.get("snippet") or {}
+        out.append({"id": it.get("id"), "title": sn.get("title"),
+                    "thumbnail": ((sn.get("thumbnails") or {}).get("default") or {}).get("url")})
+    return out
+
+
 def channel() -> dict | None:
-    items = _get("channels", {"part": "snippet", "mine": "true"}).get("items") or []
-    if not items:
-        return None
-    sn = items[0].get("snippet") or {}
-    return {"id": items[0].get("id"), "title": sn.get("title"),
-            "thumbnail": ((sn.get("thumbnails") or {}).get("default") or {}).get("url")}
+    found = channels()
+    return found[0] if found else None
 
 
 # ------------------------------------------------------------------ upload

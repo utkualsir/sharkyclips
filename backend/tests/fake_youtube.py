@@ -14,6 +14,10 @@ thumbnails.set, playlists, playlistItems and YouTube Analytics reports. Switches
   expire_next     the next API call with a valid token answers 401 (token expired)
   revoke_refresh  refresh answers invalid_grant (the user removed access)
   access_ttl      seconds an access token lives
+  channel_count   channels the signed-in account has (0 = no channel yet, 2 = several)
+  deny_auth       the user clicks Cancel on Google's screen (redirect with error=access_denied)
+  auth_page       the auth URL shows a page with Allow / Cancel links instead of consenting at once
+                  (browser tests click them like a user)
 """
 
 from __future__ import annotations
@@ -36,6 +40,10 @@ class FakeYouTube:
         self.expire_next = 0
         self.revoke_refresh = False
         self.access_ttl = 3600
+        self.channel_count = 1
+        self.deny_auth = False
+        self.auth_page = False
+        self.auth_requests: list[dict] = []
         self.tokens: dict[str, float] = {}  # access token -> expiry
         self.refresh_tokens: set[str] = set()
         self.codes: dict[str, str] = {}  # auth code -> scope
@@ -160,6 +168,17 @@ class FakeYouTube:
 
         # ---- OAuth
         if path == "/accounts/o/oauth2/v2/auth":
+            self.auth_requests.append(q)
+            deny = q["redirect_uri"] + "?" + urllib.parse.urlencode({"error": "access_denied", "state": q.get("state", "")})
+            if self.deny_auth or q.get("_choice") == "deny":
+                self._send(h, 302, None, {"Location": deny})
+                return
+            if self.auth_page and q.get("_choice") != "allow":
+                allow = h.path + "&_choice=allow"
+                page = (f'<!doctype html><title>Fake Google</title><h1>Sign in</h1>'
+                        f'<a id="allow" href="{allow}">Allow</a> <a id="deny" href="{h.path}&_choice=deny">Cancel</a>')
+                self._send(h, 200, page.encode())
+                return
             code = f"code-{self._id('c')}"
             self.codes[code] = q.get("scope", "")
             target = q["redirect_uri"] + "?" + urllib.parse.urlencode({"code": code, "state": q.get("state", "")})
@@ -224,8 +243,10 @@ class FakeYouTube:
         if not self._authed(h):
             return
         if path == "/www/youtube/v3/channels":
-            self._send(h, 200, {"items": [{"id": "UCfake", "snippet": {"title": "Fake Channel", "thumbnails": {
-                "default": {"url": f"{self.base}/avatar.png"}}}}]})
+            names = ["Fake Channel", "Second Channel", "Third Channel"]
+            self._send(h, 200, {"items": [
+                {"id": "UCfake" if i == 0 else f"UCfake{i + 1}", "snippet": {"title": names[i % 3], "thumbnails": {
+                    "default": {"url": f"{self.base}/avatar.png"}}}} for i in range(self.channel_count)]})
             return
         if path == "/www/upload/youtube/v3/videos" and method == "POST":
             if self.quota_exceeded:

@@ -715,6 +715,30 @@ export interface YoutubeStatus {
   manage?: boolean;
   lock?: YoutubeLock;
   token_protection?: "dpapi" | "keychain" | "file" | null;
+  /** 1.2.8: shared = SharkyClips' built-in Google client, own = the user's own project */
+  mode: "shared" | "own" | null;
+  /** a sign-in is possible (built-in client available or own client loaded) */
+  ready: boolean;
+  shared: { available: boolean; verification: "testing" | "unverified" | "in_review" | "verified"; user_cap: number; project_id: string | null };
+  channels: { id: string; title: string; thumbnail: string | null }[];
+  no_channel: boolean;
+  create_channel_url: string;
+  signed_out: YoutubeSignedOut | null;
+}
+
+export interface YoutubeSignedOut {
+  at: string;
+  channel: { id: string; title: string; thumbnail: string | null } | null;
+  reason: string;
+}
+
+export interface ConnectFlow {
+  id: string;
+  status: "waiting" | "ok" | "no_channel" | "choose_channel" | "cancelled" | "error" | "expired" | "api_disabled";
+  message: string | null;
+  hint: string | null;
+  reason: string | null;
+  youtube: YoutubeStatus | null;
 }
 
 /** Are uploads forced to private (unaudited Google project)? unknown = no upload told us yet. */
@@ -1150,6 +1174,8 @@ export interface AppState {
   /** flag older than 12 h: no banner, a note in Settings */
   dev_stale: DevState | null;
   content_types: string[];
+  /** Google ended the YouTube sign-in: reconnect banner on every screen */
+  youtube_signed_out: YoutubeSignedOut | null;
 }
 
 export interface ChangelogEntry {
@@ -1233,14 +1259,23 @@ export const api = {
   deleteClipExport: (id: string, exportId: string) =>
     req<{ removed: boolean }>("DELETE", `${P(id)}/clip-exports/${encodeURIComponent(exportId)}`),
   youtube: () => req<YoutubeStatus>("GET", "/api/youtube"),
-  youtubeClient: async (file: File) => {
-    const res = await fetch("/api/youtube/client", { method: "PUT", body: file });
+  youtubeClient: async (body: File | string) => {
+    const res = await fetch("/api/youtube/client", { method: "PUT", body });
     const data = await res.json();
     if (!res.ok) throw new ApiError(data.error || data.detail || res.statusText, data.hint || null, res.status);
     return data as YoutubeStatus;
   },
+  youtubeClientCheck: async (text: string) => {
+    const res = await fetch("/api/youtube/client/check", { method: "POST", body: text });
+    return (await res.json()) as { ok: boolean; error?: string; hint?: string | null; reason?: string | null; project_id?: string | null };
+  },
   youtubeRemoveClient: () => req<YoutubeStatus>("DELETE", "/api/youtube/client"),
-  youtubeConnect: () => req<{ url: string }>("POST", "/api/youtube/connect"),
+  youtubeConnect: (open = true) => req<{ id: string; url: string; opened: boolean; port: number }>("POST", "/api/youtube/connect", { open }),
+  youtubeConnectState: (id: string) => req<ConnectFlow>("GET", `/api/youtube/connect/${encodeURIComponent(id)}`),
+  youtubeConnectCancel: (id: string) => req<ConnectFlow>("DELETE", `/api/youtube/connect/${encodeURIComponent(id)}`),
+  youtubeChannel: (id: string) => req<YoutubeStatus>("POST", "/api/youtube/channel", { id }),
+  youtubeRecheck: () => req<YoutubeStatus>("POST", "/api/youtube/recheck"),
+  youtubeDismissSignedOut: () => req<YoutubeStatus>("POST", "/api/youtube/signed-out/dismiss"),
   youtubeDisconnect: () => req<YoutubeStatus>("POST", "/api/youtube/disconnect"),
   youtubeStats: () => req<Job>("POST", "/api/youtube/stats"),
   uploads: (id: string) => req<Record<string, YoutubeUpload[]>>("GET", `${P(id)}/uploads`),

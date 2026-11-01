@@ -154,7 +154,18 @@ def app_state() -> dict:
     dev = dev_state()
     return {"version": __version__, "onboarding": onboarding_needed(cfg), "whats_new": whats_new(cfg),
             "dev": dev if dev and not dev["stale"] else None, "dev_stale": dev if dev and dev["stale"] else None,
-            "content_types": cfg.get("content_types") or [cfg.get("default_mode") or "gaming"]}
+            "content_types": cfg.get("content_types") or [cfg.get("default_mode") or "gaming"],
+            "youtube_signed_out": _yt_signed_out()}
+
+
+def _yt_signed_out() -> dict | None:
+    """Google ended the YouTube sign-in: every screen offers a one-click reconnect."""
+    try:
+        from . import youtube
+
+        return youtube.signed_out()
+    except Exception:  # noqa: BLE001 - never break the app shell
+        return None
 
 
 # ------------------------------------------------------------------ quick hardware check

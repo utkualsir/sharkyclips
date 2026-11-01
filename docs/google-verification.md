@@ -11,21 +11,42 @@ into the forms.
    ([form](https://support.google.com/youtube/contact/yt_api_form)). Needed so videos uploaded
    through the project are not forced to private, and for more than 10,000 units a day.
 
-## Read first: which Google project gets verified?
+## Read first: the shared client (since 1.2.8)
 
-Today every user creates **their own** Google Cloud project and OAuth client (Settings → YouTube
-guide). An unverified, unaudited project keeps uploads private, so today each user would need
-their own audit, which is not realistic.
+SharkyClips now ships **one built-in Google OAuth client** ("Desktop app" type) that the owner
+creates once: `backend/sharkyclips/google_client.json`. That client is what gets verified and
+audited. Users click **Connect with Google** and are done; nobody else needs a Google Cloud
+project. The user's own client stays available under Settings → YouTube → **Advanced** (heavy
+uploaders keep their own 10,000-unit quota; it also always works if the shared client is full).
 
-Verification only helps users if SharkyClips ships **one shared OAuth client** owned by you,
-with the per-user client kept as an "advanced" option. That is a code change I did **not** make
-(it changes the setup flow and the quota model: one 10,000-unit daily pool shared by everyone =
-6 uploads a day in total until the quota extension is granted). Decide this before submitting.
-Notes for that change:
+How the sign-in works (what reviewers will ask):
 
-- A "Desktop app" client's secret is not confidential (Google says so for installed apps); it can
-  ship in the source. PKCE + loopback redirect are already implemented in `youtube.py`.
-- Keep the user's own client as an override, so heavy users keep their own quota.
+- OAuth 2.0 authorization code + **PKCE (S256)**, `access_type=offline`,
+  `prompt=select_account consent`.
+- Redirect: a one-shot listener on **`http://127.0.0.1:<random port>/`**, started per sign-in
+  and closed right after Google redirects back (or after 10 minutes / Cancel). Google allows any
+  loopback port for Desktop clients, so no redirect URI is registered.
+- The client secret ships in the source. Google documents that an installed app's secret is not
+  confidential; PKCE + the loopback redirect protect the code exchange.
+- The token is stored encrypted on the user's computer only (DPAPI / macOS Keychain).
+
+`google_client.json` fields: `client_id`, `client_secret`, `project_id`, `verification`
+(`testing` | `unverified` | `in_review` | `verified`, shown in Settings) and `user_cap`
+(100 = Google's limit for unverified apps with sensitive scopes, shown in Settings). Update
+`verification` there when Google's status changes; the app picks it up after the next update.
+
+### Limits while the shared client is unverified
+
+- **Publishing status "Testing":** only listed test users (max. 100) can sign in, and Google
+  ends their sign-in after **7 days**. Use this only for your own first test.
+- **Publishing status "In production", not verified:** anyone can sign in after Google's
+  "Google hasn't verified this app" screen (the app shows an illustrated tip before opening the
+  browser), up to **100 users in total** for the lifetime of the project until verified.
+- **Quota:** all users share the project's 10,000 units a day (about 6 uploads) until the
+  quota extension is granted. The app counts units locally per user; when Google says the quota
+  is used up, uploads wait for the next reset.
+- **Private lock:** until the YouTube API audit passes, every video uploaded through the
+  project stays private. The app detects this and says so.
 
 ## Before you submit (checklist)
 
@@ -38,9 +59,12 @@ Notes for that change:
       workflow). `github.io` is on the Public Suffix List, so this subdomain counts as your own
       domain. If Google still rejects it, a cheap custom domain pointing at Pages fixes it
       (then update `PRIVACY_URL` in `frontend/src/components/Publish.tsx`).
-- [ ] OAuth consent screen: app name **SharkyClips**, the 120x120 logo
-      (`assets/icon/sharkyclips.png`, resize), support email `<support email>`, authorized domain
-      `utkualsir.github.io`, the three URLs above, developer contact `<email>`.
+- [ ] OAuth consent screen (Branding): app name **SharkyClips** (exactly as in the app), the
+      120x120 logo (PNG, square, no extra text; resize `assets/icon/sharkyclips.png`), support
+      email `<support email>`, homepage / privacy / terms = the three URLs above, authorized
+      domain `utkualsir.github.io`, developer contact `<email>`. The logo needs extra review
+      time; leave it out for the first, unverified phase if you want to publish faster.
+- [ ] `google_client.json` filled in and released (an app update), `verification` set.
 - [ ] Scopes on the consent screen exactly match `youtube.SCOPES`.
 - [ ] Record the demo video (script below), upload it to YouTube as **unlisted**.
 - [ ] App name and logo on the consent screen match the app (Google checks this).
@@ -100,9 +124,11 @@ during the Google sign-in so the client ID is visible):
 1. Open SharkyClips, Settings → YouTube. Show the notice "SharkyClips uses YouTube API
    Services..." with the links to the YouTube Terms, the Google Privacy Policy and the
    SharkyClips privacy policy.
-2. Click **Connect YouTube**. Show the Google consent screen with the app name and both
-   scopes, then allow.
-3. Back in Settings: the connected channel name and avatar (`youtube`).
+2. Click **Connect with Google**. The system browser opens Google's sign-in: zoom into the URL
+   bar so the `client_id` of the project under review is visible. Pick the account, show the
+   consent screen with the app name and both scopes (read them out), then **Allow**.
+3. The browser tab shows "Connected!"; back in the app the channel name and avatar appear at
+   once (`youtube`: `channels.list mine=true`).
 4. Library → select clips → **Schedule** (auto-plan), show the calendar and drag one clip to
    another day (`videos.update`), cancel one (`videos.delete`). Then a project's clip → **Upload**. Show the dialog (title, description, tags,
    privacy = Private, schedule, thumbnail), press Upload, show the progress and the finished
@@ -162,4 +188,5 @@ fields.
   (and to refresh or delete it regularly). Suggested follow-up: a "Also delete fetched
   statistics" checkbox in the disconnect dialog, and dropping fetched numbers older than 30 days
   that could not be refreshed.
-- **Shared client** (see the top of this page).
+- **Shared quota.** One 10,000-unit pool for every user of the built-in client until the
+  quota extension is granted (see "Quota requested").

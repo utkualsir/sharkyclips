@@ -16,7 +16,7 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.7-1F6FE5" alt="Version 1.2.7"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.8-1F6FE5" alt="Version 1.2.8"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -81,7 +81,8 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
 - **Subtitle files and editor timelines.** SRT/VTT in all 7 languages (translated locally when
   needed), FCPXML for DaVinci Resolve / Final Cut Pro and XML for Premiere Pro with the cut, captions
   and markers for the detected moments.
-- **Direct YouTube upload** (optional) through the free official API with your own Google key:
+- **Direct YouTube upload** (optional) through the free official API: one click on **Connect with
+  Google** (or your own Google project under Advanced):
   title, description and hashtags from the publish package, privacy, scheduling, thumbnail, a daily
   quota counter, and views that flow back into the calibration by themselves.
 - **Best-of videos.** One 16:9 YouTube video from your best clips, with title cards, crossfades,
@@ -121,8 +122,8 @@ account, no cloud service, no paid API and no telemetry. Transcription (Whisper)
 highlight detection and rendering all run locally. Your videos, transcripts and clips stay in
 the `workspace` folder. SharkyClips only goes online to download what you ask it to (a VOD, its
 chat replay), the AI models (once), and updates (when you click "Check for updates"). The optional
-YouTube upload talks only to Google's official API, with a key you create yourself and that never
-leaves your computer. Details: [privacy policy](docs/site/privacy.html) ·
+YouTube upload talks only to Google's official API; your sign-in is stored encrypted on your
+computer and never goes anywhere else. Details: [privacy policy](docs/site/privacy.html) ·
 [terms](docs/site/terms.html).
 
 ## Supported hardware
@@ -378,7 +379,7 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
 - Her platform için **dışa aktarır**: MP4 (H.264, HEVC, AV1), MOV, WebM, GIF, MP3/M4A; YouTube Shorts,
   TikTok, Instagram Reels, X ve YouTube 16:9 için tek tıkla ayarlar, SRT/VTT altyazı dosyaları ve
   DaVinci Resolve / Final Cut Pro / Premiere Pro için kurgu zaman çizelgeleri.
-- İsterseniz klipleri resmî YouTube API'siyle, kendi Google anahtarınızla **doğrudan YouTube'a yükler**
+- İsterseniz klipleri resmî YouTube API'siyle, tek tıkla (**Google ile bağlan**) **doğrudan YouTube'a yükler**
   (başlık, açıklama, etiketler, görünürlük, zamanlama, küçük resim).
 - Arayüzü 7 dildedir (varsayılan Türkçe), koyu ve açık tema vardır, telefondan da kullanılabilir.
   İlk açılışta kısa bir kurulum (dil, içerik türü, performans modu + donanım kontrolü) ve her

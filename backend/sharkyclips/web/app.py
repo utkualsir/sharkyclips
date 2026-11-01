@@ -1870,16 +1870,30 @@ def api_youtube() -> dict:
 
 @app.put("/api/youtube/client")
 async def api_youtube_client(request: Request) -> dict:
-    """The OAuth client JSON the user downloaded from Google Cloud (raw body). This PC only."""
+    """The user's own OAuth client JSON (raw body: the dropped file or pasted text). This PC only."""
     from .. import youtube
 
     if not _is_local(request):
         raise HTTPException(403, "Only the computer running SharkyClips can do this.")
     raw = await request.body()
     if len(raw) > 64 * 1024:
-        raise SharkyClipsError("That file is too big for an OAuth client JSON.")
+        raise SharkyClipsError("That file is too big for an OAuth client JSON.",
+                               "Use the client_secret_....json file Google downloads (about 400 bytes).")
     youtube.set_client(raw.decode("utf-8-sig", errors="replace"))
     return _yt_view()
+
+
+@app.post("/api/youtube/client/check")
+async def api_youtube_client_check(request: Request) -> dict:
+    """Validate a client JSON without saving it (the wizard checks a paste as you type)."""
+    from .. import youtube
+
+    raw = await request.body()
+    try:
+        c = youtube.check_client_text(raw[:64 * 1024].decode("utf-8-sig", errors="replace"))
+    except SharkyClipsError as exc:
+        return {"ok": False, "error": exc.message, "hint": exc.hint, "reason": getattr(exc, "reason", None)}
+    return {"ok": True, "project_id": c.get("project_id"), "client_id": c["client_id"]}
 
 
 @app.delete("/api/youtube/client")
@@ -1893,15 +1907,59 @@ def api_youtube_client_delete(request: Request) -> dict:
 
 
 @app.post("/api/youtube/connect")
-def api_youtube_connect(request: Request) -> dict:
-    """Google sign-in URL. Google sends the browser back to http://127.0.0.1:<port>/ (spa())."""
-    from .. import youtube
+def api_youtube_connect(request: Request, body: dict | None = None) -> dict:
+    """Start "Connect with Google": a one-shot listener on a random 127.0.0.1 port, and the
+    sign-in page in the system browser. Poll GET /api/youtube/connect/{id}."""
+    from .. import ytconnect
 
     if not _is_local(request):
         raise SharkyClipsError("Connect YouTube on the computer running SharkyClips.",
-                               "Google sends the sign-in back to this computer's own address.")
-    port = request.url.port or 8000
-    return {"url": youtube.auth_url(f"http://127.0.0.1:{port}/")}
+                               "Google sends the sign-in back to that computer's own address.")
+    return ytconnect.start(open_browser=(body or {}).get("open", True) is not False)
+
+
+@app.get("/api/youtube/connect/{flow_id}")
+def api_youtube_connect_state(flow_id: str) -> dict:
+    from .. import ytconnect
+
+    flow = ytconnect.get(flow_id)
+    return {**flow, "youtube": _yt_view() if flow["status"] != "waiting" else None}
+
+
+@app.delete("/api/youtube/connect/{flow_id}")
+def api_youtube_connect_cancel(flow_id: str, request: Request) -> dict:
+    from .. import ytconnect
+
+    if not _is_local(request):
+        raise HTTPException(403, "Only the computer running SharkyClips can do this.")
+    ytconnect.cancel(flow_id)
+    return ytconnect.get(flow_id)
+
+
+@app.post("/api/youtube/channel")
+def api_youtube_channel(body: dict, request: Request) -> dict:
+    from .. import youtube
+
+    if not _is_local(request):
+        raise HTTPException(403, "Only the computer running SharkyClips can do this.")
+    youtube.select_channel(str(body.get("id") or ""))
+    return _yt_view()
+
+
+@app.post("/api/youtube/recheck")
+def api_youtube_recheck() -> dict:
+    from .. import youtube
+
+    youtube.recheck_channel()
+    return _yt_view()
+
+
+@app.post("/api/youtube/signed-out/dismiss")
+def api_youtube_signed_out_dismiss() -> dict:
+    from .. import youtube
+
+    youtube.dismiss_signed_out()
+    return _yt_view()
 
 
 @app.post("/api/youtube/disconnect")
@@ -1969,39 +2027,6 @@ def api_thumbnail(project_id: str, cid: str, kind: str = "auto"):
     project = _project(project_id)
     path = _thumbnail_file(project, cid, _cand(project, cid), kind)
     return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "no-cache"})
-
-
-def _oauth_page(ok: bool, message: str) -> Response:
-    color = "#17694a" if ok else "#a3341f"
-    html = f"""<!doctype html><html><head><meta charset="utf-8"><title>SharkyClips</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>body{{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;
-background:#f4f7fd;color:#0e1a33}}main{{max-width:440px;padding:32px;text-align:center}}
-h1{{font-weight:500;font-size:24px;color:{color}}}p{{color:#52607d;line-height:1.5}}</style></head>
-<body><main><h1>{"YouTube connected" if ok else "YouTube not connected"}</h1><p>{message}</p></main>
-<script>try{{new BroadcastChannel("sharkyclips-youtube").postMessage({{ok:{str(ok).lower()}}});}}catch(e){{}}
-{"setTimeout(function(){window.close();},1500);" if ok else ""}</script></body></html>"""
-    return Response(html, media_type="text/html")
-
-
-def _oauth_callback(request: Request) -> Response | None:
-    """Google's redirect after the sign-in lands on http://127.0.0.1:<port>/?code=..&state=.."""
-    from html import escape
-
-    from .. import youtube
-
-    q = request.query_params
-    state_ = q.get("state")
-    if not youtube.is_pending(state_):
-        return None
-    if q.get("error"):  # e.g. access_denied: the state stays valid until it expires
-        return _oauth_page(False, escape(f"Google said: {q.get('error')}. Close this tab and try again."))
-    try:
-        st = youtube.finish_auth(q.get("code") or "", state_ or "")
-    except SharkyClipsError as exc:
-        return _oauth_page(False, escape(exc.message + (" " + exc.hint if exc.hint else "")))
-    name = (st.get("channel") or {}).get("title") or "your channel"
-    return _oauth_page(True, escape(f"SharkyClips can now upload to {name}. You can close this tab."))
 
 
 def _chat_summary(project: Project) -> dict | None:
@@ -2182,10 +2207,6 @@ if (FRONTEND_DIST / "assets").is_dir():
 
 @app.get("/{rest:path}", include_in_schema=False)
 def spa(rest: str, request: Request):
-    if not rest and request.query_params.get("state"):
-        page = _oauth_callback(request)
-        if page is not None:
-            return page
     candidate = (FRONTEND_DIST / rest).resolve()
     if rest and candidate.is_file() and FRONTEND_DIST.resolve() in candidate.parents:
         return FileResponse(candidate)

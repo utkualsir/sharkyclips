@@ -21,6 +21,7 @@ import { useToast } from "../toast";
 import { Icon } from "./Icons";
 import { Markdown } from "./Shell";
 import { Modal, Segmented, Toggle } from "./ui";
+import { ConnectPrompt } from "./YoutubeConnect";
 
 // ------------------------------------------------------------------ helpers
 
@@ -352,6 +353,14 @@ export function PublishSetupDialog({
       }
     >
       <div className="pub-setup">
+        {!data.youtube.connected && (
+          <ConnectPrompt
+            onConnected={(yt) => {
+              setData({ ...data, youtube: { ...data.youtube, connected: true, manage: !!yt.manage, channel: yt.channel, lock: yt.lock ?? data.youtube.lock } });
+              api.playlists().then((r) => setPlaylists(r.items)).catch(() => setPlaylists([]));
+            }}
+          />
+        )}
         {live && (
           <div className="notice">
             <Icon name="link" />

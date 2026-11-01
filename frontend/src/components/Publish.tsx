@@ -24,6 +24,7 @@ import { RealTestNote } from "./HookTest";
 import { LockBanner } from "./PublishTools";
 import { Icon } from "./Icons";
 import { Modal, Segmented, Toggle } from "./ui";
+import { AdvancedWizard, ChannelPicker, ConnectPrompt, ConnectYoutube, NoChannel, VerificationStatus, YoutubeAccount } from "./YoutubeConnect";
 
 let optionsCache: Promise<ExportOptions> | null = null;
 export function exportOptions(): Promise<ExportOptions> {
@@ -575,14 +576,7 @@ export function UploadDialog({
           </div>
         )}
         {hookTest && !live && <RealTestNote realTest={realTest} />}
-        {notConnected && (
-          <div className="notice notice-warn">
-            <Icon name="alert" />
-            <span>
-              {t("yt.not_connected")} <a href="#/settings">{t("nav.settings")}</a>
-            </span>
-          </div>
-        )}
+        {notConnected && <ConnectPrompt onConnected={setYt} />}
         {yt?.channel && (
           <p className="muted" style={{ margin: 0 }}>
             {t("yt.to_channel", { name: yt.channel.title })}
@@ -711,7 +705,6 @@ export function UploadsLine({ uploads }: { uploads: YoutubeUpload[] }) {
 
 // ------------------------------------------------------------------ Settings: YouTube
 
-const GUIDE_STEPS = ["project", "api", "consent", "client", "load", "connect"] as const;
 // The project site (docs/site, published with .github/workflows/pages.yml).
 const PRIVACY_URL = "https://utkualsir.github.io/sharkyclips/privacy.html";
 
@@ -719,42 +712,13 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
   const { t, num, relTime } = useI18n();
   const toast = useToast();
   const [yt, setYt] = useState<YoutubeStatus | null>(null);
-  const [waiting, setWaiting] = useState(false);
-  const [guide, setGuide] = useState(false);
-  const file = useRef<HTMLInputElement>(null);
+  const [wizard, setWizard] = useState(false);
   const refresh = () => api.youtube().then(setYt).catch(() => {});
 
   useEffect(() => {
     refresh();
-    let bc: BroadcastChannel | null = null;
-    try {
-      bc = new BroadcastChannel("sharkyclips-youtube");
-      bc.onmessage = () => {
-        setWaiting(false);
-        refresh();
-      };
-    } catch {
-      /* old browser: the poll below catches it */
-    }
-    return () => bc?.close();
+    if (window.location.hash.includes("youtube-advanced")) setWizard(true);
   }, []);
-  useEffect(() => {
-    if (!waiting) return;
-    const id = window.setInterval(() => {
-      api.youtube().then((s) => {
-        setYt(s);
-        if (s.connected) setWaiting(false);
-      });
-    }, 2000);
-    const stop = window.setTimeout(() => setWaiting(false), 5 * 60 * 1000);
-    return () => {
-      window.clearInterval(id);
-      window.clearTimeout(stop);
-    };
-  }, [waiting]);
-  useEffect(() => {
-    if (yt && !yt.client) setGuide(true);
-  }, [yt?.client]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const run = async (fn: () => Promise<YoutubeStatus | void>) => {
     try {
@@ -764,12 +728,6 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
       toast({ kind: "err", text: e.message, hint: e.hint });
     }
   };
-  const connect = () =>
-    run(async () => {
-      const { url } = await api.youtubeConnect();
-      window.open(url, "_blank", "noopener");
-      setWaiting(true);
-    });
 
   return (
     <section className="card setting" id="youtube">
@@ -777,7 +735,7 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
         <h2>{t("yt.settings_title")}</h2>
         <p>{t("yt.settings_desc")}</p>
       </div>
-      <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+      <div style={{ display: "grid", gap: 12, alignContent: "start", minWidth: 0 }}>
         {!yt ? (
           <div className="skeleton-lines">
             <div className="skeleton" style={{ width: "70%" }} />
@@ -785,33 +743,23 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
           </div>
         ) : yt.connected ? (
           <>
-            <div className="yt-account">
-              {yt.channel?.thumbnail && <img src={yt.channel.thumbnail} alt="" />}
-              <div>
-                <b>{yt.channel?.title ?? t("yt.connected")}</b>
+            <YoutubeAccount
+              yt={yt}
+              onStatus={setYt}
+              onDisconnect={isLocal ? () => run(api.youtubeDisconnect) : undefined}
+              meta={
                 <div className="muted" style={{ fontSize: 12 }}>
                   {t("yt.connected_since", { when: relTime(yt.connected_at ?? "") })}
                 </div>
-              </div>
-              <span style={{ flex: 1 }} />
-              {isLocal && (
-                <button className="btn btn-sm btn-ghost" onClick={() => run(api.youtubeDisconnect)}>
-                  {t("yt.disconnect")}
-                </button>
-              )}
-            </div>
+              }
+            />
+            {yt.no_channel && <NoChannel yt={yt} onStatus={setYt} />}
+            <ChannelPicker yt={yt} onStatus={setYt} />
             <LockBanner lock={yt.lock} />
             {yt.manage === false && (
               <div className="notice notice-warn">
                 <Icon name="alert" />
-                <span>
-                  {t("pub.need_manage")}{" "}
-                  {isLocal && (
-                    <button className="link-btn" onClick={connect}>
-                      {t("yt.reconnect")}
-                    </button>
-                  )}
-                </span>
+                <span>{t("pub.need_manage")}</span>
               </div>
             )}
             {yt.analytics === false && (
@@ -845,45 +793,42 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
           </>
         ) : (
           <>
-            {yt.client ? (
-              <div className="sugg">
-                <Icon name="check" />
-                <span className="mono" dir="ltr" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {yt.project_id ?? yt.client_id}
+            {yt.signed_out && (
+              <div className="notice notice-warn">
+                <Icon name="alert" />
+                <span>
+                  {yt.signed_out.channel
+                    ? t("ytc.signed_out_banner", { name: yt.signed_out.channel.title })
+                    : t("ytc.signed_out_banner_plain")}
                 </span>
-                {isLocal && (
-                  <button className="btn btn-sm btn-ghost" onClick={() => run(api.youtubeRemoveClient)}>
-                    {t("yt.remove_client")}
-                  </button>
-                )}
-              </div>
-            ) : null}
-            {!isLocal ? (
-              <p className="muted">{t("yt.local_only")}</p>
-            ) : (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button className={`btn btn-sm${yt.client ? "" : " btn-primary"}`} onClick={() => file.current?.click()}>
-                  <Icon name="file" />
-                  {yt.client ? t("yt.replace_client") : t("yt.load_client")}
-                </button>
-                <button className="btn btn-sm btn-primary" onClick={connect} disabled={!yt.client || waiting}>
-                  {waiting ? <span className="spinner" style={{ width: 12, height: 12 }} /> : <Icon name="link" />}
-                  {waiting ? t("yt.waiting") : t("yt.connect")}
-                </button>
               </div>
             )}
-            <input
-              ref={file}
-              type="file"
-              hidden
-              accept=".json,application/json"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                e.target.value = "";
-                if (f) run(() => api.youtubeClient(f));
-              }}
+            <ConnectYoutube
+              yt={yt}
+              onStatus={setYt}
+              label={yt.signed_out ? t("ytc.reconnect") : undefined}
+              onAdvanced={() => setWizard(true)}
             />
           </>
+        )}
+        {yt && <VerificationStatus yt={yt} />}
+        {yt?.mode === "own" && (
+          <div className="sugg">
+            <Icon name="check" />
+            <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>
+              {t("ytc.mode_own", { project: yt.project_id ?? yt.client_id ?? "" })}
+            </span>
+            {isLocal && yt.shared.available && (
+              <button className="btn btn-sm btn-ghost" onClick={() => run(api.youtubeRemoveClient)}>
+                {t("ytc.back_to_easy")}
+              </button>
+            )}
+            {isLocal && !yt.shared.available && (
+              <button className="btn btn-sm btn-ghost" onClick={() => run(api.youtubeRemoveClient)}>
+                {t("yt.remove_client")}
+              </button>
+            )}
+          </div>
         )}
         <div className="yt-legal muted">
           <p>{t("yt.legal")}</p>
@@ -897,41 +842,12 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
             <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">{t("yt.legal_manage")}</a>
           </p>
         </div>
-        <button className="link-btn" style={{ justifySelf: "start" }} onClick={() => setGuide(!guide)}>
-          {guide ? t("yt.guide_hide") : t("yt.guide_show")}
-        </button>
-        {guide && (
-          <ol className="yt-guide">
-            {GUIDE_STEPS.map((s) => (
-              <li key={s}>
-                <b>{t(`yt.step.${s}`)}</b>
-                <span>{t(`yt.step.${s}_body`)}</span>
-                {s === "project" && (
-                  <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noreferrer">
-                    console.cloud.google.com
-                  </a>
-                )}
-                {s === "api" && (
-                  <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noreferrer">
-                    YouTube Data API v3
-                  </a>
-                )}
-                {s === "consent" && (
-                  <a href="https://console.cloud.google.com/auth/audience" target="_blank" rel="noreferrer">
-                    Google Auth Platform · Audience
-                  </a>
-                )}
-                {s === "client" && (
-                  <a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noreferrer">
-                    Google Auth Platform · Clients
-                  </a>
-                )}
-              </li>
-            ))}
-            <li className="yt-guide-note">
-              <Icon name="alert" size={12} /> {t("yt.private_lock")}
-            </li>
-          </ol>
+        {yt && isLocal && (
+          <details className="ytc-adv" open={wizard} onToggle={(e) => setWizard((e.target as HTMLDetailsElement).open)}>
+            <summary>{t("ytc.adv_title")}</summary>
+            <p className="muted ytc-sub">{t("ytc.adv_why")}</p>
+            {wizard && <AdvancedWizard yt={yt} onStatus={setYt} onClose={() => setWizard(false)} initialStep={yt.mode === "own" ? 4 : 0} />}
+          </details>
         )}
         <label className="inline-field">
           <span>{t("yt.quota_setting")}</span>

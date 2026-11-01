@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { api, type HardwareCheck, type PerfMode } from "../api";
+import { api, type HardwareCheck, type PerfMode, type YoutubeStatus } from "../api";
 import { useAppState } from "../appstate";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { chooseLanguage } from "../meta";
 import { SharkLogo } from "./Brand";
 import { Icon } from "./Icons";
+import { ChannelPicker, ConnectYoutube, NoChannel, hideImg } from "./YoutubeConnect";
 
 // ---------------------------------------------------------------- onboarding
 
@@ -15,7 +16,8 @@ const TYPES = [
 ] as const;
 const MODES: PerfMode[] = ["silent", "balanced", "turbo"];
 
-/** First launch only: UI language, content types, performance mode (+ a quick hardware check). */
+/** First launch only: UI language, content types, performance mode (+ a quick hardware check),
+ * then an optional "Connect YouTube". */
 export function Onboarding({ onDone }: { onDone: () => void }) {
   const { t, lang, setLang, num } = useI18n();
   const { state, set } = useAppState();
@@ -25,10 +27,12 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const [hw, setHw] = useState<HardwareCheck | null>(null);
   const [hwFailed, setHwFailed] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [yt, setYt] = useState<YoutubeStatus | null>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     api.hardwareCheck().then(setHw).catch(() => setHwFailed(true));
+    api.youtube().then(setYt).catch(() => {});
   }, []);
   useEffect(() => titleRef.current?.focus(), [step]);
 
@@ -53,13 +57,14 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const toggleType = (id: string) =>
     setTypes((cur) => (cur.includes(id) ? (cur.length > 1 ? cur.filter((x) => x !== id) : cur) : [...cur, id]));
 
-  const steps = [t("onb.step.language"), t("onb.step.content"), t("onb.step.performance")];
+  const steps = [t("onb.step.language"), t("onb.step.content"), t("onb.step.performance"), t("onb.step.youtube")];
+  const last = steps.length - 1;
   return (
     <div className="welcome" role="dialog" aria-modal="true" aria-labelledby="onb-title">
       <div className="welcome-card">
         <div className="welcome-top">
           <SharkLogo className="welcome-logo" />
-          <ol className="welcome-steps" aria-label={t("onb.progress", { i: step + 1, n: 3 })}>
+          <ol className="welcome-steps" aria-label={t("onb.progress", { i: step + 1, n: steps.length })}>
             {steps.map((s, i) => (
               <li key={s} className={i === step ? "on" : i < step ? "done" : ""} aria-current={i === step ? "step" : undefined}>
                 <span className="welcome-step-dot">{i < step ? <Icon name="check" size={12} /> : num(i + 1)}</span>
@@ -156,6 +161,30 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </section>
         )}
 
+        {step === 3 && (
+          <section className="welcome-body">
+            <h1 className="welcome-title" id="onb-title" tabIndex={-1} ref={titleRef}>
+              {t("onb.yt.title")}
+            </h1>
+            <p className="welcome-lede">{t("onb.yt.lede")}</p>
+            <div className="welcome-yt">
+              {yt?.connected ? (
+                <>
+                  <div className="welcome-yt-done" role="status">
+                    {yt.channel?.thumbnail ? <img src={yt.channel.thumbnail} alt="" referrerPolicy="no-referrer" onError={hideImg} /> : <Icon name="check" size={20} />}
+                    <b>{yt.channel ? t("ytc.connected_as", { name: yt.channel.title }) : t("yt.connected")}</b>
+                  </div>
+                  {yt.no_channel && <NoChannel yt={yt} onStatus={setYt} />}
+                  <ChannelPicker yt={yt} onStatus={setYt} />
+                </>
+              ) : (
+                <ConnectYoutube yt={yt} onStatus={setYt} />
+              )}
+              <p className="welcome-note">{t("onb.yt.later")}</p>
+            </div>
+          </section>
+        )}
+
         <div className="welcome-foot">
           {step > 0 ? (
             <button className="welcome-btn welcome-btn-ghost" onClick={() => setStep(step - 1)} disabled={saving}>
@@ -165,7 +194,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           ) : (
             <span />
           )}
-          {step < 2 ? (
+          {step < last ? (
             <button className="welcome-btn welcome-btn-primary" onClick={() => setStep(step + 1)}>
               {t("onb.next")}
               <Icon name="chevron-right" className="icon flip-rtl" />
@@ -173,7 +202,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           ) : (
             <button className="welcome-btn welcome-btn-primary" onClick={() => finish(false)} disabled={saving}>
               {saving ? <span className="spinner" /> : <Icon name="check" />}
-              {t("onb.finish")}
+              {yt?.connected ? t("onb.finish") : t("onb.yt.skip_finish")}
             </button>
           )}
         </div>

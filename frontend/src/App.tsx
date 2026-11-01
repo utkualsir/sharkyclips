@@ -5,6 +5,7 @@ import { useAppState } from "./appstate";
 import { BrandMark } from "./components/Brand";
 import { Icon } from "./components/Icons";
 import { DevBanner, Footer, WhatsNew } from "./components/Shell";
+import { YoutubeSignedOutBanner } from "./components/YoutubeConnect";
 import Launch from "./components/Launch";
 import { Onboarding } from "./components/Welcome";
 import { jobLabel } from "./components/ui";
@@ -164,6 +165,7 @@ export default function App() {
     <>
       <TopBar />
       <DevBanner />
+      <YoutubeSignedOutBanner />
       <ShutdownBanner />
       <div className="page-fx" key={route.name + ("id" in route ? `:${route.id}` : "")}>
         <Suspense fallback={null}>

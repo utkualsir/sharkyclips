@@ -7,6 +7,135 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.8] - 2026-11-01
+
+Connecting YouTube now takes one click and about 10 seconds. No Google Cloud setup, no codes to
+copy.
+
+### Added
+- **Connect with Google**: one button in Settings → YouTube. Your browser opens Google's own
+  sign-in page, you pick your account and click Allow, and SharkyClips shows your channel name
+  and picture right away. The browser tab says "Connected!" and closes by itself where it can.
+- Before Google's page opens, a short illustrated tip shows what to click on Google's
+  "unverified app" warning (Advanced → Go to SharkyClips), until Google has reviewed the app.
+- **First launch**: the welcome screens have a new, optional "Connect YouTube" step.
+- **Publish dialogs**: if YouTube isn't connected yet, the dialog offers to connect right there.
+- If Google ends the sign-in (for example you removed access in your Google account), a banner
+  on every screen says so with a one-click **Reconnect** button.
+- Handled for you: cancelling on Google's page, an account without a YouTube channel (with a
+  "Create a channel" link and **Check again**), accounts with several channels, and
+  **Use another account**.
+- Settings shows Google's review status of the built-in connection and its user limit.
+
+### Changed
+- Using your own Google Cloud project is still possible, under **Advanced**: a new guide with
+  one step per screen, a drawing for each step, buttons that open the exact Google Cloud page
+  and a check for each step. Drop the downloaded `client_secret….json` on the app or paste its
+  contents; SharkyClips checks it and says in plain words what's wrong if it's the wrong file.
+
+<!-- lang:tr -->
+**Türkçe**
+
+YouTube'u bağlamak artık tek tık ve yaklaşık 10 saniye. Google Cloud kurulumu yok, kopyalanacak
+kod yok.
+
+### Eklendi
+- **Google ile bağlan**: Ayarlar → YouTube'da tek bir düğme. Tarayıcın Google'ın kendi giriş
+  sayfasını açar, hesabını seçip İzin ver'e tıklarsın ve SharkyClips kanal adını ve resmini hemen
+  gösterir. Tarayıcı sekmesi "Bağlandı!" der ve mümkünse kendiliğinden kapanır.
+- Google'ın sayfası açılmadan önce kısa, resimli bir ipucu, Google'ın "doğrulanmamış uygulama"
+  uyarısında nereye tıklayacağını gösterir (Gelişmiş → SharkyClips'e git). Google uygulamayı
+  inceleyene kadar.
+- **İlk açılış**: karşılama ekranlarında yeni, isteğe bağlı bir "YouTube'u bağla" adımı var.
+- **Yayın pencereleri**: YouTube henüz bağlı değilse pencere orada bağlanmayı önerir.
+- Google girişi sonlandırırsa (örneğin Google hesabından erişimi kaldırdıysan) her ekranda tek
+  tıkla **Yeniden bağlan** düğmeli bir şerit çıkar.
+- Senin için halledilenler: Google sayfasında iptal etmek, YouTube kanalı olmayan hesap ("Kanal
+  oluştur" bağlantısı ve **Tekrar kontrol et**), birden çok kanalı olan hesaplar ve **Başka hesap
+  kullan**.
+- Ayarlar, yerleşik bağlantının Google inceleme durumunu ve kullanıcı sınırını gösterir.
+
+### Değişti
+- Kendi Google Cloud projenle bağlanmak hâlâ mümkün, **Gelişmiş** altında: her ekranda tek adım,
+  her adım için bir çizim, tam doğru Google Cloud sayfasını açan düğmeler ve her adım için bir
+  kontrol içeren yeni bir rehber. İndirdiğin `client_secret….json` dosyasını uygulamaya bırak ya da
+  içeriğini yapıştır; SharkyClips dosyayı kontrol eder, yanlış dosyaysa sorunu sade bir dille söyler.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+YouTube verbinden geht jetzt mit einem Klick in etwa 10 Sekunden, ohne Google-Cloud-Einrichtung.
+
+- **Mit Google verbinden**: Google-Anmeldung im Browser, Konto wählen, Zulassen, fertig: Kanalname
+  und Bild erscheinen sofort.
+- Ein bebilderter Tipp zeigt vorher, was auf Googles Warnbildschirm zu klicken ist.
+- Optionaler Schritt „YouTube verbinden“ beim ersten Start und direkt in den Veröffentlichen-Dialogen.
+- Banner mit **Neu verbinden**, wenn Google die Anmeldung beendet; Hilfe bei Abbruch, fehlendem
+  Kanal und mehreren Kanälen.
+- Eigenes Google-Projekt weiter unter **Erweitert**, mit neuer Schritt-für-Schritt-Anleitung und
+  Prüfung der JSON-Datei (Ablegen oder Einfügen).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A YouTube csatlakoztatása most egy kattintás, kb. 10 másodperc, Google Cloud beállítás nélkül.
+
+- **Csatlakozás Google-lal**: bejelentkezés a böngészőben, fiók kiválasztása, Engedélyezés, és a
+  csatorna neve és képe azonnal megjelenik.
+- Egy képes tipp előre megmutatja, mire kell kattintani a Google figyelmeztetésén.
+- Nem kötelező „YouTube csatlakoztatása” lépés az első indításkor és a közzétételi ablakokban is.
+- Sáv **Újracsatlakozás** gombbal, ha a Google megszünteti a bejelentkezést; segítség megszakításnál,
+  hiányzó csatornánál és több csatornánál.
+- Saját Google-projekt továbbra is a **Speciális** részben, új lépésenkénti útmutatóval és a JSON-fájl
+  ellenőrzésével (behúzás vagy beillesztés).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Подключение YouTube теперь — один клик и около 10 секунд, без настройки Google Cloud.
+
+- **Подключить через Google**: вход в браузере, выбор аккаунта, «Разрешить» — и название канала с
+  аватаром сразу видны в приложении.
+- Иллюстрированная подсказка заранее показывает, что нажать на экране предупреждения Google.
+- Необязательный шаг «Подключите YouTube» при первом запуске и прямо в окнах публикации.
+- Баннер с кнопкой **Подключить снова**, если Google завершил вход; помощь при отмене, отсутствии
+  канала и нескольких каналах.
+- Собственный проект Google — по-прежнему в разделе **Дополнительно**, с новой пошаговой инструкцией и
+  проверкой JSON-файла (перетаскивание или вставка).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+ربط يوتيوب صار نقرة واحدة ونحو 10 ثوانٍ، دون إعداد Google Cloud.
+
+- **الربط عبر Google**: تسجيل الدخول في المتصفح، اختيار الحساب، «سماح»، فيظهر اسم القناة وصورتها فورًا.
+- تلميح مصوّر يوضح مسبقًا ما تضغطه في شاشة تحذير Google.
+- خطوة اختيارية «اربط يوتيوب» عند التشغيل الأول وفي نوافذ النشر مباشرة.
+- شريط بزر **إعادة الربط** إذا أنهت Google تسجيل الدخول؛ ومساعدة عند الإلغاء أو غياب القناة أو تعدد القنوات.
+- مشروعك الخاص على Google ما زال متاحًا في **متقدم**، مع دليل جديد خطوة بخطوة وفحص لملف JSON
+  (بالإفلات أو اللصق).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+连接 YouTube 现在只需一键、大约 10 秒，无需设置 Google Cloud。
+
+- **使用 Google 连接**：在浏览器中登录、选择账号、点击“允许”，频道名称和头像立即显示。
+- 打开前会有图示提示，告诉你在 Google 警告页面上点哪里。
+- 首次启动和发布窗口中都有可选的“连接 YouTube”步骤。
+- Google 结束登录时，每个页面都会显示带**重新连接**按钮的提示条；取消、没有频道、多个频道也都有引导。
+- 仍可在**高级**中使用自己的 Google 项目，新的分步向导会检查 JSON 文件（拖放或粘贴）。
+
+</details>
+
 ## [1.2.7] - 2026-10-30
 
 Publish to YouTube on a schedule: a new Library for every finished clip, one setup screen per
