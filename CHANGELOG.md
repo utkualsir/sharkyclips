@@ -7,6 +7,62 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.14] - 2026-11-01
+
+### Fixed
+- Project page on very short windows: if the candidate list and the render settings don't both
+  fit, the side panel now scrolls instead of cutting off the bottom. Fonts that are a little wider
+  (for example on Linux) no longer push the buttons out of view.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- Çok kısa pencerelerde proje sayfası: aday listesi ve oluşturma ayarları birlikte sığmazsa yan
+  panel artık alt kısmı kesmek yerine kayıyor. Biraz daha geniş yazı tipleri (örneğin Linux'ta)
+  düğmeleri görünümden itmiyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Projektseite in sehr niedrigen Fenstern: Passen Kandidatenliste und Render-Einstellungen nicht
+  beide hinein, scrollt jetzt das Seitenpanel, statt unten etwas abzuschneiden.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Projektoldal nagyon alacsony ablakban: ha a jelöltlista és a renderelési beállítások nem férnek el
+  együtt, az oldalsó panel most görgethető, ahelyett hogy levágná az alját.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Страница проекта в очень низком окне: если список кандидатов и настройки рендера не помещаются
+  вместе, боковая панель теперь прокручивается, а не обрезает нижнюю часть.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- صفحة المشروع في النوافذ القصيرة جدًا: إذا لم تتسع قائمة المرشحين وإعدادات الإنشاء معًا، تمرّر
+  اللوحة الجانبية الآن بدل قصّ الجزء السفلي منها.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 窗口很矮时的项目页面：如果候选列表和渲染设置无法同时放下，侧边面板现在会滚动，而不是把底部截掉。
+  稍宽的字体（例如在 Linux 上）也不会再把按钮挤出视野。
+- 候选列表和设置各自滚动，“渲染”和“导出”按钮始终固定在面板底部，随时可以点击。
+
+</details>
+
 ## [1.2.13] - 2026-11-01
 
 The project page fits laptop screens: the candidate list no longer disappears under the render
