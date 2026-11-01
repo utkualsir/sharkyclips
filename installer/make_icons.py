@@ -189,6 +189,15 @@ def render(size: int, theme: str = "dark", margin: float = 0.0, tile: bool = Tru
     return img.resize((size, size), Image.Resampling.LANCZOS)
 
 
+def google_logo(path: Path) -> None:
+    """Google OAuth consent screen logo: 120 x 120 PNG, square, under 1 MB. On a solid navy square
+    (no transparent corners: Google crops it itself)."""
+    img = Image.new("RGB", (120, 120), _hex(NAVY))
+    tile = render(120, "dark")
+    img.paste(tile, (0, 0), tile)
+    img.save(path, optimize=True)
+
+
 def main() -> None:
     out = ROOT / "assets" / "icon"
     pub = ROOT / "frontend" / "public"
@@ -213,6 +222,7 @@ def main() -> None:
     render(48, "dark").save(pub / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)],
                             append_images=[render(16, "dark"), render(32, "dark")])
     render(1024, "dark", margin=0.09).save(out / "sharkyclips.icns")  # macOS: Pillow writes every icns size
+    google_logo(ROOT / "docs" / "logo-120.png")
     print(f"Icons written to {out} and {pub}")
 
 

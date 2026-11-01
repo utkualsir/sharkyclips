@@ -39,11 +39,18 @@
     <a class="btn" href="https://github.com/utkualsir/sharkyclips#readme">Read the guide</a>
   </div>
 
-  <picture class="shot">
-    <source media="(prefers-color-scheme: light)" srcset="img/project-light.png">
-    <img src="img/project-dark.png" width="1440" height="900" loading="lazy"
-         alt="The SharkyClips project screen: a stream recording with its hype curve, a vertical clip preview and a ranked list of clip candidates">
-  </picture>
+<figure class="shot illo" role="img" aria-label="A long stream recording with its hype curve; the peaks become three vertical 9:16 clips">
+    <svg viewBox="0 50 960 300" aria-hidden="true">
+      <rect x="20" y="70" width="460" height="259" rx="14" class="i-frame"/>
+      <rect x="44" y="94" width="120" height="68" rx="8" class="i-cam"/>
+      <polyline class="i-curve" points="44,290 90,282 130,286 170,250 200,272 240,262 280,190 310,240 350,252 390,214 420,150 450,236 456,280"/>
+      <circle cx="280" cy="190" r="7" class="i-peak"/><circle cx="420" cy="150" r="7" class="i-peak"/><circle cx="170" cy="250" r="7" class="i-peak"/>
+      <path d="M510 200h70m-16-14 16 14-16 14" class="i-arrow"/>
+      <g class="i-clip"><rect x="610" y="40" width="100" height="178" rx="12" transform="translate(0 60)" class="i-frame"/><rect x="622" y="112" width="76" height="46" rx="6" class="i-cam"/><rect x="626" y="232" width="68" height="10" rx="5" class="i-cap"/></g>
+      <g class="i-clip"><rect x="725" y="100" width="100" height="178" rx="12" class="i-frame"/><rect x="737" y="112" width="76" height="46" rx="6" class="i-cam"/><rect x="741" y="232" width="68" height="10" rx="5" class="i-cap"/></g>
+      <g class="i-clip"><rect x="840" y="100" width="100" height="178" rx="12" class="i-frame"/><rect x="852" y="112" width="76" height="46" rx="6" class="i-cam"/><rect x="856" y="232" width="68" height="10" rx="5" class="i-cap"/></g>
+    </svg>
+  </figure>
 
   <h2>What it does</h2>
   <div class="grid">
@@ -68,20 +75,22 @@
     results and to improve the clip scores for <i>your</i> channel. SharkyClips has no server: the
     developers never receive, see or share your YouTube data, and nothing is used for ads.
     SharkyClips never reads other people's channels, your comments, your subscribers or your
-    watch history, and it never deletes or edits videos.</p>
+    watch history. It only changes or deletes videos that were uploaded with SharkyClips, and only
+    when you ask (for example when you edit or cancel a scheduled clip).</p>
   <p>You can disconnect at any time in Settings → YouTube (this revokes the access token at Google),
     or remove the access in your <a href="https://myaccount.google.com/permissions">Google account
     permissions</a>. Read the full <a href="privacy.html">privacy policy</a>.</p>
 
   <h2>Open source</h2>
   <p>SharkyClips is MIT-licensed. The source code, the installers and every release are on
-    <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>, where you can also report a bug.</p>
+    <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>, where you can also report a bug. Questions about this website or the privacy policy:
+    <a href="https://github.com/utkualsir/sharkyclips-site/issues">open an issue here</a>.</p>
 </main>
 
 <footer>
   <div class="wrap">
     <span>SharkyClips · MIT license</span>
-    <span><a href="privacy.html">Privacy policy</a> · <a href="terms.html">Terms of use</a> · <a href="https://github.com/utkualsir/sharkyclips/issues">Contact</a></span>
+    <span><a href="privacy.html">Privacy policy</a> · <a href="terms.html">Terms of use</a> · <a href="https://github.com/utkualsir/sharkyclips-site/issues">Contact</a></span>
   </div>
 </footer>
 </body>

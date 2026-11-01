@@ -95,3 +95,13 @@ th { color: var(--strong); font-weight: 600; }
 footer { border-top: 1px solid var(--border); margin-top: 72px; padding: 24px 0 40px; color: var(--muted); font-size: 14px; }
 footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
 footer a { color: var(--muted); }
+
+/* Homepage illustration (no screenshots: nothing personal on the public site) */
+.illo { margin: 28px 0 8px; background: var(--surface); padding: 12px; }
+.illo svg { display: block; width: 100%; height: auto; }
+.i-frame { fill: var(--bg); stroke: var(--border); stroke-width: 2; }
+.i-cam { fill: var(--tile); stroke: var(--wave); stroke-width: 1.5; opacity: .9; }
+.i-curve { fill: none; stroke: var(--wave); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
+.i-peak { fill: var(--gold); }
+.i-arrow { fill: none; stroke: var(--gold); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.i-cap { fill: var(--gold); opacity: .85; }

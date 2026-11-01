@@ -706,7 +706,7 @@ export function UploadsLine({ uploads }: { uploads: YoutubeUpload[] }) {
 // ------------------------------------------------------------------ Settings: YouTube
 
 // The project site (docs/site, published with .github/workflows/pages.yml).
-const PRIVACY_URL = "https://utkualsir.github.io/sharkyclips/privacy.html";
+const PRIVACY_URL = "https://utkualsir.github.io/sharkyclips-site/privacy.html";
 
 export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quota: number; onQuota: (n: number) => void }) {
   const { t, num, relTime } = useI18n();

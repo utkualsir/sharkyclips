@@ -50,20 +50,26 @@ How the sign-in works (what reviewers will ask):
 
 ## Before you submit (checklist)
 
-- [ ] Repo public, and the site published: run the **Project site** workflow
-      (`.github/workflows/pages.yml`) after setting Settings → Pages → Source to "GitHub Actions".
-- [ ] Homepage `https://utkualsir.github.io/sharkyclips/`, privacy policy
-      `.../privacy.html`, terms `.../terms.html` load without login.
+- [x] Site published (1.2.10): the public repo
+      [utkualsir/sharkyclips-site](https://github.com/utkualsir/sharkyclips-site) serves
+      `docs/site` with GitHub Pages, so it works while the main repo is private. After changing
+      `docs/site`, run `bash docs/publish-site.sh "message"` (copies the files, no-reply author).
+      Contact links go to that repo's issues and private security reports.
+- [x] Homepage `https://utkualsir.github.io/sharkyclips-site/`, privacy policy
+      `https://utkualsir.github.io/sharkyclips-site/privacy.html`, terms `https://utkualsir.github.io/sharkyclips-site/terms.html` load without login (HTTP 200).
+- [ ] The homepage's Download / GitHub / guide links point at the main repo: they return 404
+      until it is public. Make it public before submitting for verification.
 - [ ] Verify `utkualsir.github.io` in [Google Search Console](https://search.google.com/search-console)
-      (URL-prefix property, HTML file method: put the file into `docs/site/` and rerun the
-      workflow). `github.io` is on the Public Suffix List, so this subdomain counts as your own
+      (URL-prefix property for `https://utkualsir.github.io/sharkyclips-site/`, HTML file method: put the file into `docs/site/` and run
+      `docs/publish-site.sh`). `github.io` is on the Public Suffix List, so this subdomain counts as your own
       domain. If Google still rejects it, a cheap custom domain pointing at Pages fixes it
       (then update `PRIVACY_URL` in `frontend/src/components/Publish.tsx`).
-- [ ] OAuth consent screen (Branding): app name **SharkyClips** (exactly as in the app), the
-      120x120 logo (PNG, square, no extra text; resize `assets/icon/sharkyclips.png`), support
-      email `<support email>`, homepage / privacy / terms = the three URLs above, authorized
-      domain `utkualsir.github.io`, developer contact `<email>`. The logo needs extra review
-      time; leave it out for the first, unverified phase if you want to publish faster.
+- [ ] OAuth consent screen (Branding): app name **SharkyClips** (exactly as in the app), user
+      support email = your Google account's email, homepage `https://utkualsir.github.io/sharkyclips-site/`,
+      privacy `https://utkualsir.github.io/sharkyclips-site/privacy.html`, terms `https://utkualsir.github.io/sharkyclips-site/terms.html`,
+      authorized domain `utkualsir.github.io`, developer contact = your email. Logo: leave it
+      empty for now (a logo triggers brand review and slows publishing). When you want it later:
+      `docs/logo-120.png` (120x120 PNG, square, 6 KB).
 - [ ] `google_client.json` filled in and released (an app update), `verification` set.
 - [ ] Scopes on the consent screen exactly match `youtube.SCOPES`.
 - [ ] Record the demo video (script below), upload it to YouTube as **unlisted**.
@@ -146,9 +152,9 @@ fields.
 
 - **Organization / developer:** `<your name>` (individual developer), open-source project.
 - **API client name:** SharkyClips · **Google Cloud project number:** `<number>`
-- **Website:** https://utkualsir.github.io/sharkyclips/ · **Source:** https://github.com/utkualsir/sharkyclips
-- **Privacy policy:** https://utkualsir.github.io/sharkyclips/privacy.html
-- **Terms of use:** https://utkualsir.github.io/sharkyclips/terms.html
+- **Website:** https://utkualsir.github.io/sharkyclips-site/ · **Source:** https://github.com/utkualsir/sharkyclips
+- **Privacy policy:** https://utkualsir.github.io/sharkyclips-site/privacy.html
+- **Terms of use:** https://utkualsir.github.io/sharkyclips-site/terms.html
 - **Platform:** desktop app (Windows, macOS), local web UI on 127.0.0.1.
 - **Who uses it:** streamers and video creators uploading their own clips to their own channel.
 - **APIs and methods used:**

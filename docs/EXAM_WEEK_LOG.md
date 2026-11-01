@@ -91,8 +91,9 @@ history for keys/tokens):
 - Contact on the site = GitHub issues + the private security advisory form, so your email isn't
   published. Google's consent screen still needs a support email (your choice, in the checklist).
 - Google Fonts on the site (to match the app); disclosed in the privacy policy.
-- The privacy-policy link in the app points to `https://utkualsir.github.io/sharkyclips/privacy.html`
-  (`PRIVACY_URL` in `Publish.tsx`). It 404s until the repo is public and the Pages workflow ran.
+- The privacy-policy link in the app points to `https://utkualsir.github.io/sharkyclips-site/privacy.html`
+  (`PRIVACY_URL` in `Publish.tsx`). Since 1.2.10 the site lives in the public repo
+  `utkualsir/sharkyclips-site` (see docs/google-verification.md), so it works while this repo is private.
 
 **Open questions for you (important):**
 

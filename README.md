@@ -16,7 +16,7 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.9-1F6FE5" alt="Version 1.2.9"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.10-1F6FE5" alt="Version 1.2.10"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -123,8 +123,8 @@ highlight detection and rendering all run locally. Your videos, transcripts and 
 the `workspace` folder. SharkyClips only goes online to download what you ask it to (a VOD, its
 chat replay), the AI models (once), and updates (when you click "Check for updates"). The optional
 YouTube upload talks only to Google's official API; your sign-in is stored encrypted on your
-computer and never goes anywhere else. Details: [privacy policy](docs/site/privacy.html) ·
-[terms](docs/site/terms.html).
+computer and never goes anywhere else. Details: [privacy policy](https://utkualsir.github.io/sharkyclips-site/privacy.html) ·
+[terms](https://utkualsir.github.io/sharkyclips-site/terms.html).
 
 ## Supported hardware
 

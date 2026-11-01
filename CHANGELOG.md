@@ -7,6 +7,86 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.10] - 2026-11-01
+
+SharkyClips has a website now, and the privacy policy link in the app works.
+
+### Added
+- The SharkyClips website is online: [utkualsir.github.io/sharkyclips-site/](https://utkualsir.github.io/sharkyclips-site/), with the
+  [privacy policy](https://utkualsir.github.io/sharkyclips-site/privacy.html) and the
+  [terms of use](https://utkualsir.github.io/sharkyclips-site/terms.html).
+
+### Changed
+- **Settings → YouTube**: the privacy policy link opens the new website.
+- **Privacy policy and terms** (effective 1 November 2026): they now say clearly that SharkyClips
+  only changes or deletes videos it uploaded itself, and only when you ask (editing or
+  cancelling a scheduled clip). Questions go to the website's GitHub page.
+
+<!-- lang:tr -->
+**Türkçe**
+
+SharkyClips'in artık bir web sitesi var ve uygulamadaki gizlilik politikası bağlantısı çalışıyor.
+
+### Eklendi
+- SharkyClips web sitesi yayında: [utkualsir.github.io/sharkyclips-site/](https://utkualsir.github.io/sharkyclips-site/);
+  [gizlilik politikası](https://utkualsir.github.io/sharkyclips-site/privacy.html) ve
+  [kullanım koşulları](https://utkualsir.github.io/sharkyclips-site/terms.html) da orada.
+
+### Değişti
+- **Ayarlar → YouTube**: gizlilik politikası bağlantısı yeni web sitesini açıyor.
+- **Gizlilik politikası ve koşullar** (1 Kasım 2026'dan itibaren geçerli): SharkyClips'in yalnızca
+  kendi yüklediği videoları ve yalnızca sen istediğinde (zamanlanmış bir klibi düzenlerken ya da
+  iptal ederken) değiştirdiğini veya sildiğini açıkça söylüyor. Sorular web sitesinin GitHub
+  sayfasına.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- SharkyClips hat jetzt eine Website: [utkualsir.github.io/sharkyclips-site/](https://utkualsir.github.io/sharkyclips-site/) (mit
+  Datenschutzerklärung und Nutzungsbedingungen); der Link in Einstellungen → YouTube funktioniert.
+- Datenschutzerklärung präzisiert: SharkyClips ändert oder löscht nur selbst hochgeladene Videos,
+  und nur auf deinen Wunsch.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- A SharkyClipsnek most már van weboldala: [utkualsir.github.io/sharkyclips-site/](https://utkualsir.github.io/sharkyclips-site/)
+  (adatvédelmi irányelvek és felhasználási feltételek); a Beállítások → YouTube hivatkozás működik.
+- Pontosított adatvédelem: a SharkyClips csak a saját maga által feltöltött videókat módosítja
+  vagy törli, és csak ha kéred.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- У SharkyClips теперь есть сайт: [utkualsir.github.io/sharkyclips-site/](https://utkualsir.github.io/sharkyclips-site/) (с политикой
+  конфиденциальности и условиями); ссылка в Настройки → YouTube работает.
+- Уточнена политика: SharkyClips изменяет или удаляет только загруженные им видео и только по
+  вашей просьбе.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- صار لـ SharkyClips موقع ويب: [utkualsir.github.io/sharkyclips-site/](https://utkualsir.github.io/sharkyclips-site/) (مع سياسة الخصوصية
+  وشروط الاستخدام)، ويعمل الرابط في الإعدادات ← يوتيوب.
+- توضيح في سياسة الخصوصية: لا يغيّر SharkyClips ولا يحذف إلا الفيديوهات التي رفعها بنفسه، وبطلب منك فقط.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- SharkyClips 现在有了网站：[utkualsir.github.io/sharkyclips-site/](https://utkualsir.github.io/sharkyclips-site/)（含隐私政策和使用条款）；
+  设置 → YouTube 中的链接已可用。
+- 隐私政策更明确：SharkyClips 只会在你要求时修改或删除它自己上传的视频。
+
+</details>
+
 ## [1.2.9] - 2026-11-01
 
 **Connect with Google** now works out of the box, and loading your own Google client file works
