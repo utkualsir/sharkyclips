@@ -4,6 +4,10 @@ import { useAppState } from "../appstate";
 import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
 import { Modal } from "./ui";
+import versionFile from "../../../VERSION?raw";
+
+/** The version these UI files were built from (the one VERSION file). */
+const UI_VERSION = versionFile.trim();
 
 // ---------------------------------------------------------------- tiny markdown (CHANGELOG.md)
 
@@ -194,6 +198,45 @@ export function DevBanner() {
         </Modal>
       )}
     </>
+  );
+}
+
+// ---------------------------------------------------------------- stale server
+
+/** The UI files on disk are newer than the server answering them: an old SharkyClips process
+ * kept running through an update (tray, second window). Its API lacks what this UI calls, so
+ * things fail in odd ways. Offer the restart that finishes the update. */
+export function StaleServerBar() {
+  const { t } = useI18n();
+  const { state, refresh } = useAppState();
+  const [phase, setPhase] = useState<"idle" | "restarting" | "manual">("idle");
+  const server = state?.version;
+  const stale = !!server && server !== UI_VERSION;
+  useEffect(() => {
+    if (phase !== "restarting") return;
+    if (server === UI_VERSION) return window.location.reload();
+    const id = window.setInterval(refresh, 1000); // until the new server answers
+    return () => window.clearInterval(id);
+  }, [phase, server, refresh]);
+  if (!stale) return null;
+  const restart = () =>
+    api
+      .updateRestart()
+      .then((r) => setPhase(r.restarting ? "restarting" : "manual"))
+      .catch(() => setPhase("manual"));
+  return (
+    <div className="dev-banner stale-bar" role="status">
+      <Icon name="alert" size={15} />
+      <span className="dev-banner-text">
+        <b>{t("stale.banner", { ui: UI_VERSION, server })}</b>{" "}
+        {phase === "manual" && <span className="dev-banner-task">{t("stale.manual")}</span>}
+      </span>
+      {phase !== "manual" && (
+        <button className="btn btn-sm" onClick={restart} disabled={phase === "restarting"}>
+          {t(phase === "restarting" ? "stale.restarting" : "stale.restart")}
+        </button>
+      )}
+    </div>
   );
 }
 

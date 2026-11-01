@@ -2723,6 +2723,8 @@ h3.section-title {
 .dev-banner svg { color: var(--warn); flex: none; }
 .dev-banner b { font-weight: 600; }
 .dev-banner-task, .dev-banner-time { color: var(--muted); }
+.stale-bar { flex-wrap: wrap; }
+.stale-bar .btn { flex: none; }
 
 /* Footer: version + What's new */
 .app-footer {

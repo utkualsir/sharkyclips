@@ -1879,7 +1879,7 @@ async def api_youtube_client(request: Request) -> dict:
     if len(raw) > 64 * 1024:
         raise SharkyClipsError("That file is too big for an OAuth client JSON.",
                                "Use the client_secret_....json file Google downloads (about 400 bytes).")
-    youtube.set_client(raw.decode("utf-8-sig", errors="replace"))
+    youtube.set_client(raw)
     return _yt_view()
 
 
@@ -1890,7 +1890,7 @@ async def api_youtube_client_check(request: Request) -> dict:
 
     raw = await request.body()
     try:
-        c = youtube.check_client_text(raw[:64 * 1024].decode("utf-8-sig", errors="replace"))
+        c = youtube.check_client_text(youtube.decode_client_bytes(raw[:64 * 1024]))
     except SharkyClipsError as exc:
         return {"ok": False, "error": exc.message, "hint": exc.hint, "reason": getattr(exc, "reason", None)}
     return {"ok": True, "project_id": c.get("project_id"), "client_id": c["client_id"]}

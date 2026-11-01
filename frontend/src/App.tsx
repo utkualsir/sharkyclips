@@ -4,7 +4,7 @@ import { GovernorWidget } from "./components/Governor";
 import { useAppState } from "./appstate";
 import { BrandMark } from "./components/Brand";
 import { Icon } from "./components/Icons";
-import { DevBanner, Footer, WhatsNew } from "./components/Shell";
+import { DevBanner, Footer, StaleServerBar, WhatsNew } from "./components/Shell";
 import { YoutubeSignedOutBanner } from "./components/YoutubeConnect";
 import Launch from "./components/Launch";
 import { Onboarding } from "./components/Welcome";
@@ -164,6 +164,7 @@ export default function App() {
   return (
     <>
       <TopBar />
+      <StaleServerBar />
       <DevBanner />
       <YoutubeSignedOutBanner />
       <ShutdownBanner />

@@ -946,6 +946,14 @@ export function AdvancedWizard({
   );
 }
 
+/** A dropped client_secret.json as text: UTF-8 (with or without a BOM) or UTF-16 (Notepad's
+ * "Unicode"); Windows line endings are fine for JSON. */
+export function decodeJsonFile(buf: ArrayBuffer): string {
+  const b = new Uint8Array(buf);
+  const enc = b[0] === 0xff && b[1] === 0xfe ? "utf-16le" : b[0] === 0xfe && b[1] === 0xff ? "utf-16be" : "utf-8";
+  return new TextDecoder(enc).decode(b).replace(/^\uFEFF/, "");
+}
+
 function LoadClient({
   yt,
   onStatus,
@@ -962,6 +970,7 @@ function LoadClient({
     ok: boolean;
     error?: string;
     hint?: string | null;
+    reason?: string | null;
     project_id?: string | null;
   }>(null);
   const [drag, setDrag] = useState(false);
@@ -976,7 +985,7 @@ function LoadClient({
         api
           .youtubeClientCheck(text)
           .then(setCheck)
-          .catch(() => {}),
+          .catch(() => setCheck({ ok: false, reason: "unchecked" })),
       250,
     );
     return () => window.clearTimeout(id);
@@ -991,8 +1000,10 @@ function LoadClient({
       setCheck({ ok: false, error: t("ytc.file_too_big") });
       return;
     }
-    setText(await f.text());
+    setText(decodeJsonFile(await f.arrayBuffer()));
   };
+  // The server couldn't check it (offline, or an older SharkyClips still running): let Save decide.
+  const unchecked = check?.reason === "unchecked";
   const save = async () => {
     setSaving(true);
     try {
@@ -1015,7 +1026,7 @@ function LoadClient({
   return (
     <div className="ytw-load">
       <div
-        className={`ytw-drop${drag ? " drag" : ""}${check?.ok ? " ok" : check ? " bad" : ""}`}
+        className={`ytw-drop${drag ? " drag" : ""}${check?.ok ? " ok" : check && !unchecked ? " bad" : ""}`}
         onDragOver={(e) => {
           e.preventDefault();
           setDrag(true);
@@ -1066,11 +1077,12 @@ function LoadClient({
             </span>
           </p>
         )}
-        {check && !check.ok && (
+        {unchecked && <p className="ytw-check muted">{t("ytc.json_unchecked")}</p>}
+        {check && !check.ok && !unchecked && (
           <div className="notice notice-warn">
             <Icon name="alert" />
             <span>
-              <b>{check.error}</b> {check.hint}
+              <b>{check.error || t("ytc.json_unchecked")}</b> {check.hint}
             </span>
           </div>
         )}
@@ -1082,7 +1094,7 @@ function LoadClient({
           <button
             className="gbtn"
             onClick={save}
-            disabled={!check?.ok || saving}
+            disabled={!(check?.ok || (unchecked && text.trim())) || saving}
           >
             <span className="gbtn-g">
               <GoogleG />

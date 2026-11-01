@@ -34,6 +34,7 @@ SHARKYCLIPS_YT_ENDPOINT=http://127.0.0.1:<port> (loopback only, so a token can't
 from __future__ import annotations
 
 import base64
+import codecs
 import hashlib
 import json
 import os
@@ -200,14 +201,19 @@ def load_client() -> dict | None:
 
 
 def _parse_client(data: Any) -> dict | None:
+    """client_id / secret / project of an "installed" (Desktop app) client JSON, or of the flat
+    form google_client.json uses. Google's Desktop clients list redirect_uris ["http://localhost"]
+    (older ones also "urn:ietf:wg:oauth:2.0:oob"); that's fine: Desktop clients accept any
+    loopback port on 127.0.0.1 / localhost, which is what the sign-in uses (ytconnect.py)."""
     if not isinstance(data, dict):
         return None
-    body = data.get("installed") or data
-    cid = str(body.get("client_id") or "")
+    body = data.get("installed") if isinstance(data.get("installed"), dict) else data
+    cid = str(body.get("client_id") or "").strip()
     if not cid.endswith(".apps.googleusercontent.com"):
         return None
-    return {"client_id": cid, "client_secret": str(body.get("client_secret") or ""),
-            "project_id": body.get("project_id")}
+    pid = body.get("project_id")
+    return {"client_id": cid, "client_secret": str(body.get("client_secret") or "").strip(),
+            "project_id": str(pid) if isinstance(pid, (str, int)) and pid != "" else None}
 
 
 VERIFICATION = ("testing", "unverified", "in_review", "verified")
@@ -250,6 +256,14 @@ def _client_for(tok: dict) -> dict:
     return {}
 
 
+def decode_client_bytes(raw: bytes) -> str:
+    """A dropped / uploaded client file as text: UTF-8 with or without a BOM, or UTF-16 (what
+    Windows Notepad saves as "Unicode"). Windows line endings are fine for JSON."""
+    if raw[:2] in (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE):
+        return raw.decode("utf-16", errors="replace")
+    return raw.decode("utf-8-sig", errors="replace")
+
+
 def check_client_text(raw: str) -> dict:
     """Validate a pasted / dropped client_secret.json and explain any problem in plain words.
     Returns the parsed client (not saved)."""
@@ -277,7 +291,7 @@ def check_client_text(raw: str) -> dict:
         raise _err("That's a service account key.",
                    "YouTube uploads need an OAuth client of type 'Desktop app' (Google Auth Platform > "
                    "Clients > Create client).", reason="service_account")
-    if "web" in data:
+    if "web" in data and "installed" not in data:
         raise _err("This is a 'Web application' client.",
                    "Create an OAuth client of type 'Desktop app' instead (it allows the local "
                    "redirect SharkyClips uses).", reason="web_client")
@@ -297,7 +311,7 @@ def set_client(raw: str | bytes | dict) -> dict:
     if isinstance(raw, dict):
         text = json.dumps(raw)
     elif isinstance(raw, bytes):
-        text = raw.decode("utf-8-sig", "replace")
+        text = decode_client_bytes(raw)
     else:
         text = str(raw)
     client = {**check_client_text(text), "saved_at": _now()}

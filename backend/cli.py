@@ -392,6 +392,38 @@ def _sharkyclips_version_at(port: int, timeout: float = 0.8) -> str | None:
         return None
 
 
+def _restart_if_outdated(port: int, running: str, wait: float = 40.0) -> bool:
+    """An older SharkyClips is still running after an update (e.g. it sat in the tray while the
+    files changed): it would serve the new UI with the old API. Restart it onto the new code if
+    it's idle. Busy: leave it alone (the UI shows a "restart to finish the update" bar).
+    Returns True when the server now runs this version."""
+    import json
+    import urllib.request
+
+    from sharkyclips.updater import version_tuple
+
+    try:
+        if version_tuple(running) >= version_tuple(__version__):
+            return False
+        base = f"http://127.0.0.1:{port}"
+        with urllib.request.urlopen(f"{base}/api/jobs", timeout=3) as r:
+            if any(j.get("status") in ("queued", "running") for j in json.loads(r.read().decode("utf-8"))):
+                return False
+        req = urllib.request.Request(f"{base}/api/update/restart", data=b"{}", method="POST",
+                                     headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=5) as r:
+            if not json.loads(r.read().decode("utf-8")).get("restarting"):
+                return False
+    except Exception:  # noqa: BLE001 - can't tell: keep using the running server
+        return False
+    end = time.time() + wait
+    while time.time() < end:
+        time.sleep(0.5)
+        if _sharkyclips_version_at(port, timeout=0.5) == __version__:
+            return True
+    return False
+
+
 def _port_free(port: int) -> bool:
     import socket
 
@@ -497,6 +529,9 @@ def cmd_serve(args) -> int:
     local_url = f"http://localhost:{args.port}"
     running = _sharkyclips_version_at(args.port)
     if running:
+        if _restart_if_outdated(args.port, running):
+            console.print(f"[green]Restarted the running SharkyClips {running} as {__version__}.[/]")
+            running = __version__
         console.print(f"SharkyClips {running} is already running: [cyan]{local_url}[/]")
         if not args.no_browser:
             import webbrowser
@@ -686,7 +721,9 @@ def cmd_launch(args) -> int:
     _migrate_windows_shortcuts()
 
     for port in range(8000, 8011):
-        if _sharkyclips_version_at(port, timeout=0.5):
+        running = _sharkyclips_version_at(port, timeout=0.5)
+        if running:
+            _restart_if_outdated(port, running)  # an update happened while it ran
             url = f"http://localhost:{port}"
             console.print(_launch_text("already", url=url))
             webbrowser.open(url)

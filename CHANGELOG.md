@@ -7,6 +7,112 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.9] - 2026-11-01
+
+**Connect with Google** now works out of the box, and loading your own Google client file works
+again.
+
+### Fixed
+- **Advanced → load your own Google client file**: a valid `client_secret….json` could show an
+  empty warning with the Save button greyed out. That happened when SharkyClips was updated
+  while an older copy was still running in the background. The file box now never blocks a
+  valid file, and files saved as UTF-8 with a BOM, UTF-16 ("Unicode" in Notepad) or with
+  Windows line endings all load.
+- Opening SharkyClips after an update now restarts an older copy that's still running (when
+  it's not busy), so you always get the new version.
+
+### Added
+- If an older copy of SharkyClips is still running after an update, a bar at the top says so,
+  with a **Restart now** button.
+- **Connect with Google** is ready to use: SharkyClips now ships its own Google connection, so
+  you don't need a Google Cloud project. Google is still reviewing the app, so for now it shows
+  its "unverified app" screen first.
+
+<!-- lang:tr -->
+**Türkçe**
+
+**Google ile bağlan** artık kurulumsuz çalışıyor ve kendi Google istemci dosyanı yüklemek yine
+çalışıyor.
+
+### Düzeltildi
+- **Gelişmiş → kendi Google istemci dosyanı yükle**: geçerli bir `client_secret….json` boş bir
+  uyarı gösterip Kaydet düğmesini soluk bırakabiliyordu. Bu, SharkyClips güncellenirken eski bir
+  kopyası arka planda çalışmaya devam ettiğinde oluyordu. Dosya kutusu artık geçerli bir dosyayı
+  asla engellemiyor; BOM'lu UTF-8, UTF-16 (Not Defteri'nde "Unicode") ya da Windows satır sonlarıyla
+  kaydedilmiş dosyalar da yükleniyor.
+- Güncellemeden sonra SharkyClips'i açmak, hâlâ çalışan eski kopyayı (meşgul değilse) yeniden
+  başlatıyor; böylece her zaman yeni sürümü kullanıyorsun.
+
+### Eklendi
+- Güncellemeden sonra SharkyClips'in eski bir kopyası hâlâ çalışıyorsa, üstte bunu söyleyen ve
+  **Şimdi yeniden başlat** düğmesi olan bir şerit çıkıyor.
+- **Google ile bağlan** kullanıma hazır: SharkyClips artık kendi Google bağlantısıyla geliyor,
+  Google Cloud projesine gerek yok. Google uygulamayı hâlâ inceliyor; şimdilik önce "doğrulanmamış
+  uygulama" ekranını gösteriyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+**Mit Google verbinden** funktioniert jetzt ohne Einrichtung.
+
+- Behoben: Eine gültige `client_secret….json` (Erweitert) zeigte eine leere Warnung, wenn nach
+  einem Update noch eine alte SharkyClips-Version lief. Dateien mit BOM, UTF-16 oder
+  Windows-Zeilenenden werden jetzt auch geladen.
+- Läuft nach einem Update noch die alte Version, startet SharkyClips sie neu (wenn sie nichts
+  zu tun hat) oder zeigt eine Leiste mit **Jetzt neu starten**.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A **Csatlakozás Google-lal** most beállítás nélkül működik.
+
+- Javítva: egy érvényes `client_secret….json` (Speciális) üres figyelmeztetést mutatott, ha
+  frissítés után még a régi SharkyClips futott. A BOM-os, UTF-16-os vagy Windows-sorvégű fájlok
+  is betöltődnek.
+- Ha frissítés után még a régi verzió fut, a SharkyClips újraindítja (ha épp nem dolgozik), vagy
+  egy sávot mutat **Újraindítás most** gombbal.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+**Подключить через Google** теперь работает без настройки.
+
+- Исправлено: корректный `client_secret….json` (Дополнительно) показывал пустое предупреждение,
+  если после обновления ещё работала старая версия SharkyClips. Файлы с BOM, в UTF-16 или с
+  переводами строк Windows тоже загружаются.
+- Если после обновления ещё работает старая версия, SharkyClips перезапускает её (когда она не
+  занята) или показывает полосу с кнопкой **Перезапустить**.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+صار **الربط عبر Google** يعمل دون أي إعداد.
+
+- تم الإصلاح: كان ملف `client_secret….json` صالح (في متقدم) يُظهر تحذيرًا فارغًا إذا بقي إصدار
+  قديم من SharkyClips يعمل بعد التحديث. تُحمَّل الآن أيضًا الملفات بترميز UTF-8 مع BOM أو UTF-16 أو
+  بنهايات أسطر Windows.
+- إذا بقي الإصدار القديم يعمل بعد التحديث، يعيد SharkyClips تشغيله (إن لم يكن مشغولًا) أو يُظهر
+  شريطًا بزر **أعد التشغيل الآن**.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+**通过 Google 连接**现在无需任何设置即可使用。
+
+- 已修复：更新后如果旧版 SharkyClips 仍在运行，有效的 `client_secret….json`（高级）会显示空白警告。
+  带 BOM、UTF-16 或 Windows 换行的文件现在也能加载。
+- 更新后旧版本仍在运行时，SharkyClips 会将其重启（空闲时），或显示带有**立即重启**按钮的提示条。
+
+</details>
+
 ## [1.2.8] - 2026-11-01
 
 Connecting YouTube now takes one click and about 10 seconds. No Google Cloud setup, no codes to

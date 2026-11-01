@@ -1265,9 +1265,14 @@ export const api = {
     if (!res.ok) throw new ApiError(data.error || data.detail || res.statusText, data.hint || null, res.status);
     return data as YoutubeStatus;
   },
+  /** Validate a client JSON without saving it. A server that can't check (an older process still
+   * running after an update answers 405) gives reason "unchecked": saving still decides. */
   youtubeClientCheck: async (text: string) => {
+    type Check = { ok: boolean; error?: string; hint?: string | null; reason?: string | null; project_id?: string | null };
     const res = await fetch("/api/youtube/client/check", { method: "POST", body: text });
-    return (await res.json()) as { ok: boolean; error?: string; hint?: string | null; reason?: string | null; project_id?: string | null };
+    const data = (await res.json().catch(() => null)) as Check | null;
+    if (!res.ok || !data || typeof data.ok !== "boolean") return { ok: false, reason: "unchecked" } as Check;
+    return data;
   },
   youtubeRemoveClient: () => req<YoutubeStatus>("DELETE", "/api/youtube/client"),
   youtubeConnect: (open = true) => req<{ id: string; url: string; opened: boolean; port: number }>("POST", "/api/youtube/connect", { open }),
