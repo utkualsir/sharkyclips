@@ -33,7 +33,7 @@ def google(monkeypatch, tmp_path):
     monkeypatch.setenv("SHARKYCLIPS_YT_ENDPOINT", fake.start())
     shared = tmp_path / "google_client.json"
     shared.write_text(json.dumps({"client_id": SHARED_ID, "client_secret": "GOCSPX-public", "project_id": "sharkyclips",
-                                  "verification": "unverified", "user_cap": 100}), encoding="utf-8")
+                                  "verification": "production", "user_cap": 100}), encoding="utf-8")
     monkeypatch.setenv("SHARKYCLIPS_SHARED_CLIENT", str(shared))
     old_lang = config.get("ui_language")
     config.update(ui_language="en")
@@ -76,7 +76,7 @@ def _browser(url: str) -> requests.Response:
 def test_shared_client_is_the_default_and_signs_in_on_a_random_port(google):
     st = youtube.status()
     assert st["mode"] == "shared" and st["ready"] and not st["client"] and not st["connected"]
-    assert st["shared"] == {"available": True, "verification": "unverified", "user_cap": 100,
+    assert st["shared"] == {"available": True, "verification": "production", "user_cap": 100,
                             "project_id": "sharkyclips"}
     f1 = ytconnect.start()
     assert f1["opened"] is False  # SHARKYCLIPS_NO_BROWSER in tests
@@ -173,6 +173,7 @@ def test_revoked_access_shows_a_reconnect_banner_until_reconnected(google):
     with pytest.raises(SharkyClipsError) as e:
         youtube.access_token()
     assert e.value.reason == "signed_out"
+    assert "7 days" not in e.value.hint  # the built-in client is published: no weekly sign-out
     st = youtube.status()
     assert not st["connected"] and st["signed_out"]["channel"]["title"] == "Fake Channel"
     assert welcome.app_state()["youtube_signed_out"]["reason"] == "invalid_grant"
@@ -181,6 +182,19 @@ def test_revoked_access_shows_a_reconnect_banner_until_reconnected(google):
     _browser(f["url"])
     assert _wait_status(f["id"])["status"] == "ok"
     assert youtube.status()["signed_out"] is None and welcome.app_state()["youtube_signed_out"] is None
+
+
+@pytest.mark.parametrize("stored, shown", [("production", "production"), ("unverified", "production"),
+                                           ("testing", "testing"), ("verified", "verified"), (None, "production")])
+def test_built_in_client_status(monkeypatch, tmp_path, stored, shown):
+    """Settings: published + unverified = "production" (1.2.8-1.2.10 wrote "unverified")."""
+    f = tmp_path / "google_client.json"
+    body = {"client_id": SHARED_ID, "client_secret": "s", "user_cap": 100}
+    if stored:
+        body["verification"] = stored
+    f.write_text(json.dumps(body), encoding="utf-8")
+    monkeypatch.setenv("SHARKYCLIPS_SHARED_CLIENT", str(f))
+    assert youtube.shared_info()["verification"] == shown
 
 
 def test_disconnect_by_the_user_shows_no_banner(google):

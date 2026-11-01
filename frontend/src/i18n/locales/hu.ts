@@ -1375,7 +1375,7 @@ const hu: Record<string, string> = {
   "ytc.reconnect": "Újracsatlakozás",
   "ytc.verif_title": "Google-ellenőrzés",
   "ytc.verif.testing": "Tesztelés: csak meghívott tesztfelhasználók csatlakozhatnak",
-  "ytc.verif.unverified": "Még nincs ellenőrizve: legfeljebb {n} ember csatlakozhat egy figyelmeztetés után",
+  "ytc.verif.production": "Közzétéve, még nincs ellenőrizve: a Google figyelmeztetése után legfeljebb {n} ember csatlakozhat (amíg a Google nem ellenőrzi az alkalmazást)",
   "ytc.verif.in_review": "A Google ellenőrzi: egyelőre legfeljebb {n} ember csatlakozhat",
   "ytc.verif.verified": "A Google ellenőrizte: nincs figyelmeztetés, nincs felhasználói korlát",
   "ytc.verif_more": "Mit jelent ez?",

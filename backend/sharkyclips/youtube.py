@@ -216,7 +216,10 @@ def _parse_client(data: Any) -> dict | None:
             "project_id": str(pid) if isinstance(pid, (str, int)) and pid != "" else None}
 
 
-VERIFICATION = ("testing", "unverified", "in_review", "verified")
+# Google's state of the built-in client: testing (only invited test users, signed out after 7 days)
+# | production (published, not verified: anyone after Google's warning screen, up to user_cap
+# people) | in_review | verified. "unverified" (1.2.8 - 1.2.10) means production.
+VERIFICATION = ("testing", "production", "in_review", "verified")
 
 
 def shared_info() -> dict:
@@ -229,7 +232,8 @@ def shared_info() -> dict:
     except (OSError, ValueError):
         data = {}
     client = _parse_client(data)
-    verification = data.get("verification") if data.get("verification") in VERIFICATION else "unverified"
+    verification = data.get("verification")
+    verification = verification if verification in VERIFICATION else "production"
     return {"available": client is not None, "client": client, "verification": verification,
             "user_cap": int(data.get("user_cap") or 100), "project_id": (client or {}).get("project_id")}
 
@@ -559,9 +563,10 @@ def access_token() -> str:
         if res.status_code != 200:
             if data.get("error") in ("invalid_grant", "invalid_client", "unauthorized_client"):
                 _signed_out(tok, str(data.get("error")))
-                raise _err("YouTube signed SharkyClips out.",
-                           "Click Reconnect: it takes a few seconds. (Google ends the sign-in when you remove "
-                           "access in your Google account, and after 7 days for apps in 'Testing' mode.)",
+                why = "Google ends the sign-in when you remove access in your Google account"
+                if load_client() and client.get("client_id") == load_client().get("client_id"):
+                    why += ", and after 7 days if your own Google project is still in 'Testing'"
+                raise _err("YouTube signed SharkyClips out.", f"Click Reconnect: it takes a few seconds. ({why}.)",
                            reason="signed_out", status=res.status_code)
             raise _err(f"Could not refresh the YouTube sign-in ({data.get('error') or res.status_code}).",
                        reason="refresh_failed", status=res.status_code)

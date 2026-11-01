@@ -1370,7 +1370,7 @@ const tr: Record<string, string> = {
   "ytc.reconnect": "Yeniden bağlan",
   "ytc.verif_title": "Google incelemesi",
   "ytc.verif.testing": "Test aşaması: yalnızca davet edilen test kullanıcıları bağlanabilir",
-  "ytc.verif.unverified": "Henüz doğrulanmadı: bir uyarı ekranından sonra en fazla {n} kişi bağlanabilir",
+  "ytc.verif.production": "Yayında, henüz doğrulanmadı: Google uyarı ekranından sonra en fazla {n} kişi bağlanabilir (Google uygulamayı doğrulayana kadar)",
   "ytc.verif.in_review": "Google'da incelemede: şimdilik en fazla {n} kişi bağlanabilir",
   "ytc.verif.verified": "Google tarafından doğrulandı: uyarı ekranı yok, kullanıcı sınırı yok",
   "ytc.verif_more": "Bu ne demek?",

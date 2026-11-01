@@ -1394,7 +1394,7 @@ const en: Record<string, string> = {
   "ytc.reconnect": "Reconnect",
   "ytc.verif_title": "Google review",
   "ytc.verif.testing": "Testing: only invited test users can connect",
-  "ytc.verif.unverified": "Not verified yet: up to {n} people can connect, after a warning screen",
+  "ytc.verif.production": "Published, not verified yet: up to {n} people can connect, after Google's warning screen (until Google verifies the app)",
   "ytc.verif.in_review": "In review at Google: up to {n} people can connect for now",
   "ytc.verif.verified": "Verified by Google: no warning screen, no user limit",
   "ytc.verif_more": "What does this mean?",

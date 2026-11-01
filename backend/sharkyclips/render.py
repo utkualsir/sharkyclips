@@ -11,7 +11,6 @@ hardware for, so listing alone proves nothing.
 from __future__ import annotations
 
 import functools
-import os
 import platform
 import subprocess
 import time
@@ -22,6 +21,7 @@ from typing import Callable
 from . import config, hardware
 from .errors import SharkyClipsError, require_tool
 from .procs import no_window
+from .project import replace_retry
 
 
 @dataclass(frozen=True)
@@ -243,7 +243,7 @@ def export_preview(source: Path, start: float, end: float, dest: Path, max_heigh
     if code != 0:
         tmp.unlink(missing_ok=True)
         raise SharkyClipsError(f"ffmpeg could not render the preview: {err.strip()[-400:]}")
-    os.replace(tmp, dest)
+    replace_retry(tmp, dest)
     return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc.label)
 
 

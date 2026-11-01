@@ -719,7 +719,7 @@ export interface YoutubeStatus {
   mode: "shared" | "own" | null;
   /** a sign-in is possible (built-in client available or own client loaded) */
   ready: boolean;
-  shared: { available: boolean; verification: "testing" | "unverified" | "in_review" | "verified"; user_cap: number; project_id: string | null };
+  shared: { available: boolean; verification: "testing" | "production" | "in_review" | "verified"; user_cap: number; project_id: string | null };
   channels: { id: string; title: string; thumbnail: string | null }[];
   no_channel: boolean;
   create_channel_url: string;

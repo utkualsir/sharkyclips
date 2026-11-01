@@ -23,7 +23,6 @@ def write_json_atomic(path: Path, data: Any, compact: bool = False) -> None:
 
     compact=True for files the web UI loads (no indentation, smaller/faster)."""
     import threading
-    import time
 
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(f"{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
@@ -33,15 +32,29 @@ def write_json_atomic(path: Path, data: Any, compact: bool = False) -> None:
         else:
             json.dump(data, f, ensure_ascii=False, indent=2)
     # Windows: the replace fails for a moment while someone reads the file. Retry briefly.
-    for attempt in range(40):
+    try:
+        replace_retry(tmp, path, seconds=2.0)
+    except PermissionError:
+        tmp.unlink(missing_ok=True)
+        raise
+
+
+def replace_retry(src: Path, dest: Path, seconds: float = 15.0) -> None:
+    """os.replace that waits out a short lock on Windows (WinError 5 / 32): an antivirus or the
+    search indexer scanning a file that was just written, or a preview player reading `dest`."""
+    import time
+
+    end = time.monotonic() + seconds
+    delay = 0.025
+    while True:
         try:
-            os.replace(tmp, path)
+            os.replace(src, dest)
             return
         except PermissionError:
-            if attempt == 39:
-                tmp.unlink(missing_ok=True)
+            if time.monotonic() >= end:
                 raise
-            time.sleep(0.025)
+            time.sleep(delay)
+            delay = min(0.5, delay * 2)
 
 
 def read_json(path: Path) -> Any:

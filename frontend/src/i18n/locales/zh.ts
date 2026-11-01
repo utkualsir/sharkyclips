@@ -1351,7 +1351,7 @@ const zh: Record<string, string> = {
   "ytc.reconnect": "重新连接",
   "ytc.verif_title": "Google 审核",
   "ytc.verif.testing": "测试中：只有受邀测试用户可以连接",
-  "ytc.verif.unverified": "尚未验证：最多 {n} 人可以在警告页面后连接",
+  "ytc.verif.production": "已发布，尚未验证：在 Google 警告页面之后，最多 {n} 人可以连接（直到 Google 验证该应用）",
   "ytc.verif.in_review": "Google 审核中：目前最多 {n} 人可以连接",
   "ytc.verif.verified": "已通过 Google 验证：无警告页面，无用户上限",
   "ytc.verif_more": "这是什么意思？",

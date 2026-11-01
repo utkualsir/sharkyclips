@@ -17,7 +17,6 @@ CJK text. All text (subtitles and the hook) goes through one .ass file.
 
 from __future__ import annotations
 
-import os
 import platform
 import shutil
 import tempfile
@@ -28,7 +27,7 @@ from typing import Callable
 
 from . import languages
 from .errors import SharkyClipsError, require_tool
-from .project import Project, read_json
+from .project import Project, read_json, replace_retry
 from .render import Encoder, RenderResult, run_ffmpeg
 
 OUT_W, OUT_H = 1080, 1920
@@ -617,7 +616,7 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
         if code != 0:
             tmp.unlink(missing_ok=True)
             raise SharkyClipsError(f"ffmpeg could not render the clip: {err.strip()[-500:]}")
-        os.replace(tmp, dest)
+        replace_retry(tmp, dest)
         return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc.label)
     finally:
         shutil.rmtree(work, ignore_errors=True)
@@ -898,7 +897,7 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         if code != 0:
             tmp.unlink(missing_ok=True)
             raise SharkyClipsError(f"ffmpeg could not render the clip: {err.strip()[-500:]}")
-        os.replace(tmp, dest)
+        replace_retry(tmp, dest)
         info = {"plan": plan.fingerprint(), "duration": round(total, 2), "main": round(main, 2),
                 "cut_seconds": max(0.0, round(duration - main, 2)), "cuts": len(plan.removed),
                 "bleeps": len(plan.bleeps) if plan.bleep_mode != "off" else 0, "bleep_mode": plan.bleep_mode,

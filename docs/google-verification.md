@@ -31,7 +31,8 @@ How the sign-in works (what reviewers will ask):
 - The token is stored encrypted on the user's computer only (DPAPI / macOS Keychain).
 
 `google_client.json` fields: `client_id`, `client_secret`, `project_id`, `verification`
-(`testing` | `unverified` | `in_review` | `verified`, shown in Settings) and `user_cap`
+(`testing` | `production` (published, not verified) | `in_review` | `verified`, shown in
+Settings; since 1.2.11 the shipped client is `production`) and `user_cap`
 (100 = Google's limit for unverified apps with sensitive scopes, shown in Settings). Update
 `verification` there when Google's status changes; the app picks it up after the next update.
 

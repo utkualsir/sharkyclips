@@ -105,7 +105,7 @@ def test_shipped_built_in_client_is_a_valid_desktop_client(monkeypatch):
     assert info["available"], "google_client.json has no client"
     assert info["client"]["client_id"].endswith(".apps.googleusercontent.com")
     assert info["client"]["client_secret"].startswith("GOCSPX-")
-    assert info["verification"] in youtube.VERIFICATION and info["user_cap"] > 0
+    assert info["verification"] == "production" and info["user_cap"] == 100  # published, not verified
 
 
 # ------------------------------------------------------------------ old server after an update

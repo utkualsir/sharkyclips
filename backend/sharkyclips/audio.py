@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import wave
 from fractions import Fraction
@@ -14,6 +13,7 @@ import numpy as np
 
 from .errors import SharkyClipsError, require_tool
 from .procs import no_window
+from .project import replace_retry
 
 SAMPLE_RATE = 16000
 
@@ -102,7 +102,7 @@ def extract_audio(source: Path, dest: Path, duration: float | None = None,
         tmp.unlink(missing_ok=True)
         raise SharkyClipsError(f"ffmpeg failed to extract audio: {stderr.strip()[-400:]}",
                                "Check that the video has an audio track and isn't corrupted.")
-    os.replace(tmp, dest)
+    replace_retry(tmp, dest)
     return dest
 
 

@@ -32,7 +32,7 @@ from typing import Callable
 from . import config, languages
 from .clips import _ass_escape, _ass_time, _upper
 from .errors import SharkyClipsError, require_tool
-from .project import Project, read_json, write_json_atomic
+from .project import Project, read_json, replace_retry, write_json_atomic
 from .procs import no_window
 from .render import ENCODERS, pick_encoder, run_ffmpeg
 from .ui import console
@@ -557,7 +557,7 @@ def render_montage(project: Project, clip_ids: list[str], *, lang: str | None = 
         if code != 0:
             tmp.unlink(missing_ok=True)
             raise SharkyClipsError(f"ffmpeg could not render the best-of video: {err.strip()[-600:]}")
-        os.replace(tmp, dest)
+        replace_retry(tmp, dest)
         seconds = time.perf_counter() - t0
     except BaseException:
         tmp.unlink(missing_ok=True)

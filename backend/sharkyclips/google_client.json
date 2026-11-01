@@ -1,8 +1,8 @@
 {
-  "_comment": "SharkyClips' built-in Google OAuth client (type 'Desktop app'). Google: an installed app's client secret is not confidential; PKCE + a 127.0.0.1 redirect protect the sign-in. To swap it, copy client_id / client_secret / project_id from the downloaded client JSON. verification: testing | unverified | in_review | verified. user_cap: Google's limit for unverified apps with sensitive scopes.",
+  "_comment": "SharkyClips' built-in Google OAuth client (type 'Desktop app'). Google: an installed app's client secret is not confidential; PKCE + a 127.0.0.1 redirect protect the sign-in. To swap it, copy client_id / client_secret / project_id from the downloaded client JSON. verification: testing | production (published, not verified) | in_review | verified. user_cap: Google's limit for unverified apps with sensitive scopes.",
   "client_id": "372491359999-5ao3oflu5rnkou0g1dcrfnmrvti5qpt8.apps.googleusercontent.com",
   "client_secret": "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",
   "project_id": "sharkyclips",
-  "verification": "testing",
+  "verification": "production",
   "user_cap": 100
 }

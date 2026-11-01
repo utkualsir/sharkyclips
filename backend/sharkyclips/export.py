@@ -13,7 +13,6 @@ Exports of a clip live in <project>/exports/clips/, listed in exports/clips.json
 
 from __future__ import annotations
 
-import os
 import shutil
 import subprocess
 import tempfile
@@ -28,7 +27,7 @@ from .clips import (FLASH_SECONDS, NO_SPACE_LANGS, ClipOptions, Facecam, OutputS
                     group_words, render_clip, translated_words)
 from .errors import SharkyClipsError, require_tool
 from .procs import no_window
-from .project import Project, read_json, write_json_atomic
+from .project import Project, read_json, replace_retry, write_json_atomic
 from .render import RenderResult, run_ffmpeg
 
 
@@ -344,7 +343,7 @@ def _render_audio(project: Project, cand: dict, fmt: Format, dest: Path,
         tmp.unlink(missing_ok=True)
         raise SharkyClipsError(f"ffmpeg could not export the audio: {err.strip()[-400:]}",
                                "Does this video have a sound track?")
-    os.replace(tmp, dest)
+    replace_retry(tmp, dest)
     return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, "CPU", info)
 
 
@@ -404,7 +403,7 @@ def _render_gif(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
                 on_progress(0.6 + 0.4 * (i + 1) / len(steps))
             if size <= limit:
                 break
-        os.replace(tmp, dest)
+        replace_retry(tmp, dest)
         info = {"gif_steps": tried, "gif_limit_mb": max_mb, "gif_over_limit": size > limit}
         return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, res.encoder), info
     finally:

@@ -18,7 +18,6 @@ Stories live in <project>/stories.json; renders in <project>/stories/<id>.mp4.
 
 from __future__ import annotations
 
-import os
 import secrets
 import shutil
 import tempfile
@@ -31,7 +30,7 @@ import numpy as np
 
 from . import config
 from .errors import SharkyClipsError, require_tool
-from .project import Project, read_json, write_json_atomic
+from .project import Project, read_json, replace_retry, write_json_atomic
 
 ARCS = ("fail_comeback", "setup_payoff", "running_joke", "escalation", "other")
 MIN_TOTAL, MAX_TOTAL = 30.0, 60.0
@@ -730,7 +729,7 @@ def render(project: Project, story: dict, opts, facecam, dest: Path,
         if code != 0:
             tmp.unlink(missing_ok=True)
             raise SharkyClipsError(f"ffmpeg could not render the story: {err.strip()[-500:]}")
-        os.replace(tmp, dest)
+        replace_retry(tmp, dest)
         segs_out = []
         for p in pieces:
             if p["kind"] == "seg":

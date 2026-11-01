@@ -424,6 +424,18 @@ def _restart_if_outdated(port: int, running: str, wait: float = 40.0) -> bool:
     return False
 
 
+def _wait_for_running(info: dict, wait: float = 30.0) -> tuple[int | None, str | None]:
+    """The SharkyClips that holds the server lock (it may be restarting): its port and version."""
+    port = info.get("port")
+    end = time.time() + wait
+    while isinstance(port, int):
+        v = _sharkyclips_version_at(port, timeout=0.5)
+        if v or time.time() >= end:
+            return port, v
+        time.sleep(0.5)
+    return None, None
+
+
 def _port_free(port: int) -> bool:
     import socket
 
@@ -519,12 +531,37 @@ def cmd_lan_pin(args) -> int:
 
 
 def cmd_serve(args) -> int:
-    import subprocess
-
     from sharkyclips.updater import RESTART_CODE
 
     if os.environ.get("SHARKYCLIPS_SUPERVISED") == "1":
         return _run_server(args)
+
+    from sharkyclips import instance
+
+    # One server per settings folder: a second one would run the publish scheduler and the job
+    # queue a second time (the same clip exported / uploaded twice).
+    lock = instance.acquire()
+    if lock is None:
+        port, version = _wait_for_running(instance.running() or {})
+        url = f"http://localhost:{port}" if port else None
+        console.print(f"SharkyClips {version or ''} is already running".replace("  ", " ")
+                      + (f": [cyan]{url}[/]" if url else " (starting up)."))
+        if url and version:
+            _restart_if_outdated(port, version)
+        if url and not args.no_browser:
+            import webbrowser
+
+            webbrowser.open(url)
+        return 0
+    try:
+        instance.note(args.port)
+        return _serve_locked(args, RESTART_CODE)
+    finally:
+        instance.release(lock)
+
+
+def _serve_locked(args, RESTART_CODE: int) -> int:  # noqa: N803 - the updater's constant
+    import subprocess
 
     local_url = f"http://localhost:{args.port}"
     running = _sharkyclips_version_at(args.port)
@@ -720,7 +757,18 @@ def cmd_launch(args) -> int:
 
     _migrate_windows_shortcuts()
 
-    for port in range(8000, 8011):
+    from sharkyclips import instance
+
+    info = instance.running()
+    if info is not None:  # it holds the lock: open it, even while it restarts after an update
+        port, version = _wait_for_running(info)
+        if port and version:
+            _restart_if_outdated(port, version)
+            url = f"http://localhost:{port}"
+            console.print(_launch_text("already", url=url))
+            webbrowser.open(url)
+        return 0
+    for port in range(8000, 8011):  # a running SharkyClips older than 1.2.11 holds no lock
         running = _sharkyclips_version_at(port, timeout=0.5)
         if running:
             _restart_if_outdated(port, running)  # an update happened while it ran

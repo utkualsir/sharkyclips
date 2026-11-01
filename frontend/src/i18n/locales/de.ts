@@ -1392,7 +1392,7 @@ const de: Record<string, string> = {
   "ytc.reconnect": "Neu verbinden",
   "ytc.verif_title": "Google-Prüfung",
   "ytc.verif.testing": "Testphase: nur eingeladene Testnutzer können sich verbinden",
-  "ytc.verif.unverified": "Noch nicht verifiziert: bis zu {n} Personen können sich nach einem Warnbildschirm verbinden",
+  "ytc.verif.production": "Veröffentlicht, noch nicht verifiziert: bis zu {n} Personen können sich nach Googles Warnbildschirm verbinden (bis Google die App verifiziert)",
   "ytc.verif.in_review": "In Prüfung bei Google: vorerst können sich bis zu {n} Personen verbinden",
   "ytc.verif.verified": "Von Google verifiziert: kein Warnbildschirm, kein Nutzerlimit",
   "ytc.verif_more": "Was heißt das?",

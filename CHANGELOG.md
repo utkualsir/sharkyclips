@@ -7,6 +7,92 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.11] - 2026-11-01
+
+SharkyClips' Google connection is now published, and scheduled uploads are safer.
+
+### Changed
+- **Settings → YouTube** shows the built-in Google connection as **published, not verified yet**:
+  anyone can connect after Google's warning screen, up to 100 people until Google has verified
+  SharkyClips. Google no longer signs you out every 7 days.
+
+### Fixed
+- If SharkyClips was opened a second time while it restarted after an update, two copies could
+  run at once and both prepare the same scheduled clip (it could even be uploaded twice). Now
+  only one copy runs; opening it again just shows the running one.
+- An export could fail with "Access denied" when Windows (for example the antivirus) was still
+  scanning the finished file. SharkyClips now waits a moment and tries again.
+
+<!-- lang:tr -->
+**Türkçe**
+
+SharkyClips'in Google bağlantısı artık yayında ve zamanlanmış yüklemeler daha güvenli.
+
+### Değişti
+- **Ayarlar → YouTube**, yerleşik Google bağlantısını **yayında, henüz doğrulanmadı** olarak
+  gösteriyor: Google'ın uyarı ekranından sonra herkes bağlanabilir; Google SharkyClips'i doğrulayana
+  kadar en fazla 100 kişi. Google artık seni 7 günde bir oturumdan çıkarmıyor.
+
+### Düzeltildi
+- SharkyClips bir güncellemeden sonra yeniden başlarken ikinci kez açılırsa iki kopya aynı anda
+  çalışabiliyor ve ikisi de aynı zamanlanmış klibi hazırlıyordu (iki kez yüklenebilirdi bile). Artık
+  yalnızca bir kopya çalışıyor; tekrar açmak çalışan kopyayı gösteriyor.
+- Windows (örneğin virüs tarayıcısı) bitmiş dosyayı hâlâ tararken bir dışa aktarma "Erişim engellendi"
+  hatasıyla bitebiliyordu. SharkyClips artık biraz bekleyip yeniden deniyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Die eingebaute Google-Verbindung ist jetzt **veröffentlicht, noch nicht verifiziert**: bis zu 100
+  Personen nach Googles Warnbildschirm; keine Abmeldung mehr alle 7 Tage.
+- Behoben: Zwei gleichzeitig laufende SharkyClips (zweiter Start während eines Neustarts) konnten
+  denselben geplanten Clip doppelt vorbereiten. Jetzt läuft immer nur eine Kopie.
+- Behoben: „Zugriff verweigert“ beim Export, während Windows die Datei noch prüfte.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- A beépített Google-kapcsolat most **közzétéve, még nincs ellenőrizve**: a Google figyelmeztetése
+  után legfeljebb 100 ember; nincs többé kijelentkeztetés 7 naponta.
+- Javítva: két egyszerre futó SharkyClips (második indítás újraindítás közben) ugyanazt az ütemezett
+  klipet kétszer készíthette elő. Most mindig csak egy példány fut.
+- Javítva: „Hozzáférés megtagadva” exportáláskor, amíg a Windows még vizsgálta a fájlt.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Встроенное подключение Google теперь **опубликовано, ещё не проверено**: до 100 человек после
+  экрана предупреждения Google; больше никаких выходов из аккаунта каждые 7 дней.
+- Исправлено: две одновременно запущенные копии SharkyClips (второй запуск во время перезапуска)
+  могли дважды готовить один и тот же запланированный клип. Теперь работает только одна копия.
+- Исправлено: «Отказано в доступе» при экспорте, пока Windows ещё проверяла файл.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- اتصال Google المدمج صار **منشورًا ولم يُتحقق منه بعد**: حتى 100 شخص بعد شاشة تحذير Google، ولا
+  خروج من الحساب كل 7 أيام بعد الآن.
+- تم الإصلاح: نسختان من SharkyClips تعملان معًا (تشغيل ثانٍ أثناء إعادة التشغيل) كانتا قد تجهّزان
+  المقطع المجدول نفسه مرتين. الآن تعمل نسخة واحدة فقط.
+- تم الإصلاح: خطأ «تم رفض الوصول» عند التصدير بينما كان Windows لا يزال يفحص الملف.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 内置的 Google 连接现已**发布，尚未验证**：在 Google 警告页面后最多 100 人可连接；不再每 7 天退出登录。
+- 已修复：更新重启期间再次打开 SharkyClips 时，两个副本可能同时运行并重复准备同一个定时剪辑。现在始终只运行一个副本。
+- 已修复：Windows（例如杀毒软件）仍在扫描文件时，导出可能出现“拒绝访问”。
+
+</details>
+
 ## [1.2.10] - 2026-11-01
 
 SharkyClips has a website now, and the privacy policy link in the app works.

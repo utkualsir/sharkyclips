@@ -1352,7 +1352,7 @@ const ar: Record<string, string> = {
   "ytc.reconnect": "إعادة الربط",
   "ytc.verif_title": "مراجعة Google",
   "ytc.verif.testing": "اختبار: يمكن فقط لمستخدمي الاختبار المدعوين الربط",
-  "ytc.verif.unverified": "لم يُتحقق منه بعد: يمكن لما يصل إلى {n} شخص الربط بعد شاشة تحذير",
+  "ytc.verif.production": "منشور ولم يُتحقق منه بعد: يمكن لما يصل إلى {n} شخص الربط بعد شاشة تحذير Google (إلى أن تتحقق Google من التطبيق)",
   "ytc.verif.in_review": "قيد المراجعة لدى Google: يمكن حاليًا لما يصل إلى {n} شخص الربط",
   "ytc.verif.verified": "تحققت منه Google: لا شاشة تحذير ولا حد للمستخدمين",
   "ytc.verif_more": "ماذا يعني هذا؟",
