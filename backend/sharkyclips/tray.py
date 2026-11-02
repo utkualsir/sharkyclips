@@ -110,4 +110,28 @@ def run(url: str, on_quit: Callable[[], None], stopped: threading.Event) -> None
         icon.stop()
 
     threading.Thread(target=watch, daemon=True).start()
+    threading.Thread(target=notify_loop, args=(url, icon, stopped), daemon=True).start()
     icon.run()
+
+
+def notify_loop(url: str, icon, stopped: threading.Event, every: float = 5.0) -> None:
+    """Show the server's notices ("your clips are ready") as system notifications. One cheap
+    local HTTP call every few seconds, in this process (no console window, no child process)."""
+    seen: dict = {"boot": None, "last": 0}
+    while not stopped.wait(every):
+        try:
+            with urllib.request.urlopen(f"{url}/api/notices?after={seen['last']}", timeout=2) as r:
+                data = json.load(r)
+        except Exception:  # noqa: BLE001 - server restarting
+            continue
+        if data.get("boot") != seen["boot"]:  # a new server: only notices from now on
+            first = seen["boot"] is None
+            seen.update(boot=data.get("boot"), last=0 if not first else int(data.get("last") or 0))
+            if first:
+                continue
+        for n in data.get("items") or []:
+            seen["last"] = max(seen["last"], int(n.get("id") or 0))
+            try:
+                icon.notify(str(n.get("body") or ""), str(n.get("title") or "SharkyClips"))
+            except Exception:  # noqa: BLE001 - notifications unsupported here
+                pass

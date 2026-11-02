@@ -52,7 +52,10 @@ app.add_middleware(LanGuard)  # optional access PIN for other devices (--lan)
 
 @app.exception_handler(SharkyClipsError)
 async def _sharkyclips_error(_req: Request, exc: SharkyClipsError):
-    return JSONResponse({"error": exc.message, "hint": exc.hint}, status_code=400)
+    body = {"error": exc.message, "hint": exc.hint}
+    if getattr(exc, "code", None):
+        body["code"] = exc.code  # type: ignore[attr-defined]
+    return JSONResponse(body, status_code=400)
 
 
 def _is_local(request: Request) -> bool:
@@ -204,7 +207,7 @@ def submit_proxy(project_id: str) -> Job:
 
 
 def submit_import(source: str, mode: str, language: str, title: str,
-                  cleanup: Path | None = None) -> Job:
+                  cleanup: Path | None = None, extra: dict | None = None) -> Job:
     def run(job: Job):
         from ..ingest import ingest
 
@@ -230,7 +233,7 @@ def submit_import(source: str, mode: str, language: str, title: str,
             submit_highlights(pid)
 
     return jobs.submit("import", "io", None,
-                       {"source": source, "title": title, "mode": mode, "language": language},
+                       {"source": source, "title": title, "mode": mode, "language": language, **(extra or {})},
                        run, then, dedupe=False)
 
 
@@ -532,6 +535,15 @@ def _thumbnail_file(project: Project, cid: str, cand: dict, kind: str) -> Path:
     custom = project.cache_dir / "thumbnails" / f"{cid}.jpg"
     if kind == "custom" and custom.is_file():
         return custom
+    if kind == "cover":  # Easy mode: the 9:16 cover (best facecam face, else the peak) with the title
+        from .. import publishing as P
+        from .publishing import make_cover_for
+
+        review = state.load_review(project)
+        meta = (P.get(P.key_of(project.id, cid)) or {}).get("meta") or {}
+        text = (cand.get("publish") or {}).get("cover_text") or meta.get("title") or ""
+        return make_cover_for(project, state.effective_cand(cand, review), review,
+                              "face" if review.get("facecam") else "peak", text, "tall", meta.get("language"))
     t = round(float(cand.get("peak") or cand["start"]), 1)
     return _frame(project, t, 1280, project.cache_dir / "frames" / f"1280_{t:.1f}.jpg")
 
@@ -1343,8 +1355,12 @@ def api_create(body: dict, request: Request) -> dict:
 
 @app.put("/api/uploads")
 async def api_upload(request: Request, filename: str = Query(...), mode: str = Query("gaming"),
-                     language: str = Query("auto")) -> dict:
-    """Raw file upload (streamed straight to disk - works for multi-GB stream files)."""
+                     language: str = Query("auto"), easy: bool = Query(False)) -> dict:
+    """Raw file upload (streamed straight to disk - works for multi-GB stream files).
+    easy=true: an Easy mode project (mode "auto" = detect the content type)."""
+    mode_auto = mode == "auto"
+    if mode_auto:
+        mode = config.get("default_mode") or "gaming"
     if mode not in MODES:
         raise SharkyClipsError(f"Unknown mode '{mode}'.")
     if language != "auto":
@@ -1373,7 +1389,8 @@ async def api_upload(request: Request, filename: str = Query(...), mode: str = Q
         part.unlink(missing_ok=True)
         raise SharkyClipsError("The uploaded file is empty.")
     part.replace(dest)
-    return submit_import(str(dest), mode, language, name, cleanup=dest).to_dict()
+    extra = {"easy": True, "mode_auto": mode_auto} if easy else None
+    return submit_import(str(dest), mode, language, name, cleanup=dest, extra=extra).to_dict()
 
 
 @app.get("/api/projects/{project_id}")
@@ -2200,12 +2217,14 @@ from .studio import router as _studio_router  # noqa: E402 - editing tools API (
 from .voices_api import router as _voices_router  # noqa: E402 - voices, bleeps, facecam picker (1.2.15)
 from .retention import router as _retention_router  # noqa: E402 - stories, A/B hooks, loops (1.2.5)
 from .publishing import router as _publishing_router  # noqa: E402 - Library + scheduled publishing (1.2.7)
+from .easy import router as _easy_router  # noqa: E402 - Easy mode (1.2.16)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
 app.include_router(_voices_router)
 app.include_router(_retention_router)
 app.include_router(_publishing_router)
+app.include_router(_easy_router)
 
 
 @app.get("/api/{rest:path}")
@@ -2267,6 +2286,8 @@ def _restore_queue() -> None:
 def _start_publishing() -> None:
     """The publish loop (web/publishing.py): uploads scheduled clips in advance, fetches views
     every 6 hours (calibration, the hook bandit, the private lock) and the hook test results."""
+    from .easy import install as install_easy
     from .publishing import install
 
     install(jobs)
+    install_easy(jobs)

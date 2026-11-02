@@ -32,19 +32,24 @@ const SIZES = quick
 const LANGS = quick ? ["tr", "ar"] : ["tr", "ar", "en"];
 const THEMES = ["light", "dark"];
 const P = encodeURIComponent(pid);
+// mode: Easy (the default) or Pro; switched on the server before the screen loads
 const SCREENS = [
-  { name: "project", hash: `#/p/${P}`, ready: ".side-tabs", tabs: [null, ".side-tablist button:nth-child(2)"] },
-  { name: "projects", hash: "#/", ready: "main" },
-  { name: "library", hash: "#/library", ready: "main" },
-  { name: "calendar", hash: "#/library/calendar", ready: "main" },
-  { name: "queue", hash: "#/queue", ready: "main" },
-  { name: "stories", hash: `#/p/${P}/stories`, ready: "main" },
-  { name: "bestof", hash: `#/p/${P}/bestof`, ready: "main" },
-  { name: "studio-music", hash: "#/studio/music", ready: "main" },
-  { name: "studio-brand", hash: "#/studio/brand", ready: "main" },
-  { name: "studio-words", hash: "#/studio/words", ready: "main" },
-  { name: "settings", hash: "#/settings", ready: "main" },
-  { name: "stats", hash: "#/stats", ready: "main" },
+  { name: "easy-home", mode: "easy", hash: "#/", ready: ".ez-create" },
+  { name: "easy-project", mode: "easy", hash: `#/p/${P}`, ready: ".ez-grid" },
+  { name: "easy-library", mode: "easy", hash: "#/library", ready: ".ez-tabs", tabs: [null, ".ez-tabs button:nth-child(3)"] },
+  { name: "easy-settings", mode: "easy", hash: "#/settings", ready: ".ez-settings" },
+  { name: "project", mode: "pro", hash: `#/p/${P}`, ready: ".side-tabs", tabs: [null, ".side-tablist button:nth-child(2)"] },
+  { name: "projects", mode: "pro", hash: "#/", ready: "main" },
+  { name: "library", mode: "pro", hash: "#/library", ready: "main" },
+  { name: "calendar", mode: "pro", hash: "#/library/calendar", ready: "main" },
+  { name: "queue", mode: "pro", hash: "#/queue", ready: "main" },
+  { name: "stories", mode: "pro", hash: `#/p/${P}/stories`, ready: "main" },
+  { name: "bestof", mode: "pro", hash: `#/p/${P}/bestof`, ready: "main" },
+  { name: "studio-music", mode: "pro", hash: "#/studio/music", ready: "main" },
+  { name: "studio-brand", mode: "pro", hash: "#/studio/brand", ready: "main" },
+  { name: "studio-words", mode: "pro", hash: "#/studio/words", ready: "main" },
+  { name: "settings", mode: "pro", hash: "#/settings", ready: "main" },
+  { name: "stats", mode: "pro", hash: "#/stats", ready: "main" },
 ];
 
 /** Runs in the page. Returns a list of problems. */
@@ -143,7 +148,14 @@ for (const lang of LANGS)
         sessionStorage.setItem("sc-splash-shown", "1");
       }, [lang, theme]);
       const page = await ctx.newPage();
+      let mode = null;
       for (const s of SCREENS) {
+        if (s.mode !== mode) {
+          // the app reads the mode once at start: switch it on the server, then load afresh
+          await page.request.put(`${base}/api/easy/settings`, { data: { mode: s.mode } });
+          await page.goto("about:blank");
+          mode = s.mode;
+        }
         for (let attempt = 1; ; attempt++) {
           try {
             await page.goto(`${base}/${s.hash}`, { waitUntil: "load" });
@@ -164,7 +176,7 @@ for (const lang of LANGS)
             await page.click(tab);
             await page.waitForTimeout(400);
           }
-          const label = `${s.name}${tab ? "-clips" : ""} ${lang} ${theme} ${w}x${h}`;
+          const label = `${s.name}${tab ? "-tab" : ""} ${lang} ${theme} ${w}x${h}`;
           const issues = await page.evaluate(audit);
           checked++;
           if (issues.length) {

@@ -7,7 +7,9 @@ import { JobsProvider } from "./jobs";
 import { LanGate } from "./components/LanAccess";
 import { MetaProvider } from "./meta";
 import { ToastProvider } from "./toast";
+import { UiModeProvider } from "./uimode";
 import "./styles.css";
+import "./easy.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -17,7 +19,9 @@ createRoot(document.getElementById("root")!).render(
           <ToastProvider>
             <JobsProvider>
               <AppStateProvider>
-                <App />
+                <UiModeProvider>
+                  <App />
+                </UiModeProvider>
               </AppStateProvider>
             </JobsProvider>
           </ToastProvider>

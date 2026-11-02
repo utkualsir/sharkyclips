@@ -7,6 +7,120 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.16] - 2026-11-02
+
+### Added
+- **Easy mode** (now the start screen for everyone): drop a video or paste a link, press
+  **Find clips**, and that's it. SharkyClips detects the kind of video (gaming, study or music;
+  change it with the small chip), shows each step in plain words with the time left, and lets
+  you close the window: a notification tells you when your clips are ready.
+- **Your best clips, ready to post:** the top 6 come already made in 9:16 with good defaults
+  (your remembered facecam layout, bold captions for every speaker, bleeped swears, the best AI
+  title). Each one plays right on the card. "Show more" brings the next ones.
+- **One click to YouTube:** "Upload to YouTube" sends the clip with its title, description,
+  hashtags and cover filled in, no form. Choose **Now** or **Plan automatically** (good times,
+  a few per day); your choice is remembered. Not connected yet? The button connects your Google
+  account first and then keeps going. Select several clips to upload them together.
+- **One click to your computer:** "Download to computer" saves the video, a text file with
+  title, description and hashtags ready to paste, and the cover image to
+  Downloads\SharkyClips\<video name>. "Download all" saves every clip at once.
+- **Simple editing:** pick another AI title or write your own, move the start and end with two
+  handles, turn captions or music on or off. Remove clips you don't want.
+- A simple **Library** with three tabs: Ready, Planned and Live (with views).
+- A short 3-step tour on first start. **Pro mode** (switch in the top bar, remembered) keeps
+  every tool exactly as before.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Eklendi
+- **Kolay mod** (artık herkesin başlangıç ekranı): bir video bırak ya da link yapıştır,
+  **Klipleri bul**'a bas, o kadar. SharkyClips videonun türünü (oyun, ders ya da müzik) kendisi
+  anlar (küçük etiketten değiştirebilirsin), her adımı sade bir dille ve kalan süreyle gösterir.
+  Pencereyi kapatabilirsin: klipler hazır olunca bildirim gelir.
+- **Paylaşıma hazır en iyi kliplerin:** ilk 6 klip iyi varsayılanlarla 9:16 olarak hazır gelir
+  (hatırlanan kamera düzenin, her konuşmacı için kalın altyazı, bip'lenmiş küfürler, en iyi yapay
+  zekâ başlığı). Her biri kartın üstünde oynar. "Daha fazla göster" sonrakileri getirir.
+- **Tek tıkla YouTube:** "YouTube'a yükle" klibi başlık, açıklama, hashtag ve kapakla birlikte
+  gönderir, form yok. **Şimdi** ya da **Otomatik planla** (iyi saatler, günde birkaç tane) seç;
+  seçimin hatırlanır. Henüz bağlı değil misin? Düğme önce Google hesabını bağlar, sonra devam eder.
+  Birkaç klibi seçip birlikte yükleyebilirsin.
+- **Tek tıkla bilgisayara:** "Bilgisayara indir" videoyu, başlık + açıklama + hashtag'lerin hazır
+  olduğu bir metin dosyasını ve kapak görselini İndirilenler\SharkyClips\<video adı> klasörüne
+  kaydeder. "Hepsini indir" tüm klipleri tek seferde kaydeder.
+- **Basit düzenleme:** başka bir yapay zekâ başlığı seç ya da kendin yaz, başlangıç ve bitişi iki
+  tutamakla kaydır, altyazıyı ya da müziği aç/kapat. İstemediğin klipleri çıkar.
+- Üç sekmeli basit bir **Kütüphane**: Hazır, Planlandı ve Yayında (görüntülenmelerle).
+- İlk açılışta 3 adımlık kısa bir tur. **Pro mod** (üst çubuktaki anahtar, hatırlanır) tüm
+  araçları eskisi gibi korur.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Neu: **Einfacher Modus** als Startbildschirm: Video ablegen oder Link einfügen, „Clips finden“
+  drücken. Inhaltsart wird erkannt, Fortschritt in einfachen Worten mit Restzeit; du kannst das
+  Fenster schließen, eine Benachrichtigung meldet die fertigen Clips.
+- Die besten 6 Clips kommen fertig in 9:16 und laufen direkt auf der Karte.
+- Ein Klick auf YouTube (Titel, Beschreibung, Hashtags, Cover ausgefüllt; jetzt oder automatisch
+  geplant) oder auf den Computer (Video + Textdatei + Cover in Downloads\SharkyClips).
+- Einfaches Bearbeiten (Titel, Anfang/Ende, Untertitel, Musik), Bibliothek mit drei Tabs, kurze
+  Tour. Der **Profi-Modus** behält alle Werkzeuge.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Új: **Egyszerű mód** kezdőképernyőként: dobd be a videót vagy a linket, és nyomd meg a „Klipek
+  keresése” gombot. Felismeri a tartalom típusát, egyszerű lépésekben mutatja a haladást és a
+  hátralévő időt; az ablak bezárható, értesítés jelzi, ha kész.
+- A legjobb 6 klip készen jön 9:16-ban, és a kártyán lejátszható.
+- Egy kattintás YouTube-ra (cím, leírás, hashtagek, borító kitöltve; most vagy automatikusan
+  ütemezve) vagy a gépre (videó + szövegfájl + borító a Letöltések\SharkyClips mappába).
+- Egyszerű szerkesztés (cím, eleje/vége, felirat, zene), háromlapos könyvtár, rövid bemutató. A
+  **profi mód** minden eszközt megtart.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Новое: **простой режим** на стартовом экране: брось видео или вставь ссылку и нажми «Найти
+  клипы». Тип контента определяется сам, шаги и оставшееся время — простыми словами; окно можно
+  закрыть, уведомление сообщит, когда клипы готовы.
+- Лучшие 6 клипов сразу готовы в 9:16 и проигрываются прямо в карточке.
+- Один клик — на YouTube (заголовок, описание, хэштеги, обложка уже заполнены; сейчас или по
+  автоплану) или на компьютер (видео + текстовый файл + обложка в «Загрузки\SharkyClips»).
+- Простое редактирование (заголовок, начало/конец, субтитры, музыка), библиотека с тремя
+  вкладками, короткий тур. **Режим Pro** сохраняет все инструменты.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- جديد: **الوضع السهل** كشاشة البداية: أضف فيديو أو الصق رابطًا ثم اضغط «ابحث عن المقاطع». يُكتشف
+  نوع المحتوى تلقائيًا، وتظهر الخطوات والوقت المتبقي بكلمات بسيطة؛ يمكنك إغلاق النافذة وسيصلك إشعار.
+- أفضل 6 مقاطع تأتي جاهزة بمقاس 9:16 وتعمل مباشرة على البطاقة.
+- نقرة واحدة إلى YouTube (العنوان والوصف والوسوم والغلاف جاهزة؛ الآن أو بجدولة تلقائية) أو إلى
+  الكمبيوتر (الفيديو + ملف نصي + الغلاف في التنزيلات\SharkyClips).
+- تعديل بسيط (العنوان، البداية/النهاية، الترجمة، الموسيقى)، مكتبة بثلاث علامات تبويب، وجولة قصيرة.
+  **الوضع الاحترافي** يحتفظ بكل الأدوات.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 新增：**简易模式**作为开始界面：放入视频或粘贴链接，点击“查找剪辑”即可。自动识别内容类型，
+  用通俗的步骤和剩余时间显示进度；可以关闭窗口，完成后会通知你。
+- 最好的 6 个剪辑直接做成 9:16，在卡片上就能播放。
+- 一键上传 YouTube（标题、简介、话题标签、封面已填好；立即或自动安排），或一键下载到电脑
+  （视频 + 文本文件 + 封面，保存在“下载\SharkyClips”）。
+- 简单编辑（标题、开始/结束、字幕、音乐）、三个标签页的媒体库、简短导览。**专业模式**保留全部工具。
+
+</details>
+
 ## [1.2.15] - 2026-11-02
 
 ### Added

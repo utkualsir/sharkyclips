@@ -1164,17 +1164,20 @@ export interface GovernorView {
 export class ApiError extends Error {
   hint: string | null;
   status: number;
-  constructor(message: string, hint: string | null, status: number) {
+  /** a machine-readable reason (e.g. "not_connected") when the server sends one */
+  code: string | null;
+  constructor(message: string, hint: string | null, status: number, code: string | null = null) {
     super(message);
     this.hint = hint;
     this.status = status;
+    this.code = code;
   }
 }
 
 // Heavy jobs (GPU / long CPU work). While an update is being built ("under construction"
 // banner), starting one asks first; DevBanner registers the dialog.
 const HEAVY: [string, RegExp][] = [
-  ["POST", /^\/api\/projects$/],
+  ["POST", /^\/api\/(easy\/)?projects$/],
   ["POST", /\/(transcribe|highlights|analyze|render|montage|export)$/],
   ["POST", /\/game\/rescan$/],
   ["PUT", /\/game$/],
@@ -1224,15 +1227,17 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
   if (!res.ok) {
     let msg = res.statusText;
     let hint: string | null = null;
+    let code: string | null = null;
     try {
       const data = await res.json();
       msg = data.error || data.detail || msg;
       hint = data.hint || null;
+      code = typeof data.code === "string" ? data.code : null;
       if (res.status === 401 && data.code === "auth_required") window.dispatchEvent(new Event(AUTH_EVENT));
     } catch {
       /* not JSON */
     }
-    throw new ApiError(msg, hint, res.status);
+    throw new ApiError(msg, hint, res.status, code);
   }
   return res.json() as Promise<T>;
 }
@@ -1555,6 +1560,180 @@ export function uploadFile(
 ): { promise: Promise<Job>; abort: () => void } {
   const xhr = new XMLHttpRequest();
   const q = new URLSearchParams({ filename: file.name, mode, language });
+  const promise = guardHeavy("PUT", "/api/uploads").then(() => new Promise<Job>((resolve, reject) => {
+    xhr.open("PUT", `/api/uploads?${q}`);
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(e.loaded / e.total);
+    xhr.onload = () => {
+      let data: any = null;
+      try {
+        data = JSON.parse(xhr.responseText);
+      } catch {
+        /* ignore */
+      }
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data as Job);
+      else reject(new ApiError(data?.error || xhr.statusText, data?.hint || null, xhr.status));
+    };
+    xhr.onerror = () => reject(new ApiError("Network error", null, 0));
+    xhr.onabort = () => reject(new ApiError("aborted", null, 0));
+    xhr.send(file);
+  }));
+  return { promise, abort: () => xhr.abort() };
+}
+
+// ---------------------------------------------------------------- Easy mode (1.2.16, web/easy.py)
+
+export type UiMode = "easy" | "pro";
+export type UploadWhen = "now" | "auto";
+
+export interface EasySettings {
+  mode: UiMode;
+  tour_done: boolean;
+  upload_when: UploadWhen;
+  open_folder: boolean;
+  downloads: string;
+}
+
+export type EasyStepKey = "download" | "transcribe" | "find" | "titles" | "render";
+
+export interface EasyStep {
+  key: EasyStepKey;
+  status: "done" | "active" | "todo";
+  progress: number | null;
+}
+
+export interface EasyClip {
+  id: string;
+  rank: number;
+  title: string;
+  titles: string[];
+  text: string;
+  viral_score: number | null;
+  viral_label: "very_high" | "high" | "medium" | "low" | null;
+  start: number;
+  end: number;
+  duration: number;
+  found: { start: number; end: number };
+  bounds: { start: number; end: number };
+  prefs: { title: string | null; subtitles: boolean; music: boolean };
+  render: {
+    status: "ready" | "waiting" | "queued" | "rendering" | "error";
+    progress: number | null;
+    stamp: string | null;
+    has_video: boolean;
+    error: string | null;
+  };
+  upload: {
+    status: LibStatus;
+    step: string | null;
+    date: string | null;
+    url: string | null;
+    views: number | null;
+    publish_at: string | null;
+    progress: number | null;
+    error: { message: string; hint: string | null } | null;
+  };
+}
+
+export interface EasyView {
+  id: string;
+  title: string;
+  mode: Mode;
+  mode_auto: boolean;
+  duration: number;
+  easy: boolean;
+  state: "working" | "ready" | "error" | "empty";
+  steps: EasyStep[];
+  eta_seconds: number | null;
+  error: { kind: string; message: string; hint: string | null } | null;
+  clips: EasyClip[];
+  total: number;
+  shown: number;
+  music_available: boolean;
+  youtube: { connected: boolean; lock: "locked" | "unlocked" | "unknown"; channel: { title: string } | null };
+  settings: EasySettings;
+  daily_limit: number;
+}
+
+export interface EasyProjectRow {
+  id: string;
+  title: string;
+  created_at: string | null;
+  duration: number | null;
+  mode: Mode | null;
+  easy: boolean;
+  clips: number;
+  busy: boolean;
+}
+
+export interface EasyUploadResult {
+  status: "uploading" | "scheduled" | "published" | "error";
+  publish_at?: string | null;
+  url?: string | null;
+  today_full?: boolean;
+  error?: string;
+}
+
+export interface EasyDownload {
+  folder: string;
+  files: string[];
+  count?: number;
+  zip?: string | null;
+  opened?: boolean;
+  cover_error?: string | null;
+}
+
+export interface EasyLibRow {
+  key: string;
+  project_id: string;
+  project_title: string;
+  clip_id: string;
+  title: string;
+  duration: number;
+  viral_label: string | null;
+  status: LibStatus;
+  step: string | null;
+  date: string | null;
+  publish_at: string | null;
+  url: string | null;
+  views: number | null;
+  error: { message: string; hint: string | null } | null;
+  job: { kind: string; stage: string | null; progress: number | null } | null;
+}
+
+const EZ = (pid: string, cid: string) => `/api/easy/clips/${encodeURIComponent(pid)}/${encodeURIComponent(cid)}`;
+const EP = (pid: string) => `/api/easy/projects/${encodeURIComponent(pid)}`;
+
+export const easyApi = {
+  settings: () => req<EasySettings>("GET", "/api/easy/settings"),
+  saveSettings: (s: Partial<Omit<EasySettings, "downloads">>) => req<EasySettings>("PUT", "/api/easy/settings", s),
+  create: (body: { url?: string; path?: string; mode: Mode | "auto"; language: string }) =>
+    req<Job>("POST", "/api/easy/projects", body),
+  projects: () => req<EasyProjectRow[]>("GET", "/api/easy/projects"),
+  view: (pid: string) => req<EasyView>("GET", EP(pid)),
+  prepare: (pid: string) => req<EasyView & { queued: string[] }>("POST", `${EP(pid)}/prepare`),
+  more: (pid: string) => req<EasyView>("POST", `${EP(pid)}/more`),
+  setMode: (pid: string, mode: Mode) => req<EasyView>("POST", `${EP(pid)}/mode`, { mode }),
+  retry: (pid: string) => req<EasyView>("POST", `${EP(pid)}/retry`),
+  edit: (pid: string, cid: string, body: { title?: string; subtitles?: boolean; music?: boolean; start?: number; end?: number }) =>
+    req<EasyView>("POST", `${EZ(pid, cid)}/edit`, body),
+  discard: (pid: string, cid: string) => req<EasyView>("POST", `${EZ(pid, cid)}/discard`),
+  upload: (pid: string, cid: string, when: UploadWhen) => req<EasyUploadResult>("POST", `${EZ(pid, cid)}/upload`, { when }),
+  uploadMany: (clips: { project_id: string; clip_id: string }[], when: UploadWhen) =>
+    req<{ results: (EasyUploadResult & { project_id: string; clip_id: string })[] }>("POST", "/api/easy/upload", { clips, when }),
+  download: (pid: string, cid: string) => req<EasyDownload>("POST", `${EZ(pid, cid)}/download`),
+  downloadAll: (pid: string, zip: boolean) => req<EasyDownload>("POST", `${EP(pid)}/download`, { zip }),
+  library: () => req<{ tabs: { ready: EasyLibRow[]; planned: EasyLibRow[]; live: EasyLibRow[] }; youtube: { connected: boolean } }>("GET", "/api/easy/library"),
+};
+
+/** An upload with progress for Easy mode (mode "auto" = detect the content type). */
+export function uploadEasyFile(
+  file: File,
+  mode: Mode | "auto",
+  onProgress: (fraction: number) => void,
+): { promise: Promise<Job>; abort: () => void } {
+  const xhr = new XMLHttpRequest();
+  const q = new URLSearchParams({ filename: file.name, mode, language: "auto", easy: "true" });
   const promise = guardHeavy("PUT", "/api/uploads").then(() => new Promise<Job>((resolve, reject) => {
     xhr.open("PUT", `/api/uploads?${q}`);
     xhr.setRequestHeader("Content-Type", "application/octet-stream");

@@ -20,8 +20,14 @@ from pathlib import Path
 
 PID = "layout-check-stream-0001"
 N_CANDS = 18
-N_CLIPS = 4
+N_CLIPS = 6  # the Easy grid shows the best 6: all rendered, so the check starts no render jobs
 SECONDS = 60.0
+
+# Easy mode's render settings (backend/sharkyclips/easy.py DEFAULT_OPTIONS): the clips count as
+# rendered in both modes.
+OPTIONS = {"layout": "auto", "subtitles": "bold", "hook": True, "hook_flash": False, "subtitle_lang": "",
+           "profanity": "bleep", "profanity_captions": True, "bleep_sound": "classic", "speaker_colors": True,
+           "speaker_names": False, "cuts": "off", "zoom": "off", "music": False, "brand": False, "loop": False}
 
 TITLES = [
     "Takım arkadaşım beni neden bıraktı, son saniyede inanılmaz bir geri dönüş",
@@ -63,7 +69,7 @@ def build(root: Path) -> str:
     version = (Path(__file__).resolve().parents[2] / "VERSION").read_text(encoding="utf-8").strip()
     _json(home / "config.json", {"workspace_dir": str(ws), "onboarding_done": True, "llm_enabled": False,
                                  "publish_auto": False, "ui_language": "en", "ui_motion": "off",
-                                 "seen_version": version})  # no "What's new" popup over the page
+                                 "seen_version": version, "easy_tour_done": True})  # no popups over the page
     _video(d / "source.mp4", "640x360", SECONDS)
     _json(d / "meta.json", {
         "id": PID, "title": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get cut off (DELTA FORCE)",
@@ -103,7 +109,7 @@ def build(root: Path) -> str:
     _json(d / "hype_curve.json", {"version": 1, "project_id": PID, "mode": "gaming", "duration": SECONDS,
                                   "resolution_s": 1, "scale": 100, "combined": curve})
     _json(d / "review.json", {"highlights_created_at": "2026-10-01T00:00:00+00:00", "accepted": ["c01", "c02", "c04"],
-                              "hooks": {}, "options": {"layout": "auto", "subtitles": "clean", "hook": True},
+                              "hooks": {}, "options": OPTIONS,
                               "facecam": {"x": 0.02, "y": 0.6, "w": 0.25, "h": 0.33, "source": "auto", "confidence": 0.9},
                               "facecam_checked": True})
     clips = {}
@@ -112,10 +118,12 @@ def build(root: Path) -> str:
         name = f"{i + 1:02d}_{c['id']}.mp4"
         _video(d / "clips" / name, "180x320", 2.0)
         clips[c["id"]] = {"file": name, "id": c["id"], "rank": c["rank"], "start": c["start"], "end": c["end"],
-                          "duration": c["duration"], "options": {"layout": "auto", "subtitles": "clean"},
+                          "duration": c["duration"], "options": {**OPTIONS, "hook_text": ""},
                           "facecam": {}, "rendered_at": "2026-10-01T10:00:00+00:00",
                           "size_bytes": (d / "clips" / name).stat().st_size, "render_seconds": 3.0, "encoder": "CPU"}
     _json(d / "clips.json", {"version": 1, "clips": clips})
+    _json(d / "easy.json", {"easy": True, "mode_auto": True, "shown": 6, "clips": {},
+                            "notified_for": "2026-10-01T00:00:00+00:00"})
     return PID
 
 

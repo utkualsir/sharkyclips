@@ -14,6 +14,12 @@ import { isActive, useJobs } from "./jobs";
 import { chooseLanguage } from "./meta";
 import Library from "./pages/Library";
 import ProjectPage from "./pages/Project";
+import EasyHome from "./pages/EasyHome";
+import { EasyTour, ProSwitch } from "./components/Easy";
+import { useUiMode } from "./uimode";
+const EasyProject = lazy(() => import("./pages/EasyProject"));
+const EasyLibrary = lazy(() => import("./pages/EasyLibrary"));
+const EasySettings = lazy(() => import("./pages/EasySettings"));
 // Less used screens load when first opened (smaller start-up bundle).
 const BestOf = lazy(() => import("./pages/BestOf"));
 const GameDebug = lazy(() => import("./pages/GameDebug"));
@@ -25,6 +31,66 @@ const Stories = lazy(() => import("./pages/Stories"));
 const Settings = lazy(() => import("./pages/Settings"));
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
+
+/** Easy mode: three places, the Pro switch, language and theme. Nothing else. */
+function EasyTopBar() {
+  const route = useRoute();
+  const { t, lang, setLang } = useI18n();
+  const [theme, , toggle] = useTheme();
+  const { connected } = useJobs();
+  return (
+    <header className="topbar ez-topbar">
+      <a className="brand" href={href.library} aria-label="SharkyClips">
+        <span className="brand-mark">
+          <BrandMark />
+        </span>
+        <span className="brand-name">SharkyClips</span>
+      </a>
+      <nav className="nav">
+        <a href={href.library} aria-current={route.name === "library" || route.name === "project" ? "page" : undefined}>
+          {t("easy.nav_create")}
+        </a>
+        <a href={href.publish()} aria-current={route.name === "publish" ? "page" : undefined}>
+          {t("easy.nav_library")}
+        </a>
+        <a href={href.settings} aria-current={route.name === "settings" ? "page" : undefined}>
+          {t("nav.settings")}
+        </a>
+      </nav>
+      <div className="topbar-spacer" />
+      <div className="topbar-actions">
+        {!connected && (
+          <span className="chip chip-danger" title={t("common.offline")}>
+            <span className="dot" />
+            offline
+          </span>
+        )}
+        <ProSwitch />
+        <select
+          className="select select-sm"
+          style={{ width: "auto" }}
+          value={lang}
+          aria-label={t("lang.label")}
+          onChange={(e) => chooseLanguage(e.target.value, setLang)}
+        >
+          {UI_LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {l.name}
+            </option>
+          ))}
+        </select>
+        <button
+          className="btn btn-ghost icon-btn"
+          onClick={toggle}
+          aria-label={t("theme.toggle")}
+          title={theme === "dark" ? t("theme.light") : t("theme.dark")}
+        >
+          <Icon name={theme === "dark" ? "sun" : "moon"} />
+        </button>
+      </div>
+    </header>
+  );
+}
 
 function TopBar() {
   const route = useRoute();
@@ -74,6 +140,7 @@ function TopBar() {
             offline
           </span>
         )}
+        <ProSwitch />
         <GovernorWidget />
         {running && (
           <a
@@ -150,12 +217,16 @@ function ShutdownBanner() {
 export default function App() {
   const route = useRoute();
   const { state, set } = useAppState();
+  const { mode, settings: ui, update: updateUi } = useUiMode();
+  const easy = mode === "easy";
   const [splashDone, setSplashDone] = useState(false);
   const [onboarded, setOnboarded] = useState(false);
   const [manualWhatsNew, setManualWhatsNew] = useState(false);
   const [whatsNewClosed, setWhatsNewClosed] = useState(false);
   const showOnboarding = splashDone && !onboarded && !!state?.onboarding;
   const autoWhatsNew = splashDone && !showOnboarding && !!state?.whats_new && !whatsNewClosed;
+  const showTour =
+    easy && splashDone && !showOnboarding && !autoWhatsNew && !manualWhatsNew && !!ui && !ui.tour_done && route.name === "library";
   const closeWhatsNew = () => {
     if (autoWhatsNew && state?.whats_new) api.whatsNewSeen(state.whats_new).then(set).catch(() => {});
     setWhatsNewClosed(true);
@@ -163,23 +234,23 @@ export default function App() {
   };
   return (
     <>
-      <TopBar />
+      {easy ? <EasyTopBar /> : <TopBar />}
       <StaleServerBar />
       <DevBanner />
       <YoutubeSignedOutBanner />
       <ShutdownBanner />
-      <div className="page-fx" key={route.name + ("id" in route ? `:${route.id}` : "")}>
+      <div className="page-fx" key={mode + route.name + ("id" in route ? `:${route.id}` : "")}>
         <Suspense fallback={null}>
-        {route.name === "library" && <Library />}
-        {route.name === "settings" && <Settings />}
+        {route.name === "library" && (easy ? <EasyHome /> : <Library />)}
+        {route.name === "settings" && (easy ? <EasySettings /> : <Settings />)}
         {route.name === "studio" && <Studio tab={route.tab} />}
-        {route.name === "project" && <ProjectPage key={route.id} id={route.id} />}
+        {route.name === "project" && (easy ? <EasyProject key={route.id} id={route.id} /> : <ProjectPage key={route.id} id={route.id} />)}
         {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
         {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
         {route.name === "stories" && <Stories key={route.id} id={route.id} />}
         {route.name === "queue" && <Queue />}
         {route.name === "stats" && <Stats />}
-        {route.name === "publish" && <ClipLibrary view={route.view} />}
+        {route.name === "publish" && (easy ? <EasyLibrary /> : <ClipLibrary view={route.view} />)}
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />
@@ -187,6 +258,7 @@ export default function App() {
         <WhatsNew version={state.whats_new ?? state.version} onClose={closeWhatsNew} />
       )}
       {showOnboarding && <Onboarding onDone={() => setOnboarded(true)} />}
+      {showTour && <EasyTour onDone={() => updateUi({ tour_done: true })} />}
       {!splashDone && <Launch onDone={() => setSplashDone(true)} />}
     </>
   );

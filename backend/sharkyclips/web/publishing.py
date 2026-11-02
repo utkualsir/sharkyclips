@@ -417,6 +417,10 @@ def next_step(project: Project, cand: dict, item: dict) -> tuple[str, dict]:
 
     key = P.key_of(project.id, cand["id"])
     meta = item["meta"]
+    if meta.get("source") == "clip":  # Easy mode: the rendered 9:16 clip itself
+        from .easy import clip_step
+
+        return clip_step(project, cand)
     prep = dict(item.get("prep") or {})
     base = _prep_sig(project, cand, meta, "base")
     if prep.get("ab_for") == base:  # the A/B variant is chosen once (Thompson sampling is random)
@@ -582,6 +586,8 @@ def upload_body(project: Project, cand: dict, item: dict, source: str, ab: dict 
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(img, dest)
         body["thumbnail"] = "custom"
+    elif source == "clip" and cv.get("kind") not in (None, "none"):
+        body["thumbnail"] = "cover"  # Easy mode: the 9:16 cover, made in the upload job
     else:
         body["thumbnail"] = "none"
     return body
@@ -731,6 +737,8 @@ class Scheduler:
             project, cand = it.pop("_project"), it.pop("_cand")
             try:
                 step, info = next_step(project, cand, it)
+                if step == "wait":  # Easy clip still rendering
+                    continue
                 if step == "export" and not gpu_busy:
                     submit_export_for(key, info)
                     gpu_busy = True
