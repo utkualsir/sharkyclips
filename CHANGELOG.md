@@ -7,6 +7,133 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.15] - 2026-11-02
+
+### Added
+- **Hear every speaker.** The new button in the project's Voices section separates the voices
+  from the game sound, finds who speaks when, and transcribes your friends too, even when they're quiet on Discord. Each
+  voice gets its own colour in the transcript and the captions. You can name the voices, and
+  merge two that are really the same person.
+- **Multi-track recordings** (OBS: mic, Discord, game): label the tracks once and every voice
+  track is transcribed on its own. The labels are remembered for your next video.
+- **Swear review before rendering:** every swear from every speaker, with who said it, the time,
+  a play button and a bleep switch. Words that might be swears are marked "maybe" for you to
+  check. Bleep anything by hand: select words in the transcript (or press B), or drag across
+  the new waveform.
+- Swears are found more reliably: words Whisper censored itself ("s**yim"), misheard and
+  differently spelled swears, and a second listen on the separated voices.
+- **Bleep sounds:** classic beep, a soft "boop", mute, or your own sound file. The bleep now
+  fades in and out and matches the speaker's loudness.
+- **Captions:** new Karaoke and Speaker-coloured styles, optional name tags, at most two lines
+  that never split a name, a number and its word, or "sen de". The local AI can proofread the
+  captions (spelling, Turkish letters, capitals, punctuation). Censored words show as "a****"
+  for every speaker.
+
+### Fixed
+- **Facecam detection** picked a face inside the game (for example a portrait in the League of
+  Legends HUD) instead of your webcam. It now looks for a fixed webcam rectangle with a live
+  face across the whole video. When it isn't sure, it shows the options on a frame so you can
+  pick one with a click. The position is remembered per channel and resolution for new projects
+  ("Detect again" starts fresh).
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Eklendi
+- **Herkesi duy.** Projenin Sesler bölümündeki yeni düğme sesleri oyun sesinden ayırır, kimin ne
+  zaman konuştuğunu bulur ve Discord'da kısık kalan arkadaşlarının sözlerini de yazıya döker. Her ses
+  transkriptte ve altyazıda kendi rengini alır. Seslere isim verebilir, aynı kişiye ait iki sesi
+  birleştirebilirsin.
+- **Çok kanallı kayıtlar** (OBS: mikrofon, Discord, oyun): kanalları bir kez etiketle, her ses
+  kanalı ayrı yazıya dökülür. Etiketler bir sonraki videon için hatırlanır.
+- **Oluşturmadan önce küfür listesi:** her konuşmacının her küfrü; kimin söylediği, zamanı,
+  oynat düğmesi ve bip anahtarıyla. Küfür olabilecek kelimeler kontrol etmen için "belki"
+  olarak işaretlenir. İstediğin yeri elle bip'le: transkriptte kelimeleri seç (ya da B'ye bas)
+  veya yeni ses dalgası üzerinde sürükle.
+- Küfürler daha güvenilir bulunuyor: Whisper'ın kendi sansürlediği kelimeler ("s**yim"), yanlış
+  duyulan ya da farklı yazılan küfürler ve ayrılmış seslerde ikinci bir dinleme.
+- **Bip sesleri:** klasik bip, yumuşak "bup", sessize alma ya da kendi ses dosyan. Bip artık
+  yumuşakça girip çıkıyor ve konuşanın ses seviyesine uyuyor.
+- **Altyazılar:** yeni Karaoke ve Konuşmacı renkli stiller, isteğe bağlı isim etiketleri; en
+  fazla iki satır, isimleri, sayıyı ve kelimesini ya da "sen de"yi asla bölmüyor. Yerel yapay
+  zekâ altyazıları düzeltebiliyor (yazım, Türkçe harfler, büyük harf, noktalama). Sansürlü
+  kelimeler her konuşmacı için "a****" olarak görünüyor.
+
+### Düzeltildi
+- **Kamera tespiti** web kameran yerine oyunun içindeki bir yüzü (örneğin League of Legends
+  arayüzündeki bir portreyi) seçiyordu. Artık tüm videoda canlı bir yüz içeren sabit bir kamera
+  dikdörtgeni arıyor. Emin değilse seçenekleri bir karede gösteriyor, tek tıkla seçiyorsun. Konum
+  kanal ve çözünürlük başına yeni projeler için hatırlanıyor ("Tekrar algıla" baştan başlar).
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Neu: „Alle Sprecher hören“ trennt Stimmen vom Spielton und schreibt auch deine Freunde mit,
+  jede Stimme in ihrer eigenen Farbe. Mehrspur-Aufnahmen (Mikro, Discord, Spiel) werden pro Spur
+  erkannt (Beschriftung wird gemerkt).
+- Flüchliste vor dem Rendern mit Sprecher, Zeit, Abspielen und Piep-Schalter; manuell piepen per
+  Wortauswahl oder Wellenform. Pieptöne: klassisch, sanftes „Bup“, stumm oder eigener Ton.
+- Untertitel: Karaoke- und Sprecherfarben-Stil, Namensschilder, bessere Zeilenumbrüche,
+  KI-Korrektur.
+- Behoben: Die Facecam-Erkennung wählte ein Gesicht im Spiel statt deiner Webcam. Bei Unsicherheit
+  wählst du per Klick; die Position wird pro Kanal und Auflösung gemerkt.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Új: a „Minden beszélő” leválasztja a hangokat a játékhangról, és a barátaid szavait is leírja,
+  minden hang saját színnel. Többsávos felvételeknél (mikrofon, Discord, játék) sávonként dolgozik
+  (a címkéket megjegyzi).
+- Káromkodáslista renderelés előtt beszélővel, idővel, lejátszással és sípolás-kapcsolóval; kézi
+  sípolás szókijelöléssel vagy a hullámformán. Hangok: klasszikus, lágy „bup”, némítás vagy saját.
+- Feliratok: karaoke és beszélőszínes stílus, névcímkék, jobb sortörés, MI-javítás.
+- Javítva: a facecam-felismerés a játékban lévő arcot választotta a webkamera helyett. Ha
+  bizonytalan, egy kattintással választhatsz; a helyét csatornánként és felbontásonként megjegyzi.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Новое: «Услышать всех» отделяет голоса от звука игры и расшифровывает и твоих друзей, у каждого
+  голоса свой цвет. Многодорожечные записи (микрофон, Discord, игра) обрабатываются по дорожкам
+  (метки запоминаются).
+- Список мата перед рендером: кто сказал, когда, кнопка воспроизведения и переключатель пика;
+  пикать вручную можно выделением слов или по звуковой волне. Звуки: классический, мягкий «буп»,
+  тишина или свой файл.
+- Субтитры: стили «караоке» и «цвета говорящих», подписи с именами, переносы лучше, вычитка ИИ.
+- Исправлено: поиск вебки выбирал лицо в игре вместо камеры. Если не уверен — выбираешь одним
+  кликом; положение запоминается для канала и разрешения.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- جديد: «اسمع الجميع» يفصل الأصوات عن صوت اللعبة ويفرّغ كلام أصدقائك أيضًا، ولكل صوت لونه.
+  التسجيلات متعددة المسارات (ميكروفون، ديسكورد، لعبة) تُعالج لكل مسار (وتُحفظ التسميات).
+- قائمة الشتائم قبل الإنشاء مع المتحدث والوقت وزر التشغيل ومفتاح الحجب؛ حجب يدوي بتحديد الكلمات أو
+  على الموجة الصوتية. أصوات: صفير كلاسيكي، «بوب» ناعم، كتم أو صوتك الخاص.
+- الترجمة: نمطا كاريوكي وألوان المتحدثين، أسماء المتحدثين، تقسيم أسطر أفضل، تدقيق بالذكاء الاصطناعي.
+- إصلاح: كان كشف الكاميرا يختار وجهًا داخل اللعبة بدل كاميرتك. عند الشك تختار بنقرة، ويُحفظ الموضع
+  لكل قناة ودقة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 新增：“听清每个人”把人声与游戏声分开，也转录你朋友说的话，每个声音有自己的颜色。多音轨录制
+  （麦克风、Discord、游戏）按音轨处理（标签会被记住）。
+- 渲染前的脏话列表：谁说的、时间、播放按钮和消音开关；可选中文字或在波形上拖动手动消音。消音声音：
+  经典哔声、柔和“噗”声、静音或自定义。
+- 字幕：卡拉OK 与说话人配色样式、姓名标签、更好的换行、AI 校对。
+- 修复：摄像头检测会选中游戏里的人脸而不是你的摄像头。不确定时一键选择；位置按频道和分辨率记住。
+
+</details>
+
 ## [1.2.14] - 2026-11-01
 
 ### Fixed

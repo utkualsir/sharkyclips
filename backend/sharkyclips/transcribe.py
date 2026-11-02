@@ -344,6 +344,57 @@ def _verify_gpu_once(hw: HardwareInfo, plan: BackendPlan) -> BackendPlan:
         "Run `python cli.py doctor` - it can repair the GPU libraries automatically."))
 
 
+def load_whisper(model: str = "auto"):
+    """A Whisper engine picked like transcribe_project does (hardware, GPU check, governor's
+    VRAM budget, LLM unloaded first). The caller releases it with memory.release_current()."""
+    hw = hardware.detect_hardware()
+    cfg = config.load()
+    cuda_ok = bool(hw.best_nvidia) and not cfg.get("force_cpu") and hardware.cuda_device_count() > 0
+    plan = hardware.choose_plan(hw, model, cuda_ok=cuda_ok, force_cpu=bool(cfg.get("force_cpu")),
+                                force_cpu_reason=cfg.get("force_cpu_reason"))
+    if plan.device == "cuda":
+        plan = _verify_gpu_once(hw, plan)
+    if governor.get() is not None:
+        from .llm import unload_all
+
+        unload_all()
+        governor.get().tick()
+        plan = fit_to_budget(plan, hw, governor.vram_budget_mb(), governor.cpu_threads())
+    engine, _i = _load_from(fallback_chain(plan, hw), 0)
+    return engine
+
+
+def transcribe_short(engine, samples: np.ndarray, language: str | None, hotwords: str | None = None,
+                     vad: bool = False) -> list[dict]:
+    """Segments of a short piece (a speaker turn, a word window): no VAD, no batching, so quiet
+    speech isn't thrown away. hotwords bias the decoder (faster-whisper only)."""
+    if isinstance(engine, MlxWhisperEngine):
+        import mlx_whisper
+
+        res = mlx_whisper.transcribe(samples, path_or_hf_repo=engine.repo, language=language,
+                                     word_timestamps=True, condition_on_previous_text=False, verbose=None,
+                                     initial_prompt=hotwords)
+        segs = res.get("segments", [])
+        return [{"start": s["start"], "end": s["end"], "text": s["text"].strip(),
+                 "avg_logprob": s.get("avg_logprob", 0.0), "no_speech_prob": s.get("no_speech_prob", 0.0),
+                 "compression_ratio": s.get("compression_ratio", 1.0),
+                 "words": [{"start": w["start"], "end": w["end"], "word": w["word"],
+                            "probability": w.get("probability", 0.0)} for w in s.get("words", [])]}
+                for s in segs]
+    model = engine.model
+    segments, _info = model.transcribe(samples, language=language, task="transcribe", word_timestamps=True,
+                                       vad_filter=vad, beam_size=5, condition_on_previous_text=False,
+                                       hotwords=hotwords or None, no_speech_threshold=0.75)
+    out = []
+    for seg in segments:
+        out.append({"start": seg.start, "end": seg.end, "text": seg.text.strip(),
+                    "avg_logprob": seg.avg_logprob, "no_speech_prob": seg.no_speech_prob,
+                    "compression_ratio": seg.compression_ratio,
+                    "words": [{"start": w.start, "end": w.end, "word": w.word, "probability": w.probability}
+                              for w in (seg.words or [])]})
+    return out
+
+
 def transcribe_project(project: Project, lang: str = "auto", model: str = "auto",
                        force: bool = False) -> dict:
     if lang != languages.AUTO:

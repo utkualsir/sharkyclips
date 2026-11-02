@@ -23,7 +23,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response, StreamingRes
 from fastapi.staticfiles import StaticFiles
 
 from .. import __version__, config, governor, languages, startup
-from ..clips import LAYOUTS, SUBTITLE_STYLES, ClipOptions, Facecam, clip_words, first_sentence, render_clip
+from ..clips import LAYOUTS, SUBTITLE_STYLES, ClipOptions, Facecam, first_sentence, render_clip
 from ..errors import SharkyClipsError, require_tool
 from ..highlights.modes import MODES as MODE_PRESETS
 from ..project import MODES, Project, get_project, list_projects, read_json, slugify
@@ -163,17 +163,19 @@ def submit_titles(project_id: str, cid: str) -> Job:
     return jobs.submit("titles", "gpu", project_id, {"clip_id": cid}, run, front=True)
 
 
-def submit_facecam(project_id: str) -> Job:
+def submit_facecam(project_id: str, fresh: bool = False) -> Job:
+    """Facecam: the layout remembered for this channel + resolution (checked on a few frames),
+    else a full detection. fresh=True ("Detect again") ignores the remembered layout."""
     def run(job: Job):
-        from ..facecam import detect_facecam
+        from ..facecam import detect_for_project
 
         project = get_project(project_id)
         jobs.update(job, stage="detecting_facecam", progress=None)
-        fc = detect_facecam(project.source_path, float(project.load_meta().get("duration") or 0))
-        state.save_review(project, {"facecam": fc.to_dict() if fc else None})
-        return {"facecam": fc.to_dict() if fc else None}
+        res = detect_for_project(project, use_memory=not fresh)
+        state.save_review(project, {"facecam": res["facecam"]})
+        return res
 
-    return jobs.submit("facecam", "io", project_id, {}, run)
+    return jobs.submit("facecam", "io", project_id, {"fresh": fresh}, run)
 
 
 def submit_chat(project_id: str, force: bool = False) -> Job:
@@ -703,7 +705,12 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
     if kind == "titles":
         return submit_titles(pid, p["clip_id"])
     if kind == "facecam":
-        return submit_facecam(pid)
+        return submit_facecam(pid, bool(p.get("fresh")))
+    if kind in ("voices", "proofread"):
+        from . import voices_api
+
+        return (voices_api.submit_voices(pid, bool(p.get("whole"))) if kind == "voices"
+                else voices_api.submit_proofread(pid, bool(p.get("force"))))
     if kind == "proxy":
         return submit_proxy(pid)
     if kind == "chat":
@@ -1438,8 +1445,11 @@ def api_words(project_id: str, start: float, end: float) -> list[dict]:
         return []
     if end - start > 900:
         raise HTTPException(400, "Range too long (max 15 minutes)")
-    return [{"start": round(w["start"] + start, 3), "end": round(w["end"] + start, 3), "word": w["word"]}
-            for w in clip_words(read_json(project.transcript_path), start, end)]
+    from ..edit.plan import transcript_words
+
+    found, _lang = transcript_words(project, start, end)  # voice-pass words (with speakers) where it ran
+    return [{"start": round(w["start"], 3), "end": round(w["end"], 3), "word": w["word"],
+             **({"spk": w["spk"]} if w.get("spk") else {})} for w in found]
 
 
 @app.post("/api/projects/{project_id}/transcribe")
@@ -1573,8 +1583,8 @@ def api_review(project_id: str, body: dict) -> dict:
 
 
 @app.post("/api/projects/{project_id}/facecam/detect")
-def api_facecam_detect(project_id: str) -> dict:
-    return submit_facecam(_project(project_id).id).to_dict()
+def api_facecam_detect(project_id: str, body: dict | None = None) -> dict:
+    return submit_facecam(_project(project_id).id, fresh=bool((body or {}).get("fresh"))).to_dict()
 
 
 @app.post("/api/projects/{project_id}/render")
@@ -2187,11 +2197,13 @@ def api_update_restart(request: Request) -> dict:
 
 
 from .studio import router as _studio_router  # noqa: E402 - editing tools API (1.2.4)
+from .voices_api import router as _voices_router  # noqa: E402 - voices, bleeps, facecam picker (1.2.15)
 from .retention import router as _retention_router  # noqa: E402 - stories, A/B hooks, loops (1.2.5)
 from .publishing import router as _publishing_router  # noqa: E402 - Library + scheduled publishing (1.2.7)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
+app.include_router(_voices_router)
 app.include_router(_retention_router)
 app.include_router(_publishing_router)
 

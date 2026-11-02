@@ -4,7 +4,8 @@
 
 - cuts: equal-power crossfades (40 ms). Each side of a join borrows 20 ms from the cut
   part, so the sound stays exactly as long as the picture (frame-accurate cut points).
-- swear words: a 1 kHz bleep at the speech's level, or silence (mute).
+- swear words: a bleep (classic 1 kHz, soft boop or your own sound) 3 dB under the voice,
+  or silence (mute), with 12 ms fades.
 - music: starts at the song's strongest part, ducks under speech (word timestamps,
   smooth attack / release) and comes back in pauses, fades out at the end. With music
   the whole mix is normalized to -14 LUFS with peaks under -1 dBFS.
@@ -92,29 +93,82 @@ def cut_and_join(audio: np.ndarray, t0: float, plan: EditPlan) -> np.ndarray:
     return out
 
 
-def apply_bleeps(y: np.ndarray, ranges: list[tuple[float, float]], mode: str) -> np.ndarray:
+BLEEP_FADE = 0.012
+BLEEP_SOUNDS = ("classic", "boop", "custom")
+
+
+def custom_bleep_path() -> Path:
+    from .. import config
+
+    return config.config_dir() / "bleep" / "custom.wav"
+
+
+def _bleep_tone(n: int, sound: str, custom: np.ndarray | None) -> np.ndarray:
+    """A unit-RMS bleep of n samples (mono)."""
+    tt = np.arange(n, dtype=np.float32) / SR
+    if sound == "custom" and custom is not None and len(custom) > SR // 50:
+        reps = int(np.ceil(n / len(custom)))
+        tone = np.tile(custom, reps)[:n].astype(np.float32)
+    elif sound == "boop":
+        # A soft "boop": a low sine gliding down a little, with a warm second harmonic.
+        f = 520.0 - 140.0 * np.minimum(1.0, tt / max(0.12, n / SR))
+        phase = 2 * np.pi * np.cumsum(f) / SR
+        tone = (np.sin(phase) + 0.25 * np.sin(2 * phase)).astype(np.float32)
+    else:
+        tone = np.sin(2 * np.pi * BLEEP_HZ * tt).astype(np.float32)
+    rms = float(np.sqrt(np.mean(tone ** 2) + 1e-12))
+    return tone / rms
+
+
+def _voice_rms(y: np.ndarray, ia: int, ib: int) -> float:
+    """How loud the speaker is: the swear itself, or the speech around it when that's louder."""
+    seg = y[ia:ib]
+    own = float(np.sqrt(np.mean(seg ** 2) + 1e-12))
+    ctx = y[max(0, ia - _n(0.6)):min(len(y), ib + _n(0.6))]
+    if len(ctx) > _n(0.05):
+        hop = _n(0.05)
+        k = len(ctx) // hop
+        fr = np.sqrt(np.mean(ctx[:k * hop].reshape(k, hop, -1) ** 2, axis=(1, 2)))
+        own = max(own, float(np.percentile(fr, 75)) * 0.9)
+    return own
+
+
+def apply_bleeps(y: np.ndarray, ranges: list[tuple[float, float]], mode: str, sound: str = "classic",
+                 custom: np.ndarray | None = None) -> np.ndarray:
+    """Bleep (or mute) the ranges with short fades. The bleep's loudness follows the voice
+    (3 dB under it) so it never jumps out of a quiet clip or drowns in a loud one."""
     if mode not in ("bleep", "mute"):
         return y
-    ramp = _n(0.006)
+    fade = _n(BLEEP_FADE)
     for a, b in ranges:
         ia, ib = max(0, _n(a)), min(len(y), _n(b))
         if ib - ia < 2:
             continue
         seg = y[ia:ib]
         env = np.ones(ib - ia, np.float32)
-        r = min(ramp, (ib - ia) // 2)
+        r = min(fade, (ib - ia) // 2)
         if r:
-            env[:r] = _ramp(r)
-            env[-r:] = _ramp(r)[::-1]
+            cos = (0.5 - 0.5 * np.cos(np.linspace(0, np.pi, r))).astype(np.float32)
+            env[:r] = cos
+            env[-r:] = cos[::-1]
         if mode == "mute":
             y[ia:ib] = seg * (1 - env)[:, None]
             continue
-        rms = float(np.sqrt(np.mean(seg ** 2) + 1e-12))
-        amp = min(0.32, max(0.06, rms * 1.6))
-        tt = np.arange(ib - ia, dtype=np.float32) / SR
-        tone = (amp * np.sin(2 * np.pi * BLEEP_HZ * tt)).astype(np.float32)
+        target = min(0.25, max(0.02, _voice_rms(y, ia, ib) * 0.71))
+        tone = _bleep_tone(ib - ia, sound, custom) * target
         y[ia:ib] = seg * (1 - env)[:, None] + (tone * env)[:, None]
     return y
+
+
+def load_custom_bleep() -> np.ndarray | None:
+    p = custom_bleep_path()
+    if not p.is_file():
+        return None
+    try:
+        x = decode(p, 0.0, 3.0, sr=SR, channels=1)
+        return x[:, 0] if x.ndim == 2 else x
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def duck_envelope(n: int, speech: list[tuple[float, float]], duck_db: float,
@@ -186,7 +240,8 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
             cont = src[b: b + _n(seam.audio_xfade)]
     else:
         main = np.zeros((_n(plan.out_duration), 2), np.float32)
-    main = apply_bleeps(main, plan.bleeps, plan.bleep_mode)
+    main = apply_bleeps(main, plan.bleeps, plan.bleep_mode, plan.bleep_sound,
+                         load_custom_bleep() if plan.bleep_sound == "custom" else None)
     if seam is not None:
         main, end_gain = loop_mod.meet_levels(main, SR)
         if cont is not None and end_gain:

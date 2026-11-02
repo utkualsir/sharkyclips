@@ -126,16 +126,19 @@ def clean_edit(e: dict | None) -> dict | None:
                 pass
     if "start" in out and "end" in out and out["end"] - out["start"] < 1.0:
         out.pop("end")
-    dels = []
-    for r in e.get("deleted") or []:
-        try:
-            a, b = float(r[0]), float(r[1])
-        except (TypeError, ValueError, IndexError):
-            continue
-        if b > a:
-            dels.append([round(a, 3), round(b, 3)])
-    if dels:
-        out["deleted"] = sorted(dels)[:2000]
+    # deleted: cut out (transcript editor); bleep / unbleep: the swear review list and
+    # manual bleeps (source-time ranges)
+    for key in ("deleted", "bleep", "unbleep"):
+        rs = []
+        for r in e.get(key) or []:
+            try:
+                a, b = float(r[0]), float(r[1])
+            except (TypeError, ValueError, IndexError):
+                continue
+            if b > a:
+                rs.append([round(a, 3), round(b, 3)])
+        if rs:
+            out[key] = sorted(rs)[:2000]
     return out or None
 
 

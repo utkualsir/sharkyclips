@@ -36,10 +36,48 @@ export function zoomAt(t: number, pulses: ZoomPulse[], target: "scene" | "cam", 
   return 1;
 }
 
-/** Source-time ranges that are bleeped / muted (swear words that survive the cuts). */
+/** Source-time ranges that are bleeped / muted (the review list's "on" items, every speaker). */
 export function bleepRanges(plan: EditPlanView | null): [number, number][] {
   if (!plan || plan.bleep_mode === "off") return [];
-  return plan.words.filter((w) => w.bleep && !w.removed).map((w) => [w.start - 0.03, w.end + 0.03] as [number, number]);
+  const removed = plan.removed ?? [];
+  return (plan.swears ?? [])
+    .filter((s) => s.bleep && !removed.some((r) => (s.start + s.end) / 2 >= r.a && (s.start + s.end) / 2 <= r.b))
+    .map((s) => [s.start - 0.03, s.end + 0.03] as [number, number]);
+}
+
+export function mergeRanges(r: [number, number][]): [number, number][] {
+  const out: [number, number][] = [];
+  for (const [a, b] of [...r].sort((x, y) => x[0] - y[0])) {
+    if (b <= a) continue;
+    if (out.length && a <= out[out.length - 1][1] + 0.001) out[out.length - 1][1] = Math.max(out[out.length - 1][1], b);
+    else out.push([a, b]);
+  }
+  return out.map(([a, b]) => [Math.round(a * 1000) / 1000, Math.round(b * 1000) / 1000]);
+}
+
+export function subtractRange(r: [number, number][], a: number, b: number): [number, number][] {
+  const out: [number, number][] = [];
+  for (const [x, y] of r) {
+    if (y <= a || x >= b) out.push([x, y]);
+    else {
+      if (x < a) out.push([x, a]);
+      if (y > b) out.push([b, y]);
+    }
+  }
+  return out.filter(([x, y]) => y - x > 0.01);
+}
+
+/** "Me" / "Friend 2" / the name the user gave a voice. */
+export function speakerLabel(
+  spk: string,
+  names: Record<string, string> | undefined,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): string {
+  const custom = names?.[spk];
+  if (custom) return custom;
+  if (spk === "me") return t("spk.me");
+  const n = Number(spk.replace(/^f/, "")) || 1;
+  return n === 1 ? t("spk.friend") : t("spk.friend_n", { n });
 }
 
 /** Fetch the edit plan of the selected clip (debounced; stale answers ignored). */

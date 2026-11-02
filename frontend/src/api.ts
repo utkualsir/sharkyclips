@@ -2,7 +2,8 @@
 
 export type Mode = "gaming" | "study" | "music";
 export type Layout = "auto" | "split" | "fit" | "crop";
-export type SubtitleStyle = "bold" | "clean" | "minimal" | "none";
+export type SubtitleStyle = "bold" | "karaoke" | "speakers" | "clean" | "minimal" | "none";
+export type BleepSound = "classic" | "boop" | "custom";
 export type JobStatus = "queued" | "running" | "done" | "error" | "cancelled";
 
 export interface Language {
@@ -29,7 +30,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -274,6 +275,11 @@ export interface ClipOptions {
   subtitle_lang: string;
   profanity: ProfanityMode;
   profanity_captions: boolean;
+  /** bleep sound (profanity "mute" = silence instead) */
+  bleep_sound: BleepSound;
+  /** captions: one colour per speaker / "Me:" name tags (after "Hear every speaker") */
+  speaker_colors: boolean;
+  speaker_names: boolean;
   cuts: CutLevel;
   zoom: ZoomLevel;
   music: boolean;
@@ -316,12 +322,84 @@ export interface ClipEdit {
   start?: number;
   end?: number;
   deleted?: [number, number][];
+  /** source-time ranges bleeped by hand / swears switched off in the review list */
+  bleep?: [number, number][];
+  unbleep?: [number, number][];
+}
+
+/** One detected / "maybe" / manual swear of a clip (edit/swears.py), source times. */
+export interface SwearItem {
+  i: number | null;
+  start: number;
+  end: number;
+  word: string;
+  spk: string | null;
+  status: "sure" | "maybe" | "manual";
+  why: string;
+  score: number;
+  bleep: boolean;
+}
+
+export interface VoiceTrack {
+  pos: number;
+  title: string;
+  codec: string | null;
+  channels: number | null;
+  label: TrackLabel;
+}
+export type TrackLabel = "me" | "friends" | "mixed" | "game" | "music" | "ignore";
+
+export interface VoicesView {
+  tracks: VoiceTrack[];
+  labels_from: "project" | "remembered" | "guess";
+  labels: TrackLabel[];
+  models: { sherpa: boolean; models: Record<string, { ready: boolean; size_mb: number }> };
+  done: boolean;
+  mode?: "tracks" | "separate";
+  whole?: boolean;
+  ranges?: [number, number][];
+  speakers?: Record<string, { seconds: number }>;
+  names?: Record<string, string>;
+  separated?: boolean;
+  diarized?: boolean;
+  words?: number;
+  hints?: number;
+  created_at?: string;
+  seconds?: number;
+  stale?: boolean;
+}
+
+export interface FacecamCandidate {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  confidence: number;
+  presence: number;
+  liveness: number;
+  border: number;
+  face: { x: number; y: number; w: number; h: number };
+}
+
+export interface FacecamAnalysis {
+  candidates: FacecamCandidate[];
+  ask: boolean;
+  confidence: number | null;
+  frame: boolean;
+  frame_time: number | null;
+  detector: string | null;
+  created_at: string | null;
+  layout: { channel: string; width: number; height: number; game: string; confirmed: boolean;
+    box: { x: number; y: number; w: number; h: number } } | null;
+  low: number;
 }
 
 export interface PlanWord extends Word {
   removed?: boolean;
   bleep?: boolean;
   filler?: boolean;
+  /** a "maybe" swear that is not bleeped */
+  maybe?: boolean;
 }
 
 export interface ZoomPulse {
@@ -353,7 +431,11 @@ export interface EditPlanView {
   duration: number;
   words: PlanWord[];
   bleep_mode: "bleep" | "mute" | "off";
+  bleep_sound: BleepSound;
   bleeps: [number, number][];
+  swears: SwearItem[];
+  /** speaker ids of the voice pass -> custom name ("" = default label) */
+  speakers: Record<string, string>;
   mask_captions: boolean;
   zoom_level: number;
   pulses: ZoomPulse[];
@@ -449,7 +531,7 @@ export interface Facecam {
   y: number;
   w: number;
   h: number;
-  source?: "auto" | "manual";
+  source?: "auto" | "manual" | "remembered";
   confidence?: number | null;
 }
 
@@ -575,6 +657,8 @@ export interface Word {
   start: number;
   end: number;
   word: string;
+  /** speaker id from "Hear every speaker": "me", "f1", "f2"... */
+  spk?: string;
 }
 
 export interface Settings {
@@ -1237,7 +1321,35 @@ export const api = {
   probeGame: (id: string, t: number, game?: GameId) => req<GameProbe>("POST", `${P(id)}/game/probe`, { t, game }),
   saveGameRegion: (game: GameId, region: string, box: [number, number, number, number] | null) =>
     req<Record<string, GameRegion>>("PUT", "/api/game/regions", { game, region, box }),
-  detectFacecam: (id: string) => req<Job>("POST", `${P(id)}/facecam/detect`),
+  detectFacecam: (id: string, fresh = false) => req<Job>("POST", `${P(id)}/facecam/detect`, { fresh }),
+  facecamAnalysis: (id: string) => req<FacecamAnalysis>("GET", `${P(id)}/facecam/analysis`),
+  setFacecam: (id: string, facecam: Facecam | null, opts: { remember?: boolean; forget?: boolean } = {}) =>
+    req<Review>("PUT", `${P(id)}/facecam`, { facecam, ...opts }),
+  voices: (id: string) => req<VoicesView>("GET", `${P(id)}/voices`),
+  runVoices: (id: string, whole = false) => req<Job>("POST", `${P(id)}/voices/run`, { whole }),
+  setTrackLabels: (id: string, labels: TrackLabel[]) => req<VoicesView>("PUT", `${P(id)}/voices/tracks`, { labels }),
+  setSpeakerNames: (id: string, names: Record<string, string>) =>
+    req<VoicesView>("PUT", `${P(id)}/voices/names`, { names }),
+  mergeSpeakers: (id: string, from: string, into: string) =>
+    req<VoicesView>("PUT", `${P(id)}/voices/merge`, { from, into }),
+  proofread: (id: string, force = false) => req<Job>("POST", `${P(id)}/proofread`, { force }),
+  peaks: (id: string, start: number, end: number, n = 400) =>
+    req<{ start: number; end: number; peaks: number[] }>("GET", `${P(id)}/peaks?start=${start}&end=${end}&n=${n}`),
+  bleepState: () => req<{ custom: boolean; size: number }>("GET", "/api/bleep"),
+  deleteBleep: () => req<{ custom: boolean; size: number }>("DELETE", "/api/bleep/custom"),
+  uploadBleep: async (file: File) => {
+    const res = await fetch("/api/bleep/custom", { method: "PUT", body: file });
+    if (!res.ok) {
+      let msg = res.statusText;
+      try {
+        msg = (await res.json()).error || msg;
+      } catch {
+        /* not JSON */
+      }
+      throw new ApiError(msg, null, res.status);
+    }
+    return (await res.json()) as { custom: boolean; size: number };
+  },
   render: (id: string, clip_ids: string[], options: ClipOptions, hooks: Record<string, string>) =>
     req<{ jobs: Job[] }>("POST", `${P(id)}/render`, { clip_ids, options, hooks }),
   regeneratePublish: (id: string, cid: string) => req<Job>("POST", `${P(id)}/candidates/${cid}/publish`),
@@ -1426,6 +1538,8 @@ export const urls = {
   hookVariant: (id: string, cid: string, label: string, stamp: string, download = false) =>
     `${P(id)}/clips/${cid}/ab/${label}/video?v=${encodeURIComponent(stamp)}${download ? "&download=true" : ""}`,
   musicAudio: (name: string) => `/api/music/${encodeURIComponent(name)}/audio`,
+  bleepPreview: (sound: BleepSound, v = 0) => `/api/bleep/preview?sound=${sound}&v=${v}`,
+  facecamFrame: (id: string, v = "") => `${P(id)}/facecam/frame.jpg?v=${encodeURIComponent(v)}`,
   brandLogo: (pid: string, rev = 0) => `/api/brand/${encodeURIComponent(pid)}/logo?v=${rev}`,
   cover: (pid: string, cid: string, kind: CoverKind, frame: "wide" | "tall", text: string, lang: string | null, v = 0) =>
     `${L(pid, cid)}/cover.jpg?${new URLSearchParams({ kind, frame, text, ...(lang ? { lang } : {}), v: String(v) })}`,

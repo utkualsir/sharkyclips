@@ -33,7 +33,7 @@ from .render import Encoder, RenderResult, run_ffmpeg
 OUT_W, OUT_H = 1080, 1920
 SPLIT_TOP = 768  # facecam height in the split layout (40%)
 LAYOUTS = ("auto", "split", "fit", "crop")
-SUBTITLE_STYLES = ("bold", "clean", "minimal", "none")
+SUBTITLE_STYLES = ("bold", "karaoke", "speakers", "clean", "minimal", "none")
 NO_SPACE_LANGS = {"zh", "ja"}
 FLASH_SECONDS = 1.0
 
@@ -54,6 +54,9 @@ class ClipOptions:
     # Editing tools (1.2.4, edit/): swear words, silence / filler cuts, zoom, music, brand kit
     profanity: str = "auto"  # auto (bleep in vertical videos) | bleep | mute | off
     profanity_captions: bool = True  # "a**" in the captions
+    bleep_sound: str = "classic"  # classic | boop | custom (profanity "mute" = silence instead)
+    speaker_colors: bool = True  # captions: one colour per speaker (after the voice pass)
+    speaker_names: bool = False  # captions: "Me:" / "Efe:" tag when the speaker changes
     cuts: str = "off"  # off | light | strong
     zoom: str = "off"  # off | subtle | strong
     music: bool = False  # background music from the user's library
@@ -64,13 +67,16 @@ class ClipOptions:
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
-                "profanity_captions", "cuts", "zoom", "music", "brand", "loop")
+                "profanity_captions", "bleep_sound", "speaker_colors", "speaker_names", "cuts", "zoom",
+                "music", "brand", "loop")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.hook_flash = bool(opts.hook_flash)
         opts.profanity_captions = bool(opts.profanity_captions)
         opts.music, opts.brand, opts.loop = bool(opts.music), bool(opts.brand), bool(opts.loop)
+        opts.speaker_colors, opts.speaker_names = bool(opts.speaker_colors), bool(opts.speaker_names)
         for name, allowed in (("profanity", ("auto", "bleep", "mute", "off")), ("cuts", ("off", "light", "strong")),
-                              ("zoom", ("off", "subtle", "strong"))):
+                              ("zoom", ("off", "subtle", "strong")),
+                              ("bleep_sound", ("classic", "boop", "custom"))):
             if getattr(opts, name) not in allowed:
                 raise SharkyClipsError(f"Unknown {name} setting '{getattr(opts, name)}'.",
                                        f"Use one of: {', '.join(allowed)}")
@@ -301,11 +307,13 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
               lang: str | None, hook_text: str, offset: float = 0.0,
               hook_lang: str | None = None, geo: Geometry | None = None,
               style: dict | None = None, hook_start: float = 0.0, extra: list[str] | None = None,
-              hook_fade_in: int = 150) -> str:
+              hook_fade_in: int = 150, speakers: dict | None = None) -> str:
     """offset: seconds before the clip's main part (intro card + hook flash); subtitles start
     after it. geo: canvas size and text positions (default: the 1080x1920 clip).
     style: brand kit caption look {"font", "primary", "highlight", "outline"} (#RRGGBB).
-    hook_start: when the hook text appears (after an intro card). extra: more Dialogue lines."""
+    hook_start: when the hook text appears (after an intro card). extra: more Dialogue lines.
+    speakers: {"me": "custom name" | "", "f1": ...}: words with "spk" get speaker colours /
+    name tags (options speaker_colors / speaker_names, or the "speakers" style)."""
     geo = geo or Geometry()
     font = _font_for(lang)
     prim_c, gold_c, black_c = WHITE, GOLD, BLACK
@@ -326,6 +334,8 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
     styles = {
         # name: size, primary, outline colour, back colour, bold, border style, outline, shadow
         "bold": (sz(86), prim_c, black_c, "&H80000000", -1, 1, sz(7), sz(2)),
+        "karaoke": (sz(72), gold_c, black_c, "&H80000000", -1, 1, sz(6), sz(2)),
+        "speakers": (sz(66), prim_c, black_c, "&H80000000", -1, 1, sz(6), sz(2)),
         "clean": (sz(62), prim_c, "&H50000000", "&H00000000", -1, 3, sz(14), 0),
         "minimal": (sz(56), prim_c, "&H70000000", "&HA0000000", 0, 1, sz(2), sz(3)),
     }
@@ -338,7 +348,8 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
         "Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
     ]
     for name, (size, prim, outl, back, bold, border, outline, shadow) in styles.items():
-        lines.append(f"Style: {name},{font},{size},{prim},{gold_c},{outl},{back},{bold},0,0,0,"
+        second = prim_c if name == "karaoke" else gold_c  # karaoke: not yet sung = plain colour
+        lines.append(f"Style: {name},{font},{size},{prim},{second},{outl},{back},{bold},0,0,0,"
                      f"100,100,0,0,{border},{outline},{shadow},5,{geo.margin_l},{geo.margin_r},0,1")
     lines.append(f"Style: hook,{font},{sz(64)},{NAVY},{NAVY},{WHITE},&H40000000,-1,0,0,0,"
                  f"100,100,0,0,3,{sz(22)},0,8,{geo.margin_l + 20},{geo.margin_r + 20},0,1")
@@ -355,36 +366,83 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
         lines.append(f"Dialogue: {layer},{_ass_time(start)},{_ass_time(end)},{style},,0,0,0,,{text}")
 
     if opts.subtitles != "none" and words:
+        from . import captions
+        from .edit.brand import ass_color
+
         style = opts.subtitles
-        if style == "bold":
-            groups = group_words(words, 16, 3, lang)
-        else:
-            groups = group_words(words, 30, 7, lang)
+        spks = {w.get("spk") for w in words if w.get("spk")}
+        multi = len(spks) >= 2
+        colored = multi and (opts.speaker_colors or style == "speakers")
+        tags = multi and (opts.speaker_names or style == "speakers")
+
+        def color_of(spk: str | None) -> str:
+            if colored and spk in captions.SPEAKER_COLORS:
+                return ass_color(captions.SPEAKER_COLORS[spk])
+            return prim_c
+
         joiner = "" if lang in NO_SPACE_LANGS else " "
-        pos = f"{{\\an5\\pos({geo.cap_x},{cap_y})}}"
+        y = cap_y - (sz(22) if tags else 0)
+        pos = f"{{\\an5\\pos({geo.cap_x},{y})}}"
+        size = styles[style][0]
+        last_spk: list = [None]
+
+        def tag_for(spk: str | None) -> str:
+            """Name tag line above the caption when the speaker changes."""
+            if not tags or not spk or spk == last_spk[0]:
+                return ""
+            last_spk[0] = spk
+            name = _ass_escape(captions.speaker_label(spk, speakers, lang))
+            return f"{{\\fs{sz(40)}\\c{color_of(spk)}\\b1}}{name}{{\\fs{size}}}\\N"
+
+        if style == "bold":
+            groups = captions.cards(words, lang, 16, max_lines=1, max_words=3)
+        elif style == "karaoke":
+            groups = captions.cards(words, lang, 22, max_lines=2, max_words=9)
+        else:
+            groups = captions.cards(words, lang, 26 if style != "minimal" else 30, max_lines=2, max_words=12)
         for gi, group in enumerate(groups):
             g_start = group[0]["start"]
             nxt = groups[gi + 1][0]["start"] if gi + 1 < len(groups) else duration
             g_end = min(max(group[-1]["end"] + 0.35, g_start + 0.4), nxt, duration)
-            texts = [_ass_escape(_upper(w["word"], lang) if style == "bold" else w["word"])
-                     for w in group]
+            spk = group[0].get("spk")
+            base_c = color_of(spk)
+            tag = tag_for(spk)
             if style == "bold":
+                texts = [_ass_escape(_upper(w["word"], lang)) for w in group]
                 # One event per word: the word being spoken is gold ("karaoke" look).
                 for wi, w in enumerate(group):
                     w_start = g_start if wi == 0 else w["start"]
                     w_end = group[wi + 1]["start"] if wi + 1 < len(group) else g_end
                     if w_end <= w_start:
                         continue
-                    parts = [(f"{{\\c{gold_c}}}{t}{{\\c{prim_c}}}" if i == wi else t)
+                    parts = [(f"{{\\c{gold_c}}}{t}{{\\c{base_c}}}" if i == wi else t)
                              for i, t in enumerate(texts)]
                     if languages.is_rtl(lang):
                         # libass lays out runs split by override tags left-to-right, so the
                         # word order of right-to-left text must be reversed here (measured).
                         parts.reverse()
-                    pop ="{\\fscx108\\fscy108\\t(0,90,\\fscx100\\fscy100)}" if wi == 0 else ""
-                    event(w_start, w_end, "bold", pos + pop + joiner.join(parts))
+                    pop = "{\\fscx108\\fscy108\\t(0,90,\\fscx100\\fscy100)}" if wi == 0 else ""
+                    event(w_start, w_end, "bold", pos + pop + tag + f"{{\\c{base_c}}}" + joiner.join(parts))
+                continue
+            lines_ = captions.split_lines(group, lang, 22 if style == "karaoke" else
+                                          (26 if style != "minimal" else 30))
+            if style == "karaoke":
+                # Words fill in as they're spoken (\\kf), the not-yet-sung part in the speaker colour.
+                out_lines = []
+                t = g_start
+                for ln in lines_:
+                    parts = []
+                    for w in ln:
+                        lead = max(0.0, w["start"] - t)
+                        pre = f"{{\\k{int(round(lead * 100))}}}" if lead >= 0.02 else ""
+                        dur = max(0.05, w["end"] - max(t, w["start"]))
+                        parts.append(pre + f"{{\\2c{base_c}\\kf{int(round(dur * 100))}}}" + _ass_escape(w["word"]))
+                        t = max(t, w["start"]) + dur
+                    out_lines.append(joiner.join(parts))
+                event(g_start, g_end, "karaoke", pos + "{\\fad(60,60)}" + tag + "\\N".join(out_lines))
             else:
-                event(g_start, g_end, style, pos + "{\\fad(80,80)}" + joiner.join(texts))
+                text = "\\N".join(joiner.join(_ass_escape(w["word"]) for w in ln) for ln in lines_)
+                event(g_start, g_end, style, pos + "{\\fad(80,80)}" + tag + f"{{\\c{base_c}}}" + text)
 
     if opts.hook and hook_text:
         hook_y = geo.hook_y if geo.hook_y is not None else (120 if layout != "fit" else 330)
@@ -462,6 +520,13 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
             f"[{cam_}][{game_}]vstack=inputs=2,setsar=1[{out}]")
 
 
+def speaker_names(project: Project) -> dict:
+    """Custom speaker names from the voice pass ({} = default "Me" / "Friend" labels)."""
+    from . import voices
+
+    return voices.speaker_names(voices.load(project))
+
+
 def clip_text(project: Project, cand: dict, opts: ClipOptions) -> tuple[list[dict], str | None, str, str | None]:
     """(words relative to the clip start, their language, hook text, hook language)."""
     start, end = float(cand["start"]), float(cand["end"])
@@ -471,8 +536,18 @@ def clip_text(project: Project, cand: dict, opts: ClipOptions) -> tuple[list[dic
     if translated and opts.subtitle_lang != lang:
         words = translated_words(translated, start, end, opts.subtitle_lang)
         lang = opts.subtitle_lang
+    elif transcript:
+        from .edit.plan import transcript_words
+
+        # The voice pass's words where it ran (every speaker, "spk"), else the transcript's.
+        from .edit import proof
+
+        found, _l = transcript_words(project, start, end)
+        found = proof.fix_words(found, lang, proof.cached_fixes(project, cand.get("id")))
+        words =[{"start": max(0.0, w["start"] - start), "end": min(end - start, w["end"] - start),
+                  "word": w["word"], **({"spk": w["spk"]} if w.get("spk") else {})} for w in found]
     else:
-        words = clip_words(transcript, start, end) if transcript else []
+        words = []
     publish = cand.get("publish") or {}
     hook_text = opts.hook_text or publish.get("hook_text") or first_sentence(cand.get("text") or "")
     # The hook text's language decides its direction (Arabic hook = right-to-left).
@@ -543,7 +618,8 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
         return _render_planned(project, cand, opts, facecam, dest, on_progress, spec, plan, layout=layout,
                                geo=geo, has_audio=has_audio, flash=flash, flash_start=flash_start,
                                src_w=src_w, src_h=src_h, fps=fps)
-    ass = build_ass(words, duration, opts, layout, lang, hook_text, offset=flash, hook_lang=hook_lang, geo=geo)
+    ass = build_ass(words, duration, opts, layout, lang, hook_text, offset=flash, hook_lang=hook_lang, geo=geo,
+                    speakers=speaker_names(project))
 
     out_fps = min(60.0, fps, float(spec.fps or 60))
     fps_i = max(1, round(out_fps))
@@ -746,7 +822,8 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
     if seam is not None and opts.hook and hook_text:
         extra = extra + [loop_hook_line(hook_text, geo, layout, total, languages.is_rtl(hook_lang or lang))]
     ass = build_ass(words, main, opts, layout, lang, hook_text, offset=lead, hook_lang=hook_lang, geo=geo,
-                    style=style, hook_start=intro, extra=extra, hook_fade_in=0 if seam is not None else 150)
+                    style=style, hook_start=intro, extra=extra, hook_fade_in=0 if seam is not None else 150,
+                    speakers=plan.speakers)
 
     final = ""
     if spec.width and spec.height and (spec.width, spec.height) != (W, H):

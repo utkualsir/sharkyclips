@@ -73,6 +73,17 @@ def build(root: Path) -> str:
         "transcript": {"language": "tr", "segments": 1, "words": 40}})
     _json(d / "transcript.json", {"language": "tr", "segments": [
         {"start": 0.5, "end": 50.0, "words": [{"start": 0.5 + i, "end": 1.2 + i, "word": f" kelime{i}"} for i in range(48)]}]})
+    # "Hear every speaker" result: three voices, swears from a friend (swear review list, speaker chips)
+    spoken = ["abi", "amına", "koyayım", "kanka", "siktir", "git", "orosbu", "geldim", "s**yim", "tamam"]
+    _json(d / "voices.json", {
+        "version": 1, "mode": "separate", "whole": False, "language": "tr", "ranges": [[0.0, SECONDS]],
+        "tracks": [{"pos": 0, "title": "", "codec": "aac", "channels": 2, "label": "mixed"}], "labels_from": "guess",
+        "speakers": {"me": {"seconds": 30.0}, "f1": {"seconds": 12.0}, "f2": {"seconds": 6.0}},
+        "names": {"f1": "Efe Can Yıldırımoğlu"}, "separated": True, "diarized": True, "hints": [],
+        "transcript_created_at": None, "created_at": "2026-10-01T00:00:00",
+        "words": [{"start": 0.5 + i, "end": 1.2 + i, "word": spoken[i % len(spoken)] if i % 3 else f"kelime{i}",
+                   "p": 0.6 if i % 4 else 0.3, "spk": ("me", "f1", "f2")[(i // 4) % 3], "src": "voc"}
+                  for i in range(48)]})
     cands = []
     for i in range(N_CANDS):
         s = 1.0 + i * (SECONDS - 8) / N_CANDS

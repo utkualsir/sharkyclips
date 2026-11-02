@@ -81,8 +81,11 @@ def laugh_times(project: Project, start: float, end: float) -> list[float]:
     return [float(i) + 0.5 for i in range(a, b) if scores[i] >= 0.35]
 
 
-def transcript_words(project: Project, start: float, end: float) -> tuple[list[dict], str | None]:
-    """Words (absolute times) whose middle is inside [start, end], and the spoken language."""
+def transcript_words(project: Project, start: float, end: float,
+                     voices: bool = True) -> tuple[list[dict], str | None]:
+    """Words (absolute times) whose middle is inside [start, end], and the spoken language.
+    Where the voice pass ran (voices/), its words replace the main transcript's: every
+    speaker, with a speaker id ("spk")."""
     if not project.transcript_path.is_file():
         return [], None
     tr = read_json(project.transcript_path)
@@ -93,8 +96,13 @@ def transcript_words(project: Project, start: float, end: float) -> tuple[list[d
         for w in seg.get("words", []):
             mid = (w["start"] + w["end"]) / 2
             if start <= mid <= end and w["word"].strip():
-                out.append({"start": float(w["start"]), "end": float(w["end"]), "word": w["word"].strip()})
+                out.append({"start": float(w["start"]), "end": float(w["end"]), "word": w["word"].strip(),
+                            "probability": float(w.get("probability", 1.0) or 0.0)})
     out.sort(key=lambda w: w["start"])
+    if voices:
+        from .. import voices as voices_mod
+
+        out = voices_mod.words_for(project, start, end, out)
     return out, tr.get("language")
 
 
@@ -108,7 +116,10 @@ class EditPlan:
     words: list[dict] = field(default_factory=list)  # clip words + flags (removed / bleep / filler)
     lang: str | None = None
     bleep_mode: str = "off"  # bleep | mute | off
+    bleep_sound: str = "classic"  # classic | boop | custom
     bleeps: list[tuple[float, float]] = field(default_factory=list)
+    swears: list[dict] = field(default_factory=list)  # review list: edit/swears.py items + "bleep"
+    speakers: dict = field(default_factory=dict)  # {"me": "custom name" | "", "f1": ...} (voice pass)
     mask_captions: bool = False
     zoom_level: float = 0.0
     pulses: list[zoom.Pulse] = field(default_factory=list)
@@ -188,7 +199,10 @@ class EditPlan:
             if s is None or e is None:
                 continue
             text = profanity.mask(w["word"]) if (w.get("bleep") and self.mask_captions) else w["word"]
-            out.append({"start": round(s, 3), "end": round(max(e, s + 0.05), 3), "word": text})
+            item = {"start": round(s, 3), "end": round(max(e, s + 0.05), 3), "word": text}
+            if w.get("spk"):
+                item["spk"] = w["spk"]
+            out.append(item)
         return out
 
     def out_ranges(self, ranges: list[tuple[float, float]]) -> list[tuple[float, float]]:
@@ -223,6 +237,7 @@ class EditPlan:
         import json
 
         d = {"keep": [(round(a, 2), round(b, 2)) for a, b in self.keep], "bleep": self.bleep_mode,
+             "snd": self.bleep_sound,
              "b": [(round(a, 2), round(b, 2)) for a, b in self.bleeps], "mask": self.mask_captions,
              "z": self.zoom_level, "p": [p.to_dict() for p in self.pulses],
              "m": (self.music or {}).get("name"), "brand": f"{(self.brand or {}).get('id')}:{(self.brand or {}).get('rev')}",
@@ -236,14 +251,56 @@ class EditPlan:
             "removed": [{**r, "a": round(r["a"], 3), "b": round(r["b"], 3)} for r in self.removed],
             "duration": round(self.out_duration, 2),
             "words": [{"start": w["start"], "end": w["end"], "word": w["word"],
-                       **{k: True for k in ("removed", "bleep", "filler") if w.get(k)}} for w in self.words],
-            "bleep_mode": self.bleep_mode, "bleeps": [[round(a, 3), round(b, 3)] for a, b in self.bleeps],
+                       **({"spk": w["spk"]} if w.get("spk") else {}),
+                       **{k: True for k in ("removed", "bleep", "filler", "maybe") if w.get(k)}}
+                      for w in self.words],
+            "bleep_mode": self.bleep_mode, "bleep_sound": self.bleep_sound,
+            "bleeps": [[round(a, 3), round(b, 3)] for a, b in self.bleeps],
+            "swears": self.swears, "speakers": self.speakers,
             "mask_captions": self.mask_captions,
             "zoom_level": self.zoom_level, "pulses": [p.to_dict() for p in self.pulses],
             "music": self.music, "brand": self.brand is not None,
             "intro_s": self.intro_s, "outro_s": self.outro_s,
             "loop": self.loop.to_dict() if self.loop is not None else None,
         }
+
+
+def swear_review(project: Project, words: list[dict], lang: str | None, start: float, end: float,
+                 edit: dict, vdata: dict | None = None, use_hints: bool = True) -> list[dict]:
+    """Every detected / "maybe" swear of the clip with "bleep" = what the render does, plus
+    the user's manual bleeps (time ranges, status "manual")."""
+    from . import swears
+
+    hints = []
+    if use_hints:
+        from .. import voices as voices_mod
+
+        hints = voices_mod.hints_for(project, start, end, vdata)
+    items = [it for it in swears.detect(words, lang, hints) if start - 0.05 <= it["start"] <= end + 0.05]
+    add = [(float(a), float(b)) for a, b in (edit.get("bleep") or [])]
+    remove = [(float(a), float(b)) for a, b in (edit.get("unbleep") or [])]
+    for it in items:
+        it["bleep"] = swears.bleeped(it)
+        if swears.in_ranges(it["start"], it["end"], remove):
+            it["bleep"] = False
+        elif swears.in_ranges(it["start"], it["end"], add):
+            it["bleep"] = True
+    for a, b in add:
+        if b <= a or b < start or a > end:
+            continue
+        inside = [i for i, w in enumerate(words) if a - 0.02 <= w["start"] and w["end"] <= b + 0.02]
+        if any(swears.in_ranges(it["start"], it["end"], [(a, b)]) for it in items) and \
+                all(any(it.get("i") == i for it in items) for i in inside):
+            continue  # a detected swear the user switched on again
+        text = " ".join(words[i]["word"] for i in inside)
+        spk = words[inside[0]].get("spk") if inside else None
+        items.append({"i": inside[0] if len(inside) == 1 else None, "start": round(a, 3), "end": round(b, 3),
+                      "word": text, "spk": spk, "status": "manual", "why": "manual", "score": 1.0,
+                      "bleep": True})
+        for i in inside:
+            words[i]["bleep"] = True
+    items.sort(key=lambda it: it["start"])
+    return items
 
 
 def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: float = 30.0,
@@ -334,16 +391,46 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
     plan = EditPlan(start, end, fps, keep, removed, words, lang)
     plan.loop = seam
 
-    # ---- swear words
+    # ---- speakers (voice pass)
+    vdata = None
+    if not given:
+        from .. import voices as voices_mod
+
+        vdata = voices_mod.load(project)
+        if vdata and any(w.get("spk") for w in words):
+            names = voices_mod.speaker_names(vdata)
+            plan.speakers = {k: names.get(k, "") for k in (vdata.get("speakers") or {})}
+
+    # ---- swear words: every speaker, misheard ones, other passes (edit/swears.py) + the user's
+    # own choices in the review list (edit "bleep" = add, "unbleep" = remove)
     mode = profanity.resolve(getattr(opts, "profanity", "off"), vertical)
+    plan.swears = swear_review(project, words, lang, start, end, edit, vdata, use_hints=not given)
     if mode != "off":
-        idx = set(profanity.find_words(words, lang))
-        for i in idx:
-            words[i]["bleep"] = True
+        ranges = []
+        for it in plan.swears:
+            if not it["bleep"]:
+                continue
+            if it.get("i") is not None:
+                words[it["i"]]["bleep"] = True
+                if words[it["i"]].get("removed"):
+                    continue
+            ranges.append((it["start"] - 0.03, it["end"] + 0.03))
         plan.bleep_mode = mode
+        plan.bleep_sound = getattr(opts, "bleep_sound", "classic") or "classic"
         plan.mask_captions = bool(getattr(opts, "profanity_captions", True))
-        plan.bleeps = plan.out_ranges([(words[i]["start"] - 0.03, words[i]["end"] + 0.03)
-                                       for i in sorted(idx) if not words[i].get("removed")])
+        plan.bleeps = plan.out_ranges(merge(ranges))
+    for it in plan.swears:
+        if it.get("i") is not None and it["status"] == "maybe" and not it["bleep"]:
+            words[it["i"]]["maybe"] = True
+
+    # ---- caption proofreading (text only: times and bleeps stay; swears were found above)
+    if not given:
+        from . import proof
+
+        fixed = proof.fix_words(words, lang, proof.cached_fixes(project, cand.get("id")))
+        for w, f in zip(words, fixed):
+            if f["word"] != w["word"]:
+                w["orig"], w["word"] = w["word"], f["word"]
 
     # ---- zoom
     plan.zoom_level = zoom.INTENSITY.get(getattr(opts, "zoom", "off"), 0.0)

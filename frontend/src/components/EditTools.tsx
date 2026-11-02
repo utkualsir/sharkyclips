@@ -1,10 +1,12 @@
-import type { BrandState, ClipOptions, CutLevel, EditPlanView, MusicTrack, ProfanityMode, ZoomLevel } from "../api";
+import { useEffect, useRef, useState } from "react";
+import { api, urls, type BleepSound, type BrandState, type ClipOptions, type CutLevel, type EditPlanView, type MusicTrack, type ProfanityMode, type ZoomLevel } from "../api";
 import { useI18n } from "../i18n";
 import { href } from "../router";
 import { Icon } from "./Icons";
 import { Segmented, Toggle } from "./ui";
 
 const PROFANITY: ProfanityMode[] = ["auto", "bleep", "mute", "off"];
+const SOUNDS: BleepSound[] = ["classic", "boop", "custom"];
 const CUTS: CutLevel[] = ["off", "light", "strong"];
 const ZOOMS: ZoomLevel[] = ["off", "subtle", "strong"];
 
@@ -27,7 +29,20 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
   const { t, num } = useI18n();
   const seam = plan?.loop ?? null;
   const moved = seam ? Math.round((seam.end - seam.orig_end) * 10) / 10 : 0;
-  const bleeps = plan ? plan.words.filter((w) => w.bleep && !w.removed).length : 0;
+  const bleeps = plan ? (plan.swears ?? []).filter((s) => s.bleep).length : 0;
+  const maybes = plan ? (plan.swears ?? []).filter((s) => s.status === "maybe" && !s.bleep).length : 0;
+  const [custom, setCustom] = useState<boolean | null>(null);
+  const [rev, setRev] = useState(0);
+  const player = useRef<HTMLAudioElement | null>(null);
+  const file = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (options.bleep_sound === "custom" && custom == null) api.bleepState().then((b) => setCustom(b.custom)).catch(() => {});
+  }, [options.bleep_sound, custom]);
+  const listen = (snd: BleepSound) => {
+    player.current?.pause();
+    player.current = new Audio(urls.bleepPreview(snd, rev));
+    player.current.play().catch(() => {});
+  };
   const autoCut = plan ? plan.removed.filter((r) => r.kind !== "deleted").reduce((s, r) => s + r.b - r.a, 0) : 0;
   const pulses = plan ? plan.pulses.length : 0;
   const preset = brand?.presets.find((p) => p.id === brand.active) ?? null;
@@ -48,6 +63,7 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
           {hasClip && plan && (
             <span className="edit-note">
               {bleeps ? t("edit.bleeps_n", { n: bleeps }) : t("edit.bleeps_none")}
+              {maybes > 0 && ` · ${t("edit.maybes_n", { n: maybes })}`}
               {options.profanity === "auto" && ` · ${t("edit.profanity_auto_hint")}`}
             </span>
           )}
@@ -60,6 +76,57 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
               />
               {t("edit.mask_captions")}
             </label>
+          )}
+          {options.profanity !== "off" && options.profanity !== "mute" && (
+            <div className="edit-line bleep-sound">
+              <select
+                className="select select-sm"
+                value={options.bleep_sound ?? "classic"}
+                onChange={(e) => setOption({ bleep_sound: e.target.value as BleepSound })}
+                aria-label={t("edit.bleep_sound")}
+              >
+                {SOUNDS.map((snd) => (
+                  <option key={snd} value={snd}>
+                    {t(`edit.bleep_sound.${snd}`)}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn btn-sm btn-ghost icon-btn"
+                onClick={() => listen(options.bleep_sound ?? "classic")}
+                aria-label={t("edit.bleep_listen")}
+                title={t("edit.bleep_listen")}
+                disabled={options.bleep_sound === "custom" && !custom}
+              >
+                <Icon name="play" />
+              </button>
+              {options.bleep_sound === "custom" && (
+                <>
+                  <button className="btn btn-sm btn-ghost" onClick={() => file.current?.click()}>
+                    <Icon name="upload" />
+                    {custom ? t("edit.bleep_replace") : t("edit.bleep_upload")}
+                  </button>
+                  <input
+                    ref={file}
+                    type="file"
+                    accept="audio/*"
+                    hidden
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      e.target.value = "";
+                      if (!f) return;
+                      api
+                        .uploadBleep(f)
+                        .then((b) => {
+                          setCustom(b.custom);
+                          setRev((r) => r + 1);
+                        })
+                        .catch(() => setCustom(false));
+                    }}
+                  />
+                </>
+              )}
+            </div>
           )}
         </div>
       </div>

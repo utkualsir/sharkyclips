@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import type { Candidate, ClipEdit, EditPlanView, Word } from "../api";
-import { effectiveRange, typing } from "../editing";
+import { effectiveRange, mergeRanges, speakerLabel, subtractRange, typing } from "../editing";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
@@ -23,28 +23,6 @@ interface Props {
 type Drag = { kind: "select"; anchor: number; moved: boolean } | { kind: "start" | "end"; at: number };
 
 const mid = (w: Word) => (w.start + w.end) / 2;
-
-function mergeRanges(r: [number, number][]): [number, number][] {
-  const out: [number, number][] = [];
-  for (const [a, b] of [...r].sort((x, y) => x[0] - y[0])) {
-    if (b <= a) continue;
-    if (out.length && a <= out[out.length - 1][1] + 0.001) out[out.length - 1][1] = Math.max(out[out.length - 1][1], b);
-    else out.push([a, b]);
-  }
-  return out.map(([a, b]) => [Math.round(a * 1000) / 1000, Math.round(b * 1000) / 1000]);
-}
-
-function subtractRange(r: [number, number][], a: number, b: number): [number, number][] {
-  const out: [number, number][] = [];
-  for (const [x, y] of r) {
-    if (y <= a || x >= b) out.push([x, y]);
-    else {
-      if (x < a) out.push([x, a]);
-      if (y > b) out.push([b, y]);
-    }
-  }
-  return out.filter(([x, y]) => y - x > 0.01);
-}
 
 /** Edit by transcript: click a word to jump there, drag across words to select them,
  * Delete cuts them out of the video, the [ ] handles trim the clip. */
@@ -73,6 +51,8 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
     return m;
   }, [plan, words]);
   const bleeped = useMemo(() => new Set((plan?.words ?? []).filter((w) => w.bleep).map((w) => w.start.toFixed(2))), [plan]);
+  const maybe = useMemo(() => new Set((plan?.words ?? []).filter((w) => w.maybe).map((w) => w.start.toFixed(2))), [plan]);
+  const multi = new Set(words.map((w) => w.spk).filter(Boolean)).size > 1;
   // Silence cuts that sit between two words: shown as a small marker.
   const gaps = useMemo(() => {
     const g = new Map<number, number>();
@@ -104,6 +84,23 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
     setSel(null);
   };
 
+  // Bleep / unbleep the selected words by hand (the swear review list shows them too).
+  const bleepSelection = () => {
+    if (!sel) return;
+    const [i, j] = sel[0] <= sel[1] ? sel : [sel[1], sel[0]];
+    const a = words[i].start - 0.02;
+    const b = words[j].end + 0.02;
+    const all = words.slice(i, j + 1).every((w) => bleeped.has(w.start.toFixed(2)));
+    const bl = edit?.bleep ?? [];
+    const un = edit?.unbleep ?? [];
+    onChange(
+      all
+        ? { ...edit, bleep: subtractRange(bl, a - 0.02, b + 0.02), unbleep: mergeRanges([...un, [a, b]]) }
+        : { ...edit, bleep: mergeRanges([...bl, [a, b]]), unbleep: subtractRange(un, a - 0.02, b + 0.02) },
+    );
+    setSel(null);
+  };
+
   // Delete / Backspace cuts the selected words (while nothing else has the keyboard).
   useEffect(() => {
     if (!sel) return;
@@ -112,6 +109,9 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         toggleSelection();
+      } else if (e.key === "b" || e.key === "B") {
+        e.preventDefault();
+        bleepSelection();
       } else if (e.key === "Escape") setSel(null);
     };
     window.addEventListener("keydown", on);
@@ -156,7 +156,7 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
   const startAt = drag?.kind === "start" ? drag.at : firstIn;
   const endAt = drag?.kind === "end" ? drag.at : lastIn;
   const playing = words.findIndex((w) => time >= w.start && time < w.end + 0.05);
-  const edited = !!(edit && (edit.start != null || edit.end != null || edit.deleted?.length));
+  const edited = !!(edit && (edit.start != null || edit.end != null || edit.deleted?.length || edit.bleep?.length || edit.unbleep?.length));
   const outDur = plan?.duration ?? range.end - range.start;
 
   return (
@@ -173,6 +173,9 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
           <button className="btn btn-sm btn-ghost" onClick={toggleSelection} disabled={!sel} title={`${t("tx.cut")} (Del)`}>
             <Icon name="x" />
             {t("tx.cut")}
+          </button>
+          <button className="btn btn-sm btn-ghost" onClick={bleepSelection} disabled={!sel} title={`${t("tx.bleep_hint")} (B)`}>
+            {t("tx.bleep")}
           </button>
           <button className="btn btn-sm btn-ghost icon-btn" onClick={onUndo} disabled={!canUndo} title={`${t("tx.undo")} (Ctrl+Z)`} aria-label={t("tx.undo")}>
             <Icon name="refresh" className="icon flip-x" />
@@ -202,6 +205,8 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
               del && "del",
               a && !del && `auto-${a}`,
               bleeped.has(w.start.toFixed(2)) && !del && "bleep",
+              maybe.has(w.start.toFixed(2)) && !del && "maybe",
+              multi && w.spk && `spk-${w.spk}`,
               i >= lo && i <= hi && "sel",
               i === playing && "now",
             ]
@@ -224,6 +229,9 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
                     [
                   </span>
                 )}
+                {multi && w.spk && (i === 0 || words[i - 1].spk !== w.spk) && (
+                  <span className={`spk-chip spk-${w.spk}`}>{speakerLabel(w.spk, plan?.speakers, t)}</span>
+                )}
                 {gaps.get(i) != null && i > startAt && i <= endAt && (
                   <span className="tx-gap" title={t("tx.silence_cut")}>
                     ⋯ {num(Math.round(gaps.get(i)! * 10) / 10)} s
@@ -232,7 +240,15 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
                 <span
                   className={cls}
                   data-wi={i}
-                  title={a ? t(`tx.auto_${a}`) : bleeped.has(w.start.toFixed(2)) ? t("tx.bleeped") : fmtTime(w.start, true)}
+                  title={
+                    a
+                      ? t(`tx.auto_${a}`)
+                      : bleeped.has(w.start.toFixed(2))
+                        ? t("tx.bleeped")
+                        : maybe.has(w.start.toFixed(2))
+                          ? t("tx.maybe")
+                          : fmtTime(w.start, true)
+                  }
                   onPointerDown={(e) => {
                     if (e.button !== 0) return;
                     e.preventDefault();

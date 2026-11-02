@@ -24,7 +24,8 @@ highlight engine, the local AI and the titles work.
     compared with the usual rate, "Chat exploded 5.2x" spikes and the most spammed reaction.
   - **Hook**: Off / Text / Flash / Both. The text is the AI hook, prefilled and editable
     (reset button brings the AI text back).
-- **Facecam editor**: drag/resize the detected webcam box on a real frame.
+- **Facecam editor**: drag/resize the detected webcam box on a real frame. When the detection
+  is unsure, its candidate boxes are drawn on a frame with a face and one click picks one.
 - **Settings**: UI language (Turkish default, English, Russian, Hungarian, German, Arabic RTL,
   Chinese), local AI (model picker with the installed Ollama models, auto-analyze switch,
   Fast analysis, glossary), custom trigger words per language, video encoder, default mode,
@@ -378,6 +379,35 @@ The scorer and candidate picker don't change.
   min(1, average view percentage / 150), Beta posteriors per style (`~/.sharkyclips/hook_tests.json`).
   Uploads that come back private although asked public mark the project as locked (pre-test only).
   A clip with a live upload is never uploaded again.
+
+### Facecam, voices and swear words (1.2.15)
+
+- **Facecam** (`facecam.py`): ~32 frames over the whole video, faces from YuNet (230 KB OpenCV
+  model, downloaded once to `<settings>/models/yunet`; Haar cascades offline). Faces are grouped
+  by position; a group is scored on presence (in how many frames), liveness (a real face changes
+  between frames, a HUD portrait is pixel-identical), persistent borders (the edge between room
+  and game is there in almost every frame) and a plausible size. Low confidence -> the UI shows
+  the candidates. Confirmed boxes are remembered per channel + resolution
+  (`<settings>/facecam_layouts.json`) and reused after a 10-frame check that a live face is
+  still inside ("Detect again" = fresh detection).
+- **Voices** (`voices/`): on the clip ranges (or the whole video), all with sherpa-onnx on the
+  CPU (no tokens, Windows wheels): UVR MDX-Net vocal separation (cached per range in
+  `cache/voices/`), pyannote segmentation + WeSpeaker fingerprints (diarization), speakers
+  matched across ranges by mean fingerprint (a range's speakers never merge). Then Whisper alone
+  on the GPU reads every turn from the mix and from the separated voice (no VAD, levelled), the
+  best reading wins, Whisper's outro hallucinations are dropped. Multi-track files: tracks
+  labelled me / friends / mixed / game / music / ignore (remembered per channel + track layout in
+  `<settings>/audio_tracks.json`) and every voice track is read on its own. Result:
+  `voices.json` (words with `spk`), used by the edit plan, captions and transcript editor.
+- **Swears** (`edit/swears.py`): word list, words Whisper censored itself, phonetic / one-letter
+  matches of unclear words (never a normal dictionary word), other readings, and an acoustic
+  re-listen of unsure words on the separated voice with the swear words as decoder hints (a hit
+  must sound like what was heard first). Review list per clip with bleep / unbleep ranges in
+  `review.json` edits; bleeps fade (12 ms) and sit 3 dB under the voice.
+- **Captions** (`captions.py`): max two balanced lines, breaks at sentence ends / pauses /
+  speaker changes, never inside names, numbers + word, particles or glossary phrases. Styles
+  bold, karaoke (`\kf`), speakers, clean, minimal. `edit/proof.py`: cached LLM proofreading
+  (same word count, rewrites rejected) + glossary, sentence capitals, Turkish question marks.
 
 ### Long streams (3-6 hours)
 

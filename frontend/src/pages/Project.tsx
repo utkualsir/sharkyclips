@@ -27,6 +27,8 @@ import FastReview, { ShortcutSheet } from "../components/FastReview";
 import { ExportDialog, ExportsList, UploadDialog, UploadsLine } from "../components/Publish";
 import { PublishSetupDialog } from "../components/PublishTools";
 import TranscriptEditor from "../components/TranscriptEditor";
+import SwearReview from "../components/SwearReview";
+import VoicesPanel from "../components/VoicesPanel";
 import FacecamEditor from "../components/FacecamEditor";
 import HypeMap from "../components/HypeMap";
 import { Icon } from "../components/Icons";
@@ -47,7 +49,7 @@ import { gameReasonLabel, whyText } from "./GameDebug";
 const MODES: Mode[] = ["gaming", "study", "music"];
 const GAME_NAMES: Record<GameId, string> = { delta_force: "Delta Force", lol: "League of Legends" };
 const GAME_CODE = /^(lol|df)_/;
-const SUBS: SubtitleStyle[] = ["bold", "clean", "minimal", "none"];
+const SUBS: SubtitleStyle[] = ["bold", "karaoke", "speakers", "clean", "minimal", "none"];
 const LAYOUTS: Layout[] = ["auto", "split", "fit", "crop"];
 type HookMode = "off" | "text" | "flash" | "both";
 const HOOK_MODES: HookMode[] = ["off", "text", "flash", "both"];
@@ -407,8 +409,10 @@ export default function ProjectPage({ id }: { id: string }) {
   const accepted = useMemo(() => new Set(review?.accepted ?? []), [review]);
   const options: ClipOptions = review?.options ?? {
     layout: "auto", subtitles: "bold", hook: true, hook_flash: false, subtitle_lang: "", profanity: "auto",
-    profanity_captions: true, cuts: "off", zoom: "off", music: false, brand: false, loop: false,
+    profanity_captions: true, bleep_sound: "classic", speaker_colors: true, speaker_names: false,
+    cuts: "off", zoom: "off", music: false, brand: false, loop: false,
   };
+  const [voicesRev, setVoicesRev] = useState(0);
   const rejected = useMemo(() => new Set(review?.rejected ?? []), [review]);
   const edit: ClipEdit | undefined = selected ? review?.edits?.[selected.id] : undefined;
   const range = selected ? effectiveRange(selected, edit) : null;
@@ -418,7 +422,7 @@ export default function ProjectPage({ id }: { id: string }) {
     options,
     edit,
     music: musicChoice === undefined ? null : musicChoice,
-    rev: (activeBrand?.rev ?? 0) + tracks.length * 1000,
+    rev: (activeBrand?.rev ?? 0) + tracks.length * 1000 + voicesRev * 100000,
   });
   // A seamless loop moves the end to its seam (and a start out of a word): preview what the render does.
   const shownRange = renderRange(range, options, plan);
@@ -438,7 +442,7 @@ export default function ProjectPage({ id }: { id: string }) {
     return () => {
       cancelled = true;
     };
-  }, [id, selected?.id, Math.round(ctxFrom), Math.round(ctxTo)]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, selected?.id, Math.round(ctxFrom), Math.round(ctxTo), voicesRev]); // eslint-disable-line react-hooks/exhaustive-deps
   const previewWords = useMemo(() => {
     if (plan) return plan.words.filter((w) => !w.removed).map((w) => (w.bleep && plan.mask_captions ? { ...w, word: maskWord(w.word) } : w));
     if (!range) return [];
@@ -667,9 +671,32 @@ export default function ProjectPage({ id }: { id: string }) {
     patchReview({ hooks }, true);
   };
 
-  const saveFacecam = (fc: Facecam | null) => {
+  const saveFacecam = (fc: Facecam | null, remember = true) => {
     setFacecamOpen(false);
     patchReview({ facecam: fc, facecam_checked: true });
+    // remembered for this channel + resolution: new projects start with it
+    if (fc && remember) api.setFacecam(id, fc, { remember: true }).catch(() => {});
+  };
+
+  // Play a short part of the source (swear review list / waveform).
+  const stopAt = useRef<number | null>(null);
+  const playRange = (a: number, b: number) => {
+    const v = video.current;
+    if (!v) return;
+    setPlayingClip(false);
+    v.currentTime = Math.max(0, a);
+    stopAt.current = b;
+    v.play().catch(() => {});
+    const tick = () => {
+      if (stopAt.current == null) return;
+      if (v.currentTime >= stopAt.current || v.paused) {
+        if (!v.paused) v.pause();
+        stopAt.current = null;
+        return;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   };
 
   const render = async () => {
@@ -790,6 +817,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const langName = UI_LANGUAGES.find((l) => l.code === project.language)?.name ?? project.language;
   const clips = Object.values(project.clips).sort((a, b) => a.rank - b.rank);
   const fc = review?.facecam ?? null;
+  const fcUnsure = !!fc && fc.source === "auto" && (fc.confidence ?? 1) < 0.6;
   const src = project.source.type === "file" ? t("library.source_file") : sourceLabel(project.source.value);
 
   return (
@@ -1077,6 +1105,16 @@ export default function ProjectPage({ id }: { id: string }) {
                 canRedo={history.canRedo}
               />
             )}
+            {selected && plan && (
+              <SwearReview
+                projectId={id}
+                plan={plan}
+                edit={edit}
+                lang={project.language}
+                onChange={(e) => setEdit(selected.id, e)}
+                onPlay={playRange}
+              />
+            )}
 
             {curve && (
               <section className="panel" aria-labelledby="hype-title">
@@ -1177,13 +1215,41 @@ export default function ProjectPage({ id }: { id: string }) {
                 </div>
                 <div className="render-panel">
                   <div className="render-row">
-                    <label>{t("render.subtitles")}</label>
-                    <Segmented
-                      value={options.subtitles}
-                      options={SUBS.map((s) => ({ value: s, label: t(`sub.${s}`) }))}
-                      onChange={(s) => setOption({ subtitles: s })}
-                      label={t("render.subtitles")}
-                    />
+                    <label htmlFor="subs-sel">{t("render.subtitles")}</label>
+                    <div className="edit-cell">
+                      <select
+                        id="subs-sel"
+                        className="select select-sm"
+                        value={options.subtitles}
+                        onChange={(e) => setOption({ subtitles: e.target.value as SubtitleStyle })}
+                      >
+                        {SUBS.map((st) => (
+                          <option key={st} value={st}>
+                            {t(`sub.${st}`)}
+                          </option>
+                        ))}
+                      </select>
+                      {options.subtitles !== "none" && (
+                        <div className="edit-line">
+                          <label className="edit-check" title={t("render.speaker_colors_hint")}>
+                            <input
+                              type="checkbox"
+                              checked={options.speaker_colors ?? true}
+                              onChange={(e) => setOption({ speaker_colors: e.target.checked })}
+                            />
+                            {t("render.speaker_colors")}
+                          </label>
+                          <label className="edit-check">
+                            <input
+                              type="checkbox"
+                              checked={options.speaker_names ?? false}
+                              onChange={(e) => setOption({ speaker_names: e.target.checked })}
+                            />
+                            {t("render.speaker_names")}
+                          </label>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="render-row">
                     <label htmlFor="layout-sel">{t("render.layout")}</label>
@@ -1292,16 +1358,33 @@ export default function ProjectPage({ id }: { id: string }) {
                           <span className="spinner" style={{ width: 12, height: 12 }} /> {t("facecam.detecting")}
                         </>
                       ) : fc ? (
-                        <span className="gold">{fc.source === "manual" ? t("facecam.manual") : t("facecam.detected")}</span>
+                        fcUnsure ? (
+                          <span className="warn-text">{t("facecam.unsure")}</span>
+                        ) : (
+                          <span className="gold">
+                            {fc.source === "manual"
+                              ? t("facecam.manual")
+                              : fc.source === "remembered"
+                                ? t("facecam.remembered")
+                                : t("facecam.detected")}
+                          </span>
+                        )
                       ) : (
                         t("facecam.none")
                       )}
                     </span>
-                    <button className="btn btn-sm btn-ghost" onClick={() => setFacecamOpen(true)} disabled={!!facecamJob}>
+                    <button className={`btn btn-sm ${fcUnsure ? "" : "btn-ghost"}`} onClick={() => setFacecamOpen(true)} disabled={!!facecamJob}>
                       <Icon name="scan" />
-                      {t("common.edit")}
+                      {fcUnsure ? t("facecam.pick") : t("common.edit")}
                     </button>
                   </div>
+                  <VoicesPanel
+                    projectId={id}
+                    jobs={projectJobs}
+                    llm={!!meta?.llm.available}
+                    onDone={() => setVoicesRev((r) => r + 1)}
+                    toast={(x) => toast(x)}
+                  />
                   {/* pinned to the bottom of the panel: the settings above scroll, the buttons stay */}
                   <div className="render-actions">
                     {renderJob ? (
@@ -1536,7 +1619,7 @@ export default function ProjectPage({ id }: { id: string }) {
           onSave={saveFacecam}
           onDetect={() => {
             setFacecamOpen(false);
-            api.detectFacecam(id).catch((e) => toast({ kind: "err", text: e.message }));
+            api.detectFacecam(id, true).catch((e) => toast({ kind: "err", text: e.message }));
           }}
         />
       )}
