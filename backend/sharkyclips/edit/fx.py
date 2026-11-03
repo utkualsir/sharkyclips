@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from ..errors import SharkyClipsError
+
 REPLAY_SPEED = 0.5
 REPLAY_BEFORE, REPLAY_AFTER = 2.0, 0.8  # source seconds around the event
 REPLAY_MIN_LEFT = 6.0  # the clip goes on this long after the event: replay right after it
@@ -314,8 +316,74 @@ def _caption_path(project):
     return project.cache_dir / "memes.json"
 
 
+CAPTION_VERSION = 3  # bump when the prompt changes (cached captions are written again)
+MAX_WORDS, MAX_CHARS = 3, 18
+EXAMPLES = {"en": "NO WAY, bruh, WHAT?!, ABSOLUTE CINEMA", "tr": "NASIL?!, YOK ARTIK, EFSANE, bruh",
+            "de": "WAS?!, ALTER, KRANK, bruh", "hu": "MI?!, NEM HISZEM, BRUTÁL, bruh",
+            "ru": "ЧТО?!, ЖЕСТЬ, НЕ МОЖЕТ БЫТЬ, брух", "ar": "ماذا؟!, مستحيل, أسطوري", "zh": "啊？！, 离谱, 绝了, 不是吧"}
+
+
 def _caption_key(cand: dict, lang: str) -> str:
-    return hashlib.sha1(json.dumps([cand.get("id"), cand.get("text", "")[:400], lang]).encode()).hexdigest()[:12]
+    return hashlib.sha1(json.dumps([cand.get("id"), cand.get("text", "")[:400], lang, CAPTION_VERSION])
+                        .encode()).hexdigest()[:12]
+
+
+def _plain(text: str) -> str:
+    import re
+
+    return " ".join(re.sub(r"[^\w\s]", " ", str(text).casefold()).split())
+
+
+def _near(a: str, b: str) -> bool:
+    """Edit distance <= 1."""
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) > len(b):
+        a, b = b, a
+    i = 0
+    while i < len(a) and a[i] == b[i]:
+        i += 1
+    return a[i:] == b[i + 1:] if len(a) < len(b) else a[i + 1:] == b[i + 1:]
+
+
+def is_clean(text: str, lang: str | None) -> bool:
+    """No swear word: the lists of every language, the fuzzy / phonetic detector, and a strict
+    look-alike check (one letter off a listed stem of 4+ letters: "amaına"). A caption that fails
+    is just dropped (the built-in phrases remain), so this errs on the safe side."""
+    from . import bubbles, profanity, swears
+
+    if bubbles.has_swear(text):
+        return False
+    words = [{"start": float(i), "end": i + 0.5, "word": w, "probability": 1.0}
+             for i, w in enumerate(str(text).split())]
+    if any(it["status"] in ("sure", "maybe") for it in swears.detect(words, lang)):
+        return False
+    stems = {e.rstrip("*").casefold(): e.endswith("*") for lst in profanity.DEFAULTS.values() for e in lst
+             if " " not in e and len(e.rstrip("*")) >= 4}
+    for tok in _plain(text).split():
+        for stem, wild in stems.items():
+            if _near(tok, stem) or (wild and any(_near(tok[:n], stem) for n in (len(stem) - 1, len(stem), len(stem) + 1)
+                                                 if n <= len(tok))):
+                return False
+    return True
+
+
+def caption_ok(text: str, lang: str | None, transcript: str = "") -> bool:
+    """1-3 words (CJK: up to 6 characters), short, no hashtags / emoji / sentence end, no swear
+    word, not a phrase copied from what is said in the clip."""
+    t = " ".join(str(text).split())
+    if not t or "#" in t or any(ord(c) > 0x1F000 for c in t):
+        return False
+    if lang in ("zh", "ja"):
+        ok = len(t) <= 6
+    else:
+        ok = len(t) <= MAX_CHARS and len(t.split()) <= MAX_WORDS and not t.endswith(".")
+    if not ok or not is_clean(t, lang):
+        return False
+    p = _plain(t)
+    return not (len(p.split()) >= 2 and p in _plain(transcript))
 
 
 def cached_captions(project, cand: dict) -> list[str]:
@@ -347,18 +415,27 @@ def write_captions(project, cand: dict, model) -> list[str]:
         return have
     info = languages.get(lang)
     name = info.english_name if info else lang
-    system = ("You write tiny meme captions for funny gaming clips: 1-3 words, max 18 characters, like a "
-              "viewer's reaction (e.g. 'bruh', 'NO WAY', 'NASIL?!'). Write them in the requested language, "
-              "natural slang, no hashtags, no emoji, nothing offensive. Answer in JSON.")
-    prompt = (f"Language: {name} ({lang}).\nWhat happens in the clip (transcript):\n"
-              f"{(cand.get('text') or '')[:900]}\n\nGive 3 different captions.")
+    system = ("You write the tiny caption that pops up on a frozen frame of a funny gaming clip, like a "
+              "stunned viewer shouting at the screen. Each caption: an exclamation or reaction of 1 to 3 words "
+              f"(at most {MAX_CHARS} characters), never a sentence, never a question about what happens, no "
+              "period at the end, no hashtags, no emoji, nothing offensive. Natural slang of the requested "
+              "language. Answer in JSON.")
+    prompt = (f"Language: {name} ({lang}). Examples of the style: {EXAMPLES.get(lang, EXAMPLES['en'])}.\n"
+              f"What happens in the clip (transcript):\n{(cand.get('text') or '')[:900]}\n\n"
+              "Give 3 different captions that react to this moment. Don't quote what they say, and "
+              "never use a swear word, even if they do.")
+    said = cand.get("text") or ""
 
     def check(d: dict) -> list[str]:
-        bad = [c for c in d.get("captions", []) if not str(c).strip() or len(str(c)) > 22 or "#" in str(c)]
-        return [f"caption too long or empty: {c!r}" for c in bad]
+        bad = [c for c in d.get("captions", []) if not caption_ok(c, lang, said)]
+        return [f"not a clean 1-3 word reaction of your own (max {MAX_CHARS} characters, no period, no swear "
+                f"word, not quoted from the clip): {c!r}" for c in bad]
 
-    data = model.json(system, prompt, CAPTION_SCHEMA, temperature=0.9, check=check, num_predict=200)
-    texts = [" ".join(str(c).split())[:22] for c in data.get("captions", []) if str(c).strip()][:4]
+    try:
+        data = model.json(system, prompt, CAPTION_SCHEMA, temperature=0.9, check=check, num_predict=200)
+    except SharkyClipsError:
+        return []  # the built-in phrases are used
+    texts = [" ".join(str(c).split()) for c in data.get("captions", []) if caption_ok(c, lang, said)][:4]
     if texts:
         from ..project import read_json
 
@@ -528,7 +605,9 @@ def ass_lines(fx: FxPlan, lead: float, geo, layout: str, ts, lang: str | None, z
                        f"● REPLAY")
         elif ins.kind == "freeze" and ins.text:
             y = round((SPLIT_TOP + geo.h) / 2) if split else round(geo.h * 0.42)
-            text = _ass_escape(ins.text)
+            from ..clips import _upper
+
+            text = _ass_escape(_upper(ins.text, lang))  # meme style: capitals (Turkish İ / I kept right)
             out.append(f"Dialogue: 5,{ts(a + 0.05)},{ts(b)},meme,,0,0,0,,{{\\an5\\pos({geo.cap_x},{y})\\frz4"
                        f"\\fscx40\\fscy40\\t(0,140,\\fscx112\\fscy112)\\t(140,260,\\fscx100\\fscy100)\\fad(0,120)}}{text}")
     if fx.bubbles and zone is not None:

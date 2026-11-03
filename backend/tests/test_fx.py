@@ -111,11 +111,13 @@ def test_write_captions_with_a_fake_model():
     class Fake:
         def json(self, system, prompt, schema, **kw):
             assert "Turkish" in prompt
-            return {"captions": ["YOK ARTIK", "  bruh  ", "x" * 30]}
+            return {"captions": ["YOK ARTIK", "  bruh  ", "x" * 30, "Bu ne oldu şimdi kanka.", "Kardeşim kalktı.",
+                                 "Amaına koyun", "Kahpe çıktı!", "what a play"]}
 
     cand = {**CAND, "publish": {"language": "tr"}}
     texts = fx.write_captions(proj, cand, Fake())
-    assert texts[:2] == ["YOK ARTIK", "bruh"] and all(len(t) <= 22 for t in texts)
+    # long ones, sentences, swear words (also misspelled) and quotes of the clip are dropped
+    assert texts == ["YOK ARTIK", "bruh"]
     assert fx.cached_captions(proj, cand)[0] == "YOK ARTIK"
     assert fx.cached_captions(proj, {**cand, "text": "other"}) == []  # another clip text: asked again
 
