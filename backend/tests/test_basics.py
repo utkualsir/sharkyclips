@@ -65,3 +65,14 @@ def test_chat_unknown_json(tmp_path):
     bad.write_text('{"something": 1}', encoding="utf-8")
     with pytest.raises(SharkyClipsError):
         parse_file(bad)
+
+
+def test_ai_boundaries_never_leave_the_allowed_range():
+    """The AI's start shift with no word nearby must not move a clip before 0 s (1.2.17 fix)."""
+    from sharkyclips.analyze import snap_boundaries
+
+    tr = {"segments": [{"start": 8.0, "end": 9.0, "words": [{"start": 8.0, "end": 9.0, "word": " hi"}]}]}
+    s, e = snap_boundaries(tr, -1.5, 30.0, 0.0, 40.0, 5.0, 60.0)
+    assert s == 0.0 and e == 30.0
+    s, e = snap_boundaries(tr, 10.0, 55.0, 2.0, 40.0, 5.0, 60.0)
+    assert 2.0 <= s and e <= 40.0

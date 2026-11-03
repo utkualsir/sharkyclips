@@ -246,6 +246,8 @@ def viral_score(cand: dict, j: dict, length_score: int) -> int:
 def snap_boundaries(transcript: dict, start: float, end: float, lo: float, hi: float,
                     min_len: float, max_len: float) -> tuple[float, float]:
     """Move start to the nearest word start and end to the nearest word end, inside [lo, hi]."""
+    # The AI's shift may point outside the allowed range (before 0 s, into the neighbour clip)
+    start, end = min(max(start, lo), hi), min(max(end, lo), hi)
     words = words_between(transcript, lo, hi)
     if words:
         starts = [w["start"] for w in words]
@@ -260,7 +262,7 @@ def snap_boundaries(transcript: dict, start: float, end: float, lo: float, hi: f
         end = min(hi, start + min_len)
     if end - start > max_len:
         end = start + max_len
-    return round(start, 2), round(end, 2)
+    return round(max(0.0, start), 2), round(end, 2)
 
 
 def _cache_key(model: str, out_lang: str, c: dict, mode: str, transcript: dict, extra: str = "") -> str:

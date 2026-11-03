@@ -70,6 +70,22 @@ TEXT = {
 }
 
 
+LABELS = {  # analyze.viral_label codes in the UI language
+    "en": {"low": "low", "medium": "medium", "high": "high", "very_high": "very high"},
+    "tr": {"low": "düşük", "medium": "orta", "high": "yüksek", "very_high": "çok yüksek"},
+    "de": {"low": "niedrig", "medium": "mittel", "high": "hoch", "very_high": "sehr hoch"},
+    "hu": {"low": "alacsony", "medium": "közepes", "high": "magas", "very_high": "nagyon magas"},
+    "ru": {"low": "низкая", "medium": "средняя", "high": "высокая", "very_high": "очень высокая"},
+    "ar": {"low": "منخفض", "medium": "متوسط", "high": "مرتفع", "very_high": "مرتفع جدًا"},
+    "zh": {"low": "低", "medium": "中", "high": "高", "very_high": "很高"},
+}
+
+
+def label(code: str | None) -> str:
+    lang = str(config.get("ui_language") or "en")
+    return (LABELS.get(lang) or LABELS["en"]).get(str(code), str(code or ""))
+
+
 def t(key: str) -> str:
     lang = str(config.get("ui_language") or "en")
     return TEXT.get(lang, TEXT["en"]).get(key) or TEXT["en"][key]
@@ -255,7 +271,7 @@ def send_clip(project_id: str, clip_id: str, video: Path, title: str, viral_labe
         _save_cards(cards)
     viral = ""
     if viral_score is not None:
-        viral = f"\n🔥 {t('viral')}: {_esc(viral_label or '')} ({int(viral_score)}/100)"
+        viral = f"\n🔥 {t('viral')}: {_esc(label(viral_label))} ({int(viral_score)}/100)"
     caption = f"<b>{_esc(title)[:200]}</b>{viral}\n<i>{_esc(project_title)[:80]}</i>"
     markup = {"inline_keyboard": [
         [{"text": t("upload"), "callback_data": f"u|{tok}"}, {"text": t("plan"), "callback_data": f"p|{tok}"},

@@ -118,8 +118,11 @@ def test_telegram_clip_card_and_buttons(tg, tmp_path):
     video = tmp_path / "c.mp4"
     subprocess.run([shutil.which("ffmpeg"), "-y", "-v", "error", "-f", "lavfi", "-i", "testsrc2=size=360x640:rate=30:duration=2",
                     "-pix_fmt", "yuv420p", str(video)], check=True)
-    tok = phone.send_clip("p1", "c01", video, "Penta <3", "Very high", 91, "Stream", 1.0)
+    config.update(ui_language="tr")
+    tok = phone.send_clip("p1", "c01", video, "Penta <3", "very_high", 91, "Stream", 1.0)
+    config.update(ui_language=None)
     assert tok and tg.methods()[-1] == "sendPhoto" and tg.calls[-1][1]["_multipart"] > 1000
+    assert phone.label("very_high") in ("very high", "çok yüksek")
     assert phone.send_clip("p1", "c01", video, "again", None, None, "Stream") is None  # never twice
     acts: list = []
     poller = phone.Poller(lambda a, p, c: (acts.append((a, p, c)), "Planned")[1], lambda p, c: video)
