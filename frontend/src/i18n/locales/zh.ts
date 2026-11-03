@@ -1609,6 +1609,24 @@ const zh: Record<string, string> = {
   "easy.tour.next": "下一步",
   "easy.tour.skip": "跳过",
   "easy.tour.done": "知道了",
+  // 1.2.17: automation, live markers, phone approval, fun effects
+  "fx.replay": "即时回放",
+  "fx.replay_hint": "高光时刻慢动作再放一遍，带一个小小的 REPLAY 标记。",
+  "fx.replay_of": "回放：{what} · +{s} 秒",
+  "fx.replay_none": "这个片段没有高光时刻：不加回放。",
+  "fx.bubbles": "聊天气泡",
+  "fx.bubbles_hint": "那一刻的真实聊天消息（会过滤链接、脏话和个人信息）。",
+  "fx.bubbles_n_other": "本片段有 {n} 条聊天消息",
+  "fx.bubbles_none": "这一刻没有聊天记录（需要聊天回放，或 SharkyClips 在直播时录下的聊天）。",
+  "fx.memes": "梗图特效",
+  "fx.memes_hint": "搞笑时刻：定格、放大加一句短字幕。翻车：快速放大或抖动。音效在你的电脑上生成。",
+  "fx.memes.off": "关",
+  "fx.memes.light": "轻度",
+  "fx.memes.strong": "强烈",
+  "fx.memes_none": "这个片段里没有搞笑时刻或翻车。",
+  "fx.fails_n_other": "{n} 个翻车特效",
+  "fx.not_in_loop": "无缝循环中不加入回放、聊天气泡和梗图特效（会打断循环）。",
+  "easy.set_fx": "片段风格",
 };
 
 export default zh;

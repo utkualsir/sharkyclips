@@ -79,6 +79,7 @@ DEFAULTS: dict[str, Any] = {
     "brand_active": None,
     # YouTube Data API units per day of the user's own Google Cloud project (Google's default).
     "youtube_daily_quota": 10000,
+    "replay_smooth": "auto",  # instant replay frames: auto | motion | blend (1.2.17)
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,

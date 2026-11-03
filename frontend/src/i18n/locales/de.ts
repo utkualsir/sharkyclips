@@ -1655,6 +1655,26 @@ const de: Record<string, string> = {
   "easy.tour.next": "Weiter",
   "easy.tour.skip": "Überspringen",
   "easy.tour.done": "Verstanden",
+  // 1.2.17: automation, live markers, phone approval, fun effects
+  "fx.replay": "Sofort-Wiederholung",
+  "fx.replay_hint": "Der große Moment noch einmal in Zeitlupe, mit kleinem REPLAY-Hinweis.",
+  "fx.replay_of": "Wiederholt: {what} · +{s} s",
+  "fx.replay_none": "Kein großer Moment in diesem Clip: keine Wiederholung.",
+  "fx.bubbles": "Chat-Blasen",
+  "fx.bubbles_hint": "Echte Chat-Nachrichten aus dem Moment (Links, Schimpfwörter und Persönliches werden gefiltert).",
+  "fx.bubbles_n_one": "{n} Chat-Nachricht in diesem Clip",
+  "fx.bubbles_n_other": "{n} Chat-Nachrichten in diesem Clip",
+  "fx.bubbles_none": "Kein Chat für diesen Moment (dafür braucht es den Chat-Verlauf oder den live mitgeschnittenen Chat).",
+  "fx.memes": "Meme-Effekte",
+  "fx.memes_hint": "Lustiger Moment: Standbild, Zoom und kurzer Text. Fail: schneller Zoom oder Wackeln. Sounds entstehen auf deinem PC.",
+  "fx.memes.off": "Aus",
+  "fx.memes.light": "Leicht",
+  "fx.memes.strong": "Stark",
+  "fx.memes_none": "Kein lustiger Moment und kein Fail in diesem Clip.",
+  "fx.fails_n_one": "{n} Fail-Effekt",
+  "fx.fails_n_other": "{n} Fail-Effekte",
+  "fx.not_in_loop": "Wiederholung, Chat-Blasen und Meme-Effekte entfallen bei nahtlosen Loops (sie würden den Loop stören).",
+  "easy.set_fx": "Clip-Stil",
 };
 
 export default de;

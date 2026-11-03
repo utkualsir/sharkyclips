@@ -285,6 +285,12 @@ def clip_cues(project: Project, cand: dict, opts: ClipOptions, lang: str | None,
         words, w_lang = plan.out_words(), plan.lang or spoken
     else:
         words, w_lang, _h, _hl = clip_text(project, cand, o)
+    fxp = getattr(plan, "fx", None) if plan is not None else None
+    if fxp is not None:  # an instant replay / freeze frame shifts everything after it (no captions in it)
+        from .edit import fx as fx_mod
+
+        words = fx_mod.map_words(words, fxp)
+        duration += fxp.extra
     return subtitle_cues(words, duration, w_lang, offset), w_lang
 
 
@@ -319,6 +325,7 @@ def _render_audio(project: Project, cand: dict, fmt: Format, dest: Path,
 
         plan = plan_mod.build(project, cand, opts, vertical=False, fps=100)
         plan.brand, plan.intro_s, plan.outro_s = None, 0.0, 0.0
+        plan.fx = None  # sound only: no replay / meme sounds
     if plan is not None and plan.audio_active:
         from .edit import audiomix
 
@@ -576,6 +583,7 @@ def run_export(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam
         plan = plan_mod.build(project, cand, opts, vertical=vertical, fps=fps, max_len=max_len)
         if fmt is not None and fmt.kind == "audio":
             plan.brand, plan.intro_s, plan.outro_s = None, 0.0, 0.0
+            plan.fx = None
         lead = (plan.intro_s if plan.active else 0.0) + (FLASH_SECONDS if flash else 0.0)
         cues, sub_lang = clip_cues(project, cand, opts, req.subtitle_lang or None, translate, lead, plan=plan)
         for p in write_subtitles(root / stem, cues, sub_lang, list(req.subtitles)):

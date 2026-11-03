@@ -1638,6 +1638,24 @@ const hu: Record<string, string> = {
   "easy.tour.next": "Tovább",
   "easy.tour.skip": "Kihagyás",
   "easy.tour.done": "Értem",
+  // 1.2.17: automation, live markers, phone approval, fun effects
+  "fx.replay": "Azonnali visszajátszás",
+  "fx.replay_hint": "A nagy pillanat még egyszer lassítva, kis REPLAY jelöléssel.",
+  "fx.replay_of": "Visszajátszás: {what} · +{s} mp",
+  "fx.replay_none": "Ebben a klipben nincs nagy pillanat: nincs visszajátszás.",
+  "fx.bubbles": "Chat-buborékok",
+  "fx.bubbles_hint": "Valódi chatüzenetek abból a pillanatból (linkek, káromkodás és személyes adatok kiszűrve).",
+  "fx.bubbles_n_other": "{n} chatüzenet ebben a klipben",
+  "fx.bubbles_none": "Ehhez a pillanathoz nincs chat (a chat-visszajátszás vagy az élőben rögzített chat kell hozzá).",
+  "fx.memes": "Mém-effektek",
+  "fx.memes_hint": "Vicces pillanat: kimerevítés, zoom és rövid felirat. Fail: gyors zoom vagy rázkódás. A hangok a gépeden készülnek.",
+  "fx.memes.off": "Ki",
+  "fx.memes.light": "Enyhe",
+  "fx.memes.strong": "Erős",
+  "fx.memes_none": "Ebben a klipben nincs vicces pillanat vagy fail.",
+  "fx.fails_n_other": "{n} fail-effekt",
+  "fx.not_in_loop": "A visszajátszás, a chat-buborékok és a mém-effektek kimaradnak a hurokból (megtörnék).",
+  "easy.set_fx": "Klipstílus",
 };
 
 export default hu;

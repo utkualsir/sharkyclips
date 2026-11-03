@@ -62,20 +62,26 @@ class ClipOptions:
     music: bool = False  # background music from the user's library
     brand: bool = False  # the active brand kit preset
     loop: bool = False  # seamless loop (1.2.5): the end flows back into the start
+    # Fun effects (1.2.17, edit/fx.py): instant replay, chat bubbles, meme effects
+    replay: str = "off"  # off | auto (slow-motion replay of the key event)
+    chat_bubbles: bool = False  # real chat messages from the moment as bubbles
+    memes: str = "off"  # off | light | strong
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
                 "profanity_captions", "bleep_sound", "speaker_colors", "speaker_names", "cuts", "zoom",
-                "music", "brand", "loop")
+                "music", "brand", "loop", "replay", "chat_bubbles", "memes")
         opts = cls(**{k: data[k] for k in keys if k in data})
+        opts.chat_bubbles = bool(opts.chat_bubbles)
         opts.hook_flash = bool(opts.hook_flash)
         opts.profanity_captions = bool(opts.profanity_captions)
         opts.music, opts.brand, opts.loop = bool(opts.music), bool(opts.brand), bool(opts.loop)
         opts.speaker_colors, opts.speaker_names = bool(opts.speaker_colors), bool(opts.speaker_names)
         for name, allowed in (("profanity", ("auto", "bleep", "mute", "off")), ("cuts", ("off", "light", "strong")),
-                              ("zoom", ("off", "subtle", "strong")),
+                              ("zoom", ("off", "subtle", "strong")), ("replay", ("off", "auto")),
+                              ("memes", ("off", "light", "strong")),
                               ("bleep_sound", ("classic", "boop", "custom"))):
             if getattr(opts, name) not in allowed:
                 raise SharkyClipsError(f"Unknown {name} setting '{getattr(opts, name)}'.",
@@ -307,13 +313,16 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
               lang: str | None, hook_text: str, offset: float = 0.0,
               hook_lang: str | None = None, geo: Geometry | None = None,
               style: dict | None = None, hook_start: float = 0.0, extra: list[str] | None = None,
-              hook_fade_in: int = 150, speakers: dict | None = None) -> str:
+              hook_fade_in: int = 150, speakers: dict | None = None, extra_styles: list[str] | None = None,
+              pauses: list[tuple[float, float]] | None = None) -> str:
     """offset: seconds before the clip's main part (intro card + hook flash); subtitles start
     after it. geo: canvas size and text positions (default: the 1080x1920 clip).
     style: brand kit caption look {"font", "primary", "highlight", "outline"} (#RRGGBB).
     hook_start: when the hook text appears (after an intro card). extra: more Dialogue lines.
     speakers: {"me": "custom name" | "", "f1": ...}: words with "spk" get speaker colours /
-    name tags (options speaker_colors / speaker_names, or the "speakers" style)."""
+    name tags (options speaker_colors / speaker_names, or the "speakers" style).
+    extra_styles: more Style lines (effects). pauses: (start, end) canvas times with no captions
+    (an instant replay / freeze frame): a caption never runs into one."""
     geo = geo or Geometry()
     font = _font_for(lang)
     prim_c, gold_c, black_c = WHITE, GOLD, BLACK
@@ -357,12 +366,19 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
                  f"100,100,0,0,1,0,0,5,{geo.margin_l},{geo.margin_r},0,1")
     lines.append(f"Style: handle,{font},{sz(38)},{WHITE},{WHITE},&H60000000,&H80000000,-1,0,0,0,"
                  f"100,100,0,0,1,{sz(3)},{sz(1)},7,0,0,0,1")
+    lines += extra_styles or []
     lines += ["", "[Events]",
               "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
 
     def event(start: float, end: float, style: str, text: str, layer: int = 0, shift: bool = True) -> None:
         if shift:
             start, end = start + offset, end + offset
+        if style != "hook":
+            for pa, _pb in pauses or []:
+                if start < pa < end:
+                    end = pa
+            if any(pa <= start < pb for pa, pb in pauses or []) or end - start < 0.02:
+                return
         lines.append(f"Dialogue: {layer},{_ass_time(start)},{_ass_time(end)},{style},,0,0,0,,{text}")
 
     if opts.subtitles != "none" and words:
@@ -775,6 +791,70 @@ def _brand_layers(preset: dict, geo: Geometry, spec: OutputSpec, canvas: tuple[i
     return info, lines
 
 
+def _fx_video(g: list[str], fxp, fx_in: list[int], layout: str, src_w: int, src_h: int,
+              facecam: Facecam | None, size: tuple[int, int], F: int, main_frames: int) -> str:
+    """Effects on the main picture: shakes, then the replays / freeze frames spliced in.
+    Returns the pad that carries the result."""
+    from .edit import fx as fx_mod
+
+    cur = "mainv"
+    sh = fx_mod.shake_filter(fxp.shakes, fxp.punches, F)
+    if sh:
+        g.append(f"[mainv]{sh}[mainsh]")
+        cur = "mainsh"
+    if not fxp.inserts:
+        return f"[{cur}]"
+    split = layout == "split"
+    pieces: list[tuple[str, str]] = []  # ("main", "fa:fb") or ("ins", label)
+    prev = 0
+    for k, ins in enumerate(fxp.inserts):
+        fr = min(main_frames, round(ins.at * F))
+        if fr > prev:
+            pieces.append(("main", f"{prev}:{fr}"))
+        prev = max(prev, fr)
+        lbl = f"fxi{k}"
+        n_out = max(1, round(ins.dur * F))
+        if ins.kind == "replay":
+            n_src = max(1, round((ins.src_end - ins.src) * F))
+            g.append(f"[{fx_in[k]}:v]{fx_mod.slowmo_chain(F, n_src, n_out, fxp.smooth, (src_w, src_h))}[{lbl}s]")
+            z = fx_mod.zoom_filter(fx_mod.zoom_expr(1.06, 1.16, n_out), 0.5)
+            g.append(_filter_graph(layout, src_w, src_h, facecam, f"{lbl}s", f"{lbl}b", size,
+                                   fx={"game": z} if split else {"full": z}))
+            g.append(f"[{lbl}b]setsar=1,eq=saturation=0.86:contrast=1.06,vignette=PI/5,format=yuv420p[{lbl}]")
+        else:
+            g.append(f"[{fx_in[k]}:v]fps={F},trim=end_frame=1,setpts=N/({F}*TB)[{lbl}s]")
+            g.append(_filter_graph(layout, src_w, src_h, facecam, f"{lbl}s", f"{lbl}b", size))
+            z = fx_mod.zoom_filter(fx_mod.zoom_expr(1.0, 1.2, max(2, round(n_out * 0.6)), "out"), 0.5)
+            g.append(f"[{lbl}b]loop=loop={n_out - 1}:size=1:start=0,setpts=N/({F}*TB),{z},"
+                     f"fade=t=in:st=0:d=0.06:color=white,setsar=1,format=yuv420p[{lbl}]")
+        pieces.append(("ins", lbl))
+    if main_frames > prev:
+        pieces.append(("main", f"{prev}:{main_frames}"))
+    mains = [p for p in pieces if p[0] == "main"]
+    if len(mains) > 1:
+        g.append(f"[{cur}]split={len(mains)}" + "".join(f"[fxm{k}]" for k in range(len(mains))))
+        src_pads = [f"fxm{k}" for k in range(len(mains))]
+    elif mains:
+        src_pads = [cur]
+    else:
+        src_pads = []
+        g.append(f"[{cur}]nullsink")
+    seq = []
+    mi = 0
+    for kind, val in pieces:
+        if kind == "main":
+            fa, fb = val.split(":")
+            g.append(f"[{src_pads[mi]}]trim=start_frame={fa}:end_frame={fb},setpts=PTS-STARTPTS[fxs{mi}]")
+            seq.append(f"[fxs{mi}]")
+            mi += 1
+        else:
+            seq.append(f"[{val}]")
+    if len(seq) == 1:
+        return seq[0]
+    g.append("".join(seq) + f"concat=n={len(seq)}:v=1:a=0[mainfx]")
+    return "[mainfx]"
+
+
 def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None, dest: Path,
                     on_progress: Callable[[float], None] | None, spec: OutputSpec, plan, *, layout: str,
                     geo: Geometry, has_audio: bool, flash: float, flash_start: float, src_w: int, src_h: int,
@@ -790,7 +870,8 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
     duration = max(0.5, end - start)
     F = int(plan.fps)
     W, H = spec.canvas
-    main = plan.out_duration
+    fxp = plan.fx  # instant replay / meme effects / chat bubbles (edit/fx.py)
+    main = plan.out_duration + (fxp.extra if fxp is not None else 0.0)
     intro, outro = plan.intro_s, plan.outro_s
     lead = intro + flash
     total = lead + main + outro
@@ -809,6 +890,10 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         words = mapped
     else:
         words = plan.out_words()
+    if fxp is not None:
+        from .edit import fx as fx_mod
+
+        words = fx_mod.map_words(words, fxp)
     style = None
     extra: list[str] = []
     brand_info: dict = {}
@@ -821,9 +906,16 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         opts = ClipOptions.from_dict({**opts.to_dict(), "subtitles": "none"})
     if seam is not None and opts.hook and hook_text:
         extra = extra + [loop_hook_line(hook_text, geo, layout, total, languages.is_rtl(hook_lang or lang))]
+    fx_styles: list[str] = []
+    pauses: list[tuple[float, float]] = []
+    if fxp is not None:
+        zone = fx_mod.bubble_zone(geo, layout, spec.safe, spec.frame == "wide")
+        extra = extra + fx_mod.ass_lines(fxp, lead, geo, layout, _ass_time, lang, zone)
+        fx_styles = fx_mod.ass_styles(lang, geo.scale)
+        pauses = [(a + lead, b + lead) for a, b, _i in fxp.insert_ranges()]
     ass = build_ass(words, main, opts, layout, lang, hook_text, offset=lead, hook_lang=hook_lang, geo=geo,
                     style=style, hook_start=intro, extra=extra, hook_fade_in=0 if seam is not None else 150,
-                    speakers=plan.speakers)
+                    speakers=plan.speakers, extra_styles=fx_styles, pauses=pauses)
 
     final = ""
     if spec.width and spec.height and (spec.width, spec.height) != (W, H):
@@ -867,6 +959,14 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
             tail_at = start + plan.frames()[-1][1] / F
             inputs += ["-ss", seek_at(tail_at, fps), "-t", f"{tail_frames / F + 0.2:.3f}", "-i", src]
             tail_i, n_in = n_in, n_in + 1
+        fx_in: list[int] = []
+        for ins in (fxp.inserts if fxp is not None else []):
+            if ins.kind == "replay":
+                inputs += ["-ss", seek_at(ins.src, fps), "-t", f"{ins.src_end - ins.src + 0.2:.3f}", "-i", src]
+            else:
+                inputs += ["-ss", seek_at(ins.src, fps), "-t", "0.4", "-i", src]
+            fx_in.append(n_in)
+            n_in += 1
 
         g: list[str] = []
         sel = ""
@@ -895,6 +995,9 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
             g.append(f"[tlv][mainv0]xfade=transition=fade:duration={tail_frames / F:.4f}:offset=0[mainv]")
         else:
             g.append(f"[base]setsar=1{white},format=yuv420p[mainv]")
+        main_pad = "[mainv]"
+        if fxp is not None:
+            main_pad = _fx_video(g, fxp, fx_in, layout, src_w, src_h, facecam, (W, H), F, main_frames)
         logos: list[str] = []
         if logo_i is not None:
             n_logo = 1 + bool(intro) + bool(outro)
@@ -921,14 +1024,14 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
             g.append(f"[fl]{punch},setsar=1,fps={F},trim=end_frame={round(flash * F)},setpts=N/({F}*TB),"
                      f"format=yuv420p[flv]")
             seq.append("[flv]")
-        seq.append("[mainv]")
+        seq.append(main_pad)
         if outro:
             card_chain(out_i, "outrov", outro, logos[-1] if logos else None)
             seq.append("[outrov]")
         if len(seq) > 1:
             g.append("".join(seq) + f"concat=n={len(seq)}:v=1:a=0[cv]")
         else:
-            g.append("[mainv]null[cv]")
+            g.append(f"{main_pad}null[cv]")
         g.append("[cv]ass=subs.ass[sv]")
         last = "sv"
         if logos:
@@ -981,6 +1084,13 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
                 "zoom_pulses": len(plan.out_pulses("scene")) + len(plan.out_pulses("cam")) if plan.zooms else 0,
                 "music": mix.music if mix else None, "lufs": mix.lufs if mix else None,
                 "brand": (plan.brand or {}).get("name"), "intro": intro, "outro": outro}
+        if fxp is not None:
+            info["fx"] = {"replays": sum(i.kind == "replay" for i in fxp.inserts),
+                          "freezes": sum(i.kind == "freeze" for i in fxp.inserts),
+                          "shakes": len(fxp.shakes) + len(fxp.punches), "bubbles": len(fxp.bubbles),
+                          "smooth": fxp.smooth, "extra": round(fxp.extra, 2),
+                          "inserts": [{**i.to_dict(), "at_out": round(lead + fxp.final(i.at, end=True), 3)}
+                                      for i in fxp.inserts]}
         if seam is not None:
             from .edit import loop as loop_mod
 

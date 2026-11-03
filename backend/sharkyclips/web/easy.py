@@ -86,7 +86,7 @@ def _lang(project: Project) -> str | None:
 def wanted(project: Project, cand: dict, data: dict, review: dict, style: str, music_ok: bool,
            lang: str | None) -> tuple[dict, str]:
     """(render options, hook text) Easy mode wants for this clip."""
-    opts, hk = E.render_options(E.clip_prefs(data, cand["id"]), style, music_ok)
+    opts, hk = E.render_options(E.clip_prefs(data, cand["id"]), style, music_ok, E.fx_options(data))
     if hk == "question":
         from .. import abtest
 
@@ -290,7 +290,7 @@ def _mark_import(job: Job) -> None:
         if mode != meta.get("mode"):
             meta["mode"] = mode
             project.save_meta(meta)
-    E.save(project, easy=True, mode_auto=auto, created_at=state.now_iso())
+    E.save(project, easy=True, mode_auto=auto, created_at=state.now_iso(), fx=True)
 
 
 def _voices_ok() -> bool:

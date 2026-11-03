@@ -1615,6 +1615,24 @@ const ar: Record<string, string> = {
   "easy.tour.next": "التالي",
   "easy.tour.skip": "تخطٍّ",
   "easy.tour.done": "فهمت",
+  // 1.2.17: automation, live markers, phone approval, fun effects
+  "fx.replay": "إعادة فورية",
+  "fx.replay_hint": "اللحظة الكبرى مرة أخرى بالحركة البطيئة مع شارة REPLAY صغيرة.",
+  "fx.replay_of": "إعادة: {what} · +{s} ث",
+  "fx.replay_none": "لا توجد لحظة كبيرة في هذا المقطع: بدون إعادة.",
+  "fx.bubbles": "فقاعات الدردشة",
+  "fx.bubbles_hint": "رسائل دردشة حقيقية من تلك اللحظة (تُحذف الروابط والشتائم والمعلومات الشخصية).",
+  "fx.bubbles_n_other": "رسائل الدردشة في هذا المقطع: {n}",
+  "fx.bubbles_none": "لا توجد دردشة لهذه اللحظة (تحتاج إلى إعادة الدردشة أو الدردشة التي سجّلها SharkyClips أثناء البث).",
+  "fx.memes": "تأثيرات الميمز",
+  "fx.memes_hint": "لحظة مضحكة: تجميد وتكبير وتعليق قصير. فشل: تكبير سريع أو اهتزاز. الأصوات تُصنع على جهازك.",
+  "fx.memes.off": "إيقاف",
+  "fx.memes.light": "خفيف",
+  "fx.memes.strong": "قوي",
+  "fx.memes_none": "لا توجد لحظة مضحكة أو فشل في هذا المقطع.",
+  "fx.fails_n_other": "تأثيرات الفشل: {n}",
+  "fx.not_in_loop": "لا تُضاف الإعادة وفقاعات الدردشة وتأثيرات الميمز إلى الحلقة السلسة (ستكسرها).",
+  "easy.set_fx": "نمط المقاطع",
 };
 
 export default ar;

@@ -56,6 +56,7 @@ def _save(project: Project, source: str, rows: Iterable[tuple[float, str, str]])
     data = {"version": CHAT_VERSION, "status": "ok" if msgs else "none", "source": source,
             "reason": None if msgs else "the chat log has no messages",
             "count": len(msgs), "authors": len(authors),
+            "names": list(authors),  # index -> user name (chat bubbles show who wrote it)
             "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "messages": msgs}
     write_json_atomic(chat_path(project), data, compact=True)
     return data

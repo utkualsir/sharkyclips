@@ -1657,6 +1657,26 @@ const en: Record<string, string> = {
   "easy.tour.next": "Next",
   "easy.tour.skip": "Skip",
   "easy.tour.done": "Got it",
+  // 1.2.17: automation, live markers, phone approval, fun effects
+  "fx.replay": "Instant replay",
+  "fx.replay_hint": "The big moment again in slow motion, with a small REPLAY badge.",
+  "fx.replay_of": "Replays: {what} · +{s} s",
+  "fx.replay_none": "No big moment in this clip: no replay.",
+  "fx.bubbles": "Chat bubbles",
+  "fx.bubbles_hint": "Real chat messages from that moment (links, swear words and personal info filtered out).",
+  "fx.bubbles_n_one": "{n} chat message in this clip",
+  "fx.bubbles_n_other": "{n} chat messages in this clip",
+  "fx.bubbles_none": "No chat for this moment (it needs the chat replay or the live chat SharkyClips recorded).",
+  "fx.memes": "Meme effects",
+  "fx.memes_hint": "Funny moment: freeze, zoom and a short caption. Fail: a quick zoom or shake. Sounds are made on your PC.",
+  "fx.memes.off": "Off",
+  "fx.memes.light": "Light",
+  "fx.memes.strong": "Strong",
+  "fx.memes_none": "No funny moment or fail found in this clip.",
+  "fx.fails_n_one": "{n} fail effect",
+  "fx.fails_n_other": "{n} fail effects",
+  "fx.not_in_loop": "Replay, chat bubbles and meme effects are left out of seamless loops (they'd break the loop).",
+  "easy.set_fx": "Clip style",
 };
 
 export default en;

@@ -264,6 +264,11 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
 
             jobs.update(job, stage="loop_seam", progress=None)
             polish_loop(project, cand, opts)
+        if opts.memes != "off":  # the meme captions in the output language (local AI, cached)
+            from .retention import polish_memes
+
+            jobs.update(job, stage="meme_captions", progress=None)
+            polish_memes(project, cand, opts)
         jobs.update(job, stage="rendering", progress=0.0)
         res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
                           on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))

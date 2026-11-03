@@ -64,6 +64,31 @@ export default function EasySettings() {
         )}
       </section>
 
+      <section className="card ez-set-card" aria-labelledby="ez-set-fx">
+        <h2 id="ez-set-fx">{t("easy.set_fx")}</h2>
+        <div className="toggle-line">
+          <span>
+            <b>{t("fx.replay")}</b>
+            <span className="muted ez-hint">{t("fx.replay_hint")}</span>
+          </span>
+          <Toggle checked={!!settings?.replay} onChange={(v) => update({ replay: v })} label={t("fx.replay")} />
+        </div>
+        <div className="toggle-line">
+          <span>
+            <b>{t("fx.bubbles")}</b>
+            <span className="muted ez-hint">{t("fx.bubbles_hint")}</span>
+          </span>
+          <Toggle checked={!!settings?.bubbles} onChange={(v) => update({ bubbles: v })} label={t("fx.bubbles")} />
+        </div>
+        <div className="toggle-line">
+          <span>
+            <b>{t("fx.memes")}</b>
+            <span className="muted ez-hint">{t("fx.memes_hint")}</span>
+          </span>
+          <Toggle checked={(settings?.memes ?? "off") !== "off"} onChange={(v) => update({ memes: v ? "light" : "off" })} label={t("fx.memes")} />
+        </div>
+      </section>
+
       <section className="card ez-set-card" aria-labelledby="ez-set-look">
         <h2 id="ez-set-look">{t("easy.set_look")}</h2>
         <label className="field">

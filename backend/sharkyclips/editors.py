@@ -323,6 +323,9 @@ def build(project: Project, cand: dict, opts, stem: Path, *, vertical: bool = Tr
     F = render_fps(m["fps"], spec_fps)
     if plan is None:
         plan = plan_mod.build(project, cand, opts, vertical=vertical, fps=F, max_len=max_len)
+    # The fun effects (replay, meme freezes, chat bubbles) aren't editor timeline pieces yet: the
+    # timeline is the clip without them (cuts, bleeps, zoom, music, brand stay frame-exact).
+    plan.fx = None
     W, H = m["width"], m["height"]
     seam = plan.loop
     flash = FLASH_SECONDS if getattr(opts, "hook_flash", False) and seam is None else 0.0

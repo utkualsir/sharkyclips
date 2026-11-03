@@ -3880,6 +3880,7 @@ a.edit-note:hover { text-decoration: underline; }
 .swear-word { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
 .badge.swear-sure, .badge.swear-maybe, .badge.swear-manual { font-size: 11px; padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
 .badge.swear-sure { background: color-mix(in srgb, var(--bleep) 18%, transparent); color: var(--bleep); }
+:root[data-theme="light"] .badge.swear-sure { color: #962a20; } /* AA contrast on the tinted row */
 .badge.swear-maybe { background: var(--warn-soft); color: var(--warn); }
 .badge.swear-manual { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--gold); }
 .swear-switch { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); cursor: pointer; }

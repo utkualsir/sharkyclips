@@ -128,6 +128,7 @@ class EditPlan:
     intro_s: float = 0.0
     outro_s: float = 0.0
     loop: Seam | None = None  # seamless loop: the seam (end flows back into the start)
+    fx: object | None = None  # fx.FxPlan: instant replay, meme effects, chat bubbles (1.2.17)
     _starts: list[float] = field(default_factory=list, repr=False)
     _offsets: list[float] = field(default_factory=list, repr=False)
 
@@ -162,7 +163,8 @@ class EditPlan:
 
     @property
     def active(self) -> bool:
-        return self.audio_active or self.zooms or self.brand is not None or self.loop is not None
+        return (self.audio_active or self.zooms or self.brand is not None or self.loop is not None
+                or self.fx is not None)
 
     def frames(self) -> list[tuple[int, int]]:
         """Kept frame ranges [fa, fb) counted from the clip start."""
@@ -241,7 +243,8 @@ class EditPlan:
              "b": [(round(a, 2), round(b, 2)) for a, b in self.bleeps], "mask": self.mask_captions,
              "z": self.zoom_level, "p": [p.to_dict() for p in self.pulses],
              "m": (self.music or {}).get("name"), "brand": f"{(self.brand or {}).get('id')}:{(self.brand or {}).get('rev')}",
-             "loop": None if self.loop is None else [self.loop.start, self.loop.end, self.loop.hook_text]}
+             "loop": None if self.loop is None else [self.loop.start, self.loop.end, self.loop.hook_text],
+             "fx": self.fx.fingerprint() if self.fx is not None else None}
         return hashlib.sha1(json.dumps(d, sort_keys=True).encode()).hexdigest()[:12]
 
     def to_dict(self) -> dict:
@@ -262,6 +265,7 @@ class EditPlan:
             "music": self.music, "brand": self.brand is not None,
             "intro_s": self.intro_s, "outro_s": self.outro_s,
             "loop": self.loop.to_dict() if self.loop is not None else None,
+            "fx": self.fx.to_dict() if self.fx is not None else None,
         }
 
 
@@ -465,4 +469,10 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
         plan.intro_s, plan.outro_s = brand.card_seconds(plan.brand)
         if seam is not None:  # a card would break the loop (the watermark / handle stay)
             plan.intro_s = plan.outro_s = 0.0
+
+    # ---- fun effects: instant replay, meme effects, chat bubbles (never in a seamless loop)
+    if seam is None:
+        from . import fx
+
+        plan.fx = fx.build(project, cand, opts, plan, max_len=max_len)
     return plan

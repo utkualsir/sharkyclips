@@ -250,6 +250,11 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
     else:
         main = _fade(main, 0.12, 0.2)
     speech_ref = loudness.integrated_lufs(main)
+    fxp = plan.fx
+    if fxp is not None and (fxp.inserts or fxp.sfx):
+        from . import fx as fx_mod
+
+        main = fx_mod.splice_audio(main, fxp, source, SR, has_audio, decode)
     governor.checkpoint()
 
     parts = [np.zeros((_n(plan.intro_s), 2), np.float32)]
@@ -275,6 +280,8 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
         ref = speech_ref if speech_ref > -60 else -20.0
         gain = 10 ** ((ref + MUSIC_IN_PAUSES_DB - m_lufs) / 20) if m_lufs > -69 else 0.0
         speech = [(a + lead, b + lead) for a, b in plan.speech_out()]
+        if fxp is not None:
+            speech = [(fxp.final(a - lead) + lead, fxp.final(b - lead, end=True) + lead) for a, b in speech]
         duck = MUSIC_UNDER_SPEECH_DB - MUSIC_IN_PAUSES_DB
         if seam is not None:  # duck as if the clip repeated: the end already dips for the opening
             n = len(bed)

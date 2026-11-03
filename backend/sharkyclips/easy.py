@@ -40,6 +40,29 @@ DEFAULT_OPTIONS = {
 # ===================================================================== settings
 
 
+# Fun effects in Easy mode (1.2.17). Unset = the default below for projects made from 1.2.17 on;
+# older projects keep their look until the user flips a switch (no surprise re-renders).
+FX_DEFAULTS = {"replay": True, "bubbles": True, "memes": "off"}
+MEMES = ("off", "light", "strong")
+
+
+def fx_settings() -> dict:
+    rp, bb, mm = config.get("easy_replay"), config.get("easy_bubbles"), config.get("easy_memes")
+    return {"replay": FX_DEFAULTS["replay"] if rp is None else bool(rp),
+            "bubbles": FX_DEFAULTS["bubbles"] if bb is None else bool(bb),
+            "memes": mm if mm in MEMES else FX_DEFAULTS["memes"]}
+
+
+def fx_options(data: dict) -> dict:
+    """The effects' render options for one Easy project (data = load(project))."""
+    s = fx_settings()
+    if not data.get("fx"):
+        s = {"replay": s["replay"] if config.get("easy_replay") is not None else False,
+             "bubbles": s["bubbles"] if config.get("easy_bubbles") is not None else False,
+             "memes": s["memes"] if config.get("easy_memes") in MEMES else "off"}
+    return {"replay": "auto" if s["replay"] else "off", "chat_bubbles": bool(s["bubbles"]), "memes": s["memes"]}
+
+
 def ui_mode() -> str:
     m = config.get("ui_mode")
     return m if m in MODES_UI else "easy"  # Easy is the default for new and existing users
@@ -50,7 +73,7 @@ def settings() -> dict:
     return {"mode": ui_mode(), "tour_done": bool(config.get("easy_tour_done")),
             "upload_when": when if when in WHEN else "now",
             "open_folder": config.get("easy_open_folder") is not False,
-            "downloads": str(downloads_root())}
+            "downloads": str(downloads_root()), **fx_settings()}
 
 
 def save_settings(body: dict) -> dict:
@@ -63,6 +86,12 @@ def save_settings(body: dict) -> dict:
         changes["easy_upload_when"] = body["upload_when"]
     if "open_folder" in body:
         changes["easy_open_folder"] = bool(body["open_folder"])
+    if "replay" in body:
+        changes["easy_replay"] = bool(body["replay"])
+    if "bubbles" in body:
+        changes["easy_bubbles"] = bool(body["bubbles"])
+    if body.get("memes") in MEMES:
+        changes["easy_memes"] = body["memes"]
     if changes:
         config.update(**changes)
     return settings()
@@ -87,7 +116,9 @@ def load(project: Project) -> dict:
             data = {}
         return {"easy": bool(data.get("easy")), "mode_auto": bool(data.get("mode_auto")),
                 "shown": max(SHOWN, int(data.get("shown") or SHOWN)), "clips": dict(data.get("clips") or {}),
-                "notified_for": data.get("notified_for"), "created_at": data.get("created_at")}
+                "notified_for": data.get("notified_for"), "created_at": data.get("created_at"),
+                # 1.2.17: made with the fun effects' defaults
+                "fx": bool(data.get("fx"))}
 
 
 def save(project: Project, **changes) -> dict:
@@ -169,9 +200,9 @@ def hook_style() -> str:
     return "statement"
 
 
-def render_options(prefs: dict, style: str, music_ok: bool) -> tuple[dict, str | None]:
-    """(options, hook text override or None) for one clip."""
-    opts = dict(DEFAULT_OPTIONS)
+def render_options(prefs: dict, style: str, music_ok: bool, fx: dict | None = None) -> tuple[dict, str | None]:
+    """(options, hook text override or None) for one clip. fx: fx_options() of the project."""
+    opts = {**DEFAULT_OPTIONS, **(fx or {})}
     if not prefs.get("subtitles", True):
         opts["subtitles"] = "none"
     opts["music"] = bool(prefs.get("music")) and music_ok

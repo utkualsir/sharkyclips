@@ -1633,6 +1633,24 @@ const tr: Record<string, string> = {
   "easy.tour.next": "İleri",
   "easy.tour.skip": "Geç",
   "easy.tour.done": "Anladım",
+  // 1.2.17: automation, live markers, phone approval, fun effects
+  "fx.replay": "Anlık tekrar",
+  "fx.replay_hint": "Büyük an ağır çekimde bir daha, küçük bir REPLAY etiketiyle.",
+  "fx.replay_of": "Tekrar: {what} · +{s} sn",
+  "fx.replay_none": "Bu klipte büyük bir an yok: tekrar eklenmez.",
+  "fx.bubbles": "Sohbet balonları",
+  "fx.bubbles_hint": "O andaki gerçek sohbet mesajları (link, küfür ve kişisel bilgiler süzülür).",
+  "fx.bubbles_n_other": "Bu klipte {n} sohbet mesajı",
+  "fx.bubbles_none": "Bu an için sohbet yok (sohbet kaydı ya da SharkyClips'in canlıda kaydettiği sohbet gerekir).",
+  "fx.memes": "Meme efektleri",
+  "fx.memes_hint": "Komik an: dondur, yakınlaştır ve kısa bir yazı. Fail: hızlı yakınlaştırma ya da sarsıntı. Sesler bilgisayarında üretilir.",
+  "fx.memes.off": "Kapalı",
+  "fx.memes.light": "Hafif",
+  "fx.memes.strong": "Güçlü",
+  "fx.memes_none": "Bu klipte komik bir an ya da fail bulunmadı.",
+  "fx.fails_n_other": "{n} fail efekti",
+  "fx.not_in_loop": "Tekrar, sohbet balonları ve meme efektleri kesintisiz döngüye eklenmez (döngüyü bozarlardı).",
+  "easy.set_fx": "Klip tarzı",
 };
 
 export default tr;

@@ -286,7 +286,14 @@ export interface ClipOptions {
   brand: boolean;
   /** seamless loop (1.2.5): the end flows back into the start */
   loop: boolean;
+  /** fun effects (1.2.17): slow-motion replay of the key event, chat bubbles, meme effects */
+  replay?: ReplayMode;
+  chat_bubbles?: boolean;
+  memes?: MemeLevel;
 }
+
+export type ReplayMode = "off" | "auto";
+export type MemeLevel = "off" | "light" | "strong";
 
 /** The seam of a seamless loop (source times). */
 export interface LoopSeam {
@@ -446,6 +453,15 @@ export interface EditPlanView {
   intro_s: number;
   outro_s: number;
   loop: LoopSeam | null;
+  /** fun effects (1.2.17): what the render adds */
+  fx?: {
+    inserts: { kind: "replay" | "freeze"; code: string; dur: number; at: number; text: string }[];
+    bubbles: { a: number; user: string; text: string }[];
+    shakes: [number, number][];
+    punches: [number, number][];
+    smooth: "mci" | "blend";
+    extra: number;
+  } | null;
 }
 
 export type Mood = "hype" | "chill" | "sad" | "funny";
@@ -1592,6 +1608,10 @@ export interface EasySettings {
   upload_when: UploadWhen;
   open_folder: boolean;
   downloads: string;
+  /** 1.2.17: fun effects for new clips */
+  replay: boolean;
+  bubbles: boolean;
+  memes: MemeLevel;
 }
 
 export type EasyStepKey = "download" | "transcribe" | "find" | "titles" | "render";

@@ -328,6 +328,23 @@ def upload_source(project, cid: str, source: str) -> tuple[Path, dict] | None:
 # ===================================================================== seamless loop: the AI's polish
 
 
+def polish_memes(project, cand: dict, opts: ClipOptions) -> None:
+    """Before a render with meme effects: the local AI writes the short captions in the output
+    language (cached per clip). Without the AI the built-in phrases are used."""
+    if getattr(opts, "memes", "off") == "off" or config.get("llm_enabled") is False or not _app().llm_available():
+        return
+    from .. import llm
+    from ..edit import fx
+
+    if not fx.needs_captions(project, cand) or fx.cached_captions(project, cand):
+        return
+    try:
+        with llm.lazy_session() as model:
+            fx.write_captions(project, cand, model)
+    except SharkyClipsError:
+        pass
+
+
 def polish_loop(project, cand: dict, opts: ClipOptions, max_len: float | None = None) -> None:
     """Before a loop render: let the local AI pick the seam and write a loop hook (cached;
     without the AI, or when it fails, the signal-based seam is used)."""

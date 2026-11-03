@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { api, urls, type BleepSound, type BrandState, type ClipOptions, type CutLevel, type EditPlanView, type MusicTrack, type ProfanityMode, type ZoomLevel } from "../api";
+import { api, urls, type BleepSound, type BrandState, type ClipOptions, type CutLevel, type EditPlanView, type MemeLevel, type MusicTrack, type ProfanityMode, type ZoomLevel } from "../api";
+import { gameReasonLabel } from "../pages/GameDebug";
 import { useI18n } from "../i18n";
 import { href } from "../router";
 import { Icon } from "./Icons";
@@ -9,6 +10,7 @@ const PROFANITY: ProfanityMode[] = ["auto", "bleep", "mute", "off"];
 const SOUNDS: BleepSound[] = ["classic", "boop", "custom"];
 const CUTS: CutLevel[] = ["off", "light", "strong"];
 const ZOOMS: ZoomLevel[] = ["off", "subtle", "strong"];
+const MEMES: MemeLevel[] = ["off", "light", "strong"];
 
 interface Props {
   options: ClipOptions;
@@ -22,6 +24,77 @@ interface Props {
   hasClip: boolean;
   /** start the loop preview (the end plays into the start, repeating) */
   onLoopPreview?: () => void;
+}
+
+/** Instant replay, chat bubbles and meme effects (1.2.17), with what they do on this clip. */
+function FunEffects({ options, setOption, plan }: Pick<Props, "options" | "setOption" | "plan">) {
+  const { t, num } = useI18n();
+  const fx = plan?.fx ?? null;
+  const replay = fx?.inserts.find((i) => i.kind === "replay") ?? null;
+  const freezes = fx?.inserts.filter((i) => i.kind === "freeze") ?? [];
+  const fails = (fx?.shakes.length ?? 0) + (fx?.punches.length ?? 0);
+  const off = options.loop;
+  return (
+    <>
+      <div className="render-row">
+        <label>{t("fx.replay")}</label>
+        <div className="edit-cell">
+          <div className="edit-line">
+            <Toggle checked={options.replay === "auto"} onChange={(v) => setOption({ replay: v ? "auto" : "off" })} label={t("fx.replay")} />
+          </div>
+          {options.replay !== "auto" && <span className="edit-note">{t("fx.replay_hint")}</span>}
+          {options.replay === "auto" && plan && !off && (
+            <span className="edit-note" data-testid="fx-replay">
+              {replay
+                ? t("fx.replay_of", { what: gameReasonLabel(t, replay.code), s: num(replay.dur, 1) })
+                : t("fx.replay_none")}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="render-row">
+        <label>{t("fx.bubbles")}</label>
+        <div className="edit-cell">
+          <div className="edit-line">
+            <Toggle checked={!!options.chat_bubbles} onChange={(v) => setOption({ chat_bubbles: v })} label={t("fx.bubbles")} />
+          </div>
+          {!options.chat_bubbles && <span className="edit-note">{t("fx.bubbles_hint")}</span>}
+          {options.chat_bubbles && plan && !off && (
+            <span className="edit-note">
+              {fx?.bubbles.length ? t("fx.bubbles_n", { n: fx.bubbles.length }) : t("fx.bubbles_none")}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="render-row">
+        <label>{t("fx.memes")}</label>
+        <div className="edit-cell">
+          <Segmented<MemeLevel>
+            value={options.memes ?? "off"}
+            options={MEMES.map((m) => ({ value: m, label: t(`fx.memes.${m}`) }))}
+            onChange={(m) => setOption({ memes: m })}
+            label={t("fx.memes")}
+          />
+          {(options.memes ?? "off") === "off" && <span className="edit-note">{t("fx.memes_hint")}</span>}
+          {(options.memes ?? "off") !== "off" && plan && !off && (
+            <span className="edit-note">
+              {freezes.length || fails
+                ? [
+                    ...freezes.map((f) => `“${f.text}”`),
+                    ...(fails ? [t("fx.fails_n", { n: fails })] : []),
+                  ].join(" · ")
+                : t("fx.memes_none")}
+            </span>
+          )}
+        </div>
+      </div>
+      {off && (options.replay === "auto" || options.chat_bubbles || (options.memes ?? "off") !== "off") && (
+        <p className="edit-note warn-text" style={{ margin: "0 0 4px" }}>
+          {t("fx.not_in_loop")}
+        </p>
+      )}
+    </>
+  );
 }
 
 /** Render options of the editing tools (swear words, cuts, zoom, music, brand kit). */
@@ -226,6 +299,7 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
           )}
         </div>
       </div>
+      <FunEffects options={options} setOption={setOption} plan={plan} />
       <div className="render-row">
         <label>{t("edit.brand")}</label>
         <div className="edit-cell">
