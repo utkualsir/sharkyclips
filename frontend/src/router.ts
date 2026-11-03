@@ -12,7 +12,8 @@ export type Route =
   | { name: "studio"; tab: StudioTab }
   | { name: "queue" }
   | { name: "stats" }
-  | { name: "publish"; view: "list" | "calendar" };
+  | { name: "publish"; view: "list" | "calendar" }
+  | { name: "approve" };
 
 function parse(): Route {
   const h = window.location.hash.replace(/^#\/?/, "");
@@ -22,6 +23,7 @@ function parse(): Route {
   if (a === "p" && b && c === "stories") return { name: "stories", id: decodeURIComponent(b) };
   if (a === "p" && b) return { name: "project", id: decodeURIComponent(b) };
   if (a === "settings") return { name: "settings" };
+  if (a === "approve") return { name: "approve" };
   if (a === "studio") return { name: "studio", tab: b === "brand" || b === "words" ? b : "music" };
   if (a === "queue") return { name: "queue" };
   if (a === "stats") return { name: "stats" };
@@ -48,6 +50,7 @@ export const href = {
   studio: (tab: StudioTab = "music") => `#/studio/${tab}`,
   queue: "#/queue",
   stats: "#/stats",
+  approve: "#/approve",
   publish: (view: "list" | "calendar" = "list") => (view === "calendar" ? "#/library/calendar" : "#/library"),
   project: (id: string) => `#/p/${encodeURIComponent(id)}`,
   bestof: (id: string) => `#/p/${encodeURIComponent(id)}/bestof`,

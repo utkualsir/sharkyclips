@@ -2224,6 +2224,7 @@ from .retention import router as _retention_router  # noqa: E402 - stories, A/B 
 from .publishing import router as _publishing_router  # noqa: E402 - Library + scheduled publishing (1.2.7)
 from .easy import router as _easy_router  # noqa: E402 - Easy mode (1.2.16)
 from .live import router as _live_router  # noqa: E402 - auto clips, live markers (1.2.17)
+from .phone_api import router as _phone_router  # noqa: E402 - Telegram bot + approval page (1.2.17)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2232,6 +2233,7 @@ app.include_router(_retention_router)
 app.include_router(_publishing_router)
 app.include_router(_easy_router)
 app.include_router(_live_router)
+app.include_router(_phone_router)
 
 
 @app.get("/api/{rest:path}")
@@ -2301,3 +2303,6 @@ def _start_publishing() -> None:
     from .live import install as install_live
 
     install_live()  # auto clips after a stream, live markers (1.2.17)
+    from .phone_api import install as install_phone
+
+    install_phone()  # the Telegram bot's Upload / Plan / Skip buttons (1.2.17)

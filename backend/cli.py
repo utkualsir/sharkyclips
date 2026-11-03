@@ -506,6 +506,15 @@ def _run_server(args) -> int:
     return 0
 
 
+def _phone_lan() -> bool:
+    try:
+        from sharkyclips import config, lanauth
+
+        return bool(config.get("phone_lan")) and lanauth.enabled()
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _signal_group(pgid: int, name: str) -> None:
     import signal
 
@@ -622,10 +631,15 @@ def _serve_locked(args, RESTART_CODE: int) -> int:  # noqa: N803 - the updater's
         _open_splash_or_wait(local_url, args.port)
 
     # The server runs in a child process so an update can restart it (exit code RESTART_CODE).
-    env = {**os.environ, "SHARKYCLIPS_SUPERVISED": "1", "SHARKYCLIPS_LAN_URL": lan_url}
-    cmd = [sys.executable, str(Path(__file__).resolve()), "serve", "--port", str(args.port), "--no-browser"]
-    if args.lan:
-        cmd.append("--lan")
+    base_cmd = [sys.executable, str(Path(__file__).resolve()), "serve", "--port", str(args.port), "--no-browser"]
+
+    def server_cmd() -> tuple[list[str], dict]:
+        """--lan from the command line, or the phone approval page (Settings, PIN required):
+        read again at every (re)start, so the setting applies after "Restart"."""
+        lan = bool(args.lan) or _phone_lan()
+        url = lan_url or (f"http://{_lan_ip()}:{args.port}" if lan and _lan_ip() else "")
+        return base_cmd + (["--lan"] if lan else []), {**os.environ, "SHARKYCLIPS_SUPERVISED": "1",
+                                                        "SHARKYCLIPS_LAN_URL": url if lan else ""}
     from sharkyclips import procs
 
     # Windows: the server and everything below it live in a kill-on-close job held by this
@@ -638,6 +652,7 @@ def _serve_locked(args, RESTART_CODE: int) -> int:  # noqa: N803 - the updater's
 
     def supervise() -> int:
         while True:
+            cmd, env = server_cmd()
             # pythonw parent: the server child gets a hidden console, never a window
             if guard.ok:  # start suspended so even its first child is inside the job
                 proc = subprocess.Popen(cmd, env=env, **procs.no_window(0x4))  # CREATE_SUSPENDED

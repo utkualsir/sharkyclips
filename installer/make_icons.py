@@ -10,7 +10,7 @@ as "shark" and as "video clip" at the same time.
 
 Writes assets/icon/sharkyclips{,-light}.{svg,png}, sharkyclips.ico, sharkyclips.icns,
 sharkyclips-mark.svg (no tile, currentColor) and frontend/public/{favicon.svg,favicon.ico,
-apple-touch-icon.png,logo-light.svg,logo-dark.svg}. The shapes live here once, so all formats match.
+apple-touch-icon.png,logo-light.svg,logo-dark.svg,icon-192/512.png,icon-maskable-512.png}. The shapes live here once, so all formats match.
 """
 
 from __future__ import annotations
@@ -198,6 +198,15 @@ def google_logo(path: Path) -> None:
     img.save(path, optimize=True)
 
 
+def pwa_icons(pub: Path) -> None:
+    """The phone approval page's app icons (manifest.json): normal + maskable (safe zone)."""
+    render(192, "dark").save(pub / "icon-192.png")
+    render(512, "dark").save(pub / "icon-512.png")
+    tile = Image.new("RGBA", (512, 512), (*_hex(NAVY), 255))
+    tile.alpha_composite(render(512, "dark", margin=0.12))
+    tile.save(pub / "icon-maskable-512.png")
+
+
 def main() -> None:
     out = ROOT / "assets" / "icon"
     pub = ROOT / "frontend" / "public"
@@ -216,6 +225,7 @@ def main() -> None:
     render(1024, "light").save(out / "sharkyclips-light.png")  # main logo (README, social)
     render(1024, "dark").save(out / "sharkyclips-dark-1024.png")
     render(180, "dark").save(pub / "apple-touch-icon.png")
+    pwa_icons(pub)
     ico_sizes = [16, 20, 24, 32, 40, 48, 64, 128, 256]
     render(256, "dark").save(out / "sharkyclips.ico", sizes=[(s, s) for s in ico_sizes],
                              append_images=[render(s, "dark") for s in ico_sizes[:-1]])

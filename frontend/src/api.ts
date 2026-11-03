@@ -1683,6 +1683,64 @@ export const liveApi = {
   unmark: (id: string) => req<{ recent: LiveMarker[] }>("DELETE", `/api/live/markers/${encodeURIComponent(id)}`),
 };
 
+// ---------------------------------------------------------------- phone approval (1.2.17)
+
+export interface PhoneStatus {
+  configured: boolean;
+  paired: boolean;
+  bot: string | null;
+  chat: string | null;
+  link: string | null;
+  send: boolean;
+  send_top: number;
+}
+
+export interface LanView {
+  enabled: boolean;
+  active: boolean;
+  pin: boolean;
+  url: string | null;
+  approve_url: string | null;
+  busy: boolean;
+}
+
+export interface ApproveClip {
+  project_id: string;
+  project_title: string;
+  clip_id: string;
+  title: string;
+  viral_score: number | null;
+  viral_label: string | null;
+  duration: number | null;
+  marked: boolean;
+  video: string;
+}
+
+export interface ActResult {
+  status: "uploading" | "scheduled" | "published" | "skipped";
+  text: string;
+  publish_at?: string;
+  clips: ApproveClip[];
+}
+
+export interface PhoneView extends PhoneStatus {
+  lan: LanView;
+  poller: { status: string; error: string | null } | null;
+}
+
+export const phoneApi = {
+  get: () => req<PhoneView>("GET", "/api/phone"),
+  tgToken: (token: string) => req<PhoneStatus>("POST", "/api/phone/telegram", { token }),
+  tgPair: () => req<PhoneStatus>("POST", "/api/phone/telegram/pair"),
+  tgDisconnect: () => req<PhoneStatus>("DELETE", "/api/phone/telegram"),
+  tgTest: () => req<{ ok: boolean }>("POST", "/api/phone/test"),
+  set: (body: Partial<{ send: boolean; send_top: number; lan: boolean }>) => req<PhoneView>("PUT", "/api/phone", body),
+  restart: () => req<{ restarting: boolean }>("POST", "/api/update/restart"),
+  approve: () => req<{ clips: ApproveClip[]; youtube: boolean }>("GET", "/api/approve"),
+  act: (pid: string, cid: string, action: "upload" | "plan" | "skip") =>
+    req<ActResult>("POST", `/api/approve/${encodeURIComponent(pid)}/${encodeURIComponent(cid)}`, { action }),
+};
+
 export type EasyStepKey = "download" | "transcribe" | "find" | "titles" | "render";
 
 export interface EasyStep {

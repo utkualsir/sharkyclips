@@ -344,8 +344,10 @@ def on_job_finished(job: Job) -> None:
         E.save(project, notified_for=hl.get("created_at"))
         E.ready_notice(project.load_meta().get("title") or pid, n, f"/#/p/{pid}")
         from .live import on_clips_ready
+        from .phone_api import on_clips_ready as phone_cards
 
         on_clips_ready(project, top)  # auto publish (auto clips)
+        phone_cards(project, top)  # the paired phone gets the best ones
 
 
 _installed: list = []

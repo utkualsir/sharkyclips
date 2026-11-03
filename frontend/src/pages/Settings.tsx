@@ -8,6 +8,7 @@ import { isActive, useJobs } from "../jobs";
 import { chooseLanguage, useMeta } from "../meta";
 import { LanPinBox } from "../components/LanAccess";
 import { AutoClipCard, MarkersCard } from "../components/Automation";
+import { PhoneCard } from "../components/Phone";
 import { YoutubeCard } from "../components/Publish";
 import { PublishingCard } from "../components/PublishTools";
 import { applyMotion, type MotionSetting } from "../motion";
@@ -700,6 +701,8 @@ export default function Settings() {
           <AutoClipCard />
 
           <MarkersCard />
+
+          <PhoneCard />
 
           <YoutubeCard
             isLocal={!!meta?.is_local}

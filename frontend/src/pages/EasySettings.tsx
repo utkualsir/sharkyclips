@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { ApiError, api, liveApi, type YoutubeStatus } from "../api";
+import { useCallback, useEffect, useState } from "react";
+import { ApiError, api, liveApi, phoneApi, type PhoneStatus, type YoutubeStatus } from "../api";
+import { PhoneConnect } from "../components/Phone";
 import { Icon } from "../components/Icons";
 import { useToast } from "../toast";
 import { Toggle } from "../components/ui";
@@ -16,8 +17,10 @@ export default function EasySettings() {
   const [theme, , toggleTheme] = useTheme();
   const { settings, update, setMode } = useUiMode();
   const [yt, setYt] = useState<YoutubeStatus | null>(null);
+  const [phone, setPhone] = useState<PhoneStatus | null>(null);
   const [folder, setFolder] = useState<string | null>(null);
   const toast = useToast();
+  const onPhone = useCallback((s: PhoneStatus) => setPhone(s), []);
 
   useEffect(() => {
     api.youtube().then(setYt).catch(() => {});
@@ -25,6 +28,7 @@ export default function EasySettings() {
       .get()
       .then((l) => setFolder(l.watch.folders[0] ?? ""))
       .catch(() => {});
+    phoneApi.get().then(setPhone).catch(() => {});
   }, []);
 
   const setAuto = async (v: boolean) => {
@@ -123,6 +127,12 @@ export default function EasySettings() {
           </span>
           <Toggle checked={(settings?.memes ?? "off") !== "off"} onChange={(v) => update({ memes: v ? "light" : "off" })} label={t("fx.memes")} />
         </div>
+      </section>
+
+      <section className="card ez-set-card" aria-labelledby="ez-set-phone">
+        <h2 id="ez-set-phone">{t("easy.set_phone")}</h2>
+        <p className="muted" style={{ marginTop: 0 }}>{t("easy.phone_body")}</p>
+        <PhoneConnect status={phone} onStatus={onPhone} compact />
       </section>
 
       <section className="card ez-set-card" aria-labelledby="ez-set-look">

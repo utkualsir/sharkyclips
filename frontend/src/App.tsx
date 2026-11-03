@@ -29,6 +29,7 @@ const Stats = lazy(() => import("./pages/Stats"));
 const ClipLibrary = lazy(() => import("./pages/ClipLibrary"));
 const Stories = lazy(() => import("./pages/Stories"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Approve = lazy(() => import("./pages/Approve"));
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
 
@@ -232,6 +233,17 @@ export default function App() {
     setWhatsNewClosed(true);
     setManualWhatsNew(false);
   };
+  if (route.name === "approve") {
+    // The phone approval page: full screen, no top bar (an installable web app on the Wi-Fi).
+    return (
+      <>
+        <Suspense fallback={null}>
+          <Approve />
+        </Suspense>
+        {!splashDone && <Launch onDone={() => setSplashDone(true)} />}
+      </>
+    );
+  }
   return (
     <>
       {easy ? <EasyTopBar /> : <TopBar />}

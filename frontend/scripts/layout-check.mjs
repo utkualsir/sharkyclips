@@ -38,6 +38,7 @@ const SCREENS = [
   { name: "easy-project", mode: "easy", hash: `#/p/${P}`, ready: ".ez-grid" },
   { name: "easy-library", mode: "easy", hash: "#/library", ready: ".ez-tabs", tabs: [null, ".ez-tabs button:nth-child(3)"] },
   { name: "easy-settings", mode: "easy", hash: "#/settings", ready: ".ez-settings" },
+  { name: "approve", mode: "easy", hash: "#/approve", ready: ".approve-card, .approve-empty" },
   { name: "project", mode: "pro", hash: `#/p/${P}`, ready: ".side-tabs", tabs: [null, ".side-tablist button:nth-child(2)"] },
   { name: "projects", mode: "pro", hash: "#/", ready: "main" },
   { name: "library", mode: "pro", hash: "#/library", ready: "main" },
