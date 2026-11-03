@@ -100,6 +100,8 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
                 "reasons": c.reasons,
                 "signal_scores": c.signal_scores,
                 "text": c.text,
+                **({"marked": {"source": c.marker.get("source"), "by": c.marker.get("by"), "t": c.peak}}
+                   if c.marker is not None else {}),
             }
             for i, c in enumerate(cands)
         ],

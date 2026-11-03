@@ -38,7 +38,7 @@ from .power import ShutdownTimer
 FRONTEND_DIST = config.REPO_ROOT / "frontend" / "dist"
 REASON_CODES = ["loudness_spike", "keyword", "laughter", "shouting", "cheering", "fast_speech",
                 "pause_then_burst", "steady_explanation", "chorus", "drop", "chat_spike", "chat_reactions",
-                "llm_explanation"]
+                "llm_explanation", "marker"]
 BROWSER_CODECS = {"h264", "av1", "vp9", "vp8"}
 BROWSER_CONTAINERS = {".mp4", ".webm", ".m4v", ".mov"}
 
@@ -2223,6 +2223,7 @@ from .voices_api import router as _voices_router  # noqa: E402 - voices, bleeps,
 from .retention import router as _retention_router  # noqa: E402 - stories, A/B hooks, loops (1.2.5)
 from .publishing import router as _publishing_router  # noqa: E402 - Library + scheduled publishing (1.2.7)
 from .easy import router as _easy_router  # noqa: E402 - Easy mode (1.2.16)
+from .live import router as _live_router  # noqa: E402 - auto clips, live markers (1.2.17)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2230,6 +2231,7 @@ app.include_router(_voices_router)
 app.include_router(_retention_router)
 app.include_router(_publishing_router)
 app.include_router(_easy_router)
+app.include_router(_live_router)
 
 
 @app.get("/api/{rest:path}")
@@ -2296,3 +2298,6 @@ def _start_publishing() -> None:
 
     install(jobs)
     install_easy(jobs)
+    from .live import install as install_live
+
+    install_live()  # auto clips after a stream, live markers (1.2.17)

@@ -141,7 +141,7 @@ jobs:
           PID=$(python frontend/scripts/layout-fixture.py "$RUNNER_TEMP/layout")
           echo "LAYOUT_PID=$PID" >> "$GITHUB_ENV"
           SHARKYCLIPS_HOME="$RUNNER_TEMP/layout/home" SHARKYCLIPS_NO_MIGRATE=1 SHARKYCLIPS_NO_BROWSER=1 \
-            SHARKYCLIPS_PUBLISH_LOOP=0 SHARKYCLIPS_SHARED_CLIENT="$RUNNER_TEMP/none.json" \
+            SHARKYCLIPS_PUBLISH_LOOP=0 SHARKYCLIPS_LIVE_LOOP=0 SHARKYCLIPS_SHARED_CLIENT="$RUNNER_TEMP/none.json" \
             nohup python backend/cli.py serve --port 8799 --no-browser > "$RUNNER_TEMP/server.log" 2>&1 &
           for i in $(seq 1 60); do curl -sf http://127.0.0.1:8799/api/meta > /dev/null && exit 0; sleep 1; done
           cat "$RUNNER_TEMP/server.log"; exit 1

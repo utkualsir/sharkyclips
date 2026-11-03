@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { api, type YoutubeStatus } from "../api";
+import { ApiError, api, liveApi, type YoutubeStatus } from "../api";
 import { Icon } from "../components/Icons";
+import { useToast } from "../toast";
 import { Toggle } from "../components/ui";
 import { ConnectYoutube, YoutubeAccount } from "../components/YoutubeConnect";
 import { UI_LANGUAGES, useI18n } from "../i18n";
@@ -15,10 +16,31 @@ export default function EasySettings() {
   const [theme, , toggleTheme] = useTheme();
   const { settings, update, setMode } = useUiMode();
   const [yt, setYt] = useState<YoutubeStatus | null>(null);
+  const [folder, setFolder] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     api.youtube().then(setYt).catch(() => {});
+    liveApi
+      .get()
+      .then((l) => setFolder(l.watch.folders[0] ?? ""))
+      .catch(() => {});
   }, []);
+
+  const setAuto = async (v: boolean) => {
+    try {
+      await update({ auto_clip: v });
+      const l = await liveApi.get();
+      if (l.watch.enabled !== v) {
+        await update({ auto_clip: l.watch.enabled }); // the switch shows what really happened
+        throw new ApiError(t("auto.no_folder"), null, 400);
+      }
+      if (v) toast({ kind: "ok", text: t("auto.on_toast") });
+    } catch (e) {
+      if (e instanceof ApiError)
+        toast({ kind: "err", text: e.message, hint: e.hint, action: { label: t("easy.switch_to_pro"), run: () => setMode("pro") } });
+    }
+  };
 
   return (
     <main className="page ez-page ez-settings">
@@ -62,6 +84,20 @@ export default function EasySettings() {
             <Toggle checked={settings?.open_folder !== false} onChange={(v) => update({ open_folder: v })} label={t("easy.set_open_folder")} />
           </div>
         )}
+      </section>
+
+      <section className="card ez-set-card" aria-labelledby="ez-set-auto">
+        <h2 id="ez-set-auto">{t("easy.set_auto")}</h2>
+        <div className="toggle-line">
+          <span>
+            <b>{t("auto.switch")}</b>
+            <span className="muted ez-hint">
+              {folder === "" ? t("auto.no_folder") : folder ? t("easy.auto_hint", { dir: folder }) : t("auto.switch_hint")}
+            </span>
+          </span>
+          <Toggle checked={!!settings?.auto_clip} onChange={setAuto} label={t("auto.switch")} />
+        </div>
+        <span className="muted ez-hint">{t("easy.auto_marker_hint")}</span>
       </section>
 
       <section className="card ez-set-card" aria-labelledby="ez-set-fx">

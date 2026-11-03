@@ -73,7 +73,8 @@ def settings() -> dict:
     return {"mode": ui_mode(), "tour_done": bool(config.get("easy_tour_done")),
             "upload_when": when if when in WHEN else "now",
             "open_folder": config.get("easy_open_folder") is not False,
-            "downloads": str(downloads_root()), **fx_settings()}
+            "downloads": str(downloads_root()), **fx_settings(),
+            "auto_clip": bool(config.get("auto_clip_enabled"))}
 
 
 def save_settings(body: dict) -> dict:
@@ -115,10 +116,10 @@ def load(project: Project) -> dict:
         except (OSError, ValueError):
             data = {}
         return {"easy": bool(data.get("easy")), "mode_auto": bool(data.get("mode_auto")),
-                "shown": max(SHOWN, int(data.get("shown") or SHOWN)), "clips": dict(data.get("clips") or {}),
+                "shown": max(1, int(data.get("shown") or SHOWN)), "clips": dict(data.get("clips") or {}),
                 "notified_for": data.get("notified_for"), "created_at": data.get("created_at"),
-                # 1.2.17: made with the fun effects' defaults
-                "fx": bool(data.get("fx"))}
+                # 1.2.17: made by "auto clips after a stream"; made with the fun effects' defaults
+                "auto": bool(data.get("auto")), "fx": bool(data.get("fx"))}
 
 
 def save(project: Project, **changes) -> dict:

@@ -1608,11 +1608,80 @@ export interface EasySettings {
   upload_when: UploadWhen;
   open_folder: boolean;
   downloads: string;
-  /** 1.2.17: fun effects for new clips */
+  /** 1.2.17: fun effects for new clips + auto clips after a stream */
   replay: boolean;
   bubbles: boolean;
   memes: MemeLevel;
+  auto_clip: boolean;
 }
+
+// ---------------------------------------------------------------- automation + live (1.2.17)
+
+export type WatchPublish = "off" | "plan" | "now";
+
+export interface WatchRecent {
+  path: string;
+  name: string;
+  status: "ready" | "importing" | "imported" | "skipped" | "error";
+  reason?: "too_small" | "too_short" | "remuxed";
+  project_id?: string;
+  markers?: number;
+  error?: string;
+  at: number;
+}
+
+export interface LiveMarker {
+  id: string;
+  at: number;
+  source: "hotkey" | "chat" | "button";
+  by?: string;
+  note?: string;
+  rec_ms?: number;
+}
+
+export interface LiveView {
+  watch: {
+    enabled: boolean;
+    folders: string[];
+    custom_folders: boolean;
+    detected: string | null;
+    render_top: number;
+    publish: WatchPublish;
+    publish_top: number;
+    min_minutes: number;
+    recent: WatchRecent[];
+  };
+  markers: {
+    hotkey: string;
+    hotkey_enabled: boolean;
+    command: string;
+    twitch_channel: string;
+    youtube_chat: boolean;
+    obs_websocket: "auto" | "off";
+    recent: LiveMarker[];
+    hotkey_supported: boolean;
+  };
+  obs: { found: boolean; record_dir: string | null; format: string | null; websocket: { enabled: boolean; port: number } | null };
+  service: {
+    hotkey: "off" | "on" | "taken" | "unsupported" | "invalid";
+    twitch: { status: string; error: string | null; channel: string } | null;
+    youtube: { status: string; error: string | null } | null;
+    last_scan: number | null;
+    error: string | null;
+  };
+}
+
+export const liveApi = {
+  get: () => req<LiveView>("GET", "/api/live"),
+  watch: (body: Partial<{ enabled: boolean; folders: string[]; render_top: number; publish: WatchPublish; publish_top: number; min_minutes: number }>) =>
+    req<LiveView>("PUT", "/api/live/watch", body),
+  scan: () => req<{ started: string[]; recent: WatchRecent[] }>("POST", "/api/live/watch/scan"),
+  obsCheck: () => req<{ ok: boolean; reason?: "not_enabled" | "no_websocket" | "password" | "not_running"; obs?: string }>("GET", "/api/live/obs/check"),
+  markers: (body: Partial<{ hotkey: string; hotkey_enabled: boolean; command: string; twitch_channel: string; youtube_chat: boolean; obs_websocket: "auto" | "off" }>) =>
+    req<LiveView>("PUT", "/api/live/markers", body),
+  mark: () => req<{ marker: LiveMarker | null; recent: LiveMarker[] }>("POST", "/api/live/markers", { source: "button" }),
+  unmark: (id: string) => req<{ recent: LiveMarker[] }>("DELETE", `/api/live/markers/${encodeURIComponent(id)}`),
+};
 
 export type EasyStepKey = "download" | "transcribe" | "find" | "titles" | "render";
 

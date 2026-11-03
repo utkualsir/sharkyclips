@@ -577,6 +577,19 @@ h3.section-title {
   flex: 1;
 }
 
+/* phones: long labels (Turkish, German) wrap inside a full-width choice instead of being cut off */
+@media (max-width: 520px) {
+  .segmented.block button {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+    height: auto;
+    min-height: 30px;
+    padding: 4px 8px;
+    line-height: 1.2;
+  }
+}
+
 .toggle {
   --w: 38px;
   position: relative;
@@ -3889,4 +3902,42 @@ a.edit-note:hover { text-decoration: underline; }
 @media (max-width: 560px) {
   .swear-list li { grid-template-columns: auto auto minmax(0, 1fr) auto; }
   .swear-list li .tc, .swear-list li .badge { display: none; }
+}
+
+/* ---------------------------------------------------------------- automation + live (1.2.17) */
+.auto-recent {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.auto-recent li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  min-width: 0;
+}
+.auto-recent li .mono {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+/* settings cards (1.2.17): a switch with a title and a hint under it */
+.card.setting .toggle-line {
+  justify-content: space-between;
+}
+.card.setting .toggle-line > span:first-child {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.card.setting .toggle-line .ez-hint {
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }

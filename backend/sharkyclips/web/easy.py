@@ -45,9 +45,9 @@ def ranked(project: Project, hl: dict | None = None, review: dict | None = None)
     rejected = set(review.get("rejected") or [])
     out = [c for c in hl.get("candidates", []) if c["id"] not in rejected]
 
-    def key(c):
+    def key(c):  # the clips you marked live come first
         s = (c.get("publish") or {}).get("viral_score")
-        return (-(s if s is not None else -1), c["rank"])
+        return (not c.get("marked"), -(s if s is not None else -1), c["rank"])
 
     return sorted(out, key=key)
 
@@ -291,6 +291,9 @@ def _mark_import(job: Job) -> None:
             meta["mode"] = mode
             project.save_meta(meta)
     E.save(project, easy=True, mode_auto=auto, created_at=state.now_iso(), fx=True)
+    from .live import on_imported
+
+    on_imported(job, project)
 
 
 def _voices_ok() -> bool:
@@ -340,6 +343,9 @@ def on_job_finished(job: Job) -> None:
     if n:
         E.save(project, notified_for=hl.get("created_at"))
         E.ready_notice(project.load_meta().get("title") or pid, n, f"/#/p/{pid}")
+        from .live import on_clips_ready
+
+        on_clips_ready(project, top)  # auto publish (auto clips)
 
 
 _installed: list = []
@@ -483,7 +489,12 @@ def api_settings() -> dict:
 
 @router.put("/api/easy/settings")
 def api_settings_put(body: dict) -> dict:
-    return E.save_settings(body or {})
+    body = body or {}
+    if "auto_clip" in body:
+        from .live import enable_auto
+
+        enable_auto(bool(body["auto_clip"]))
+    return E.save_settings(body)
 
 
 @router.get("/api/notices")

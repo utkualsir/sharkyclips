@@ -21,6 +21,9 @@ _home = Path(tempfile.mkdtemp(prefix="sharkyclips-test-home-"))
 os.environ["SHARKYCLIPS_HOME"] = str(_home)
 os.environ["SHARKYCLIPS_NO_MIGRATE"] = "1"  # never touch the real shortcuts / ~/.clipforge
 os.environ["SHARKYCLIPS_PUBLISH_LOOP"] = "0"  # tests tick the publish scheduler themselves
+os.environ["SHARKYCLIPS_LIVE_LOOP"] = "0"  # no watcher / hotkey / chat threads in tests
+os.environ.pop("SHARKYCLIPS_TWITCH_IRC", None)
+os.environ["OBS_HOME"] = str(_home / "no-obs")  # never read the real OBS settings
 os.environ["SHARKYCLIPS_NO_KEYCHAIN"] = "1"  # macOS: never touch the real login Keychain
 os.environ.pop("SHARKYCLIPS_YT_ENDPOINT", None)
 os.environ["SHARKYCLIPS_NO_BROWSER"] = "1"  # "Connect with Google" must not open a real browser

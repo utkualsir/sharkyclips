@@ -7,6 +7,7 @@ import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { chooseLanguage, useMeta } from "../meta";
 import { LanPinBox } from "../components/LanAccess";
+import { AutoClipCard, MarkersCard } from "../components/Automation";
 import { YoutubeCard } from "../components/Publish";
 import { PublishingCard } from "../components/PublishTools";
 import { applyMotion, type MotionSetting } from "../motion";
@@ -695,6 +696,10 @@ export default function Settings() {
               <LanPinBox lanOn={!!meta?.lan_url} isLocal={!!meta?.is_local} />
             </div>
           </section>
+
+          <AutoClipCard />
+
+          <MarkersCard />
 
           <YoutubeCard
             isLocal={!!meta?.is_local}

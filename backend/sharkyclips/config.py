@@ -79,7 +79,21 @@ DEFAULTS: dict[str, Any] = {
     "brand_active": None,
     # YouTube Data API units per day of the user's own Google Cloud project (Google's default).
     "youtube_daily_quota": 10000,
-    "replay_smooth": "auto",  # instant replay frames: auto | motion | blend (1.2.17)
+    # 1.2.17 automation + live (watch.py, markers.py, livechat.py, web/live.py)
+    "auto_clip_enabled": False,  # watch the recording folder(s); a finished recording -> Easy clips
+    "watch_folders": None,  # None -> the folder OBS records into (detected)
+    "watch_render_top": 6,
+    "watch_publish": "off",  # off | plan | now: what happens to the best clips of an auto project
+    "watch_publish_top": 3,
+    "watch_min_minutes": 2,  # shorter recordings are skipped
+    "marker_hotkey": "ctrl+alt+c",
+    "marker_hotkey_enabled": True,
+    "live_clip_command": "!clip",
+    "live_twitch_channel": "",  # read-only: "!clip" from you / your mods + chat for the bubbles
+    "live_youtube_chat": False,
+    "live_chat_record": True,
+    "obs_websocket": "auto",  # auto (OBS's own websocket config) | off
+    "replay_smooth": "auto",  # instant replay frames: auto | motion | blend
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,

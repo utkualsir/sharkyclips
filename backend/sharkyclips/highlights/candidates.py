@@ -34,6 +34,7 @@ class Candidate:
     reasons: list[dict] = field(default_factory=list)
     signal_scores: dict[str, float] = field(default_factory=dict)
     text: str = ""
+    marker: dict | None = None  # live marker (hotkey / "!clip") this clip was made for
 
     @property
     def duration(self) -> float:
@@ -259,9 +260,11 @@ def pick_candidates(ctx: AnalysisContext, hype: HypeCurve, top: int | None = Non
     peaks = sorted((int(p) - 1 for p in peaks), key=lambda p: -curve[p])
     spans = [tuple(x) for r in hype.results.values() for x in (r.meta or {}).get("spans", [])]
 
-    chosen: list[Candidate] = []
+    # Live markers first: the streamer said "this one!" - each becomes a clip with its build-up.
+    chosen: list[Candidate] = marker_candidates(ctx, curve, hype, spans)
+    n_marked = len(chosen)
     for p in peaks:
-        if len(chosen) >= top:
+        if len(chosen) - n_marked >= top:
             break
         if any(abs(p - c.peak) < mode.min_gap for c in chosen):
             continue
@@ -299,5 +302,37 @@ def pick_candidates(ctx: AnalysisContext, hype: HypeCurve, top: int | None = Non
         a, b = int(c.start), max(int(c.start) + 1, int(np.ceil(c.end)))
         c.signal_scores = {n: round(float(r.scores[a:b].max()), 3) for n, r in hype.results.items()}
         c.text = ctx.text_between(c.start, c.end)
-    chosen.sort(key=lambda c: (-c.hype_score, c.start))
+        if c.marker is not None:
+            r = {"code": "marker", "value": c.marker.get("by") or c.marker.get("source"), "t": round(c.peak, 2),
+                 "strength": 1.0, "signal": "marker"}
+            c.reasons = [r] + c.reasons[: MAX_REASONS - 1]
+    chosen.sort(key=lambda c: (c.marker is None, -c.hype_score, c.start))
     return chosen
+
+
+def marker_candidates(ctx: AnalysisContext, curve: np.ndarray, hype: HypeCurve, spans: list[tuple]) -> list[Candidate]:
+    """Clips around the user's live markers: the build-up before the mark, a short tail after.
+    Markers close together share one clip."""
+    from ..markers import AFTER_S, BUILD_UP_S, load_project
+
+    marks = load_project(ctx.project)
+    mode = ctx.mode
+    out: list[Candidate] = []
+    for m in marks:
+        t = float(m.get("t", -1))
+        if not 0 <= t <= ctx.duration:
+            continue
+        if any(c.start <= t <= c.end for c in out):
+            continue
+        p = int(min(len(curve) - 1, max(0, round(t))))
+        build = min(BUILD_UP_S, max(mode.clip_min, mode.clip_max - AFTER_S))
+        s, e = max(0.0, t - build), min(ctx.duration, t + AFTER_S)
+        s, e, must = fit_spans(s, e, p, spans, mode, ctx.duration)
+        keep = (round(t - min(10.0, build), 2), round(min(ctx.duration, t + 1.5), 2))
+        must = keep if must is None else (min(must[0], keep[0]), max(must[1], keep[1]))
+        s, e = refine(ctx, s, e, float(p), must)
+        if e - s < 3 or any(s < c.end + 1.0 and e > c.start - 1.0 for c in out):
+            continue
+        out.append(Candidate(peak=round(t, 2), start=s, end=e, raw=float(curve[p]),
+                             raw_unsmoothed=float(hype.combined[p]), marker=m))
+    return out
