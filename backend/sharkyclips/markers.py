@@ -27,6 +27,7 @@ KEEP_DAYS = 14
 DEDUPE_S = 4.0  # two marks this close are one moment (hotkey + a mod's !clip)
 BUILD_UP_S = 25.0  # seconds before a marker that the clip keeps (what led to it)
 AFTER_S = 6.0
+MERGE_S = 15.0  # marks this close (hotkey + a mod's !clip a moment later) share one clip
 
 _lock = threading.RLock()
 

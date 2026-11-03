@@ -313,26 +313,30 @@ def pick_candidates(ctx: AnalysisContext, hype: HypeCurve, top: int | None = Non
 def marker_candidates(ctx: AnalysisContext, curve: np.ndarray, hype: HypeCurve, spans: list[tuple]) -> list[Candidate]:
     """Clips around the user's live markers: the build-up before the mark, a short tail after.
     Markers close together share one clip."""
-    from ..markers import AFTER_S, BUILD_UP_S, load_project
+    from ..markers import AFTER_S, BUILD_UP_S, MERGE_S, load_project
 
-    marks = load_project(ctx.project)
+    marks = sorted((m for m in load_project(ctx.project) if 0 <= float(m.get("t", -1)) <= ctx.duration),
+                   key=lambda m: float(m["t"]))
     mode = ctx.mode
-    out: list[Candidate] = []
+    # Marks a few seconds apart are one moment (you pressed the hotkey, a mod typed !clip).
+    groups: list[list[dict]] = []
     for m in marks:
-        t = float(m.get("t", -1))
-        if not 0 <= t <= ctx.duration:
-            continue
-        if any(c.start <= t <= c.end for c in out):
-            continue
-        p = int(min(len(curve) - 1, max(0, round(t))))
-        build = min(BUILD_UP_S, max(mode.clip_min, mode.clip_max - AFTER_S))
-        s, e = max(0.0, t - build), min(ctx.duration, t + AFTER_S)
+        if groups and float(m["t"]) - float(groups[-1][-1]["t"]) <= MERGE_S:
+            groups[-1].append(m)
+        else:
+            groups.append([m])
+    out: list[Candidate] = []
+    for g in groups:
+        t0, t1 = float(g[0]["t"]), float(g[-1]["t"])
+        p = int(min(len(curve) - 1, max(0, round(t1))))
+        build = min(BUILD_UP_S, max(mode.clip_min, mode.clip_max - AFTER_S - (t1 - t0)))
+        s, e = max(0.0, t0 - build), min(ctx.duration, t1 + AFTER_S)
         s, e, must = fit_spans(s, e, p, spans, mode, ctx.duration)
-        keep = (round(t - min(10.0, build), 2), round(min(ctx.duration, t + 1.5), 2))
+        keep = (round(t0 - min(10.0, build), 2), round(min(ctx.duration, t1 + 1.5), 2))
         must = keep if must is None else (min(must[0], keep[0]), max(must[1], keep[1]))
         s, e = refine(ctx, s, e, float(p), must)
         if e - s < 3 or any(s < c.end + 1.0 and e > c.start - 1.0 for c in out):
             continue
-        out.append(Candidate(peak=round(t, 2), start=s, end=e, raw=float(curve[p]),
-                             raw_unsmoothed=float(hype.combined[p]), marker=m))
+        out.append(Candidate(peak=round(t1, 2), start=s, end=e, raw=float(curve[p]),
+                             raw_unsmoothed=float(hype.combined[p]), marker=g[0]))
     return out

@@ -308,8 +308,8 @@ def test_markers_become_top_candidates():
     words = [{"start": float(i), "end": i + 0.6, "word": " a."} for i in range(0, 600, 2)]
     write_json_atomic(d / "transcript.json", {"language": "en", "segments": [{"start": 0, "end": 600, "words": words}]})
     proj = Project("marker-cands", d)
-    write_json_atomic(d / "markers.json", {"markers": [{"t": 400.0, "source": "hotkey"},
-                                                       {"t": 405.0, "source": "chat", "by": "mod"}]})
+    write_json_atomic(d / "markers.json", {"markers": [{"t": 400.0, "source": "chat", "by": "mod"},
+                                                       {"t": 406.0, "source": "hotkey"}]})
     ctx = AnalysisContext(proj, get_mode("gaming"))
     curve = np.zeros(600)
     curve[100] = 1.0  # one loud moment elsewhere
@@ -324,8 +324,8 @@ def test_markers_become_top_candidates():
     cands = pick_candidates(ctx, Hype(), top=3)
     first = cands[0]
     assert first.marker is not None and first.reasons[0]["code"] == "marker"
-    assert first.start <= 400 - 10 and first.end >= 401  # the build-up before the mark is in it
-    assert sum(c.marker is not None for c in cands) == 1  # two marks 5 s apart = one clip
+    assert first.start <= 400 - 10 and first.end >= 407  # the build-up and both marks are in it
+    assert sum(c.marker is not None for c in cands) == 1  # two marks 6 s apart = one clip
     assert any(c.marker is None and c.start <= 100 <= c.end for c in cands)
 
 
