@@ -165,7 +165,9 @@ def _write(path: Path, size: int) -> None:
         f.write(b"\0" * size)
 
 
-def test_watch_scan_waits_for_a_finished_file(tmp_path):
+def test_watch_scan_waits_for_a_finished_file(tmp_path, monkeypatch):
+    # the logic with an injected lock check (macOS / Linux wait longer instead: same timing here)
+    monkeypatch.setattr(watch, "STABLE_S_NOLOCK", watch.STABLE_S)
     rec = tmp_path / "rec"
     rec.mkdir()
     old = rec / "old.mkv"
@@ -501,8 +503,8 @@ def test_service_tick_imports_a_simulated_obs_recording(tmp_path, monkeypatch):
 
     monkeypatch.setattr(appmod, "submit_import", lambda *a, **k: (submitted.append((a, k)), J())[1])
     monkeypatch.setattr(live, "_duration", lambda p: 3600.0)
-    if os.name != "nt":
-        monkeypatch.setattr(watch, "STABLE_S_NOLOCK", watch.STABLE_S)
+    windows = os.name == "nt"  # macOS / Linux have no write lock to check: they wait longer instead
+    stable = watch.STABLE_S if windows else watch.STABLE_S_NOLOCK
     svc = live.LiveService()
     path = rec / "2026-11-03 21-00-00.mp4"
     f = open(path, "ab")  # OBS is recording
@@ -511,11 +513,14 @@ def test_service_tick_imports_a_simulated_obs_recording(tmp_path, monkeypatch):
         f.flush()
         now = time.time() + 1
         assert svc.tick(now) == []
-        assert svc.tick(now + 30) == [] if os.name == "nt" else True
+        if windows:  # unchanged for a while, but OBS still holds it open: not touched
+            assert svc.tick(now + stable + 10) == []
+            assert svc.tick(now + stable + 11) == []
     finally:
         f.close()  # OBS stopped
-    assert svc.tick(now + 31) == [] or os.name != "nt"
-    started = svc.tick(now + 60) or svc.tick(now + 120)
+    started = []
+    for dt in (2 * stable + 40, 3 * stable + 100):
+        started = started or svc.tick(now + dt)
     assert started == [path] and len(submitted) == 1
     a, k = submitted[0]
     assert a[0] == str(path) and k["extra"]["auto_watch"] == str(path) and k["extra"]["easy"] is True
