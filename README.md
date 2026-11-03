@@ -16,7 +16,7 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.16-1F6FE5" alt="Version 1.2.16"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.17-1F6FE5" alt="Version 1.2.17"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -85,6 +85,15 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
   Google** (or your own Google project under Advanced):
   title, description and hashtags from the publish package, privacy, scheduling, thumbnail, a daily
   quota counter, and views that flow back into the calibration by themselves.
+- **Clips by themselves after a stream.** Switch it on and SharkyClips watches the folder OBS records
+  into: when a recording is finished, the best clips are found, rendered and titled, only while your
+  PC isn't busy. Mark moments while you play with **Ctrl+Alt+C** (works in games, no focus change) or
+  **!clip** in your Twitch / YouTube chat (you and your mods): they become the first clips.
+- **Approve from your phone.** Your own free Telegram bot sends each ready clip with Upload / Plan /
+  Skip buttons, or swipe through them on the approval page on your Wi-Fi (PIN protected).
+- **Instant replay, chat bubbles, meme effects.** The big moment again in smooth slow motion with a
+  REPLAY badge, real (filtered) chat messages as bubbles, and optional meme freezes with a caption the
+  local AI writes in your language. Sound effects are made on your PC.
 - **Best-of videos.** One 16:9 YouTube video from your best clips, with title cards, crossfades,
   even loudness, and AI-written titles, description and chapters.
 - **A render queue.** Reorder, cancel and retry jobs. The queue survives restarts and can shut the PC
@@ -123,7 +132,9 @@ highlight detection and rendering all run locally. Your videos, transcripts and 
 the `workspace` folder. SharkyClips only goes online to download what you ask it to (a VOD, its
 chat replay), the AI models (once), and updates (when you click "Check for updates"). The optional
 YouTube upload talks only to Google's official API; your sign-in is stored encrypted on your
-computer and never goes anywhere else. Details: [privacy policy](https://utkualsir.github.io/sharkyclips-site/privacy.html) ·
+computer and never goes anywhere else. Optional too: your own Telegram bot (phone approval; it gets
+the clip's cover and title, and the video when you tap Watch) and reading your Twitch / YouTube live
+chat (only for "!clip" and the chat bubbles; it never posts). Details: [privacy policy](https://utkualsir.github.io/sharkyclips-site/privacy.html) ·
 [terms](https://utkualsir.github.io/sharkyclips-site/terms.html).
 
 ## Supported hardware
@@ -375,6 +386,15 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
   altyazı stilini tek düğmeyle ekler.
 - Her şey için **klavye kısayolları** (A tut, X geç, J/K/L, kendi klibiniz için I/O) ve adayları tek
   tek, tam ekran, kaydırarak inceleyebileceğiniz **hızlı inceleme** modu.
+- **Yayın bitince klipler kendiliğinden:** açarsanız OBS'nin kayıt klasörünü izler; kayıt bitince en
+  iyi klipleri bulur, hazırlar ve başlıklarını yazar (sadece bilgisayar meşgul değilken). Oynarken
+  **Ctrl+Alt+C** (oyunda çalışır, odağı çalmaz) ya da Twitch / YouTube sohbetinde **!clip** (siz ve
+  moderatörleriniz) ile anı işaretleyin: ilk klipler o anlar olur.
+- **Telefondan onay:** ücretsiz kendi Telegram botunuz her hazır klibi Yükle / Planla / Atla
+  düğmeleriyle gönderir; ya da Wi-Fi'daki onay sayfasında (PIN korumalı) kaydırarak karar verin.
+- **Anlık tekrar, sohbet balonları, meme efektleri:** büyük an akıcı ağır çekimde REPLAY etiketiyle bir
+  daha, o andaki gerçek (süzülmüş) sohbet mesajları balon olarak ve isteğe bağlı, yerel yapay zekânın
+  sizin dilinizde yazdığı yazıyla meme donmaları. Ses efektleri bilgisayarınızda üretilir.
 - En iyi kliplerden bölümlü, 16:9 bir **"en iyi anlar" videosu** hazırlar.
 - Her platform için **dışa aktarır**: MP4 (H.264, HEVC, AV1), MOV, WebM, GIF, MP3/M4A; YouTube Shorts,
   TikTok, Instagram Reels, X ve YouTube 16:9 için tek tıkla ayarlar, SRT/VTT altyazı dosyaları ve
@@ -390,7 +410,9 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
 **Her şey bilgisayarınızda çalışır; siz Yükle'ye basmadıkça hiçbir şey dışarı çıkmaz.** Hesap, bulut, ücretli servis
 veya veri toplama yoktur. İnternet yalnızca sizin istediğiniz videoyu, yapay zekâ modellerini (bir
 kez) ve güncellemeleri indirmek için kullanılır. İsteğe bağlı YouTube yüklemesi yalnızca Google'ın
-resmî API'siyle, sizin oluşturduğunuz ve bilgisayarınızdan çıkmayan bir anahtarla konuşur.
+resmî API'siyle, sizin oluşturduğunuz ve bilgisayarınızdan çıkmayan bir anahtarla konuşur. Yine isteğe bağlı:
+kendi Telegram botunuz (telefondan onay; klibin kapağını ve başlığını, İzle'ye basarsanız videoyu alır) ve
+Twitch / YouTube canlı sohbetinizi okumak (sadece "!clip" ve sohbet balonları için; asla yazmaz).
 
 ### Kurulum (Windows 10 / 11)
 

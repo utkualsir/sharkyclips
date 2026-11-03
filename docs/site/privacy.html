@@ -30,7 +30,7 @@
 
 <main id="main" class="wrap doc">
   <h1>Privacy policy</h1>
-  <p class="meta">Effective 1 November 2026</p>
+  <p class="meta">Effective 3 November 2026</p>
 
   <p class="callout"><b>Short version:</b> SharkyClips runs on your computer. It has no server, no
     account and no telemetry. Your videos, transcripts, clips and YouTube data stay on your
@@ -47,8 +47,13 @@
   <ul>
     <li><b>Videos you import</b> and what the app makes from them: audio, transcripts, highlight
       lists, rendered clips, exports.</li>
-    <li><b>Chat replays</b> of streams you import. Chat author names are not stored; messages are
-      kept only to find moments where chat got excited.</li>
+    <li><b>Chat replays</b> of streams you import, and the live chat of your own stream if you turn
+      on live chat reading. Messages and author names are kept on your computer to find moments
+      where chat got excited, for "!clip" markers and to show chat bubbles in clips (links, swear
+      words, phone numbers, e-mail addresses and @mentions are never shown). The live chat log is
+      deleted after 14 days.</li>
+    <li><b>Live markers</b> you set during a stream (a hotkey, "!clip" in chat): the time and who
+      set it.</li>
     <li><b>Your settings and preferences</b>, such as language, title feedback (thumbs up/down),
       glossary, music library and brand kit.</li>
     <li><b>View counts you enter yourself</b> to calibrate the viral score.</li>
@@ -64,6 +69,14 @@
     <li>Downloading the AI models once (from Hugging Face and Ollama).</li>
     <li>Checking for and installing updates from GitHub, when you click "Check for updates".</li>
     <li>The optional YouTube connection described below.</li>
+    <li>Reading your Twitch chat during a stream, if you enter your channel name: a read-only,
+      anonymous connection to Twitch's chat server. The app never posts anything.</li>
+    <li>Your own Telegram bot, if you connect one (phone approval): the app sends the cover picture,
+      title and score of ready clips (and the clip itself when you tap Watch) to Telegram's Bot API
+      and receives your button presses. Telegram processes this under its own privacy policy. The
+      bot token is stored encrypted on your computer.</li>
+    <li>OBS on your own computer (its local WebSocket server), if it is turned on, to read the
+      recording time of a marker.</li>
   </ul>
   <p>The app contains no analytics, crash reporting, advertising or tracking code.</p>
 
@@ -78,11 +91,13 @@
     <thead><tr><th>Permission</th><th>Data</th><th>Used for</th></tr></thead>
     <tbody>
       <tr><td><code>youtube</code></td><td>The clip, title, description, tags, category, language, privacy setting, release time, playlist and thumbnail you chose; your channel's name, id and avatar; your playlists' names; views, likes, privacy status and publish time of videos uploaded with SharkyClips</td><td>Uploading, scheduling, changing or cancelling clips you publish from SharkyClips; showing which channel is connected; showing your clips' results; calibrating the viral score and the release times to your channel</td></tr>
+      <tr><td><code>youtube</code> (only if you turn on YouTube live chat)</td><td>Whether your channel is live right now, and the chat messages of your own live stream (author name, text, whether the author is you or a moderator)</td><td>"!clip" markers from you or your moderators, and chat bubbles in clips made from the stream; read-only, nothing is posted</td></tr>
       <tr><td><code>yt-analytics.readonly</code></td><td>Views, average view duration and average view percentage of videos uploaded with SharkyClips as part of a hook test</td><td>Learning which clip opening style keeps your viewers watching (the A/B hook test)</td></tr>
     </tbody>
   </table>
   <p>The app does not read the contents of your other videos, your comments, subscribers or watch
-    history, or other people's channels. It only changes or deletes videos that were uploaded with
+    history, or other people's channels (live chat is read only for your own live stream, only
+    when you turn it on). It only changes or deletes videos that were uploaded with
     SharkyClips, and only when you ask (editing or cancelling a scheduled clip).</p>
 
   <h3>Where it is stored</h3>

@@ -7,6 +7,149 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.17] - 2026-11-03
+
+### Added
+- **Clips by themselves after a stream:** switch on “Make clips when my stream ends” and
+  SharkyClips watches the folder OBS records into (found automatically, changeable in Pro mode).
+  When a recording is finished, it finds the clips, makes the best ones and writes their titles,
+  only while your PC isn't busy. It never touches a file that is still being recorded, and never
+  one that was already finished before you switched it on. Optional (off by default): plan or upload the
+  best clips by themselves.
+- **Live markers:** press **Ctrl+Alt+C** while you play (it works in games and doesn't take the
+  focus; a short sound confirms it), or type **!clip** in your Twitch / YouTube chat (you or your
+  moderators only). The moment becomes one of the first clips, labelled “Marked by you”, with
+  what led up to it. With OBS's WebSocket server on, markers are exact even if you paused.
+- **Approve from your phone:** connect your own Telegram bot in a minute (free and private).
+  Each ready clip arrives with its cover, title and viral label and three buttons:
+  **Upload / Plan / Skip** (and Watch). Or open the approval page on your Wi-Fi (PIN required)
+  and swipe: right to upload, left to skip. It can be added to the home screen like an app;
+  a short guide shows how to use it away from home with Tailscale.
+- **Instant replay:** the clip's big moment (pentakill, multikill, extraction, kill, a loud
+  peak, your marker) plays again in slow motion with smooth in-between frames, a gentle zoom on
+  the action and a small REPLAY badge. Captions pause during the replay.
+- **Chat bubbles:** real chat messages from that moment as small bubbles with colourful names,
+  never more than three at once and never over the captions or the platform's buttons. Links,
+  swear words, phone numbers, e-mails and @mentions are filtered out. Chat from your live
+  stream is saved for this too.
+- **Meme effects** (off by default; light / strong in Pro mode): on a funny moment the picture
+  freezes and zooms in with a short caption the local AI writes in your language (“NASIL?!”,
+  “bruh”); on a fail a quick zoom or shake. The sound effects are made on your PC: no
+  copyrighted sounds.
+- In Easy mode each of these is a single switch in Settings. Instant replay and chat bubbles are
+  on for new videos; your older clips keep their look until you change a switch.
+
+### Fixed
+- A swear-word badge in the light theme had too little contrast.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Eklendi
+- **Yayından sonra klipler kendiliğinden:** “Yayın bitince otomatik klip çıkar”ı aç; SharkyClips
+  OBS'nin kaydettiği klasörü izler (kendisi bulur, Pro modda değiştirilebilir). Kayıt bitince
+  klipleri bulur, en iyilerini hazırlar ve başlıklarını yazar; bunu sadece bilgisayarın meşgul
+  değilken yapar. Kaydı hâlâ süren bir dosyaya ve sen açmadan önce bitmiş olan dosyalara asla
+  dokunmaz. İsteğe bağlı (varsayılan kapalı): en iyi klipleri kendiliğinden planla ya da yükle.
+- **Canlı işaretler:** oynarken **Ctrl+Alt+C**'ye bas (oyunda çalışır, odağı çalmaz; kısa bir ses
+  onaylar) ya da Twitch / YouTube sohbetine **!clip** yaz (sadece sen ya da moderatörlerin). O an,
+  öncesiyle birlikte “Senin işaretin” etiketiyle ilk kliplerden biri olur. OBS'nin WebSocket
+  sunucusu açıksa, kaydı duraklatsan bile işaretler tam doğru olur.
+- **Telefondan onay:** kendi Telegram botunu bir dakikada bağla (ücretsiz ve gizli). Her hazır
+  klip kapağı, başlığı ve viral etiketiyle üç düğmeyle gelir: **Yükle / Planla / Atla** (bir de
+  İzle). Ya da Wi-Fi'ında onay sayfasını aç (PIN gerekir) ve kaydır: sağa yükle, sola atla.
+  Uygulama gibi ana ekrana eklenebilir; evden uzakta Tailscale ile kullanmak için kısa bir
+  rehber var.
+- **Anlık tekrar:** klibin büyük anı (pentakill, çoklu kill, tahliye, kill, ses patlaması, senin
+  işaretin) akıcı ara karelerle ağır çekimde bir daha oynar; aksiyona hafif bir yakınlaştırma ve
+  küçük bir REPLAY etiketi. Tekrar sırasında altyazı durur.
+- **Sohbet balonları:** o andaki gerçek sohbet mesajları renkli isimlerle küçük balonlar olarak;
+  aynı anda en fazla üç tane, asla altyazının ya da platform düğmelerinin üstünde değil. Linkler,
+  küfürler, telefon numaraları, e-postalar ve @etiketler süzülür. Canlı yayının sohbeti de bunun
+  için kaydedilir.
+- **Meme efektleri** (varsayılan kapalı; Pro modda hafif / güçlü): komik bir anda görüntü donar,
+  yakınlaşır ve yerel yapay zekânın senin dilinde yazdığı kısa bir yazı çıkar (“NASIL?!”,
+  “bruh”); fail anında hızlı bir yakınlaştırma ya da sarsıntı. Ses efektleri bilgisayarında
+  üretilir: telifli ses yok.
+- Kolay modda bunların her biri Ayarlar'da tek bir anahtar. Anlık tekrar ve sohbet balonları yeni
+  videolarda açık; eski kliplerin, bir anahtarı değiştirene kadar görünümünü korur.
+
+### Düzeltildi
+- Açık temada bir küfür etiketinin kontrastı yetersizdi.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Neu: **Clips von selbst nach dem Stream** – SharkyClips beobachtet den OBS-Aufnahmeordner und
+  macht aus jeder fertigen Aufnahme Clips (nur wenn der PC frei ist; laufende Aufnahmen werden
+  nie angefasst). Optional: die besten automatisch planen oder hochladen.
+- **Live-Marker:** Strg+Alt+C beim Spielen (ohne Fokuswechsel) oder **!clip** im Twitch-/YouTube-
+  Chat (du oder deine Mods): der Moment wird einer der ersten Clips, samt Vorgeschichte.
+- **Freigabe am Handy:** eigener Telegram-Bot mit Hochladen / Planen / Überspringen, oder die
+  Freigabeseite im WLAN (PIN) zum Wischen.
+- **Sofort-Wiederholung** des großen Moments in Zeitlupe, **Chat-Blasen** mit echten (gefilterten)
+  Nachrichten und **Meme-Effekte** (Standbild + KI-Text, Wackeln bei Fails; Sounds lokal erzeugt).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Új: **klipek maguktól adás után** – a SharkyClips figyeli az OBS felvételi mappáját, és minden
+  kész felvételből klipeket készít (csak ha a gép nem foglalt; futó felvételhez nem nyúl).
+  Opcionális: a legjobbak automatikus ütemezése vagy feltöltése.
+- **Élő jelölések:** Ctrl+Alt+C játék közben (fókuszvesztés nélkül) vagy **!clip** a Twitch /
+  YouTube chatben (te vagy a moderátoraid): a pillanat az első klipek egyike lesz.
+- **Jóváhagyás telefonon:** saját Telegram-bot Feltöltés / Ütemezés / Kihagy gombokkal, vagy a
+  jóváhagyó oldal a Wi-Fi-n (PIN) húzogatással.
+- **Azonnali visszajátszás** lassítva, **chat-buborékok** valódi (szűrt) üzenetekkel és
+  **mém-effektek** (kimerevítés + MI-felirat, rázkódás failnél; a hangok helyben készülnek).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Новое: **клипы сами после стрима** — SharkyClips следит за папкой записей OBS и делает клипы из
+  каждой готовой записи (только когда ПК не занят; идущую запись не трогает). По желанию:
+  автоплан или автозагрузка лучших.
+- **Метки во время стрима:** Ctrl+Alt+C в игре (без потери фокуса) или **!clip** в чате Twitch /
+  YouTube (вы или модераторы): момент станет одним из первых клипов вместе с предысторией.
+- **Одобрение с телефона:** свой бот Telegram с кнопками Загрузить / В план / Пропустить или
+  страница одобрения в Wi-Fi (PIN) со свайпами.
+- **Мгновенный повтор** в замедлении, **сообщения чата** пузырями (с фильтрацией) и **мем-эффекты**
+  (стоп-кадр + подпись от ИИ, тряска на фейлах; звуки создаются локально).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- جديد: **مقاطع تلقائية بعد البث** – يراقب SharkyClips مجلد تسجيلات OBS ويصنع مقاطع من كل تسجيل
+  مكتمل (فقط عندما لا يكون الجهاز مشغولًا، ولا يلمس تسجيلًا جاريًا). اختياري: جدولة أو رفع الأفضل تلقائيًا.
+- **علامات أثناء البث:** ‎Ctrl+Alt+C أثناء اللعب (دون فقدان التركيز) أو **‎!clip** في دردشة
+  Twitch / YouTube (أنت أو مشرفوك): تصبح اللحظة من أول المقاطع.
+- **الموافقة من الهاتف:** بوت تيليجرام خاص بك بأزرار رفع / جدولة / تخطي، أو صفحة الموافقة على
+  شبكة Wi-Fi (برمز PIN) بالسحب.
+- **إعادة فورية** بالحركة البطيئة، و**فقاعات دردشة** برسائل حقيقية مُنقّاة، و**تأثيرات ميمز**
+  (تجميد + تعليق من الذكاء الاصطناعي، واهتزاز عند الفشل؛ الأصوات تُصنع محليًا).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 新增：**直播后自动出片**——SharkyClips 关注 OBS 的录制文件夹，每段录完的视频都会自动做成片段
+  （只在电脑空闲时运行，绝不碰正在录制的文件）。可选：自动排期或上传最好的片段。
+- **直播标记：**游戏中按 Ctrl+Alt+C（不抢焦点），或在 Twitch / YouTube 聊天里发 **!clip**
+  （仅你或房管）：这一刻会连同前因后果成为最靠前的片段。
+- **手机审核：**你自己的 Telegram 机器人，带“上传 / 排期 / 跳过”按钮；或在 Wi-Fi 下打开审核页
+  （需 PIN），左右滑动即可。
+- **即时回放**慢动作重放高光，**聊天气泡**显示真实（已过滤的）弹幕，**梗图特效**（定格 + AI 字幕，
+  翻车时抖动；音效在本地生成）。
+
+</details>
+
 ## [1.2.16] - 2026-11-02
 
 ### Added
