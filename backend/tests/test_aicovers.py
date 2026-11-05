@@ -20,6 +20,13 @@ from sharkyclips.project import Project, write_json_atomic
 FAKE = Path(__file__).parent / "data" / "fake_sdcli.py"
 
 
+@pytest.fixture(autouse=True)
+def _no_leftover_projects():
+    yield
+    for d in config.workspace_dir().glob("aic-*"):
+        shutil.rmtree(d, ignore_errors=True)
+
+
 def _project(pid: str) -> Project:
     d = config.workspace_dir() / pid
     shutil.rmtree(d, ignore_errors=True)

@@ -543,3 +543,11 @@
   .ez-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; overflow: visible; }
   .ez-tabs button { padding: 0 6px; font-size: 14px; gap: 5px; justify-content: center; white-space: normal; text-align: center; }
 }
+
+/* 1.2.18: the upload button's platform picker + TikTok / Reels states */
+.ez-when.ez-platforms { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.ez-platforms button { min-height: 32px; font-size: 13px; }
+.ez-platform-tools { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+.ez-platform-tools .link-btn { display: inline-flex; align-items: center; gap: 5px; }
+.ez-mode-note { margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
+.ez-up-live .ez-hint { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }

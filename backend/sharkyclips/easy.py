@@ -74,7 +74,8 @@ def settings() -> dict:
             "upload_when": when if when in WHEN else "now",
             "open_folder": config.get("easy_open_folder") is not False,
             "downloads": str(downloads_root()), **fx_settings(),
-            "auto_clip": bool(config.get("auto_clip_enabled"))}
+            "auto_clip": bool(config.get("auto_clip_enabled")),
+            "platform": config.get("easy_platform") if config.get("easy_platform") in ("youtube", "tiktok", "reels") else "youtube"}
 
 
 def save_settings(body: dict) -> dict:
@@ -93,6 +94,8 @@ def save_settings(body: dict) -> dict:
         changes["easy_bubbles"] = bool(body["bubbles"])
     if body.get("memes") in MEMES:
         changes["easy_memes"] = body["memes"]
+    if body.get("platform") in ("youtube", "tiktok", "reels"):
+        changes["easy_platform"] = body["platform"]
     if changes:
         config.update(**changes)
     return settings()
@@ -287,6 +290,32 @@ def open_folder(path: Path) -> bool:
         return True
     except Exception:  # noqa: BLE001
         return False
+
+
+def reveal_file(path: Path) -> bool:
+    """Show a file selected in Explorer / Finder (never in tests)."""
+    if os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("SHARKYCLIPS_NO_OPEN") == "1":
+        return False
+    try:
+        if os.name == "nt":
+            import ctypes
+
+            shell = ctypes.windll.shell32
+            shell.ILCreateFromPathW.restype = ctypes.c_void_p
+            pidl = shell.ILCreateFromPathW(str(path))
+            if not pidl:
+                return open_folder(path.parent)
+            ctypes.windll.ole32.CoInitialize(None)
+            try:
+                return shell.SHOpenFolderAndSelectItems(ctypes.c_void_p(pidl), 0, None, 0) == 0
+            finally:
+                shell.ILFree(ctypes.c_void_p(pidl))
+        if os.uname().sysname == "Darwin":
+            subprocess.Popen(["open", "-R", str(path)], **no_window())
+            return True
+        return open_folder(path.parent)
+    except Exception:  # noqa: BLE001
+        return open_folder(path.parent)
 
 
 # ===================================================================== notices (tray)

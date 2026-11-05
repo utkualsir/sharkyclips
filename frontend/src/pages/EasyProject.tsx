@@ -11,6 +11,8 @@ import {
 } from "../api";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { CoverStudio } from "../components/CoverStudio";
+import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
+import type { Platform, PlatformsOverview } from "../extras";
 import { Icon } from "../components/Icons";
 import { Modal, ProgressBar, Toggle } from "../components/ui";
 import { ConnectPrompt } from "../components/YoutubeConnect";
@@ -56,6 +58,7 @@ export default function EasyProject({ id }: { id: string }) {
   const [allBusy, setAllBusy] = useState(false);
   const prepared = useRef(false);
   const when: UploadWhen = settings?.upload_when ?? "now";
+  const platforms = usePlatforms();
 
   const load = useCallback(async () => {
     try {
@@ -75,7 +78,8 @@ export default function EasyProject({ id }: { id: string }) {
   const moving =
     !!view &&
     (view.state === "working" ||
-      view.clips.some((c) => ["rendering", "queued"].includes(c.render.status) || ["uploading", "queued_uploading", "rendering"].includes(c.upload.step ?? "")) ||
+      view.clips.some((c) => ["rendering", "queued"].includes(c.render.status) || ["uploading", "queued_uploading", "rendering"].includes(c.upload.step ?? "") ||
+        Object.values(c.platforms ?? {}).some((x) => x.status === "exporting" || x.status === "uploading")) ||
       Object.keys(tracked).length > 0);
   useEffect(() => {
     const ms = moving ? 1500 : 15000;
@@ -290,6 +294,9 @@ export default function EasyProject({ id }: { id: string }) {
                 c={c}
                 when={when}
                 onWhen={(w) => update({ upload_when: w })}
+                platform={settings?.platform ?? "youtube"}
+                onPlatform={(p) => update({ platform: p })}
+                platforms={platforms}
                 selected={selected.includes(c.id)}
                 onSelect={() => toggleSel(c.id)}
                 busy={busy[c.id]}
@@ -373,6 +380,9 @@ function ClipCard({
   c,
   when,
   onWhen,
+  platform,
+  onPlatform,
+  platforms,
   selected,
   onSelect,
   busy,
@@ -385,6 +395,9 @@ function ClipCard({
   c: EasyClip;
   when: UploadWhen;
   onWhen: (w: UploadWhen) => void;
+  platform: Platform;
+  onPlatform: (p: Platform) => void;
+  platforms: PlatformsOverview | null;
   selected: boolean;
   onSelect: () => void;
   busy?: "upload" | "download";
@@ -465,6 +478,12 @@ function ClipCard({
     );
   }
 
+  if (platform !== "youtube") {
+    upPart = (
+      <PlatformPost pid={pid} cid={c.id} platform={platform} state={c.platforms?.[platform]} ready={ok} overview={platforms} />
+    );
+  }
+
   return (
     <li className={`ez-card${selected ? " selected" : ""}`} aria-labelledby={titleId}>
       <div className="ez-video">
@@ -507,6 +526,7 @@ function ClipCard({
           {c.title}
         </h3>
         <div className="ez-actions">
+          <PlatformPicker value={platform} onChange={onPlatform} />
           {upPart}
           <button className="btn ez-big" disabled={!ok || !!busy} onClick={onDownload}>
             {busy === "download" ? <span className="spinner" /> : <Icon name="download" />} {t("easy.download_pc")}

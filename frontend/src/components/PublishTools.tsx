@@ -19,6 +19,7 @@ import { UI_LANGUAGES, useI18n } from "../i18n";
 import { href } from "../router";
 import { useToast } from "../toast";
 import { CoverStudio, useAiCovers } from "./CoverStudio";
+import { PlatformRow } from "./PlatformPost";
 import { Icon } from "./Icons";
 import { Markdown } from "./Shell";
 import { Modal, Segmented, Toggle } from "./ui";
@@ -625,6 +626,8 @@ export function PublishSetupDialog({
                   </span>
                 </div>
               ))}
+
+            <PlatformRow pid={projectId} cid={clipId} />
 
             <div className="export-two">
               <label className="field">

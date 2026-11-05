@@ -425,6 +425,22 @@ def _steps(project: Project, hl: dict, top: list[dict], rstates: list[dict]) -> 
     return steps, (round(left) if busy or not rendered else None)
 
 
+def _platform_state(project: Project, cid: str, recs: dict) -> dict:
+    """TikTok / Reels per clip: the last post and a running export / upload job."""
+    from . import platforms_api
+
+    out = {}
+    for p in ("tiktok", "reels"):
+        j = platforms_api.active_job(project.id, cid, p)
+        rec = recs.get(p) or {}
+        out[p] = {"status": ("exporting" if j.kind == "platform_export" else "uploading") if j is not None
+                  else rec.get("status"), "mode": rec.get("mode"), "file": rec.get("file"), "url": rec.get("url"),
+                  "privacy": rec.get("privacy"), "error": rec.get("error"),
+                  "progress": j.progress if j is not None and j.status == "running" else None,
+                  "job": j.id if j is not None else None}
+    return out
+
+
 def view(project: Project) -> dict:
     from .. import youtube
     from . import publishing as pub
@@ -444,6 +460,9 @@ def view(project: Project) -> dict:
     lock = youtube.lock_state()["state"]
     now = P.now_utc()
     dur = float(meta.get("duration") or 0)
+    from .. import platforms as PF
+
+    precs = PF.records(project)
     cards = []
     rstates = []
     for c in top:
@@ -464,6 +483,7 @@ def view(project: Project) -> dict:
             "bounds": {"start": max(0.0, c["start"] - 15), "end": min(dur or c["end"] + 15, c["end"] + 15)},
             "prefs": prefs, "render": rs,
             "upload": _upload_state(project, c["id"], items.get(key), pj, lock, now),
+            "platforms": _platform_state(project, c["id"], precs.get(c["id"]) or {}),
         })
     steps, eta = _steps(project, hl, top, rstates)
     active = [j for j in A.jobs.for_project(project.id) if j.status in ACTIVE]

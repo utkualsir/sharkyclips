@@ -721,6 +721,13 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
                               ranks=p.get("ranks") or None)
     if kind == "titles":
         return submit_titles(pid, p["clip_id"])
+    if kind in ("platform_export", "platform_upload"):
+        from . import platforms_api
+
+        try:
+            return platforms_api.rebuild(kind, saved, keep_id, attempt)
+        except (SharkyClipsError, KeyError):
+            return None
     if kind == "ai_cover":
         from . import covers_api
 
@@ -2234,6 +2241,7 @@ from .easy import router as _easy_router  # noqa: E402 - Easy mode (1.2.16)
 from .live import router as _live_router  # noqa: E402 - auto clips, live markers (1.2.17)
 from .phone_api import router as _phone_router  # noqa: E402 - Telegram bot + approval page (1.2.17)
 from .covers_api import router as _covers_router  # noqa: E402 - cover studio (1.2.18)
+from .platforms_api import router as _platforms_router  # noqa: E402 - TikTok / Reels (1.2.18)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2244,6 +2252,7 @@ app.include_router(_easy_router)
 app.include_router(_live_router)
 app.include_router(_phone_router)
 app.include_router(_covers_router)
+app.include_router(_platforms_router)
 
 
 @app.get("/api/{rest:path}")

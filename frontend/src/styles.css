@@ -4166,3 +4166,13 @@ a.edit-note:hover { text-decoration: underline; }
   font-size: 13px;
   overflow-wrap: anywhere;
 }
+
+/* 1.2.18: TikTok / Reels setup */
+.platform-block { display: grid; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.platform-block:last-child { border-bottom: 0; padding-bottom: 0; }
+.platform-block h3 { margin: 0; font-size: 15px; }
+.platform-guide ol { display: grid; gap: 10px; padding-inline-start: 20px; margin: 10px 0; }
+.platform-guide li { display: grid; gap: 6px; }
+.platform-guide .sugg, .platform-guide .inline-row { flex-wrap: wrap; }
+.platform-guide .sugg .mono { overflow-wrap: anywhere; min-width: 0; }
+.check-line { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; }

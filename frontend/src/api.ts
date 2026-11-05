@@ -30,7 +30,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_upload";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -1614,6 +1614,8 @@ export interface EasySettings {
   bubbles: boolean;
   memes: MemeLevel;
   auto_clip: boolean;
+  /** 1.2.18: the upload button's platform, remembered */
+  platform: "youtube" | "tiktok" | "reels";
 }
 
 // ---------------------------------------------------------------- automation + live (1.2.17)
@@ -1781,6 +1783,19 @@ export interface EasyClip {
     progress: number | null;
     error: { message: string; hint: string | null } | null;
   };
+  /** 1.2.18: TikTok / Reels posts of this clip */
+  platforms?: Record<"tiktok" | "reels", PlatformClipState>;
+}
+
+export interface PlatformClipState {
+  status: "exporting" | "uploading" | "exported" | "published" | "processing" | "error" | null;
+  mode: "semi" | "api" | null;
+  file: string | null;
+  url: string | null;
+  privacy: string | null;
+  error: { message: string; hint: string | null } | null;
+  progress: number | null;
+  job: string | null;
 }
 
 export interface EasyView {
