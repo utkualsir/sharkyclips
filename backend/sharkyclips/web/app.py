@@ -542,13 +542,13 @@ def _thumbnail_file(project: Project, cid: str, cand: dict, kind: str) -> Path:
         return custom
     if kind == "cover":  # Easy mode: the 9:16 cover (best facecam face, else the peak) with the title
         from .. import publishing as P
-        from .publishing import make_cover_for
+        from .publishing import default_cover_kind, make_cover_for
 
         review = state.load_review(project)
         meta = (P.get(P.key_of(project.id, cid)) or {}).get("meta") or {}
         text = (cand.get("publish") or {}).get("cover_text") or meta.get("title") or ""
         return make_cover_for(project, state.effective_cand(cand, review), review,
-                              "face" if review.get("facecam") else "peak", text, "tall", meta.get("language"))
+                              default_cover_kind(project, cid, review), text, "tall", meta.get("language"))
     t = round(float(cand.get("peak") or cand["start"]), 1)
     return _frame(project, t, 1280, project.cache_dir / "frames" / f"1280_{t:.1f}.jpg")
 
@@ -721,6 +721,14 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
                               ranks=p.get("ranks") or None)
     if kind == "titles":
         return submit_titles(pid, p["clip_id"])
+    if kind == "ai_cover":
+        from . import covers_api
+
+        try:
+            return covers_api.submit(pid, p["clip_id"], list(p.get("frames") or ["tall"]), bool(p.get("new", True)),
+                                     job_id=keep_id, attempt=attempt)
+        except SharkyClipsError:
+            return None
     if kind == "facecam":
         return submit_facecam(pid, bool(p.get("fresh")))
     if kind in ("voices", "proofread"):
@@ -2225,6 +2233,7 @@ from .publishing import router as _publishing_router  # noqa: E402 - Library + s
 from .easy import router as _easy_router  # noqa: E402 - Easy mode (1.2.16)
 from .live import router as _live_router  # noqa: E402 - auto clips, live markers (1.2.17)
 from .phone_api import router as _phone_router  # noqa: E402 - Telegram bot + approval page (1.2.17)
+from .covers_api import router as _covers_router  # noqa: E402 - cover studio (1.2.18)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2234,6 +2243,7 @@ app.include_router(_publishing_router)
 app.include_router(_easy_router)
 app.include_router(_live_router)
 app.include_router(_phone_router)
+app.include_router(_covers_router)
 
 
 @app.get("/api/{rest:path}")

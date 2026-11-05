@@ -3610,7 +3610,13 @@ a.edit-note:hover { text-decoration: underline; }
 .title-pick { display: flex; gap: 8px; align-items: flex-start; padding: 7px 10px; border-radius: var(--r-sm); border: 1px solid var(--border); cursor: pointer; font-size: 13.5px; }
 .title-pick.on { border-color: var(--gold-line); background: var(--gold-soft); }
 .title-pick input { margin-top: 2px; accent-color: var(--gold); }
-.cover-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.cover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+.cover-studio { display: grid; gap: 8px; margin-top: 8px; justify-items: start; }
+.cover-ai-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; width: 100%; }
+.cover-ai-grid.wide { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cover-ai-grid .cover-img { aspect-ratio: 9 / 16; }
+.cover-ai-grid.wide .cover-img { aspect-ratio: 16 / 9; }
+@media (max-width: 520px) { .cover-ai-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .cover-opt { display: grid; gap: 4px; cursor: pointer; font-size: 12px; text-align: center; position: relative; }
 .cover-opt input { position: absolute; opacity: 0; pointer-events: none; }
 .cover-opt .cover-img { aspect-ratio: 9 / 16; display: grid; place-items: center; overflow: hidden; border-radius: var(--r-sm); border: 2px solid var(--border); background: var(--surface-2); color: var(--muted); }

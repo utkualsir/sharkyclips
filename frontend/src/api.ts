@@ -30,7 +30,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_upload";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -986,7 +986,7 @@ export interface HookStats {
 
 // ------------------------------------------------------------------ publishing (1.2.7)
 
-export type CoverKind = "peak" | "action" | "face" | "custom" | "none";
+export type CoverKind = "peak" | "action" | "face" | "ai" | "custom" | "none";
 
 export interface PublishMeta {
   title: string;
@@ -1200,6 +1200,7 @@ const HEAVY: [string, RegExp][] = [
   ["POST", /^\/api\/(llm\/benchmark|queue\/render|update|music\/analyze)$/],
   ["POST", /\/candidates$/],
   ["PUT", /^\/api\/uploads/],
+  ["POST", /\/(ai-covers|dub)$/],
 ];
 let heavyGuard: (() => Promise<void>) | null = null;
 export function setHeavyGuard(guard: (() => Promise<void>) | null) {
@@ -1233,7 +1234,7 @@ async function authLogin(secret: string): Promise<{ ok: boolean; code?: string; 
   return { ok: false, code: data.code, retry_after: data.retry_after ?? null };
 }
 
-async function req<T>(method: string, path: string, body?: unknown): Promise<T> {
+export async function req<T>(method: string, path: string, body?: unknown): Promise<T> {
   await guardHeavy(method, path);
   const res = await fetch(path, {
     method,

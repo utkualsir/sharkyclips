@@ -536,10 +536,23 @@ def submit_cover_burn(key: str, info: dict, job_id: str | None = None, attempt: 
 
 def make_cover_for(project: Project, cand: dict, review: dict, kind: str, text: str, frame: str,
                    lang: str | None) -> Path:
+    from .. import aicovers
+
     facecam = Facecam.from_dict(review.get("facecam"))
+    if kind == "ai" and not aicovers.has_chosen(project, cand["id"], frame):
+        kind = "face"  # no AI picture of this size yet: the facecam frame (1.2.18 fallback)
     if kind == "face" and not cover.best_face(project, cand, facecam):
         kind = "peak"  # no face in this clip: the AI idea instead
     return cover.make_cover(project, cand, facecam, kind, text, frame, lang)
+
+
+def default_cover_kind(project: Project, cid: str, review: dict, frame: str = "tall") -> str:
+    """The cover a one-click upload / download uses: the chosen AI picture, else the facecam frame."""
+    from .. import aicovers
+
+    if aicovers.has_chosen(project, cid, frame):
+        return "ai"
+    return "face" if review.get("facecam") else "peak"
 
 
 def _file_error(msg: str) -> SharkyClipsError:

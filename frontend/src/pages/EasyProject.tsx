@@ -10,6 +10,7 @@ import {
   type UploadWhen,
 } from "../api";
 import { EasyProgress, ModeChip } from "../components/Easy";
+import { CoverStudio } from "../components/CoverStudio";
 import { Icon } from "../components/Icons";
 import { Modal, ProgressBar, Toggle } from "../components/ui";
 import { ConnectPrompt } from "../components/YoutubeConnect";
@@ -714,6 +715,11 @@ function EditSheet({
           <Toggle checked={music && musicAvailable} onChange={(v) => musicAvailable && setMusic(v)} label={t("easy.music")} />
         </div>
       </div>
+
+      <fieldset className="ez-field">
+        <legend>{t("cover_ai.easy_title")}</legend>
+        <CoverStudio pid={pid} cid={clip.id} frames={["tall", "wide"]} text={title} lang={null} compact />
+      </fieldset>
     </Modal>
   );
 }

@@ -4,6 +4,7 @@ Kinds of cover:
   peak    the AI's cover idea on the clip's peak moment (its short cover text)
   action  the same idea on another strong moment of the clip (a second reason / the middle)
   face    the streamer's strongest facial expression in the facecam over the peak moment
+  ai      a picture made from the AI's cover idea by the local image model (aicovers.py, 1.2.18)
   custom  the user's own image (cache/thumbnails/<clip>.jpg)
 
 "Strongest expression" is measured on the facecam frames of the clip (OpenCV's bundled face and
@@ -32,7 +33,7 @@ from .errors import SharkyClipsError, require_tool
 from .procs import no_window
 from .project import Project, read_json, write_json_atomic
 
-KINDS = ("peak", "action", "face", "custom", "none")
+KINDS = ("peak", "action", "face", "ai", "custom", "none")
 SIZES = {"wide": (1280, 720), "tall": (1080, 1920)}
 FIRST_FRAME_S = 0.3
 MAX_FRAMES = 40
@@ -273,8 +274,9 @@ def _cover_ass(text: str, frame: str, has_face: bool, lang: str | None) -> str:
 
 
 def make_cover(project: Project, cand: dict, facecam: Facecam | None, kind: str, text: str, frame: str = "wide",
-               lang: str | None = None, face_t: float | None = None) -> Path:
-    """Render a cover image (JPEG). kind: peak | action | face | custom. Cached by its inputs."""
+               lang: str | None = None, face_t: float | None = None, ai_image: Path | None = None) -> Path:
+    """Render a cover image (JPEG). kind: peak | action | face | ai | custom. Cached by its inputs.
+    kind "ai": `ai_image` (else the chosen AI picture of this size) under the cover text."""
     if frame not in SIZES:
         raise SharkyClipsError(f"Unknown cover size '{frame}'.")
     if kind == "custom":
@@ -282,6 +284,14 @@ def make_cover(project: Project, cand: dict, facecam: Facecam | None, kind: str,
         if not custom.is_file():
             raise SharkyClipsError("Choose your own image first.")
         return custom
+    if kind == "ai":
+        if ai_image is None:
+            from . import aicovers
+
+            ai_image = aicovers.chosen_file(project, cand["id"], frame)
+        if ai_image is None or not ai_image.is_file():
+            raise SharkyClipsError("Make the AI covers first.", "Or pick another cover.")
+        return _ai_cover(project, cand, ai_image, text, frame, lang)
     if kind not in ("peak", "action", "face"):
         raise SharkyClipsError(f"Unknown cover kind '{kind}'.")
     src = project.source_path
@@ -340,6 +350,41 @@ def make_cover(project: Project, cand: dict, facecam: Facecam | None, kind: str,
     finally:
         shutil.rmtree(work, ignore_errors=True)
     for old in folder(project).glob(f"{cand['id']}_{kind}_{frame}_*.jpg"):  # keep the folder small
+        if old != dest:
+            old.unlink(missing_ok=True)
+    return dest
+
+
+def _ai_cover(project: Project, cand: dict, image: Path, text: str, frame: str, lang: str | None) -> Path:
+    """An AI picture, scaled to the cover size, with the cover text in the app style."""
+    text = " ".join((text or "").split())[:80]
+    w, h = SIZES[frame]
+    st = image.stat()
+    key = _sig("cover-ai1", frame, text, image.name, st.st_size, int(st.st_mtime), lang, _style(lang))
+    dest = folder(project) / f"{cand['id']}_ai_{frame}_{key}.jpg"
+    if dest.is_file():
+        return dest
+    folder(project).mkdir(parents=True, exist_ok=True)
+    ffmpeg = require_tool("ffmpeg")
+    work = Path(tempfile.mkdtemp(prefix="sharkyclips-cover-"))
+    try:
+        (work / "cover.ass").write_text(_cover_ass(text, frame, False, lang), encoding="utf-8")
+        shutil.copyfile(image, work / "bg.png")
+        band = (f"drawbox=x=0:y={int(h * 0.62)}:w={w}:h={h - int(h * 0.62)}:color=0x0E1A33@0.42:t=fill"
+                if frame == "wide" else f"drawbox=x=0:y={int(h * 0.52)}:w={w}:h={int(h * 0.3)}:color=0x0E1A33@0.38:t=fill")
+        graph = (f"[0:v]scale={w}:{h}:force_original_aspect_ratio=increase:flags=lanczos,crop={w}:{h},setsar=1,"
+                 f"{band}" + (",ass=cover.ass" if text else "") + "[out]")
+        cmd = [ffmpeg, "-y", "-hide_banner", "-loglevel", "error", "-i", "bg.png", "-filter_complex", graph,
+               "-map", "[out]", "-frames:v", "1", "-q:v", "3", "cover.jpg"]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=120, cwd=str(work), **no_window())
+        out = work / "cover.jpg"
+        if res.returncode != 0 or not out.is_file():
+            raise SharkyClipsError("Could not make the cover image.", (res.stderr or "")[-300:] or None)
+        shutil.move(str(out), dest)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    made = sorted(folder(project).glob(f"{cand['id']}_ai_{frame}_*.jpg"), key=lambda p: p.stat().st_mtime)
+    for old in made[:-12]:  # previews of 4 options x a few texts: keep the newest dozen
         if old != dest:
             old.unlink(missing_ok=True)
     return dest

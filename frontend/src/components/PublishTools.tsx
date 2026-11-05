@@ -18,6 +18,7 @@ import { fmtTime } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { href } from "../router";
 import { useToast } from "../toast";
+import { CoverStudio, useAiCovers } from "./CoverStudio";
 import { Icon } from "./Icons";
 import { Markdown } from "./Shell";
 import { Modal, Segmented, Toggle } from "./ui";
@@ -144,7 +145,7 @@ export function VerificationDialog({ onClose }: { onClose: () => void }) {
 
 // ------------------------------------------------------------------ publish setup (one clip)
 
-const COVER_KINDS: CoverKind[] = ["peak", "action", "face", "custom", "none"];
+const COVER_KINDS: CoverKind[] = ["peak", "action", "face", "ai", "custom", "none"];
 const CATEGORY_DEFAULT = "20";
 
 export function PublishSetupDialog({
@@ -173,6 +174,7 @@ export function PublishSetupDialog({
   const [coverText, setCoverText] = useState("");
   const [thumbV, setThumbV] = useState(0);
   const thumbInput = useRef<HTMLInputElement>(null);
+  const { view: aiView } = useAiCovers(projectId, clipId);
 
   useEffect(() => {
     api
@@ -303,6 +305,7 @@ export function PublishSetupDialog({
       setNewPl(null);
     });
 
+  const aiChosen = aiView?.chosen[wide ? "wide" : "tall"] != null;
   const coverAvailable = (k: CoverKind) => {
     if (k === "face") return !!covers?.face;
     if (k === "custom") return true;
@@ -547,6 +550,8 @@ export function PublishSetupDialog({
                       <span className="cover-img">
                         {k === "none" ? (
                           <Icon name="x" size={22} />
+                        ) : k === "ai" && !aiChosen ? (
+                          <Icon name="sparkles" size={22} />
                         ) : k === "custom" && !covers?.custom ? (
                           <Icon name="image" size={22} />
                         ) : k === "face" && !covers ? (
@@ -570,6 +575,16 @@ export function PublishSetupDialog({
                 <span className="field-hint">
                   {t("pub.face_found", { t: fmtTime(covers.face.at ?? 0) })} · {covers.face.reasons.map((r) => t(`pub.face_reason.${r}`)).join(", ")}
                 </span>
+              )}
+              {meta.cover.kind === "ai" && (
+                <CoverStudio
+                  pid={projectId}
+                  cid={clipId}
+                  frames={wide ? ["wide", "tall"] : ["tall", "wide"]}
+                  text={previewText}
+                  lang={meta.language}
+                  onChosen={() => setThumbV((v) => v + 1)}
+                />
               )}
               {meta.cover.kind === "custom" && (
                 <button type="button" className="link-btn field-hint" onClick={() => thumbInput.current?.click()}>

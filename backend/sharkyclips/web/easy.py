@@ -162,7 +162,7 @@ def _plan_meta(project: Project, cand: dict, prefs: dict) -> dict:
     item = pub._item_for(project, cand["id"])
     review = state.load_review(project)
     meta = {**item["meta"], "source": "clip", "privacy": "public",
-            "cover": {"kind": "face" if review.get("facecam") else "peak", "text": "", "burn": False}}
+            "cover": {"kind": pub.default_cover_kind(project, cand["id"], review), "text": "", "burn": False}}
     if prefs.get("title"):
         meta["title"] = youtube.clean_text(prefs["title"], 100)
     return {**item, "meta": meta}
@@ -265,11 +265,18 @@ def download(project: Project, cid: str, folder: Path | None = None) -> dict:
     note = None
     try:
         review = state.load_review(project)
-        kind = "face" if review.get("facecam") else "peak"
+        kind = pub.default_cover_kind(project, cid, review)
         img = pub.make_cover_for(project, state.effective_cand(cand, review), review, kind,
                                  (cand.get("publish") or {}).get("cover_text") or title, "tall", meta.get("language"))
         png = E.to_png(img, folder / f"{stem} - cover.png")
         files.append(png.name)
+        from .. import aicovers
+
+        if aicovers.has_chosen(project, cid, "wide"):  # the 16:9 version of the AI cover too
+            wide = pub.make_cover_for(project, state.effective_cand(cand, review), review, "ai",
+                                      (cand.get("publish") or {}).get("cover_text") or title, "wide",
+                                      meta.get("language"))
+            files.append(E.to_png(wide, folder / f"{stem} - cover 16x9.png").name)
     except SharkyClipsError as exc:
         note = exc.message
     return {"folder": str(folder), "files": files, "cover_error": note}
