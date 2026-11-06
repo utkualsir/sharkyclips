@@ -1877,7 +1877,6 @@ const zh: Record<string, string> = {
   "extras.off": "关闭",
   "extras.auto": "自动",
   "lic.original": "项目页面",
-  "lic.changes.int8_onnx": "由 {by} 转换为 int8 ONNX",
   "about.title": "关于与许可证",
   "about.desc": "SharkyClips {v} 免费且开源（{license} 许可证）。它下载的可选 AI 模型有各自的许可证：",
   "about.group.voice": "声音模型（用我的声音配音）",
@@ -1888,6 +1887,13 @@ const zh: Record<string, string> = {
   "aivoice.synthetic": "告诉 YouTube 视频含有经过修改或合成的内容",
   "aivoice.synthetic_hint": "对 YouTube 的“经过修改或合成的内容”问题回答“是”，观众可能会看到标签。",
   "aivoice.dub_hint": "上传时，描述会说明声音由 AI 生成，YouTube 也会收到“合成内容”标记（两者都可以在上传界面关闭）。",
+  "lic.changes.onnx_chain": "由 {a} 导出为 ONNX，由 {b} 打包并量化为 int8",
+  "platform.ai_note": "在文案中加上 AI 声音说明",
+  "platform.ai_label_api": "在 {name} 上标记为 AI 生成",
+  "platform.ai_label_semi": "提醒我在 {name} 上打开 AI 标签",
+  "platform.ai_label_mixed": "在 {name} 上标记为 AI 生成（半自动模式下提醒我）",
+  "platform.ai_remind.tiktok": "发布前：在 TikTok 的发布设置中打开“AI 生成的内容”。",
+  "platform.ai_remind.reels": "分享前：在 Instagram 的高级设置中打开“AI 标签”。",
 };
 
 export default zh;

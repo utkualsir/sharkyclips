@@ -1811,6 +1811,8 @@ export interface PlatformClipState {
   error: { message: string; hint: string | null } | null;
   progress: number | null;
   job: string | null;
+  /** 1.2.20: the last export of a dubbed clip (label = AI label set / reminder wanted) */
+  ai_voice?: { dub: string; line: string | null; note: boolean; label: boolean } | null;
 }
 
 export interface EasyView {

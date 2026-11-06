@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import shutil
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Body, Request
 from fastapi.responses import HTMLResponse
 
 from .. import config, easy as E, platforms as PF
@@ -53,13 +53,27 @@ def _render_options(project, cand: dict) -> tuple[dict, str]:
     return dict(review["options"]), review["hooks"].get(cand["id"], "")
 
 
-def caption_for(project, cand: dict, platform: str) -> str:
+def ai_flags(body: dict | None) -> dict:
+    """1.2.20, dubbed clips: the AI-voice line in the caption, the platform's AI label (automatic
+    mode) or a reminder to switch it on (semi-automatic). Both on unless switched off."""
+    body = body or {}
+    return {"ai_voice_note": body.get("ai_voice_note") is not False, "ai_label": body.get("ai_label") is not False}
+
+
+def ai_voice_for(dub_lang: str, flags: dict) -> dict:
+    from .. import dub
+
+    return {"dub": dub_lang, "line": dub.disclosure_line(dub_lang) if dub_lang else None,
+            "note": bool(dub_lang) and flags["ai_voice_note"], "label": bool(dub_lang) and flags["ai_label"]}
+
+
+def caption_for(project, cand: dict, platform: str, note: str | None = None) -> str:
     from . import publishing as pub
 
     meta = pub.prefill(project, cand)
     prefs = E.clip_prefs(E.load(project), cand["id"])
     title = prefs.get("title") or meta["title"]
-    return PF.caption(platform, title, meta.get("description") or "", meta.get("hashtags") or [])
+    return PF.caption(platform, title, meta.get("description") or "", meta.get("hashtags") or [], note)
 
 
 def active_job(project_id: str, cid: str, platform: str):
@@ -70,7 +84,8 @@ def active_job(project_id: str, cid: str, platform: str):
     return None
 
 
-def submit_export(project_id: str, cid: str, platform: str, job_id: str | None = None, attempt: int = 1):
+def submit_export(project_id: str, cid: str, platform: str, flags: dict | None = None, job_id: str | None = None,
+                  attempt: int = 1):
     """Export with the platform's preset into Downloads/SharkyClips; then (API mode) upload."""
     from .. import export
     from ..clips import ClipOptions, Facecam
@@ -79,6 +94,7 @@ def submit_export(project_id: str, cid: str, platform: str, job_id: str | None =
     project = A.get_project(project_id)
     cand = A._cand(project, cid)
     mode = PF.mode(platform)
+    flags = ai_flags(flags)
 
     def run(job):
         project = A.get_project(project_id)
@@ -102,15 +118,17 @@ def submit_export(project_id: str, cid: str, platform: str, job_id: str | None =
         label = {"tiktok": "TikTok", "reels": "Reels"}[platform]
         dest = folder / f"{c['rank']:02d} {E.safe_name(title, 60)} - {label}.mp4"
         shutil.copyfile(src, dest)
-        text = caption_for(project, c, platform)
+        ai = ai_voice_for(str(entry.get("dub") or ""), flags)  # the file just made: dubbed or not
+        text = caption_for(project, c, platform, ai["line"] if ai["note"] else None)
         (folder / f"{dest.stem}.txt").write_text(text + "\n", encoding="utf-8")
-        PF.record(project, cid, platform, mode=mode, status="exported", file=str(dest), error=None)
+        PF.record(project, cid, platform, mode=mode, status="exported", file=str(dest), error=None,
+                  caption=text, ai_voice=ai if ai["dub"] else None)
         if mode == "api":
-            submit_upload(project_id, cid, platform, str(dest), text)
+            submit_upload(project_id, cid, platform, str(dest), text, ai_label=ai["label"])
         return {"file": str(dest), "folder": str(folder), "caption": text, "mode": mode,
-                "upload_page": PF.UPLOAD_PAGE[platform]}
+                "upload_page": PF.UPLOAD_PAGE[platform], "ai_voice": ai}
 
-    params = {"clip_id": cid, "rank": cand["rank"], "platform": platform, "mode": mode,
+    params = {"clip_id": cid, "rank": cand["rank"], "platform": platform, "mode": mode, **flags,
               "title": ((cand.get("publish") or {}).get("titles") or [None])[0] or (cand.get("text") or "")[:90]}
     return A.jobs.submit("platform_export", "gpu", project_id, params, run,
                          key=f"platform_export:{project_id}:{cid}:{platform}", persist=True, job_id=job_id,
@@ -118,7 +136,7 @@ def submit_export(project_id: str, cid: str, platform: str, job_id: str | None =
 
 
 def submit_upload(project_id: str, cid: str, platform: str, file: str, text: str, job_id: str | None = None,
-                  attempt: int = 1):
+                  attempt: int = 1, ai_label: bool = False):
     from pathlib import Path
 
     A = _app()
@@ -134,7 +152,8 @@ def submit_upload(project_id: str, cid: str, platform: str, file: str, text: str
             A.jobs.update(job, stage="uploading", progress=f)
 
         try:
-            res = PF.tiktok_post(path, text, prog) if platform == "tiktok" else PF.ig_post(path, text, prog)
+            post = PF.tiktok_post if platform == "tiktok" else PF.ig_post
+            res = post(path, text, prog, ai_label=ai_label)
         except SharkyClipsError as exc:
             PF.record(project, cid, platform, status="error", error={"message": exc.message, "hint": exc.hint})
             raise
@@ -142,7 +161,7 @@ def submit_upload(project_id: str, cid: str, platform: str, file: str, text: str
         return res
 
     return A.jobs.submit("platform_upload", "net", project_id,
-                         {"clip_id": cid, "platform": platform, "file": file, "text": text}, run,
+                         {"clip_id": cid, "platform": platform, "file": file, "text": text, "ai_label": ai_label}, run,
                          key=f"platform_upload:{project_id}:{cid}:{platform}", persist=True, job_id=job_id,
                          attempt=attempt)
 
@@ -150,9 +169,9 @@ def submit_upload(project_id: str, cid: str, platform: str, file: str, text: str
 def rebuild(kind: str, d: dict, keep_id: str | None, attempt: int):
     p = d.get("params") or {}
     if kind == "platform_export":
-        return submit_export(d["project_id"], p["clip_id"], p["platform"], job_id=keep_id, attempt=attempt)
+        return submit_export(d["project_id"], p["clip_id"], p["platform"], p, job_id=keep_id, attempt=attempt)
     return submit_upload(d["project_id"], p["clip_id"], p["platform"], p["file"], p.get("text") or "",
-                         job_id=keep_id, attempt=attempt)
+                         job_id=keep_id, attempt=attempt, ai_label=bool(p.get("ai_label")))
 
 
 # ===================================================================== routes
@@ -230,28 +249,39 @@ def api_reels_connect(body: dict) -> dict:
 
 
 @router.get("/api/platforms/{platform}/clips/{project_id}/{cid}")
-def api_clip(platform: str, project_id: str, cid: str) -> dict:
+def api_clip(platform: str, project_id: str, cid: str, ai_voice_note: bool = True, ai_label: bool = True) -> dict:
     A = _app()
     project = A.get_project(project_id)
     cand = state.effective_cand(A._cand(project, cid), state.load_review(project))
     j = active_job(project_id, cid, _check(platform))
-    return {"caption": caption_for(project, cand, platform), "mode": PF.mode(platform),
+    rec = PF.records(project).get(cid, {}).get(platform) or {}
+    if rec.get("status") == "exported" and rec.get("caption"):  # the caption made with the exported file
+        text, ai = rec["caption"], rec.get("ai_voice") or ai_voice_for("", ai_flags(None))
+    else:  # not made yet: the file to come follows the clip's dub choice
+        ai = ai_voice_for(state.file_dub(project, cid, ""), ai_flags({"ai_voice_note": ai_voice_note, "ai_label": ai_label}))
+        text = caption_for(project, cand, platform, ai["line"] if ai["note"] else None)
+    return {"caption": text, "ai_voice": ai, "mode": PF.mode(platform),
             "upload_page": PF.UPLOAD_PAGE[platform], "record": PF.records(project).get(cid, {}).get(platform),
             "job": j.to_dict() if j is not None else None}
 
 
 @router.post("/api/platforms/{platform}/clips/{project_id}/{cid}")
-def api_post(platform: str, project_id: str, cid: str, request: Request) -> dict:
+def api_post(platform: str, project_id: str, cid: str, request: Request,
+             body: dict | None = Body(default=None)) -> dict:
     """One click: export with the platform preset; semi mode answers with the caption + upload page
-    (the UI copies / opens them), API mode uploads by itself afterwards."""
+    (the UI copies / opens them), API mode uploads by itself afterwards. body (1.2.20, optional):
+    {"ai_voice_note": bool, "ai_label": bool} for a dubbed clip, both on by default."""
     _check(platform)
-    j = active_job(project_id, cid, platform) or submit_export(project_id, cid, platform)
+    flags = ai_flags(body)
+    j = active_job(project_id, cid, platform) or submit_export(project_id, cid, platform, flags)
     A = _app()
     project = A.get_project(project_id)
     cand = state.effective_cand(A._cand(project, cid), state.load_review(project))
     if config.get("easy_platform") != platform:
         config.update(easy_platform=platform)
-    return {"job": j.to_dict(), "mode": PF.mode(platform), "caption": caption_for(project, cand, platform),
+    ai = ai_voice_for(state.file_dub(project, cid, ""), flags)
+    return {"job": j.to_dict(), "mode": PF.mode(platform), "ai_voice": ai,
+            "caption": caption_for(project, cand, platform, ai["line"] if ai["note"] else None),
             "upload_page": PF.UPLOAD_PAGE[platform], "local": A._is_local(request)}
 
 

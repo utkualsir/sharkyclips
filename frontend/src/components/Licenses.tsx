@@ -15,7 +15,25 @@ function Ext({ href, children }: { href?: string; children: React.ReactNode }) {
   );
 }
 
-/** "Pocket TTS · Kyutai · CC-BY-4.0 · original model", plus what was changed and by whom. */
+/** A translated sentence with {a} / {b} ... replaced by links (keeps each language's word order). */
+function Linked({ text, links }: { text: string; links: Record<string, { by: string; url?: string }> }) {
+  const parts = text.split(/\{(\w+)\}/);
+  return (
+    <>
+      {parts.map((p, i) =>
+        i % 2 === 1 && links[p] ? (
+          <Ext key={i} href={links[p].url}>
+            {links[p].by}
+          </Ext>
+        ) : (
+          <span key={i}>{p}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+/** "Pocket TTS · Kyutai · CC-BY-4.0 · project page", plus what was changed and by whom. */
 export function LicenseList({ items }: { items: ModelLicense[] }) {
   const { t } = useI18n();
   return (
@@ -31,9 +49,9 @@ export function LicenseList({ items }: { items: ModelLicense[] }) {
               <Ext href={l.source_url}>{t("lic.original")}</Ext>
             </>
           )}
-          {l.changes && (
+          {l.changes && l.chain && (
             <span className="muted license-change">
-              <Ext href={l.changes_url}>{t(`lic.changes.${l.changes}`, { by: l.changes_by ?? "" })}</Ext>
+              <Linked text={t(`lic.changes.${l.changes}`)} links={{ a: l.chain[0], b: l.chain[1] ?? l.chain[0] }} />
             </span>
           )}
         </li>

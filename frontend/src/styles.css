@@ -4186,3 +4186,4 @@ a.edit-note:hover { text-decoration: underline; }
 .license-change { display: block; font-size: 12px; }
 .ai-voice-box { gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
 .ai-voice-line { overflow-wrap: anywhere; font-style: italic; }
+.ai-remind { display: flex; gap: 6px; align-items: flex-start; margin: 0; color: var(--warn, inherit); }

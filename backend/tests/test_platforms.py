@@ -198,3 +198,78 @@ def test_one_click_semi_and_api(fake, tmp_path):
     # reveal only inside the downloads folder
     assert c.post("/api/platforms/reveal", json={"file": str(f)}).status_code == 200
     assert c.post("/api/platforms/reveal", json={"file": str(tmp_path / "x.mp4")}).status_code == 400
+
+
+
+# ===================================================================== 1.2.20: AI voice on TikTok / Reels
+
+LINE = "The English voice in this video is AI-generated from my own voice."
+
+
+def test_caption_keeps_the_ai_voice_line_and_the_api_flags(fake, tmp_path):
+    tt = PF.caption("tiktok", "Huge play", "What a moment.", ["gg"], LINE)
+    assert tt == f"Huge play\n\nWhat a moment.\n\n{LINE}\n\n#gg"
+    long = PF.caption("reels", "x" * 3000, "", ["gg"], LINE)
+    assert len(long) <= PF.CAPTION_MAX["reels"] and long.endswith(f"{LINE}\n\n#gg")  # never cut off
+    _connect_tiktok(fake)
+    video = tmp_path / "v.mp4"
+    video.write_bytes(b"\0" * 1000)
+    PF.tiktok_post(video, "plain", poll=0.01)
+    assert "is_aigc" not in fake.state["tiktok_posts"][-1]["post_info"]
+    PF.tiktok_post(video, "dubbed", poll=0.01, ai_label=True)
+    assert fake.state["tiktok_posts"][-1]["post_info"]["is_aigc"] is True
+    PF.ig_connect("IGTOKEN-0123456789abcdef")
+    PF.ig_post(video, "dubbed", poll=0.01, ai_label=True)
+    assert fake.state["ig_uploads"]["C1"]["form"]["is_ai_generated"] == "true"
+    PF.ig_post(video, "plain", poll=0.01)
+    assert "is_ai_generated" not in fake.state["ig_uploads"]["C2"]["form"]
+
+
+def test_dubbed_clip_on_tiktok_and_reels_says_its_voice_is_ai_made(fake, tmp_path, monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from sharkyclips import export
+    from sharkyclips.web import state
+    from sharkyclips.web.app import app, jobs
+
+    project = _project("pf-dub")
+    state.save_review(project, {"dub": {"c01": "en"}})
+
+    def fake_export(project, cand, opts, facecam, req, on_progress=None, translate=None):
+        root = export.exports_root(project)
+        root.mkdir(parents=True, exist_ok=True)
+        name = f"01_c01_{req.preset}_mp4_h264.mp4"
+        (root / name).write_bytes(b"\0" * 2000)
+        return {"files": [{"name": name, "role": "media"}], "dub": cand.get("dub") or ""}
+
+    monkeypatch.setattr(export, "run_export", fake_export)
+    c = TestClient(app)
+    base = f"/api/platforms/tiktok/clips/{project.id}/c01"
+    # semi-automatic: the line is in the copied caption and the .txt; the reminder switch is on
+    view = c.get(base).json()
+    assert view["ai_voice"] == {"dub": "en", "line": LINE, "note": True, "label": True} and LINE in view["caption"]
+    assert LINE not in c.get(base, params={"ai_voice_note": "false"}).json()["caption"]
+    r = c.post(base).json()
+    assert r["mode"] == "semi" and LINE in r["caption"] and r["ai_voice"]["label"] is True
+    j = _wait_job(jobs, r["job"]["id"])
+    assert j.status == "done", j.error
+    assert LINE in Path(j.result["file"]).with_suffix(".txt").read_text(encoding="utf-8")
+    assert c.get(base).json()["ai_voice"]["label"] is True  # the exported file's own caption + reminder
+    # switched off: no line
+    r = c.post(base, json={"ai_voice_note": False, "ai_label": False}).json()
+    j = _wait_job(jobs, r["job"]["id"])
+    assert LINE not in j.result["caption"] and LINE not in c.get(base).json()["caption"]
+    # automatic: the TikTok post carries is_aigc, the Instagram one is_ai_generated
+    _connect_tiktok(fake)
+    PF.ig_connect("IGTOKEN-0123456789abcdef")
+    for p in ("tiktok", "reels"):
+        assert c.put(f"/api/platforms/{p}/mode", json={"mode": "api"}).json()["mode"] == "api"
+        r = c.post(f"/api/platforms/{p}/clips/{project.id}/c01").json()
+        _wait_job(jobs, r["job"]["id"])
+        up = next(x for x in jobs.jobs() if x.kind == "platform_upload" and x.project_id == project.id
+                  and x.params["platform"] == p)
+        assert _wait_job(jobs, up.id).status == "done" and up.params["ai_label"] is True
+    post = fake.state["tiktok_posts"][-1]
+    assert post["post_info"]["is_aigc"] is True and LINE in post["post_info"]["title"]
+    form = fake.state["ig_uploads"]["C1"]["form"]
+    assert form["is_ai_generated"] == "true" and LINE in form["caption"]

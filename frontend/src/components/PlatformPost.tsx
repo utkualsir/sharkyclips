@@ -1,11 +1,11 @@
 // 1.2.18: the Easy upload button's platform picker and the TikTok / Reels post flow.
 import { useEffect, useRef, useState } from "react";
 import type { PlatformClipState } from "../api";
-import { copyText, platformsApi, type Platform, type PlatformsOverview, type PostPlatform } from "../extras";
+import { copyText, platformsApi, type Platform, type PlatformAiVoice, type PlatformsOverview, type PostPlatform } from "../extras";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
-import { ProgressBar } from "./ui";
+import { ProgressBar, Toggle } from "./ui";
 
 const NAMES: Record<Platform, string> = { youtube: "YouTube", tiktok: "TikTok", reels: "Reels" };
 
@@ -34,6 +34,52 @@ export function PlatformPicker({ value, onChange }: { value: Platform; onChange:
   );
 }
 
+/** 1.2.20: a dubbed clip's switches: the AI-voice line in the caption, and the platform's AI label
+ *  (automatic mode) or a reminder to switch it on yourself (semi-automatic). Both on by default. */
+export function useAiSwitches(pid: string, cid: string, platform: PostPlatform) {
+  const [ai, setAi] = useState<PlatformAiVoice | null>(null);
+  const [note, setNote] = useState(true);
+  const [label, setLabel] = useState(true);
+  useEffect(() => {
+    platformsApi.clip(platform, pid, cid).then((r) => setAi(r.ai_voice)).catch(() => {});
+  }, [pid, cid, platform]);
+  return { ai, note, label, setNote, setLabel, flags: { ai_voice_note: note, ai_label: label } };
+}
+
+function PlatformAiSwitches({
+  sw,
+  names,
+  semi,
+}: {
+  sw: ReturnType<typeof useAiSwitches>;
+  names: string;
+  semi: boolean | null;
+}) {
+  const { t } = useI18n();
+  if (!sw.ai?.dub) return null;
+  const labelText = semi === null ? t("platform.ai_label_mixed", { name: names }) : t(semi ? "platform.ai_label_semi" : "platform.ai_label_api", { name: names });
+  return (
+    <div className="field ai-voice-box">
+      <span className="field-label">
+        <Icon name="mic" size={14} /> {t("aivoice.title")}
+      </span>
+      <div className="toggle-row">
+        <Toggle checked={sw.note} onChange={sw.setNote} label={t("platform.ai_note")} />
+        <span>{t("platform.ai_note")}</span>
+      </div>
+      {sw.note && sw.ai.line && (
+        <span className="field-hint ai-voice-line" dir="auto">
+          “{sw.ai.line}”
+        </span>
+      )}
+      <div className="toggle-row">
+        <Toggle checked={sw.label} onChange={sw.setLabel} label={labelText} />
+        <span>{labelText}</span>
+      </div>
+    </div>
+  );
+}
+
 /** "Post to TikTok" + its state. Semi mode: caption to the clipboard, the upload page opens,
  *  the exported file is shown in Explorer when it's ready. API mode: posts by itself. */
 export function PlatformPost({
@@ -57,6 +103,7 @@ export function PlatformPost({
   const mode = overview?.[platform].mode ?? "semi";
   const name = NAMES[platform];
   const prev = useRef(state?.status);
+  const sw = useAiSwitches(pid, cid, platform);
 
   // the export of a semi-automatic post just finished: show the file
   useEffect(() => {
@@ -74,11 +121,12 @@ export function PlatformPost({
   const post = async () => {
     setBusy(true);
     try {
-      const r = await platformsApi.post(platform, pid, cid);
+      const r = await platformsApi.post(platform, pid, cid, sw.ai?.dub ? sw.flags : undefined);
       if (r.mode === "semi") {
         const copied = await copyText(r.caption);
         window.open(r.upload_page, "_blank", "noopener");
         toast({ kind: "info", text: t(copied ? "platform.semi_started" : "platform.semi_started_nocopy", { name }) });
+        if (r.ai_voice?.label) toast({ kind: "info", text: t(`platform.ai_remind.${platform}`) });
       } else {
         toast({ kind: "info", text: t("platform.api_started", { name }) });
       }
@@ -131,10 +179,16 @@ export function PlatformPost({
               <Icon name="alert" size={15} /> {state?.error?.message}
             </p>
           )}
+          <PlatformAiSwitches sw={sw} names={name} semi={mode === "semi"} />
           <button className="btn btn-primary ez-big" disabled={!ready || busy} onClick={post}>
             {busy ? <span className="spinner" /> : <Icon name="upload" />} {t("platform.post_to", { name })}
           </button>
         </>
+      )}
+      {st === "exported" && state?.mode === "semi" && state.ai_voice?.label && (
+        <p className="ez-hint ai-remind" role="note">
+          <Icon name="alert" size={14} /> {t(`platform.ai_remind.${platform}`)}
+        </p>
       )}
       {st === "exported" && state?.mode === "semi" && (
         <div className="ez-platform-tools">
@@ -165,6 +219,7 @@ export function PlatformRow({ pid, cid }: { pid: string; cid: string }) {
   const overview = usePlatforms();
   const [rec, setRec] = useState<Record<string, { status?: string; privacy?: string; url?: string } | null>>({});
   const [busy, setBusy] = useState<PostPlatform | null>(null);
+  const sw = useAiSwitches(pid, cid, "tiktok");
   useEffect(() => {
     (["tiktok", "reels"] as PostPlatform[]).forEach((p) =>
       platformsApi
@@ -176,11 +231,12 @@ export function PlatformRow({ pid, cid }: { pid: string; cid: string }) {
   const post = async (p: PostPlatform) => {
     setBusy(p);
     try {
-      const r = await platformsApi.post(p, pid, cid);
+      const r = await platformsApi.post(p, pid, cid, sw.ai?.dub ? sw.flags : undefined);
       if (r.mode === "semi") {
         const copied = await copyText(r.caption);
         window.open(r.upload_page, "_blank", "noopener");
         toast({ kind: "info", text: t(copied ? "platform.semi_started" : "platform.semi_started_nocopy", { name: NAMES[p] }) });
+        if (r.ai_voice?.label) toast({ kind: "info", text: t(`platform.ai_remind.${p}`) });
       } else {
         toast({ kind: "info", text: t("platform.api_started", { name: NAMES[p] }) });
       }
@@ -193,6 +249,11 @@ export function PlatformRow({ pid, cid }: { pid: string; cid: string }) {
   return (
     <fieldset className="field">
       <legend className="field-label">{t("platform.also")}</legend>
+      <PlatformAiSwitches
+        sw={sw}
+        names="TikTok / Reels"
+        semi={overview && overview.tiktok.mode === overview.reels.mode ? overview.tiktok.mode === "semi" : null}
+      />
       <div className="inline-row" style={{ flexWrap: "wrap" }}>
         {(["tiktok", "reels"] as PostPlatform[]).map((p) => {
           const st = rec[p]?.status;

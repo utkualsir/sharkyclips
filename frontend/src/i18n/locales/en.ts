@@ -1933,7 +1933,6 @@ const en: Record<string, string> = {
   "extras.off": "Off",
   "extras.auto": "Auto",
   "lic.original": "project page",
-  "lic.changes.int8_onnx": "Converted to int8 ONNX by {by}",
   "about.title": "About & licenses",
   "about.desc": "SharkyClips {v} is free and open source ({license} license). The optional AI models it downloads have their own licenses:",
   "about.group.voice": "Voice model (my-voice dubbing)",
@@ -1944,6 +1943,13 @@ const en: Record<string, string> = {
   "aivoice.synthetic": "Tell YouTube it has altered or synthetic content",
   "aivoice.synthetic_hint": "Answers YouTube's \"altered or synthetic content\" question with yes, so viewers may see a label.",
   "aivoice.dub_hint": "When you upload it, the description says the voice is AI-made and YouTube gets the \"synthetic content\" mark (you can switch both off in the upload screen).",
+  "lic.changes.onnx_chain": "Exported to ONNX by {a}, packaged and quantized to int8 by {b}",
+  "platform.ai_note": "Add the AI-voice line to the caption",
+  "platform.ai_label_api": "Mark it as AI-generated on {name}",
+  "platform.ai_label_semi": "Remind me to switch on {name}'s AI label",
+  "platform.ai_label_mixed": "Mark it as AI-generated on {name} (or remind me in semi-automatic mode)",
+  "platform.ai_remind.tiktok": "Before you post: switch on \"AI-generated content\" in TikTok's post settings.",
+  "platform.ai_remind.reels": "Before you share: switch on \"AI label\" in Instagram's advanced settings.",
 };
 
 export default en;

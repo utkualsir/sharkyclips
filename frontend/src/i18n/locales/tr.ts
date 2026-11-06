@@ -1901,7 +1901,6 @@ const tr: Record<string, string> = {
   "extras.off": "Kapalı",
   "extras.auto": "Otomatik",
   "lic.original": "proje sayfası",
-  "lic.changes.int8_onnx": "{by} tarafından int8 ONNX'e dönüştürüldü",
   "about.title": "Hakkında ve lisanslar",
   "about.desc": "SharkyClips {v} ücretsiz ve açık kaynaklıdır ({license} lisansı). İndirdiği isteğe bağlı yapay zekâ modellerinin kendi lisansları vardır:",
   "about.group.voice": "Ses modeli (kendi sesimle dublaj)",
@@ -1912,6 +1911,13 @@ const tr: Record<string, string> = {
   "aivoice.synthetic": "YouTube'a değiştirilmiş veya sentetik içerik olduğunu bildir",
   "aivoice.synthetic_hint": "YouTube'un \"değiştirilmiş veya sentetik içerik\" sorusunu evet olarak yanıtlar; izleyiciler bir etiket görebilir.",
   "aivoice.dub_hint": "Yüklediğinde açıklamada sesin yapay zekâyla üretildiği yazar ve YouTube'a \"sentetik içerik\" işareti gider (ikisini de yükleme ekranında kapatabilirsin).",
+  "lic.changes.onnx_chain": "{a} tarafından ONNX'e aktarıldı, {b} tarafından paketlenip int8'e sıkıştırıldı",
+  "platform.ai_note": "Yapay zekâ sesi satırını açıklamaya ekle",
+  "platform.ai_label_api": "{name} üzerinde yapay zekâ ile üretildi olarak işaretle",
+  "platform.ai_label_semi": "{name} için yapay zekâ etiketini açmamı hatırlat",
+  "platform.ai_label_mixed": "{name} üzerinde yapay zekâ ile üretildi olarak işaretle (yarı otomatik modda hatırlat)",
+  "platform.ai_remind.tiktok": "Paylaşmadan önce: TikTok'un paylaşım ayarlarında \"Yapay zekâ tarafından oluşturulan içerik\" seçeneğini aç.",
+  "platform.ai_remind.reels": "Paylaşmadan önce: Instagram'ın gelişmiş ayarlarında \"Yapay zekâ etiketi\" seçeneğini aç.",
 };
 
 export default tr;

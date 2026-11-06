@@ -12,10 +12,10 @@ export interface ModelLicense {
   license: string;
   license_url?: string;
   source_url?: string;
-  /** what was changed from the original, e.g. "int8_onnx" */
+  /** what was changed from the original, e.g. "onnx_chain" */
   changes?: string;
-  changes_by?: string;
-  changes_url?: string;
+  /** who made each step, in order (1.2.20: exported to ONNX, then packaged as int8) */
+  chain?: { by: string; url?: string }[];
 }
 
 export interface LicensesView {
@@ -105,12 +105,26 @@ export interface PlatformsOverview {
   chosen: Platform;
 }
 
+/** 1.2.20: a dubbed clip on TikTok / Reels: the caption line and the AI label (or a reminder). */
+export interface PlatformAiVoice {
+  dub: string;
+  line: string | null;
+  note: boolean;
+  label: boolean;
+}
+
+export interface PlatformAiFlags {
+  ai_voice_note: boolean;
+  ai_label: boolean;
+}
+
 export interface PostResult {
   job: Job;
   mode: "semi" | "api";
   caption: string;
   upload_page: string;
   local: boolean;
+  ai_voice: PlatformAiVoice;
 }
 
 const PC = (p: PostPlatform, pid: string, cid: string) =>
@@ -126,9 +140,12 @@ export const platformsApi = {
   tiktokConnect: (client_key: string, client_secret: string) =>
     req<{ url: string; redirect_uri: string }>("POST", "/api/platforms/tiktok/connect", { client_key, client_secret }),
   reelsConnect: (token: string) => req<PlatformStatus>("POST", "/api/platforms/reels/connect", { token }),
-  clip: (p: PostPlatform, pid: string, cid: string) =>
-    req<{ caption: string; mode: "semi" | "api"; upload_page: string; record: any; job: Job | null }>("GET", PC(p, pid, cid)),
-  post: (p: PostPlatform, pid: string, cid: string) => req<PostResult>("POST", PC(p, pid, cid)),
+  clip: (p: PostPlatform, pid: string, cid: string, flags?: PlatformAiFlags) =>
+    req<{ caption: string; ai_voice: PlatformAiVoice; mode: "semi" | "api"; upload_page: string; record: any; job: Job | null }>(
+      "GET",
+      PC(p, pid, cid) + (flags ? `?ai_voice_note=${flags.ai_voice_note}&ai_label=${flags.ai_label}` : ""),
+    ),
+  post: (p: PostPlatform, pid: string, cid: string, flags?: PlatformAiFlags) => req<PostResult>("POST", PC(p, pid, cid), flags),
   reveal: (file: string) => req<{ opened: boolean }>("POST", "/api/platforms/reveal", { file }),
 };
 

@@ -60,12 +60,15 @@ POCKET = Remote("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-mod
 POCKET_DIR = "sherpa-onnx-pocket-tts-int8-2026-01-26"
 POCKET_FILES = ("lm_flow.int8.onnx", "lm_main.int8.onnx", "encoder.onnx", "decoder.int8.onnx",
                 "text_conditioner.onnx", "vocab.json", "token_scores.json", "LICENSE")
-# CC-BY 4.0 asks for credit, a link to the license and a note of changes (1.2.19).
+# CC-BY 4.0 asks for credit, a link to the license and a note of changes (1.2.19): exported to
+# ONNX by KevinAHM, then packaged and quantized to int8 by k2-fsa/sherpa-onnx (1.2.20).
 LICENSES = [{"name": "Pocket TTS", "by": "Kyutai", "license": "CC-BY-4.0",
              "license_url": "https://creativecommons.org/licenses/by/4.0/",
              "source_url": "https://huggingface.co/kyutai/pocket-tts",
-             "changes": "int8_onnx", "changes_by": "k2-fsa/sherpa-onnx",
-             "changes_url": "https://github.com/k2-fsa/sherpa-onnx"},
+             # how the downloaded file was made from the original (1.2.20: the full chain)
+             "changes": "onnx_chain",
+             "chain": [{"by": "KevinAHM", "url": "https://huggingface.co/KevinAHM/pocket-tts-onnx"},
+                       {"by": "k2-fsa/sherpa-onnx", "url": "https://github.com/k2-fsa/sherpa-onnx"}]},
             {"name": "sherpa-onnx", "by": "k2-fsa", "license": "Apache-2.0",
              "license_url": "https://github.com/k2-fsa/sherpa-onnx/blob/master/LICENSE",
              "source_url": "https://github.com/k2-fsa/sherpa-onnx"}]

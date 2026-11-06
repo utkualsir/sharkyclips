@@ -437,7 +437,7 @@ def _platform_state(project: Project, cid: str, recs: dict) -> dict:
                   else rec.get("status"), "mode": rec.get("mode"), "file": rec.get("file"), "url": rec.get("url"),
                   "privacy": rec.get("privacy"), "error": rec.get("error"),
                   "progress": j.progress if j is not None and j.status == "running" else None,
-                  "job": j.id if j is not None else None}
+                  "job": j.id if j is not None else None, "ai_voice": rec.get("ai_voice")}
     return out
 
 

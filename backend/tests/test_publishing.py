@@ -683,7 +683,8 @@ def test_ai_voice_note_and_synthetic_flag_helpers():
     assert "containsSyntheticMedia" not in youtube.build_body("T", "D", [], "private", None, False)["status"]
     pocket = dub.LICENSES[0]
     assert pocket["license_url"].startswith("https://creativecommons.org/licenses/by/4.0")
-    assert pocket["source_url"] == "https://huggingface.co/kyutai/pocket-tts" and pocket["changes_by"] == "k2-fsa/sherpa-onnx"
+    assert pocket["source_url"] == "https://huggingface.co/kyutai/pocket-tts" and pocket["changes"] == "onnx_chain"
+    assert [x["by"] for x in pocket["chain"]] == ["KevinAHM", "k2-fsa/sherpa-onnx"]  # exported, then int8 package
 
 
 def test_dubbed_upload_says_its_voice_is_ai_made(yt):

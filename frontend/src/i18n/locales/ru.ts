@@ -1979,7 +1979,6 @@ const ru: Record<string, string> = {
   "extras.off": "Выкл",
   "extras.auto": "Авто",
   "lic.original": "страница проекта",
-  "lic.changes.int8_onnx": "Преобразована в int8 ONNX: {by}",
   "about.title": "О программе и лицензии",
   "about.desc": "SharkyClips {v} — бесплатная программа с открытым кодом (лицензия {license}). У необязательных ИИ-моделей, которые она скачивает, свои лицензии:",
   "about.group.voice": "Голосовая модель (озвучка моим голосом)",
@@ -1990,6 +1989,13 @@ const ru: Record<string, string> = {
   "aivoice.synthetic": "Сообщить YouTube об изменённом или синтетическом контенте",
   "aivoice.synthetic_hint": "Отвечает «да» на вопрос YouTube об «изменённом или синтетическом контенте»; зрители могут увидеть метку.",
   "aivoice.dub_hint": "При загрузке в описании будет сказано, что голос создан ИИ, а YouTube получит отметку «синтетический контент» (оба можно выключить на экране загрузки).",
+  "lic.changes.onnx_chain": "Экспорт в ONNX: {a}; упаковка и квантизация в int8: {b}",
+  "platform.ai_note": "Добавить строку об ИИ-голосе в подпись",
+  "platform.ai_label_api": "Отметить как созданное ИИ в {name}",
+  "platform.ai_label_semi": "Напомнить включить ИИ-метку в {name}",
+  "platform.ai_label_mixed": "Отметить как созданное ИИ в {name} (в полуавтоматическом режиме — напомнить)",
+  "platform.ai_remind.tiktok": "Перед публикацией: включи «Контент, созданный ИИ» в настройках публикации TikTok.",
+  "platform.ai_remind.reels": "Перед публикацией: включи «Метка ИИ» в расширенных настройках Instagram.",
 };
 
 export default ru;

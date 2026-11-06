@@ -1931,7 +1931,6 @@ const de: Record<string, string> = {
   "extras.off": "Aus",
   "extras.auto": "Automatisch",
   "lic.original": "Projektseite",
-  "lic.changes.int8_onnx": "Von {by} in int8-ONNX umgewandelt",
   "about.title": "Über & Lizenzen",
   "about.desc": "SharkyClips {v} ist kostenlos und Open Source ({license}-Lizenz). Die optionalen KI-Modelle, die es lädt, haben eigene Lizenzen:",
   "about.group.voice": "Stimmmodell (Vertonung mit meiner Stimme)",
@@ -1942,6 +1941,13 @@ const de: Record<string, string> = {
   "aivoice.synthetic": "YouTube mitteilen, dass es veränderte oder synthetische Inhalte enthält",
   "aivoice.synthetic_hint": "Beantwortet YouTubes Frage nach \"veränderten oder synthetischen Inhalten\" mit Ja; Zuschauer sehen eventuell ein Label.",
   "aivoice.dub_hint": "Beim Hochladen steht in der Beschreibung, dass die Stimme KI-erzeugt ist, und YouTube bekommt die Markierung \"synthetische Inhalte\" (beides lässt sich beim Hochladen abschalten).",
+  "lic.changes.onnx_chain": "Von {a} nach ONNX exportiert, von {b} gepackt und auf int8 quantisiert",
+  "platform.ai_note": "Den KI-Stimmen-Hinweis in die Beschreibung schreiben",
+  "platform.ai_label_api": "Auf {name} als KI-generiert markieren",
+  "platform.ai_label_semi": "Mich erinnern, das KI-Label auf {name} einzuschalten",
+  "platform.ai_label_mixed": "Auf {name} als KI-generiert markieren (halbautomatisch: mich erinnern)",
+  "platform.ai_remind.tiktok": "Vor dem Posten: in den Beitragseinstellungen von TikTok \"KI-generierte Inhalte\" einschalten.",
+  "platform.ai_remind.reels": "Vor dem Teilen: in den erweiterten Einstellungen von Instagram \"KI-Info\" einschalten.",
 };
 
 export default de;

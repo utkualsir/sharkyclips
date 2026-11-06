@@ -1906,7 +1906,6 @@ const hu: Record<string, string> = {
   "extras.off": "Ki",
   "extras.auto": "Automatikus",
   "lic.original": "projektoldal",
-  "lic.changes.int8_onnx": "int8 ONNX formátumra alakította: {by}",
   "about.title": "Névjegy és licencek",
   "about.desc": "A SharkyClips {v} ingyenes és nyílt forráskódú ({license} licenc). Az általa letöltött, választható MI-modelleknek saját licencük van:",
   "about.group.voice": "Hangmodell (szinkron a saját hangomon)",
@@ -1917,6 +1916,13 @@ const hu: Record<string, string> = {
   "aivoice.synthetic": "Jelzés a YouTube-nak: módosított vagy szintetikus tartalom",
   "aivoice.synthetic_hint": "A YouTube \"módosított vagy szintetikus tartalom\" kérdésére igennel felel, így a nézők címkét láthatnak.",
   "aivoice.dub_hint": "Feltöltéskor a leírásban szerepel, hogy a hang MI-vel készült, és a YouTube \"szintetikus tartalom\" jelölést kap (mindkettő kikapcsolható a feltöltési képernyőn).",
+  "lic.changes.onnx_chain": "ONNX-be exportálta: {a}; csomagolta és int8-ra kvantálta: {b}",
+  "platform.ai_note": "Az MI-hangról szóló sor a leírásba",
+  "platform.ai_label_api": "Megjelölés MI-vel készültként itt: {name}",
+  "platform.ai_label_semi": "Emlékeztess, hogy bekapcsoljam az MI-címkét itt: {name}",
+  "platform.ai_label_mixed": "Megjelölés MI-vel készültként itt: {name} (félautomata módban emlékeztetés)",
+  "platform.ai_remind.tiktok": "Közzététel előtt: kapcsold be a TikTok bejegyzésbeállításaiban az \"MI által generált tartalom\" opciót.",
+  "platform.ai_remind.reels": "Megosztás előtt: kapcsold be az Instagram speciális beállításaiban az \"MI-címke\" opciót.",
 };
 
 export default hu;

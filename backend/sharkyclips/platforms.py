@@ -161,8 +161,9 @@ def set_audited(name: str, audited: bool) -> dict:
 # ===================================================================== captions
 
 
-def caption(platform: str, title: str, description: str, hashtags: list[str]) -> str:
-    """Title + the first line of the description + hashtags, within the platform's limits."""
+def caption(platform: str, title: str, description: str, hashtags: list[str], note: str | None = None) -> str:
+    """Title + the first line of the description (+ `note`, e.g. the AI-voice line) + hashtags,
+    within the platform's limits. The note is never cut off."""
     tags = []
     for h in hashtags:
         h = "#" + str(h).lstrip("#").strip()
@@ -174,11 +175,12 @@ def caption(platform: str, title: str, description: str, hashtags: list[str]) ->
     body = title.strip()
     if first and first.lower() != body.lower():
         body += "\n\n" + first
-    text = (body + ("\n\n" + " ".join(tags) if tags else "")).strip()
+    extra = f"\n\n{note.strip()}" if note and note.strip() else ""
+    tail = ("\n\n" + " ".join(tags)) if tags else ""
+    text = (body + extra + tail).strip()
     limit = CAPTION_MAX.get(platform, 2200)
     if len(text) > limit:
-        tail = ("\n\n" + " ".join(tags)) if tags else ""
-        text = body[: max(0, limit - len(tail) - 1)].rstrip() + "…" + tail
+        text = body[: max(0, limit - len(extra) - len(tail) - 1)].rstrip() + "…" + extra + tail
     return text
 
 
@@ -293,8 +295,9 @@ def tiktok_call(method: str, path: str, body: dict | None = None) -> dict:
 
 
 def tiktok_post(file: Path, text: str, on_progress: ProgressFn | None = None,
-                poll: float = 3.0, cancel: threading.Event | None = None) -> dict:
-    """Direct Post (FILE_UPLOAD) -> {"publish_id", "status", "privacy"}. Private until audited."""
+                poll: float = 3.0, cancel: threading.Event | None = None, ai_label: bool = False) -> dict:
+    """Direct Post (FILE_UPLOAD) -> {"publish_id", "status", "privacy"}. Private until audited.
+    ai_label: TikTok's "AI-generated content" label (post_info.is_aigc, 1.2.20)."""
     info = tiktok_call("POST", "/v2/post/publish/creator_info/query/")
     opts = (info.get("data") or {}).get("privacy_level_options") or ["SELF_ONLY"]
     audited = bool((load_app("tiktok") or {}).get("audited"))
@@ -304,9 +307,12 @@ def tiktok_post(file: Path, text: str, on_progress: ProgressFn | None = None,
     size = file.stat().st_size
     chunk = size if size <= 64 * 1024 * 1024 else CHUNK
     count = max(1, size // chunk)
+    post_info = {"title": text[:2200], "privacy_level": privacy, "disable_comment": False,
+                 "disable_duet": False, "disable_stitch": False}
+    if ai_label:
+        post_info["is_aigc"] = True
     init = tiktok_call("POST", "/v2/post/publish/video/init/", {
-        "post_info": {"title": text[:2200], "privacy_level": privacy, "disable_comment": False,
-                      "disable_duet": False, "disable_stitch": False},
+        "post_info": post_info,
         "source_info": {"source": "FILE_UPLOAD", "video_size": size, "chunk_size": chunk, "total_chunk_count": count}})
     data = init.get("data") or {}
     url, pid = data.get("upload_url"), data.get("publish_id")
@@ -402,13 +408,16 @@ def _ig_token() -> dict:
 
 
 def ig_post(file: Path, text: str, on_progress: ProgressFn | None = None, poll: float = 3.0,
-            cancel: threading.Event | None = None) -> dict:
-    """Reels upload: container (resumable) -> bytes to rupload -> wait FINISHED -> publish."""
+            cancel: threading.Event | None = None, ai_label: bool = False) -> dict:
+    """Reels upload: container (resumable) -> bytes to rupload -> wait FINISHED -> publish.
+    ai_label: Instagram's AI self-disclosure (is_ai_generated, 1.2.20)."""
     tok = _ig_token()
     acc, uid = tok["access_token"], tok["user_id"]
-    r = _http().post(f"{ig_api()}/{IG_VERSION}/{uid}/media", timeout=60, data={
-        "media_type": "REELS", "upload_type": "resumable", "caption": text[:2200], "share_to_feed": "true",
-        "access_token": acc})
+    data = {"media_type": "REELS", "upload_type": "resumable", "caption": text[:2200], "share_to_feed": "true",
+            "access_token": acc}
+    if ai_label:
+        data["is_ai_generated"] = "true"
+    r = _http().post(f"{ig_api()}/{IG_VERSION}/{uid}/media", timeout=60, data=data)
     cont = _ig_json(r, "upload")
     cid = cont.get("id")
     if not cid:

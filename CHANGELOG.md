@@ -7,6 +7,85 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.20] - 2026-11-06
+
+### Changed
+- **Dubbed clips on TikTok and Reels say their voice is AI-made too.** The caption gets the same
+  short line as on YouTube (for example "The English voice in this video is AI-generated from my
+  own voice."). With automatic posting, SharkyClips also switches on the platform's own AI label
+  (TikTok's "AI-generated content", Instagram's AI disclosure). With semi-automatic posting the
+  line is in the copied caption and SharkyClips reminds you to switch on the AI label yourself
+  before you post. Both switches are on by default and sit right above the post button.
+- **Fuller credit for the voice model:** exported to ONNX by KevinAHM, packaged and quantized to
+  int8 by k2-fsa/sherpa-onnx, with links to both (dubbing settings and About & licenses).
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Değişti
+- **TikTok ve Reels'teki dublajlı klipler de sesin yapay zekâyla üretildiğini söyler.** Açıklamaya
+  YouTube'dakiyle aynı kısa satır eklenir (örneğin "The English voice in this video is
+  AI-generated from my own voice."). Otomatik paylaşımda SharkyClips platformun kendi yapay zekâ
+  etiketini de açar (TikTok'ta "Yapay zekâ tarafından oluşturulan içerik", Instagram'da yapay zekâ
+  bildirimi). Yarı otomatik paylaşımda satır kopyalanan açıklamada olur ve SharkyClips paylaşmadan
+  önce yapay zekâ etiketini kendin açmanı hatırlatır. İki anahtar da varsayılan olarak açıktır ve
+  paylaş düğmesinin hemen üstündedir.
+- **Ses modelinin daha eksiksiz künyesi:** KevinAHM tarafından ONNX'e aktarıldı, k2-fsa/sherpa-onnx
+  tarafından paketlenip int8'e sıkıştırıldı; ikisine de bağlantılarla (dublaj ayarları ve Hakkında
+  ve lisanslar).
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Vertonte Clips auf TikTok und Reels sagen ebenfalls, dass die Stimme KI-erzeugt ist:** ein Satz
+  in der Beschreibung; automatisch wird das KI-Label der Plattform gesetzt, halbautomatisch
+  erinnert SharkyClips dich daran. Beides ist an und lässt sich direkt über dem Posten-Knopf
+  abschalten.
+- **Vollständigere Lizenzangabe:** von KevinAHM nach ONNX exportiert, von k2-fsa/sherpa-onnx gepackt
+  und auf int8 quantisiert, mit Links.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **A TikTokon és Reelsen is jelzik a szinkronizált klipek, hogy a hang MI-vel készült:** egy sor
+  a leírásban; automata módban a platform MI-címkéje is bekapcsol, félautomata módban a SharkyClips
+  emlékeztet rá. Mindkettő be van kapcsolva, és a közzététel gomb fölött kikapcsolható.
+- **Teljesebb licencadat:** ONNX-be exportálta KevinAHM, csomagolta és int8-ra kvantálta a
+  k2-fsa/sherpa-onnx, linkekkel.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Озвученные клипы в TikTok и Reels тоже сообщают, что голос создан ИИ:** строка в подписи; в
+  автоматическом режиме включается ИИ-метка платформы, в полуавтоматическом SharkyClips напоминает
+  о ней. Оба переключателя включены и находятся над кнопкой публикации.
+- **Более полное указание авторства:** экспорт в ONNX — KevinAHM, упаковка и квантизация в int8 —
+  k2-fsa/sherpa-onnx, со ссылками.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **المقاطع المدبلجة على TikTok وReels تذكر أيضًا أن الصوت مولَّد بالذكاء الاصطناعي:** سطر في
+  الوصف؛ في النشر التلقائي تُفعَّل علامة الذكاء الاصطناعي في المنصة، وفي الوضع شبه التلقائي يذكّرك
+  SharkyClips بها. كلاهما مفعَّل ويمكن إيقافه فوق زر النشر.
+- **نسبة أكمل لنموذج الصوت:** صدّره KevinAHM إلى ONNX، وحزمه k2-fsa/sherpa-onnx وضغطه إلى int8، مع روابط.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **TikTok 和 Reels 上的配音片段也会说明声音由 AI 生成：** 文案中加一行说明；自动发布时会打开平台自己的 AI 标签，半自动发布时 SharkyClips 会提醒你手动打开。两者默认开启，位于发布按钮上方。
+- **更完整的声音模型署名：** 由 KevinAHM 导出为 ONNX，由 k2-fsa/sherpa-onnx 打包并量化为 int8，附链接。
+
+</details>
+
 ## [1.2.19] - 2026-11-06
 
 ### Changed
