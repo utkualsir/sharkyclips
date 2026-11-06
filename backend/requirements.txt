@@ -23,3 +23,5 @@ wordfreq>=3.1
 rapidocr>=3.4,<4
 # Phase 7.5 - tray icon for the window-less launcher (Windows)
 pystray>=0.19; platform_system == "Windows"
+# 1.2.18 - study cards: formulas rendered with matplotlib's mathtext (no LaTeX install needed)
+matplotlib>=3.8

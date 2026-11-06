@@ -68,8 +68,8 @@ class ClipOptions:
     memes: str = "off"  # off | light | strong
     # 1.2.18: my-voice dubbing, study cards, music visualizer
     dub: str = ""  # "" = original voice; a language code = the clip spoken in the user's own voice (dub.py)
-    study_cards: str = "off"  # off | auto (study mode: formulas / definitions / steps as cards)
-    visualizer: str = "off"  # off | auto (music mode: beat-synced visualizer + karaoke lyrics)
+    study_cards: str = "auto"  # off | auto (study mode: formulas / definitions / steps as cards)
+    visualizer: str = "auto"  # off | auto (music mode: beat-synced visualizer + karaoke lyrics)
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
@@ -607,10 +607,75 @@ def video_args(enc: Encoder, spec: OutputSpec) -> list[str]:
     return args
 
 
+def mode_extras(project: Project, opts: ClipOptions) -> dict:
+    """1.2.18 extras that apply to this render: study cards (study mode), visualizer (music mode)."""
+    mode = project.load_meta().get("mode") or "gaming"
+    return {"cards": opts.study_cards == "auto" and mode == "study",
+            "visualizer": opts.visualizer == "auto" and mode == "music"}
+
+
+def out_mapper(project: Project, cand: dict, opts: ClipOptions, spec: OutputSpec | None = None):
+    """Source time -> time in the rendered clip (cuts, hook flash, intro card, replay inserts).
+    Returns f(t, snap="fwd"|"back"|"none") -> float | None."""
+    spec = spec or OutputSpec()
+    meta = project.load_meta()
+    fps = float(meta.get("fps") or 30)
+    flash = FLASH_SECONDS if opts.hook_flash and not opts.loop else 0.0
+    plan = edit_plan(project, cand, opts, spec, max(1, round(min(60.0, fps, float(spec.fps or 60)))))
+    if plan is None:
+        start, end = float(cand["start"]), float(cand["end"])
+
+        def plain(t: float, snap: str = "none") -> float | None:
+            if t < start:
+                return flash if snap == "fwd" else None
+            if t > end:
+                return (end - start + flash) if snap == "back" else None
+            return t - start + flash
+        return plain
+    lead = plan.intro_s + flash
+    fxp = plan.fx
+
+    def planned(t: float, snap: str = "none") -> float | None:
+        o = plan.to_out(t, snap)
+        if o is None:
+            return None
+        if fxp is not None:
+            o = fxp.final(o, end=snap == "back")
+        return lead + o
+    return planned
+
+
 def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None,
                 dest: Path, on_progress: Callable[[float], None] | None = None,
                 spec: OutputSpec | None = None) -> RenderResult:
-    """Render one clip. Without `spec`: the 1080x1920 H.264 MP4 of the Clips tab."""
+    """Render one clip. Without `spec`: the 1080x1920 H.264 MP4 of the Clips tab.
+    1.2.18: study cards / the music visualizer are a second pass on the finished clip."""
+    ex = mode_extras(project, opts)
+    if not (ex["cards"] or ex["visualizer"]):
+        return _render_core(project, cand, opts, facecam, dest, on_progress, spec)
+    from . import mode_extras as mx
+
+    spec = spec or OutputSpec()
+    base = dest.with_name(dest.stem + ".base" + dest.suffix)
+
+    def part(a: float, b: float):
+        return (lambda f: on_progress(a + (b - a) * f)) if on_progress else None
+
+    t0 = time.perf_counter()
+    res = _render_core(project, cand, opts, facecam, base, part(0.0, 0.55), spec)
+    try:
+        if not opts.dub and cand.get("dub"):
+            opts = ClipOptions.from_dict({**opts.to_dict(), "dub": cand["dub"]})
+        enc = mx.apply(project, cand, opts, spec, base, dest, ex, part(0.55, 1.0))
+    finally:
+        base.unlink(missing_ok=True)
+    return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc or res.encoder)
+
+
+def _render_core(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None,
+                 dest: Path, on_progress: Callable[[float], None] | None = None,
+                 spec: OutputSpec | None = None) -> RenderResult:
+    """The render itself (see render_clip)."""
     from .render import cpu_fallback, pick_codec
 
     ffmpeg = require_tool("ffmpeg")

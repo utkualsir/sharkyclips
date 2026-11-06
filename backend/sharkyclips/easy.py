@@ -75,7 +75,8 @@ def settings() -> dict:
             "open_folder": config.get("easy_open_folder") is not False,
             "downloads": str(downloads_root()), **fx_settings(),
             "auto_clip": bool(config.get("auto_clip_enabled")),
-            "platform": config.get("easy_platform") if config.get("easy_platform") in ("youtube", "tiktok", "reels") else "youtube"}
+            "platform": config.get("easy_platform") if config.get("easy_platform") in ("youtube", "tiktok", "reels") else "youtube",
+            **extras_settings()}
 
 
 def save_settings(body: dict) -> dict:
@@ -96,6 +97,10 @@ def save_settings(body: dict) -> dict:
         changes["easy_memes"] = body["memes"]
     if body.get("platform") in ("youtube", "tiktok", "reels"):
         changes["easy_platform"] = body["platform"]
+    if body.get("study_cards") in ("off", "auto"):
+        changes["easy_study_cards"] = body["study_cards"]
+    if body.get("visualizer") in ("off", "auto"):
+        changes["easy_visualizer"] = body["visualizer"]
     if changes:
         config.update(**changes)
     return settings()
@@ -204,9 +209,15 @@ def hook_style() -> str:
     return "statement"
 
 
+def extras_settings() -> dict:
+    """1.2.18 switches (off / auto): study cards in study mode, the visualizer in music mode."""
+    sc, mv = config.get("easy_study_cards"), config.get("easy_visualizer")
+    return {"study_cards": sc if sc in ("off", "auto") else "auto", "visualizer": mv if mv in ("off", "auto") else "auto"}
+
+
 def render_options(prefs: dict, style: str, music_ok: bool, fx: dict | None = None) -> tuple[dict, str | None]:
     """(options, hook text override or None) for one clip. fx: fx_options() of the project."""
-    opts = {**DEFAULT_OPTIONS, **(fx or {})}
+    opts = {**DEFAULT_OPTIONS, **(fx or {}), **extras_settings()}
     if not prefs.get("subtitles", True):
         opts["subtitles"] = "none"
     opts["music"] = bool(prefs.get("music")) and music_ok

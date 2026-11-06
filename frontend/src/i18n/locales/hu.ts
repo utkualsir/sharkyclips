@@ -1899,6 +1899,12 @@ const hu: Record<string, string> = {
   "voice.status_none": "Még nincs beállítva.",
   "voice.forget": "A hangom elfelejtése",
   "voice.forgotten": "A hangmintád és a beleegyezésed törölve.",
+  "extras.cards": "Tanulókártyák",
+  "extras.cards_hint": "Órák: a fontos képletek, definíciók és lépések tiszta kártyákként jelennek meg, amíg szó van róluk.",
+  "extras.viz": "Zenei vizualizáció",
+  "extras.viz_hint": "Dalok: ütemre mozgó vizualizáció, középen a borító, a szöveg karaokeként.",
+  "extras.off": "Ki",
+  "extras.auto": "Automatikus",
 };
 
 export default hu;

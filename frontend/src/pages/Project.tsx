@@ -1350,6 +1350,17 @@ export default function ProjectPage({ id }: { id: string }) {
                     hasClip={!!selected}
                     onLoopPreview={loopPreview}
                   />
+                  {(project.mode === "study" || project.mode === "music") && (
+                    <div className="render-row">
+                      <label>{t(project.mode === "study" ? "extras.cards" : "extras.viz")}</label>
+                      <Segmented
+                        value={(project.mode === "study" ? options.study_cards : options.visualizer) ?? "auto"}
+                        label={t(project.mode === "study" ? "extras.cards" : "extras.viz")}
+                        options={(["off", "auto"] as const).map((v) => ({ value: v, label: t(`extras.${v}`) }))}
+                        onChange={(v) => setOption(project.mode === "study" ? { study_cards: v } : { visualizer: v })}
+                      />
+                    </div>
+                  )}
                   {selected && <DubSwitch pid={id} cid={selected.id} />}
                   <div className="facecam-line">
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>

@@ -1876,6 +1876,12 @@ const ar: Record<string, string> = {
   "voice.status_none": "لم يُعدّ بعد.",
   "voice.forget": "انسَ صوتي",
   "voice.forgotten": "حُذفت عينة صوتك وموافقتك.",
+  "extras.cards": "بطاقات الدراسة",
+  "extras.cards_hint": "الدروس: تظهر الصيغ والتعريفات والخطوات المهمة كبطاقات أنيقة أثناء شرحها.",
+  "extras.viz": "مؤثرات الموسيقى",
+  "extras.viz_hint": "الأغاني: مؤثرات تتحرك مع الإيقاع، والغلاف في الوسط، والكلمات بأسلوب الكاريوكي.",
+  "extras.off": "إيقاف",
+  "extras.auto": "تلقائي",
 };
 
 export default ar;

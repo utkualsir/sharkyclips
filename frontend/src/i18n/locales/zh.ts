@@ -1870,6 +1870,12 @@ const zh: Record<string, string> = {
   "voice.status_none": "尚未设置。",
   "voice.forget": "忘记我的声音",
   "voice.forgotten": "你的声音样本和同意已删除。",
+  "extras.cards": "学习卡片",
+  "extras.cards_hint": "课程：讲到重要公式、定义和步骤时，以简洁卡片显示。",
+  "extras.viz": "音乐可视化",
+  "extras.viz_hint": "歌曲：随节拍跳动的可视化效果，封面居中，歌词以卡拉 OK 形式显示。",
+  "extras.off": "关闭",
+  "extras.auto": "自动",
 };
 
 export default zh;

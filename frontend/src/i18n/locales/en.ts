@@ -1926,6 +1926,12 @@ const en: Record<string, string> = {
   "voice.status_none": "Not set up yet.",
   "voice.forget": "Forget my voice",
   "voice.forgotten": "Your voice sample and consent are deleted.",
+  "extras.cards": "Study cards",
+  "extras.cards_hint": "Lessons: key formulas, definitions and steps appear as clean cards while they're explained.",
+  "extras.viz": "Music visualizer",
+  "extras.viz_hint": "Songs: a visualizer that moves with the beat, the cover in the middle and the lyrics as karaoke.",
+  "extras.off": "Off",
+  "extras.auto": "Auto",
 };
 
 export default en;

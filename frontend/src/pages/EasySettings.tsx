@@ -127,6 +127,28 @@ export default function EasySettings() {
           </span>
           <Toggle checked={(settings?.memes ?? "off") !== "off"} onChange={(v) => update({ memes: v ? "light" : "off" })} label={t("fx.memes")} />
         </div>
+        <div className="toggle-line">
+          <span>
+            <b>{t("extras.cards")}</b>
+            <span className="muted ez-hint">{t("extras.cards_hint")}</span>
+          </span>
+          <Toggle
+            checked={(settings?.study_cards ?? "auto") === "auto"}
+            onChange={(v) => update({ study_cards: v ? "auto" : "off" })}
+            label={t("extras.cards")}
+          />
+        </div>
+        <div className="toggle-line">
+          <span>
+            <b>{t("extras.viz")}</b>
+            <span className="muted ez-hint">{t("extras.viz_hint")}</span>
+          </span>
+          <Toggle
+            checked={(settings?.visualizer ?? "auto") === "auto"}
+            onChange={(v) => update({ visualizer: v ? "auto" : "off" })}
+            label={t("extras.viz")}
+          />
+        </div>
       </section>
 
       <section className="card ez-set-card" aria-labelledby="ez-set-phone">

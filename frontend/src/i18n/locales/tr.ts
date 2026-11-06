@@ -1894,6 +1894,12 @@ const tr: Record<string, string> = {
   "voice.status_none": "Henüz kurulmadı.",
   "voice.forget": "Sesimi unut",
   "voice.forgotten": "Ses örneğin ve onayın silindi.",
+  "extras.cards": "Çalışma kartları",
+  "extras.cards_hint": "Dersler: önemli formüller, tanımlar ve adımlar anlatılırken temiz kartlar olarak görünür.",
+  "extras.viz": "Müzik görselleştirici",
+  "extras.viz_hint": "Şarkılar: ritimle hareket eden bir görselleştirici, ortada kapak, sözler karaoke olarak.",
+  "extras.off": "Kapalı",
+  "extras.auto": "Otomatik",
 };
 
 export default tr;

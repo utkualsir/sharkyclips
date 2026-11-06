@@ -1924,6 +1924,12 @@ const de: Record<string, string> = {
   "voice.status_none": "Noch nicht eingerichtet.",
   "voice.forget": "Meine Stimme vergessen",
   "voice.forgotten": "Deine Stimmprobe und Zustimmung sind gelöscht.",
+  "extras.cards": "Lernkarten",
+  "extras.cards_hint": "Unterricht: wichtige Formeln, Definitionen und Schritte erscheinen als klare Karten, während sie erklärt werden.",
+  "extras.viz": "Musik-Visualizer",
+  "extras.viz_hint": "Songs: ein Visualizer im Takt, das Cover in der Mitte und der Text als Karaoke.",
+  "extras.off": "Aus",
+  "extras.auto": "Automatisch",
 };
 
 export default de;

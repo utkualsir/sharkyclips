@@ -290,6 +290,10 @@ export interface ClipOptions {
   replay?: ReplayMode;
   chat_bubbles?: boolean;
   memes?: MemeLevel;
+  /** 1.2.18: dub language ("" = original voice), study cards (study mode), visualizer (music mode) */
+  dub?: string;
+  study_cards?: "off" | "auto";
+  visualizer?: "off" | "auto";
 }
 
 export type ReplayMode = "off" | "auto";
@@ -1616,6 +1620,8 @@ export interface EasySettings {
   auto_clip: boolean;
   /** 1.2.18: the upload button's platform, remembered */
   platform: "youtube" | "tiktok" | "reels";
+  study_cards: "off" | "auto";
+  visualizer: "off" | "auto";
 }
 
 // ---------------------------------------------------------------- automation + live (1.2.17)
