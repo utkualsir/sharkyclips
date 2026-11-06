@@ -30,7 +30,7 @@
 
 <main id="main" class="wrap doc">
   <h1>Privacy policy</h1>
-  <p class="meta">Effective 3 November 2026</p>
+  <p class="meta">Effective 6 November 2026</p>
 
   <p class="callout"><b>Short version:</b> SharkyClips runs on your computer. It has no server, no
     account and no telemetry. Your videos, transcripts, clips and YouTube data stay on your
@@ -57,16 +57,24 @@
     <li><b>Your settings and preferences</b>, such as language, title feedback (thumbs up/down),
       glossary, music library and brand kit.</li>
     <li><b>View counts you enter yourself</b> to calibrate the viral score.</li>
+    <li><b>Your voice sample and consent</b>, only if you set up "dub in my voice": a short
+      recording of your own voice (or a file you pick) and your typed name, in
+      <code>~/.sharkyclips/voice</code>. It is used only to speak your own lines in another
+      language, on your computer, and never for anyone else's voice. "Forget my voice" in Settings
+      deletes it.</li>
+    <li><b>AI cover pictures</b> made on your computer from the AI's cover idea.</li>
   </ul>
-  <p>Speech recognition and the AI model run locally (Whisper and Ollama). The app does not send
-    your videos, transcripts or prompts to any AI service.</p>
+  <p>Speech recognition, the AI model, the cover image model and the voice model run locally
+    (Whisper, Ollama, Z-Image-Turbo in stable-diffusion.cpp, Pocket TTS). The app does not send your
+    videos, voice, transcripts or prompts to any AI service.</p>
 
   <h2>3. When the app goes online</h2>
   <p>Only for things you start or allow:</p>
   <ul>
     <li>Downloading a video or its chat replay from a link you paste (Twitch, YouTube, Kick and
       other sites, through yt-dlp). These sites receive a normal request from your computer.</li>
-    <li>Downloading the AI models once (from Hugging Face and Ollama).</li>
+    <li>Downloading the AI models once (from Hugging Face, Ollama and GitHub), including the cover
+      image model and its small program and the voice model, the first time you use them.</li>
     <li>Checking for and installing updates from GitHub, when you click "Check for updates".</li>
     <li>The optional YouTube connection described below.</li>
     <li>Reading your Twitch chat during a stream, if you enter your channel name: a read-only,
@@ -77,6 +85,12 @@
       bot token is stored encrypted on your computer.</li>
     <li>OBS on your own computer (its local WebSocket server), if it is turned on, to read the
       recording time of a marker.</li>
+    <li>TikTok and Instagram: by default the app only opens their upload page in your browser and
+      copies the caption to your clipboard; you post yourself. If you set up automatic posting with
+      your own developer app, the app sends the clip and its caption directly to the TikTok Content
+      Posting API or the Instagram Graph API and reads back the post's status and link. TikTok and
+      Meta process this under their own privacy policies. The access tokens (and your TikTok app's
+      key) are stored encrypted on your computer; "Disconnect" deletes them.</li>
   </ul>
   <p>The app contains no analytics, crash reporting, advertising or tracking code.</p>
 

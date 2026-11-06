@@ -7,6 +7,138 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.18] - 2026-11-06
+
+### Added
+- **Cover studio:** the AI's cover idea becomes a real picture, made on your PC with a free
+  image model (Z-Image-Turbo). One click makes 4 options in 9:16 and 16:9; pick one and the cover
+  text is added in the SharkyClips style. On an 8 GB graphics card the 4 pictures of one size take
+  about a minute. The model (about 6.7 GB) downloads once. On PCs that can't run it, SharkyClips says so
+  and uses the facecam frame as the cover.
+- **TikTok and Instagram Reels:** the upload button now has a small picker: YouTube / TikTok /
+  Reels (remembered). For TikTok and Reels the clip is exported with the right settings into your
+  Downloads folder, the caption with hashtags is copied, and the upload page opens: drop the file
+  in and press Post. Automatic posting through the official TikTok and Instagram APIs can be set
+  up in Settings with your own developer app; the app always shows which mode is active. Until
+  TikTok or Meta approve your app, automatic posts are private (TikTok) or limited to your own
+  account (Instagram).
+- **Dub a clip in your own voice:** one switch turns a clip into English spoken in your own
+  voice. Set it up once: confirm it's your own voice and record about 20 seconds (or pick a file).
+  Only your lines are dubbed; friends keep their own voice and get subtitles. The timing stays,
+  the game sound stays underneath, and the subtitles are translated. Everything runs on your PC.
+  More languages will follow.
+- **Study cards:** in study mode, key formulas, definitions and steps appear as clean animated
+  cards while the teacher explains them, with properly drawn math (fractions, roots, powers).
+- **Music visualizer:** in music mode a clip becomes a visualizer that moves with the beat: the
+  cover in the middle, a spectrum ring around it and the lyrics as karaoke, in the SharkyClips
+  colours (or your brand kit's).
+- In Easy mode study cards and the visualizer are a switch each in Settings (on); Pro mode has
+  off / auto in the editing panel.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Eklendi
+- **Kapak stüdyosu:** yapay zekânın kapak fikri gerçek bir resme dönüşür; ücretsiz bir resim
+  modeliyle (Z-Image-Turbo) bilgisayarında yapılır. Tek tıkla 9:16 ve 16:9 boyutunda 4 seçenek;
+  birini seç, kapak yazısı SharkyClips stiliyle eklenir. 8 GB'lık bir ekran kartında bir boyutun 4 resmi
+  yaklaşık bir dakika sürer. Model (yaklaşık 6,7 GB) bir kez indirilir. Çalıştıramayan
+  bilgisayarlarda SharkyClips bunu söyler ve kapak olarak facecam karesini kullanır.
+- **TikTok ve Instagram Reels:** yükleme düğmesinde artık küçük bir seçici var: YouTube / TikTok /
+  Reels (hatırlanır). TikTok ve Reels için klip doğru ayarlarla İndirilenler klasörüne aktarılır,
+  hashtag'li açıklama kopyalanır ve yükleme sayfası açılır: dosyayı bırak ve Paylaş'a bas.
+  Resmî TikTok ve Instagram API'leriyle otomatik paylaşım, kendi geliştirici uygulamanla
+  Ayarlar'dan kurulabilir; uygulama hangi modun açık olduğunu her zaman gösterir. TikTok ya da
+  Meta uygulamanı onaylayana kadar otomatik paylaşımlar gizlidir (TikTok) ya da yalnızca kendi
+  hesabınla sınırlıdır (Instagram).
+- **Klibi kendi sesinle dublajla:** tek bir anahtar klibi senin sesinle İngilizce konuşturur.
+  Bir kez kur: bunun kendi sesin olduğunu onayla ve yaklaşık 20 saniye kaydet (ya da bir dosya
+  seç). Yalnızca senin cümlelerin dublajlanır; arkadaşlar kendi seslerini korur ve altyazı alır.
+  Zamanlama korunur, oyun sesi altta kalır, altyazılar çevrilir. Her şey bilgisayarında çalışır.
+  Başka diller de gelecek.
+- **Çalışma kartları:** çalışma modunda önemli formüller, tanımlar ve adımlar, öğretmen anlatırken
+  temiz, hareketli kartlar olarak görünür; matematik düzgün çizilir (kesirler, kökler, üsler).
+- **Müzik görselleştirici:** müzik modunda klip ritimle hareket eden bir görselleştiriciye
+  dönüşür: ortada kapak, çevresinde bir spektrum halkası ve karaoke olarak sözler, SharkyClips
+  renklerinde (ya da marka kitinin renklerinde).
+- Kolay modda çalışma kartları ve görselleştirici Ayarlar'da birer anahtar (açık); Pro modda
+  düzenleme panelinde kapalı / otomatik.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Neu: **Cover-Studio** – aus der Cover-Idee der KI wird ein echtes Bild, auf deinem PC
+  (Z-Image-Turbo): 4 Vorschläge in 9:16 und 16:9, ein Klick zum Auswählen; schwache PCs nehmen das
+  Facecam-Bild.
+- **TikTok und Instagram Reels:** Plattform-Auswahl am Upload-Knopf. Halbautomatisch: passendes
+  Video im Downloads-Ordner, Beschreibung kopiert, Upload-Seite offen. Automatisch über die
+  offiziellen APIs mit eigener Entwickler-App (bis zur Freigabe privat / nur dein Konto).
+- **Synchron mit deiner eigenen Stimme** (Englisch): nur deine Sätze, Freunde behalten ihre
+  Stimme; Timing und Spielsound bleiben. Einmalige Zustimmung + kurze Stimmprobe.
+- **Lernkarten** im Lernmodus (Formeln mit sauberer Mathe, Definitionen, Schritte) und ein
+  **Musik-Visualizer** im Musikmodus (Beat, Cover, Karaoke-Text).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Új: **borítóstúdió** – az MI borítóötletéből valódi kép lesz a gépeden (Z-Image-Turbo):
+  4 változat 9:16-ban és 16:9-ben, egy kattintással választható; gyenge gépen a facecam képkockája.
+- **TikTok és Instagram Reels:** platformválasztó a feltöltés gombon. Félautomata: kész videó a
+  Letöltésekben, kimásolt leírás, megnyíló feltöltő oldal. Automata a hivatalos API-kkal, saját
+  fejlesztői alkalmazással (jóváhagyásig privát / csak a saját fiókod).
+- **Szinkron a saját hangodon** (angolul): csak a te mondataid, a barátok hangja marad; az
+  időzítés és a játék hangja megmarad. Egyszeri beleegyezés + rövid hangminta.
+- **Tanulókártyák** tanuló módban (képletek szép matekkal, definíciók, lépések) és **zenei
+  vizualizáció** zenei módban (ütem, borító, karaoke-szöveg).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Новое: **студия обложек** — идея обложки от ИИ становится настоящей картинкой прямо на ПК
+  (Z-Image-Turbo): 4 варианта в 9:16 и 16:9, выбор одним кликом; на слабых ПК — кадр с веб-камеры.
+- **TikTok и Instagram Reels:** выбор платформы на кнопке загрузки. Полуавтоматически: готовое
+  видео в «Загрузках», описание скопировано, открыта страница загрузки. Автоматически — через
+  официальные API со своим приложением разработчика (до одобрения — приватно / только свой аккаунт).
+- **Озвучка твоим голосом** (английский): только твои фразы, друзья остаются со своим голосом;
+  тайминг и звук игры сохраняются. Однократное согласие + короткий образец голоса.
+- **Учебные карточки** в режиме учёбы (формулы с аккуратной математикой, определения, шаги) и
+  **музыкальный визуализатор** в режиме музыки (бит, обложка, караоке).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- جديد: **استوديو الأغلفة** – تتحول فكرة الغلاف من الذكاء الاصطناعي إلى صورة حقيقية على جهازك
+  (Z-Image-Turbo): ‏4 خيارات بمقاسي 9:16 و16:9 والاختيار بنقرة؛ وعلى الأجهزة الضعيفة لقطة كاميرا الوجه.
+- **تيك توك وإنستغرام ريلز:** اختيار المنصة على زر الرفع. شبه تلقائي: الفيديو جاهز في التنزيلات،
+  والوصف منسوخ، وصفحة الرفع مفتوحة. تلقائي عبر الواجهات الرسمية بتطبيق مطوّر خاص بك (خاص / لحسابك
+  فقط حتى الموافقة).
+- **دبلجة بصوتك أنت** (بالإنجليزية): جملك فقط، ويحتفظ الأصدقاء بأصواتهم؛ يبقى التوقيت وصوت اللعبة.
+  موافقة لمرة واحدة + عينة صوت قصيرة.
+- **بطاقات دراسة** في وضع الدراسة (صيغ برسم رياضي أنيق، تعريفات، خطوات) و**مؤثرات موسيقية**
+  في وضع الموسيقى (الإيقاع، الغلاف، كلمات كاريوكي).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 新增：**封面工作室**——AI 的封面创意在你的电脑上直接变成真实图片（Z-Image-Turbo）：9:16 和 16:9
+  各 4 个方案，一键选择；配置较弱的电脑改用摄像头画面。
+- **TikTok 和 Instagram Reels：**上传按钮上可选平台。半自动：视频已放进“下载”、文案已复制、上传页
+  已打开。也可用你自己的开发者应用通过官方 API 自动发布（审核通过前为私密 / 仅限你自己的账号）。
+- **用你自己的声音配音**（英语）：只配你的台词，朋友保留原声；时间和游戏声音保持不变。一次性同意
+  + 一小段声音样本。
+- 学习模式下的**学习卡片**（公式排版清晰、定义、步骤），以及音乐模式下的**音乐可视化**（节拍、
+  封面、卡拉 OK 歌词）。
+
+</details>
+
 ## [1.2.17] - 2026-11-03
 
 ### Added

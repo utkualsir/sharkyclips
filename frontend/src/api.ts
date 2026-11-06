@@ -1205,6 +1205,7 @@ const HEAVY: [string, RegExp][] = [
   ["POST", /\/candidates$/],
   ["PUT", /^\/api\/uploads/],
   ["POST", /\/(ai-covers|dub)$/],
+  ["POST", /^\/api\/platforms\/(tiktok|reels)\/clips\//],
 ];
 let heavyGuard: (() => Promise<void>) | null = null;
 export function setHeavyGuard(guard: (() => Promise<void>) | null) {

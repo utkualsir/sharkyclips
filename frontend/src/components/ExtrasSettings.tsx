@@ -35,6 +35,7 @@ export function CoverAiCard() {
         <label className="field">
           <span className="field-label">{t("cover_ai.device")}</span>
           <Segmented
+            block
             value={plan.device}
             label={t("cover_ai.device")}
             options={(["auto", "gpu", "cpu"] as const).map((d) => ({ value: d, label: t(`cover_ai.device.${d}`) }))}
