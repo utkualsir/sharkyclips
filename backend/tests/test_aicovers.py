@@ -135,6 +135,8 @@ def test_prompt_drops_the_overlay_text_and_sets_the_frame():
     p = 'Soldier jumps. vertical 9:16 thumbnail, cinematic, bold short overlay text "NO WAY", no logos'
     tall, wide = imagegen.image_prompt(p, "tall"), imagegen.image_prompt(p, "wide")
     assert "NO WAY" not in tall and "overlay text" not in tall and "no text" in tall
+    q = imagegen.image_prompt("A streamer, game UI with 'Multikill' notification, yelling “GG”", "tall")
+    assert "Multikill" not in q and "GG" not in q and "empty space" not in q
     assert "vertical 9:16" in tall and "wide 16:9" in wide and "9:16 thumbnail" not in wide
 
 
@@ -171,8 +173,9 @@ def test_four_options_per_size_choose_and_text_on_top(fake_sd):
     assert len(v["options"]["tall"]) == 4 and len(v["options"]["wide"]) == 4
     assert v["chosen"]["tall"] == v["seeds"][0] and v["made_with"] == "gpu"
     calls = fake_sd.read_text().splitlines()
-    assert len(calls) == 8 and all("NO WAY" not in c for c in calls)
-    assert "-W 576 -H 1024" in calls[0] and "-W 1024 -H 576" in calls[4] and "--offload-to-cpu" in calls[0]
+    assert len(calls) == 2 and all("NO WAY" not in c for c in calls)  # one batch run per size
+    assert "-W 576 -H 1024" in calls[0] and "-W 1024 -H 576" in calls[1] and "--offload-to-cpu" in calls[0]
+    assert "-b 4" in calls[0] and v["seeds"] == list(range(v["seeds"][0], v["seeds"][0] + 4))
     seed = v["seeds"][2]
     v = aicovers.choose(project, "c01", "tall", seed)
     assert v["chosen"]["tall"] == seed
@@ -187,7 +190,7 @@ def test_four_options_per_size_choose_and_text_on_top(fake_sd):
         assert im.size == (1280, 720)
     # same picture, other text: no new picture, a new composite
     again = cover.make_cover(project, cand, None, "ai", "SO CLOSE", "tall", "en")
-    assert again != img and len(fake_sd.read_text().splitlines()) == 8
+    assert again != img and len(fake_sd.read_text().splitlines()) == 2
     # a second round: new seeds, the older pictures go (the chosen one is replaced by the new first)
     v2 = aicovers.make(project, cand, ["tall"])
     assert set(v2["seeds"]).isdisjoint(v["seeds"]) and len(list(aicovers.folder(project, "c01").glob("*_tall.png"))) == 4
@@ -317,3 +320,18 @@ def test_api_weak_pc_answers_with_the_fallback(monkeypatch):
     project = _project("aic-api-weak")
     r = TestClient(app).post(f"/api/library/{project.id}/c01/ai-covers", json={"frames": ["tall"]})
     assert r.status_code == 400 and r.json().get("code") == "fallback"
+
+
+def test_a_picture_painted_on_a_white_card_is_trimmed(tmp_path):
+    from PIL import Image
+
+    img = Image.new("RGB", (576, 1024), (255, 255, 255))
+    img.paste(Image.effect_noise((576, 600), 60).convert("RGB"), (0, 200))
+    p = tmp_path / "card.png"
+    img.save(p)
+    assert imagegen.trim_border(p)
+    with Image.open(p) as im:
+        assert abs(im.size[1] - 600) <= 2
+    ok = tmp_path / "full.png"
+    Image.effect_noise((576, 1024), 60).convert("RGB").save(ok)
+    assert not imagegen.trim_border(ok)

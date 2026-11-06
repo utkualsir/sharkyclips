@@ -97,7 +97,8 @@ def make(project: Project, cand: dict, frames: list[str], on_progress=None, new:
     with _lock:
         data = load(project, cid)
         if new or len(data["seeds"]) < imagegen.OPTIONS:
-            data["seeds"] = random.sample(range(1, 2**31 - 1), imagegen.OPTIONS)
+            base = random.randrange(1, 2**31 - 1 - imagegen.OPTIONS)
+            data["seeds"] = [base + i for i in range(imagegen.OPTIONS)]  # consecutive: one sd-cli batch
             data["files"] = {f: {} for f in FRAMES}
         data["prompt"] = prompt_for(project, cand)
         save(project, cid, data)

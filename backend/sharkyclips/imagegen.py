@@ -28,6 +28,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+import numpy as np
+
 from . import config
 from .downloads import Remote, fetch, partial_bytes
 from .errors import SharkyClipsError
@@ -199,7 +201,7 @@ def plan() -> dict:
     return {"use": use, "build": build if use != "fallback" else None, "capability": cap.to_dict(),
             "device": dev, "model_ready": model_ready(), "tool_ready": bool(build and _tool_exe(build)),
             "download_bytes": total_bytes(), "downloaded_bytes": downloaded_bytes(),
-            "minutes_per_picture": 0.2 if use == "gpu" else 4.0 if use == "cpu" else None,
+            "minutes_per_picture": 0.3 if use == "gpu" else 4.0 if use == "cpu" else None,
             "licenses": LICENSES}
 
 
@@ -294,15 +296,21 @@ _TEXT_CLAUSE = re.compile(r",?\s*bold short overlay text\s*\"[^\"]*\"", re.I)
 _FRAME_CLAUSE = re.compile(r"vertical 9:16 thumbnail,?\s*", re.I)
 
 
+_QUOTED = re.compile(r"\s*(?:with\s+)?(?:an?\s+|the\s+)?['\"\u201c\u2018][^'\"\u201d\u2019]{1,60}['\"\u201d\u2019]\s*")
+
+
 def image_prompt(cover_prompt: str, frame: str) -> str:
-    """The AI's cover idea without the overlay text (the app adds the text itself, sharp and in
-    its own style) and with the right frame."""
+    """The AI's cover idea without any words to paint (the app adds the cover text itself, sharp
+    and in its own style; image models paint quoted words as text) and with the right frame."""
     p = _TEXT_CLAUSE.sub("", cover_prompt or "").strip()
-    p = _FRAME_CLAUSE.sub("", p).strip(" ,.")
-    shape = "vertical 9:16 portrait composition" if frame == "tall" else "wide 16:9 landscape composition"
-    return (f"{p}. {shape}, subject in the {'upper half' if frame == 'tall' else 'right half'}, "
-            "empty space for a title, photographic, high detail, no text, no letters, no words, "
-            "no logos, no watermark")
+    p = _QUOTED.sub(" ", p)
+    p = re.sub(r"\s+", " ", _FRAME_CLAUSE.sub("", p)).strip(" ,.")
+    if frame == "tall":
+        shape = "vertical 9:16 portrait composition, the subject large in the upper two thirds, darker background below"
+    else:
+        shape = "wide 16:9 landscape composition, the subject large on the right, darker background on the left"
+    return (f"{p}. {shape}, cinematic still, edge to edge, fills the entire canvas, high detail, "
+            "no border, no frame, no white background, no text, no letters, no words, no logos, no watermark")
 
 
 # ------------------------------------------------------------------ run
@@ -396,39 +404,51 @@ def free_gpu() -> None:
 def generate(prompt: str, frame: str, seeds: list[int], dest_dir: Path, *, use: str, build: str,
              on_progress: ProgressFn | None = None, runner: Runner | None = None,
              cancel: threading.Event | None = None) -> list[Path]:
-    """One picture per seed into dest_dir (PNG). Pauses (and redoes the picture) while the
-    governor pauses. Returns the files in seed order."""
+    """One picture per seed into dest_dir (PNG), in ONE sd-cli run (the 6 GB of weights load once;
+    sd-cli's batch uses seed, seed+1, ...). Seeds that aren't consecutive run one by one. Pauses
+    (and redoes the run) while the governor pauses. Returns the files in seed order."""
     from . import governor
 
     if frame not in SIZES:
         raise SharkyClipsError(f"Unknown cover size '{frame}'.")
+    targets = [dest_dir / f"{s}_{frame}.png" for s in seeds]
+    if all(t.is_file() for t in targets):
+        return targets
     files = ensure_model(on_progress, cancel)
     exe = ensure_tool(build, on_progress, cancel)
     w, h = SIZES[frame]
     runner = runner or Runner()
     dest_dir.mkdir(parents=True, exist_ok=True)
-    out: list[Path] = []
+    consecutive = all(b == a + 1 for a, b in zip(seeds, seeds[1:]))
+    groups = [seeds] if consecutive else [[s] for s in seeds]
     work = Path(tempfile.mkdtemp(prefix="sharkyclips-img-"))
+    done_before = 0
     try:
-        for i, seed in enumerate(seeds):
-            target = dest_dir / f"{seed}_{frame}.png"
-            if target.is_file():
-                out.append(target)
+        for group in groups:
+            if all((dest_dir / f"{s}_{frame}.png").is_file() for s in group):
+                done_before += len(group)
                 continue
             while True:
                 governor.checkpoint(release=runner.stop)  # raises JobCancelled; waits while paused
                 free_gpu()
-                png = work / f"img_{seed}.png"
+                for old in work.glob("img*.png"):
+                    old.unlink()
                 cmd = [*_command_prefix(exe), "--diffusion-model", str(files["diffusion"]), "--vae", str(files["vae"]),
                        "--llm", str(files["llm"]), "-p", prompt, "--cfg-scale", "1.0", "--steps", str(STEPS),
-                       "-W", str(w), "-H", str(h), "--seed", str(seed), "-o", str(png),
+                       "-W", str(w), "-H", str(h), "--seed", str(group[0]), "-o", str(work / "img.png"),
                        "-t", str(_threads())]
+                if len(group) > 1:
+                    cmd += ["-b", str(len(group))]
                 if use == "gpu":
                     cmd += ["--offload-to-cpu", "--diffusion-fa", "--vae-tiling"]
+                seen = {"n": 0, "last": 0}
 
-                def step(a: int, b: int, i=i) -> None:
+                def step(a: int, b: int, base=done_before) -> None:
+                    if a < seen["last"]:  # the next picture of the batch started
+                        seen["n"] += 1
+                    seen["last"] = a
                     if on_progress:
-                        on_progress("making_covers", (i + min(1.0, a / max(1, b))) / len(seeds))
+                        on_progress("making_covers", min(1.0, (base + seen["n"] + min(1.0, a / max(1, b))) / len(seeds)))
 
                 g = governor.get()
 
@@ -438,20 +458,73 @@ def generate(prompt: str, frame: str, seeds: list[int], dest_dir: Path, *, use: 
                                 or _job_cancelled())
 
                 code, tail = runner.run(cmd, work, step, stop_now)
-                if code == 0 and png.is_file():
-                    shutil.move(str(png), target)
-                    out.append(target)
+                made = _batch_files(work, len(group))
+                if code == 0 and made is not None:
+                    for s, f in zip(group, made):
+                        trim_border(f)
+                        shutil.move(str(f), dest_dir / f"{s}_{frame}.png")
+                    done_before += len(group)
                     break
                 if cancel is not None and cancel.is_set() or _job_cancelled():
                     from .governor import JobCancelled
 
                     raise JobCancelled()
                 if g is not None and g.paused:
-                    continue  # stopped for a game: wait at the checkpoint, then redo this picture
+                    continue  # stopped for a game: wait at the checkpoint, then redo this run
                 raise SharkyClipsError("The cover picture could not be made.", _hint(tail))
     finally:
         shutil.rmtree(work, ignore_errors=True)
-    return out
+    return targets
+
+
+def trim_border(path: Path, limit: float = 0.35) -> bool:
+    """Image models sometimes paint the picture on a white (or black) card: cut uniform bands off
+    the edges (up to `limit` of a side). The cover is then filled from what's left. True if cut."""
+    from PIL import Image
+
+    with Image.open(path) as im:
+        rgb = np.asarray(im.convert("RGB"), dtype=np.float32)
+    h, w, _ = rgb.shape
+    grey = rgb.mean(axis=2)
+
+    def flat(line: np.ndarray) -> bool:  # one row / column: nearly one colour, very light or very dark
+        m = float(line.mean())
+        return float(line.std()) < 6.0 and (m > 232 or m < 14)
+
+    top = 0
+    while top < h * limit and flat(grey[top]):
+        top += 1
+    bottom = h
+    while h - bottom < h * limit and flat(grey[bottom - 1]):
+        bottom -= 1
+    left = 0
+    while left < w * limit and flat(grey[top:bottom, left]):
+        left += 1
+    right = w
+    while w - right < w * limit and flat(grey[top:bottom, right - 1]):
+        right -= 1
+    if top + (h - bottom) < h * 0.03 and left + (w - right) < w * 0.03:
+        return False
+    with Image.open(path) as im:
+        im.crop((left, top, right, bottom)).save(path)
+    return True
+
+
+def _batch_files(work: Path, n: int) -> list[Path] | None:
+    """sd-cli's output names: img.png for one picture, img_0.png ... img_<n-1>.png for a batch
+    (newer builds may start at 1): the n files in order, or None if some are missing."""
+    if n == 1:
+        one = work / "img.png"
+        if one.is_file():
+            return [one]
+    found = []
+    for p in work.glob("img_*.png"):
+        try:
+            found.append((int(p.stem.split("_")[-1]), p))
+        except ValueError:
+            pass
+    found.sort()
+    return [p for _i, p in found] if len(found) == n else None
 
 
 def _job_cancelled() -> bool:
