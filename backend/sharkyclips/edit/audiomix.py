@@ -228,12 +228,22 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
     from .music import path_of
 
     governor.checkpoint()
+    dec = decode
+    if plan.dub is not None:  # 1.2.18: the dubbed sound stands in for the source's sound
+        from .. import dub as dub_mod
+
+        info = plan.dub
+
+        def dec(path, start=0.0, duration=None, sr=SR, channels=1):
+            if Path(path) == Path(source):
+                return dub_mod.decode_track(info, Path(source), start, duration, sr, channels)
+            return decode(path, start, duration, sr=sr, channels=channels)
     seam = plan.loop
     cont = None
     if has_audio:
         t0 = max(0.0, plan.start - 0.1)
         after = (seam.audio_xfade + 0.05) if seam is not None else 0.1
-        src = decode(source, t0, plan.end - t0 + max(0.1, after), sr=SR, channels=2)
+        src = dec(source, t0, plan.end - t0 + max(0.1, after), sr=SR, channels=2)
         main = cut_and_join(src, t0, plan)
         if seam is not None and seam.tail_ok:  # the sound right after the end point
             b = _n(plan.start - t0 + plan.frames()[-1][1] / plan.fps)
@@ -254,14 +264,14 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
     if fxp is not None and (fxp.inserts or fxp.sfx):
         from . import fx as fx_mod
 
-        main = fx_mod.splice_audio(main, fxp, source, SR, has_audio, decode)
+        main = fx_mod.splice_audio(main, fxp, source, SR, has_audio, dec)
     governor.checkpoint()
 
     parts = [np.zeros((_n(plan.intro_s), 2), np.float32)]
     lead = plan.intro_s
     if flash:
         fs, fd = flash
-        fl = decode(source, fs, fd, sr=SR, channels=2) if has_audio else np.zeros((_n(fd), 2), np.float32)
+        fl = dec(source, fs, fd, sr=SR, channels=2) if has_audio else np.zeros((_n(fd), 2), np.float32)
         fl = np.concatenate([fl, np.zeros((max(0, _n(fd) - len(fl)), 2), np.float32)])[: _n(fd)]
         parts.append(_fade(fl, 0.05, 0.12))
         lead += fd

@@ -129,6 +129,7 @@ class EditPlan:
     outro_s: float = 0.0
     loop: Seam | None = None  # seamless loop: the seam (end flows back into the start)
     fx: object | None = None  # fx.FxPlan: instant replay, meme effects, chat bubbles (1.2.17)
+    dub: dict | None = None  # dub.track_for(): the clip's sound in the user's own voice (1.2.18)
     _starts: list[float] = field(default_factory=list, repr=False)
     _offsets: list[float] = field(default_factory=list, repr=False)
 
@@ -159,12 +160,12 @@ class EditPlan:
     @property
     def audio_active(self) -> bool:
         return (self.cuts or bool(self.bleeps and self.bleep_mode != "off") or self.music is not None
-                or self.loop is not None)
+                or self.loop is not None or self.dub is not None)
 
     @property
     def active(self) -> bool:
         return (self.audio_active or self.zooms or self.brand is not None or self.loop is not None
-                or self.fx is not None)
+                or self.fx is not None or self.dub is not None)
 
     def frames(self) -> list[tuple[int, int]]:
         """Kept frame ranges [fa, fb) counted from the clip start."""
@@ -393,6 +394,10 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
             w["removed"] = True
 
     plan = EditPlan(start, end, fps, keep, removed, words, lang)
+    if getattr(opts, "dub", ""):
+        from .. import dub as dub_mod
+
+        plan.dub = dub_mod.track_for(project, cand, opts.dub)
     plan.loop = seam
 
     # ---- speakers (voice pass)
@@ -475,4 +480,7 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
         from . import fx
 
         plan.fx = fx.build(project, cand, opts, plan, max_len=max_len)
+    if plan.dub is not None and plan.bleeps:  # a dubbed line is new speech: the swears were translated away
+        dubbed = plan.out_ranges([(float(x["start"]), float(x["end"])) for x in plan.dub.get("lines") or [] if x.get("dub")])
+        plan.bleeps = [(a, b) for a, b in plan.bleeps if not any(a < y and b > x for x, y in dubbed)]
     return plan

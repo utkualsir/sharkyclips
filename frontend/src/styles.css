@@ -4176,3 +4176,6 @@ a.edit-note:hover { text-decoration: underline; }
 .platform-guide .sugg, .platform-guide .inline-row { flex-wrap: wrap; }
 .platform-guide .sugg .mono { overflow-wrap: anywhere; min-width: 0; }
 .check-line { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; }
+/* 1.2.18: my-voice dubbing */
+.dub-box { display: grid; gap: 8px; padding: 10px 0; border-top: 1px solid var(--border); }
+.voice-script { margin: 0; padding: 10px 14px; border-inline-start: 3px solid var(--gold); background: var(--surface-2); border-radius: var(--r-sm); line-height: 1.5; }

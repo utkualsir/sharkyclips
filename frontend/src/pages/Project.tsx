@@ -45,6 +45,7 @@ import { useToast } from "../toast";
 import { effectiveRange, maskWord, renderRange, typing, useHistory, usePlan, usePreviewPlayback } from "../editing";
 import HookTestDialog from "../components/HookTest";
 import { gameReasonLabel, whyText } from "./GameDebug";
+import { DubSwitch } from "../components/MyVoice";
 
 const MODES: Mode[] = ["gaming", "study", "music"];
 const GAME_NAMES: Record<GameId, string> = { delta_force: "Delta Force", lol: "League of Legends" };
@@ -1349,6 +1350,7 @@ export default function ProjectPage({ id }: { id: string }) {
                     hasClip={!!selected}
                     onLoopPreview={loopPreview}
                   />
+                  {selected && <DubSwitch pid={id} cid={selected.id} />}
                   <div className="facecam-line">
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                       <Icon name="camera" size={14} />

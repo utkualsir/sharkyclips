@@ -14,7 +14,7 @@ import { PublishingCard } from "../components/PublishTools";
 import { applyMotion, type MotionSetting } from "../motion";
 import { useTheme } from "../theme";
 import { useToast } from "../toast";
-import { CoverAiCard, PlatformsCard } from "../components/ExtrasSettings";
+import { CoverAiCard, MyVoiceCard, PlatformsCard } from "../components/ExtrasSettings";
 
 function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
   const { t, num } = useI18n();
@@ -716,6 +716,8 @@ export default function Settings() {
           <CoverAiCard />
 
           <PlatformsCard />
+
+          <MyVoiceCard />
 
           <UpdatesCard />
 

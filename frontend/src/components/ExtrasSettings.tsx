@@ -1,6 +1,7 @@
 // Settings cards of 1.2.18: AI covers, TikTok / Reels, my-voice dubbing, study cards + music visualizer.
 import { useEffect, useState } from "react";
-import { coversApi, platformsApi, type CoverAiPlan, type PlatformsOverview, type PostPlatform } from "../extras";
+import { coversApi, platformsApi, voiceApi, type CoverAiPlan, type PlatformsOverview, type PostPlatform, type VoiceProfile } from "../extras";
+import { VoiceSetup } from "./MyVoice";
 import { fmtBytes } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
@@ -228,6 +229,77 @@ export function PlatformsCard() {
       <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
         {block("tiktok")}
         {block("reels")}
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------- my voice
+
+export function MyVoiceCard() {
+  const { t } = useI18n();
+  const toast = useToast();
+  const [p, setP] = useState<VoiceProfile | null>(null);
+  const [open, setOpen] = useState(false);
+  const load = () => voiceApi.profile().then(setP).catch(() => {});
+  useEffect(() => {
+    load();
+  }, []);
+  if (!p) return null;
+  return (
+    <section className="card setting" id="my-voice">
+      <div>
+        <h2>{t("voice.settings")}</h2>
+        <p>{t("voice.settings_hint")}</p>
+      </div>
+      <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+        <p className="muted">
+          {p.ready ? (
+            <>
+              <Icon name="check" size={13} /> {t("voice.status_ready", { name: p.name ?? "" })}
+            </>
+          ) : (
+            t("voice.status_none")
+          )}
+        </p>
+        <div className="inline-row" style={{ flexWrap: "wrap" }}>
+          <button className="btn btn-sm btn-primary" onClick={() => setOpen(true)}>
+            <Icon name="mic" /> {t(p.ready ? "voice.manage" : "voice.setup_title")}
+          </button>
+          {(p.consent || p.sample) && (
+            <button
+              className="btn btn-sm btn-ghost"
+              onClick={async () => {
+                try {
+                  setP(await voiceApi.revoke());
+                  toast({ kind: "ok", text: t("voice.forgotten") });
+                } catch (e: any) {
+                  toast({ kind: "err", text: e.message, hint: e.hint });
+                }
+              }}
+            >
+              <Icon name="trash" /> {t("voice.forget")}
+            </button>
+          )}
+        </div>
+        <details className="field-hint">
+          <summary>{t("cover_ai.licenses")}</summary>
+          <ul>
+            {p.licenses.map((l) => (
+              <li key={l.name}>
+                {l.name} · {l.by} · {l.license}
+              </li>
+            ))}
+          </ul>
+        </details>
+        {open && (
+          <VoiceSetup
+            onClose={() => {
+              setOpen(false);
+              load();
+            }}
+          />
+        )}
       </div>
     </section>
   );

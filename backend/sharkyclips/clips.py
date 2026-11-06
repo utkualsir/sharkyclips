@@ -66,13 +66,17 @@ class ClipOptions:
     replay: str = "off"  # off | auto (slow-motion replay of the key event)
     chat_bubbles: bool = False  # real chat messages from the moment as bubbles
     memes: str = "off"  # off | light | strong
+    # 1.2.18: my-voice dubbing, study cards, music visualizer
+    dub: str = ""  # "" = original voice; a language code = the clip spoken in the user's own voice (dub.py)
+    study_cards: str = "off"  # off | auto (study mode: formulas / definitions / steps as cards)
+    visualizer: str = "off"  # off | auto (music mode: beat-synced visualizer + karaoke lyrics)
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
                 "profanity_captions", "bleep_sound", "speaker_colors", "speaker_names", "cuts", "zoom",
-                "music", "brand", "loop", "replay", "chat_bubbles", "memes")
+                "music", "brand", "loop", "replay", "chat_bubbles", "memes", "dub", "study_cards", "visualizer")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.chat_bubbles = bool(opts.chat_bubbles)
         opts.hook_flash = bool(opts.hook_flash)
@@ -82,10 +86,17 @@ class ClipOptions:
         for name, allowed in (("profanity", ("auto", "bleep", "mute", "off")), ("cuts", ("off", "light", "strong")),
                               ("zoom", ("off", "subtle", "strong")), ("replay", ("off", "auto")),
                               ("memes", ("off", "light", "strong")),
+                              ("study_cards", ("off", "auto")), ("visualizer", ("off", "auto")),
                               ("bleep_sound", ("classic", "boop", "custom"))):
             if getattr(opts, name) not in allowed:
                 raise SharkyClipsError(f"Unknown {name} setting '{getattr(opts, name)}'.",
                                        f"Use one of: {', '.join(allowed)}")
+        opts.dub = str(opts.dub or "")
+        if opts.dub:
+            from .dub import TARGETS
+
+            if opts.dub not in TARGETS:
+                raise SharkyClipsError(f"Dubbing into '{opts.dub}' isn't possible yet.", f"Use one of: {', '.join(TARGETS)}")
         opts.subtitle_lang = str(opts.subtitle_lang or "")
         if opts.subtitle_lang and not languages.get(opts.subtitle_lang):
             raise SharkyClipsError(f"Unknown subtitle language '{opts.subtitle_lang}'.")
@@ -614,6 +625,10 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
     start, end = float(cand["start"]), float(cand["end"])
     duration = max(0.5, end - start)
 
+    if not opts.dub and cand.get("dub"):  # the clip's own dub choice (review.json "dub")
+        opts = ClipOptions.from_dict({**opts.to_dict(), "dub": cand["dub"]})
+    if opts.dub:
+        cand, opts = prepare_dub(project, cand, opts, on_progress)
     if not spec.burn_captions:
         opts = ClipOptions.from_dict({**opts.to_dict(), "subtitles": "none"})
     words, lang, hook_text, hook_lang = clip_text(project, cand, opts)
@@ -712,6 +727,21 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
         return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc.label)
     finally:
         shutil.rmtree(work, ignore_errors=True)
+
+
+def prepare_dub(project: Project, cand: dict, opts: ClipOptions,
+                on_progress: Callable[[float], None] | None = None) -> tuple[dict, ClipOptions]:
+    """1.2.18: the dub track of this clip (made now if missing) and subtitles in the dub language."""
+    from . import dub
+
+    info = dub.track_for(project, cand, opts.dub)
+    if info is None:
+        info = dub.make(project, cand, opts.dub)
+    lines = [{"start": x["start"], "end": x["end"], "text": x["text"]} for x in info["lines"]]
+    cand = {**cand, "translations": {**(cand.get("translations") or {}), opts.dub: lines}}
+    if not opts.subtitle_lang:
+        opts = ClipOptions.from_dict({**opts.to_dict(), "subtitle_lang": opts.dub})
+    return cand, opts
 
 
 # --------------------------------------------------------------------- editing tools (1.2.4)

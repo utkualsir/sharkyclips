@@ -728,6 +728,13 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
             return platforms_api.rebuild(kind, saved, keep_id, attempt)
         except (SharkyClipsError, KeyError):
             return None
+    if kind == "dub":
+        from . import dub_api
+
+        try:
+            return dub_api.submit(pid, p["clip_id"], p["lang"], job_id=keep_id, attempt=attempt)
+        except (SharkyClipsError, KeyError):
+            return None
     if kind == "ai_cover":
         from . import covers_api
 
@@ -2242,6 +2249,7 @@ from .live import router as _live_router  # noqa: E402 - auto clips, live marker
 from .phone_api import router as _phone_router  # noqa: E402 - Telegram bot + approval page (1.2.17)
 from .covers_api import router as _covers_router  # noqa: E402 - cover studio (1.2.18)
 from .platforms_api import router as _platforms_router  # noqa: E402 - TikTok / Reels (1.2.18)
+from .dub_api import router as _dub_router  # noqa: E402 - my-voice dubbing (1.2.18)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2253,6 +2261,7 @@ app.include_router(_live_router)
 app.include_router(_phone_router)
 app.include_router(_covers_router)
 app.include_router(_platforms_router)
+app.include_router(_dub_router)
 
 
 @app.get("/api/{rest:path}")

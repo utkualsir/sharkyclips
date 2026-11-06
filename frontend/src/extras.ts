@@ -1,5 +1,5 @@
 // 1.2.18 API: cover studio, TikTok / Reels, my-voice dubbing, study cards, music visualizer.
-import { req, type Job } from "./api";
+import { ApiError, req, type Job } from "./api";
 
 const L = (pid: string, cid: string) => `/api/library/${encodeURIComponent(pid)}/${encodeURIComponent(cid)}`;
 
@@ -119,3 +119,53 @@ export async function copyText(text: string): Promise<boolean> {
     return ok;
   }
 }
+
+// ---------------------------------------------------------------- my-voice dubbing
+
+export interface VoiceProfile {
+  consent: boolean;
+  agreed_at: string | null;
+  name: string | null;
+  sample: boolean;
+  sample_seconds: number | null;
+  sample_source: "recorded" | "file" | null;
+  targets: string[];
+  model_ready: boolean;
+  model_mb: number;
+  licenses: { name: string; by: string; license: string }[];
+  ready: boolean;
+}
+
+export interface ClipDub {
+  lang: string;
+  targets: string[];
+  profile: VoiceProfile;
+  info: {
+    lines: { start: number; end: number; text: string; source: string; dub: boolean; why: string }[];
+    dubbed: number;
+    kept: number;
+    made_at: string;
+    voice_pass: boolean;
+  } | null;
+  job: Job | null;
+}
+
+export const voiceApi = {
+  profile: () => req<VoiceProfile>("GET", "/api/voice"),
+  consent: (name: string, own_voice: boolean, no_others: boolean) =>
+    req<VoiceProfile>("POST", "/api/voice/consent", { name, own_voice, no_others }),
+  revoke: () => req<VoiceProfile>("DELETE", "/api/voice"),
+  async sample(blob: Blob, source: "recorded" | "file"): Promise<VoiceProfile> {
+    const res = await fetch(`/api/voice/sample?source=${source}`, { method: "PUT", body: blob });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new ApiError(data.error || res.statusText, data.hint || null, res.status, data.code || null);
+    return data as VoiceProfile;
+  },
+};
+
+const CD = (pid: string, cid: string) => `/api/projects/${encodeURIComponent(pid)}/clips/${encodeURIComponent(cid)}/dub`;
+
+export const dubApi = {
+  clip: (pid: string, cid: string) => req<ClipDub>("GET", CD(pid, cid)),
+  set: (pid: string, cid: string, lang: string) => req<ClipDub>("POST", CD(pid, cid), { lang }),
+};

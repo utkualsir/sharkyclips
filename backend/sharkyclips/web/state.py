@@ -71,6 +71,7 @@ def load_review(project: Project, highlights: dict | None = None) -> dict:
             "rejected": list(data.get("rejected") or []),
             "edits": dict(data.get("edits") or {}),
             "music": dict(data.get("music") or {}),
+            "dub": dict(data.get("dub") or {}),  # 1.2.18: {clip: language} - the clip in the user's own voice
         }
         # Candidates were recomputed: old choices point at other moments (manual clips stay).
         if hl_stamp and review["highlights_created_at"] != hl_stamp:
@@ -81,6 +82,7 @@ def load_review(project: Project, highlights: dict | None = None) -> dict:
                 review["rejected"] = [c for c in review["rejected"] if c.startswith("m")]
                 review["hooks"], review["edits"], review["music"] = (keep(review["hooks"]), keep(review["edits"]),
                                                                      keep(review["music"]))
+                review["dub"] = keep(review["dub"])
             review["highlights_created_at"] = hl_stamp
         return review
 
@@ -108,6 +110,10 @@ def save_review(project: Project, changes: dict[str, Any]) -> dict:
         if "music" in changes:
             review["music"] = {str(k): (str(v)[:200] if v else "") for k, v in (changes["music"] or {}).items()
                                if v is not None}
+        if "dub" in changes:
+            from ..dub import TARGETS
+
+            review["dub"] = {str(k): str(v) for k, v in (changes["dub"] or {}).items() if v in TARGETS}
         write_json_atomic(project.dir / "review.json", review)
         return review
 
@@ -152,7 +158,8 @@ def effective_cand(cand: dict, review: dict) -> dict:
         start, end = float(cand["start"]), float(cand["end"])
     music = review.get("music") or {}
     return {**cand, "start": start, "end": end, "duration": round(end - start, 2),
-            "edit": {"deleted": e.get("deleted") or [], "music": music.get(cid) if cid in music else None}}
+            "edit": {"deleted": e.get("deleted") or [], "music": music.get(cid) if cid in music else None},
+            "dub": (review.get("dub") or {}).get(cid) or ""}
 
 
 def edit_fingerprint(cand: dict, review: dict, options: dict) -> str:
@@ -170,6 +177,10 @@ def edit_fingerprint(cand: dict, review: dict, options: dict) -> str:
         from ..edit import brand
 
         parts["b"] = brand.fingerprint(brand.active_preset())
+    if eff.get("dub"):
+        from .. import dub
+
+        parts["v"] = [eff["dub"], dub.sample_stamp()]
     if not parts:
         return ""
     return hashlib.sha1(json.dumps(parts, sort_keys=True).encode()).hexdigest()[:12]

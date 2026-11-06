@@ -11,6 +11,7 @@ import {
 } from "../api";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { CoverStudio } from "../components/CoverStudio";
+import { DubSwitch } from "../components/MyVoice";
 import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
 import type { Platform, PlatformsOverview } from "../extras";
 import { Icon } from "../components/Icons";
@@ -735,6 +736,8 @@ function EditSheet({
           <Toggle checked={music && musicAvailable} onChange={(v) => musicAvailable && setMusic(v)} label={t("easy.music")} />
         </div>
       </div>
+
+      <DubSwitch pid={pid} cid={clip.id} compact />
 
       <fieldset className="ez-field">
         <legend>{t("cover_ai.easy_title")}</legend>
