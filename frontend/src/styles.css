@@ -4179,3 +4179,10 @@ a.edit-note:hover { text-decoration: underline; }
 /* 1.2.18: my-voice dubbing */
 .dub-box { display: grid; gap: 8px; padding: 10px 0; border-top: 1px solid var(--border); }
 .voice-script { margin: 0; padding: 10px 14px; border-inline-start: 3px solid var(--gold); background: var(--surface-2); border-radius: var(--r-sm); line-height: 1.5; }
+
+/* 1.2.19: model credit lines, About & licenses, the AI-voice switches of a dubbed upload */
+.license-list { margin: 4px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; font-size: 13px; }
+.license-list li { overflow-wrap: anywhere; }
+.license-change { display: block; font-size: 12px; }
+.ai-voice-box { gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
+.ai-voice-line { overflow-wrap: anywhere; font-style: italic; }

@@ -1930,6 +1930,18 @@ const de: Record<string, string> = {
   "extras.viz_hint": "Songs: ein Visualizer im Takt, das Cover in der Mitte und der Text als Karaoke.",
   "extras.off": "Aus",
   "extras.auto": "Automatisch",
+  "lic.original": "Projektseite",
+  "lic.changes.int8_onnx": "Von {by} in int8-ONNX umgewandelt",
+  "about.title": "Über & Lizenzen",
+  "about.desc": "SharkyClips {v} ist kostenlos und Open Source ({license}-Lizenz). Die optionalen KI-Modelle, die es lädt, haben eigene Lizenzen:",
+  "about.group.voice": "Stimmmodell (Vertonung mit meiner Stimme)",
+  "about.group.covers": "Titelbild-Modell (KI-Cover)",
+  "aivoice.title": "KI-Stimme",
+  "aivoice.body": "In diesem Video ist deine eigene Stimme, von KI in einer anderen Sprache erzeugt. Zuschauer und YouTube sollten das wissen.",
+  "aivoice.note": "Einen Hinweis dazu in die Beschreibung schreiben",
+  "aivoice.synthetic": "YouTube mitteilen, dass es veränderte oder synthetische Inhalte enthält",
+  "aivoice.synthetic_hint": "Beantwortet YouTubes Frage nach \"veränderten oder synthetischen Inhalten\" mit Ja; Zuschauer sehen eventuell ein Label.",
+  "aivoice.dub_hint": "Beim Hochladen steht in der Beschreibung, dass die Stimme KI-erzeugt ist, und YouTube bekommt die Markierung \"synthetische Inhalte\" (beides lässt sich beim Hochladen abschalten).",
 };
 
 export default de;

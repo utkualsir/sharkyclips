@@ -274,7 +274,7 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
                           on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
         entry = {"file": name, "id": cand["id"], "rank": cand["rank"], "start": cand["start"],
                  "end": cand["end"], "duration": res.info.get("duration") or cand["duration"],
-                 "options": opts.to_dict(), "edit_fp": edit_fp,
+                 "options": opts.to_dict(), "edit_fp": edit_fp, "dub": opts.dub or cand.get("dub") or "",
                  "facecam": facecam.to_dict() if facecam else None,
                  "rendered_at": state.now_iso(), "size_bytes": res.size_bytes,
                  "render_seconds": round(res.seconds, 2), "encoder": res.encoder,
@@ -450,11 +450,14 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
         o = clip.get("options") or review["options"]
         text = (o.get("hook_text") if clip else None) or review["hooks"].get(cid) or (cand.get("publish") or {}).get("hook_text") or ""
         hook = {"hook_style": abtest.style_of(o, text), "hook_variant": None, "hook_chosen_by": "clip"}
-    yt = youtube.build_body(str(body.get("title") or ""), str(body.get("description") or ""),
+    ai_voice = ai_voice_disclosure(project, cid, source, body)
+    yt = youtube.build_body(str(body.get("title") or ""),
+                            youtube.with_note(str(body.get("description") or ""), ai_voice["line"] if ai_voice["note"] else None),
                             [str(t) for t in body.get("tags") or []], str(body.get("privacy") or "private"),
                             body.get("publish_at") or None, bool(body.get("made_for_kids")),
                             str(body.get("category")) if str(body.get("category") or "") in youtube.CATEGORIES
-                            else youtube.CATEGORY.get(mode, "20"), body.get("language") or None)
+                            else youtube.CATEGORY.get(mode, "20"), body.get("language") or None,
+                            synthetic=bool(ai_voice["synthetic"]))
     thumb = str(body.get("thumbnail") or "none")  # none | auto | custom
     plan_key = body.get("plan_key")  # a clip of the publishing plan (Library / scheduler)
 
@@ -504,6 +507,8 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
                  "privacy": got, "requested_privacy": requested,
                  "publish_at": yt["status"].get("publishAt"), "file": path.name, "uploaded_at": state.now_iso(),
                  "made_for_kids": yt["status"]["selfDeclaredMadeForKids"], "thumbnail_error": thumb_note, **hook}
+        if ai_voice["dub"]:  # kept when the description is edited later (Library)
+            entry["ai_voice"] = ai_voice
         state.save_upload(project, cid, entry)
         if plan_key:
             from . import publishing
@@ -522,6 +527,27 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
         params["plan_key"] = plan_key
     return jobs.submit("upload", "net", project_id, params, run, key=f"upload:{project_id}:{cid}:{path.name}",
                        persist=True, job_id=job_id, attempt=attempt)
+
+
+def ai_voice_disclosure(project: Project, cid: str, source: str, body: dict | None = None) -> dict:
+    """1.2.19: a dubbed video (the user's voice made by AI in another language) says so: a line in
+    the description (in the dub language) and YouTube's altered / synthetic content flag. Both on
+    unless the upload switched them off ("ai_voice_note" / "synthetic_media": false)."""
+    from .. import dub
+
+    body = body or {}
+    lang = state.file_dub(project, cid, source)
+    return {"dub": lang, "line": dub.disclosure_line(lang) if lang else None,
+            "note": bool(lang) and body.get("ai_voice_note") is not False,
+            "synthetic": bool(lang) and body.get("synthetic_media") is not False}
+
+
+@app.get("/api/projects/{project_id}/clips/{cid}/ai_voice")
+def api_ai_voice(project_id: str, cid: str, source: str = "clip") -> dict:
+    """What an upload of this file says about its AI voice (the upload screen shows it)."""
+    project = get_project(project_id)
+    _cand(project, cid)
+    return ai_voice_disclosure(project, cid, source)
 
 
 def _never_twice(project: Project, cid: str, job_id: str | None) -> None:
@@ -810,6 +836,15 @@ def api_app_state() -> dict:
     from .. import welcome
 
     return welcome.app_state()
+
+
+@app.get("/api/licenses")
+def api_licenses() -> dict:
+    """About & licenses: the app and the optional AI models it downloads (with credit links)."""
+    from .. import dub, imagegen
+
+    return {"app": {"name": "SharkyClips", "version": __version__, "license": "MIT"},
+            "groups": [{"id": "voice", "items": dub.LICENSES}, {"id": "covers", "items": imagegen.LICENSES}]}
 
 
 @app.get("/api/changelog/{version}")

@@ -21,6 +21,8 @@ import { fmtBytes, fmtTime } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { RealTestNote } from "./HookTest";
+import { AiVoiceSwitches } from "./Licenses";
+import { aboutApi, type AiVoiceInfo } from "../extras";
 import { LockBanner } from "./PublishTools";
 import { Icon } from "./Icons";
 import { Modal, Segmented, Toggle } from "./ui";
@@ -478,6 +480,10 @@ export function UploadDialog({
   const [thumbV, setThumbV] = useState(0);
   const [yt, setYt] = useState<YoutubeStatus | null>(null);
   const [busy, setBusy] = useState(false);
+  // 1.2.19: a dubbed file says its voice is AI-made (both on by default)
+  const [aiVoice, setAiVoice] = useState<AiVoiceInfo | null>(null);
+  const [aiNote, setAiNote] = useState(true);
+  const [aiSynthetic, setAiSynthetic] = useState(true);
   const thumbInput = useRef<HTMLInputElement>(null);
   const wide = sources.find((s) => s.value === source)?.wide ?? false;
   // Song credit ("Music: <song> by <channel>") of the chosen video, when it has background music.
@@ -490,6 +496,11 @@ export function UploadDialog({
   useEffect(() => {
     api.youtube().then(setYt).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    setAiVoice(null);
+    aboutApi.aiVoice(projectId, cand.id, source).then(setAiVoice).catch(() => {});
+  }, [projectId, cand.id, source]);
 
   const hashtagsInDesc = useMemo(() => {
     const tagList = tags.split(",").map((x) => x.trim()).filter(Boolean);
@@ -524,6 +535,8 @@ export function UploadDialog({
         made_for_kids: kids,
         thumbnail: wide ? thumb : "none",
         language: pub.language,
+        ai_voice_note: aiNote,
+        synthetic_media: aiSynthetic,
       };
       if (source.startsWith("ab:") && hookTest) {
         body.ab_how = source === `ab:${hookTest.upload_pick.label}` ? hookTest.upload_pick.how ?? "manual" : "manual";
@@ -616,6 +629,9 @@ export function UploadDialog({
             </span>
           )}
         </label>
+        {aiVoice?.dub && (
+          <AiVoiceSwitches info={aiVoice} note={aiNote} synthetic={aiSynthetic} onNote={setAiNote} onSynthetic={setAiSynthetic} />
+        )}
         <label className="field">
           <span className="field-label">{t("yt.tags")}</span>
           <input className="input" dir="auto" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="deltaforce, gaming" />

@@ -206,6 +206,29 @@ def save_clip(project: Project, cid: str, entry: dict) -> None:
         write_json_atomic(project.dir / "clips.json", {"version": 1, "clips": clips})
 
 
+def file_dub(project: Project, cid: str, source: str) -> str:
+    """The dub language of a video file of this clip ("" = the original voice). source = "clip",
+    "ab:A" / "ab:B" or an export file name ("" = a file still to be made). Files made since 1.2.19 record it ("dub"); for older
+    ones the clip's current dub choice counts (better one disclosure too many than one missing)."""
+    rec: dict | None = None
+    if source == "clip":
+        rec = load_clips(project).get(cid)
+    elif source.startswith("ab:"):
+        from .. import abtest
+
+        rec = ((abtest.load_ab(project).get(cid) or {}).get("variants") or {}).get(source[3:].upper())
+    elif source:
+        from .. import export
+
+        rec = next((e for e in export.load_registry(project)
+                    if e.get("clip_id") == cid and any(f["name"] == source for f in e["files"])), None)
+    if rec is not None and "dub" in rec:
+        return str(rec.get("dub") or "")
+    if rec is not None and (rec.get("options") or {}).get("dub"):
+        return str(rec["options"]["dub"])
+    return (load_review(project).get("dub") or {}).get(cid) or ""
+
+
 # ----------------------------------------------------------------- uploads
 
 

@@ -1932,6 +1932,18 @@ const en: Record<string, string> = {
   "extras.viz_hint": "Songs: a visualizer that moves with the beat, the cover in the middle and the lyrics as karaoke.",
   "extras.off": "Off",
   "extras.auto": "Auto",
+  "lic.original": "project page",
+  "lic.changes.int8_onnx": "Converted to int8 ONNX by {by}",
+  "about.title": "About & licenses",
+  "about.desc": "SharkyClips {v} is free and open source ({license} license). The optional AI models it downloads have their own licenses:",
+  "about.group.voice": "Voice model (my-voice dubbing)",
+  "about.group.covers": "Cover picture model (AI covers)",
+  "aivoice.title": "AI voice",
+  "aivoice.body": "This video has your own voice, made by AI in another language. Viewers and YouTube should know.",
+  "aivoice.note": "Add a line about it to the description",
+  "aivoice.synthetic": "Tell YouTube it has altered or synthetic content",
+  "aivoice.synthetic_hint": "Answers YouTube's \"altered or synthetic content\" question with yes, so viewers may see a label.",
+  "aivoice.dub_hint": "When you upload it, the description says the voice is AI-made and YouTube gets the \"synthetic content\" mark (you can switch both off in the upload screen).",
 };
 
 export default en;

@@ -1905,6 +1905,18 @@ const hu: Record<string, string> = {
   "extras.viz_hint": "Dalok: ütemre mozgó vizualizáció, középen a borító, a szöveg karaokeként.",
   "extras.off": "Ki",
   "extras.auto": "Automatikus",
+  "lic.original": "projektoldal",
+  "lic.changes.int8_onnx": "int8 ONNX formátumra alakította: {by}",
+  "about.title": "Névjegy és licencek",
+  "about.desc": "A SharkyClips {v} ingyenes és nyílt forráskódú ({license} licenc). Az általa letöltött, választható MI-modelleknek saját licencük van:",
+  "about.group.voice": "Hangmodell (szinkron a saját hangomon)",
+  "about.group.covers": "Borítókép-modell (MI-borítók)",
+  "aivoice.title": "MI-hang",
+  "aivoice.body": "Ebben a videóban a saját hangod szól, MI-vel egy másik nyelven elkészítve. A nézőknek és a YouTube-nak tudnia kell róla.",
+  "aivoice.note": "Egy erről szóló sor a leírásba",
+  "aivoice.synthetic": "Jelzés a YouTube-nak: módosított vagy szintetikus tartalom",
+  "aivoice.synthetic_hint": "A YouTube \"módosított vagy szintetikus tartalom\" kérdésére igennel felel, így a nézők címkét láthatnak.",
+  "aivoice.dub_hint": "Feltöltéskor a leírásban szerepel, hogy a hang MI-vel készült, és a YouTube \"szintetikus tartalom\" jelölést kap (mindkettő kikapcsolható a feltöltési képernyőn).",
 };
 
 export default hu;

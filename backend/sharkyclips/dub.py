@@ -60,8 +60,37 @@ POCKET = Remote("https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-mod
 POCKET_DIR = "sherpa-onnx-pocket-tts-int8-2026-01-26"
 POCKET_FILES = ("lm_flow.int8.onnx", "lm_main.int8.onnx", "encoder.onnx", "decoder.int8.onnx",
                 "text_conditioner.onnx", "vocab.json", "token_scores.json", "LICENSE")
-LICENSES = [{"name": "Pocket TTS", "by": "Kyutai", "license": "CC-BY-4.0"},
-            {"name": "sherpa-onnx", "by": "k2-fsa", "license": "Apache-2.0"}]
+# CC-BY 4.0 asks for credit, a link to the license and a note of changes (1.2.19).
+LICENSES = [{"name": "Pocket TTS", "by": "Kyutai", "license": "CC-BY-4.0",
+             "license_url": "https://creativecommons.org/licenses/by/4.0/",
+             "source_url": "https://huggingface.co/kyutai/pocket-tts",
+             "changes": "int8_onnx", "changes_by": "k2-fsa/sherpa-onnx",
+             "changes_url": "https://github.com/k2-fsa/sherpa-onnx"},
+            {"name": "sherpa-onnx", "by": "k2-fsa", "license": "Apache-2.0",
+             "license_url": "https://github.com/k2-fsa/sherpa-onnx/blob/master/LICENSE",
+             "source_url": "https://github.com/k2-fsa/sherpa-onnx"}]
+
+# The line a dubbed upload gets in its description, in the language of the dub (1.2.19).
+DISCLOSURE = {
+    "en": "The English voice in this video is AI-generated from my own voice.",
+    "fr": "La voix française de cette vidéo est générée par IA à partir de ma propre voix.",
+    "de": "Die deutsche Stimme in diesem Video ist mit KI aus meiner eigenen Stimme erzeugt.",
+    "es": "La voz en español de este vídeo está generada con IA a partir de mi propia voz.",
+    "it": "La voce italiana di questo video è generata con l'IA a partire dalla mia voce.",
+    "pt": "A voz em português deste vídeo foi gerada por IA a partir da minha própria voz.",
+    "nl": "De Nederlandse stem in deze video is met AI gemaakt op basis van mijn eigen stem.",
+    "tr": "Bu videodaki Türkçe ses, kendi sesimden yapay zekâyla üretildi.",
+    "hu": "A videó magyar hangja mesterséges intelligenciával készült a saját hangomból.",
+    "ru": "Русский голос в этом видео создан ИИ на основе моего собственного голоса.",
+    "ar": "الصوت العربي في هذا الفيديو مولَّد بالذكاء الاصطناعي من صوتي أنا.",
+    "zh": "本视频中的中文配音由 AI 根据我本人的声音生成。",
+}
+DISCLOSURE_FALLBACK = "The voice in this video is AI-generated from my own voice."
+
+
+def disclosure_line(lang: str) -> str:
+    """'This voice is AI-generated from my own voice', in the dub language (English fallback)."""
+    return DISCLOSURE.get((lang or "").split("-")[0].lower(), DISCLOSURE_FALLBACK)
 
 
 # ===================================================================== the voice profile

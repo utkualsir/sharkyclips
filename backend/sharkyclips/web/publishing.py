@@ -54,6 +54,8 @@ DEFAULT_META = {
     "made_for_kids": False, "privacy": "public", "playlist": None,
     "cover": {"kind": "face", "text": "", "burn": False},
     "preset": "youtube_shorts", "format": "mp4_h264", "burn_captions": True, "source": "auto",
+    # 1.2.19: a dubbed clip says its voice is AI-made (description line + YouTube's synthetic flag)
+    "ai_voice_note": True, "synthetic_media": True,
 }
 REMEMBER = ("made_for_kids", "privacy", "playlist", "preset", "format", "burn_captions", "source")
 
@@ -145,6 +147,9 @@ def clean_meta(m: dict, base: dict) -> dict:
         out["language"] = lang if lang is None or lang in languages.LANGUAGES else base.get("language")
     if "made_for_kids" in m:
         out["made_for_kids"] = bool(m.get("made_for_kids"))
+    for k in ("ai_voice_note", "synthetic_media"):
+        if k in m:
+            out[k] = m.get(k) is not False
     if "privacy" in m:
         p = str(m.get("privacy") or "public")
         out["privacy"] = p if p in youtube.PRIVACY else "public"
@@ -575,7 +580,9 @@ def upload_body(project: Project, cand: dict, item: dict, source: str, ab: dict 
             "tags": meta.get("tags") or [], "made_for_kids": bool(meta.get("made_for_kids")),
             "language": meta.get("language"), "category": meta.get("category") or "20",
             "plan_key": P.key_of(project.id, cand["id"]),
-            "playlist_id": (meta.get("playlist") or {}).get("id")}
+            "playlist_id": (meta.get("playlist") or {}).get("id"),
+            "ai_voice_note": meta.get("ai_voice_note") is not False,
+            "synthetic_media": meta.get("synthetic_media") is not False}
     if item.get("now"):
         body.update(privacy=meta.get("privacy") or "public", publish_at=None)
     else:
@@ -905,6 +912,8 @@ def api_setup(project_id: str, cid: str) -> dict:
                     for p in export.PRESETS.values()],
         "warnings": export.check_length(meta.get("preset"), eff["duration"]),
         "categories": list(youtube.CATEGORIES), "ab": ab, "upload": _upload_view(live),
+        # not made yet: the file to come follows the clip's dub choice ("" = no file of its own)
+        "ai_voice": _app().ai_voice_disclosure(project, cid, "", meta),
         "youtube": {"connected": st["connected"], "manage": st["manage"], "channel": st["channel"], "lock": st["lock"]},
         "limits": settings_view(),
     }
@@ -921,7 +930,9 @@ def api_setup_save(project_id: str, cid: str, body: dict) -> dict:
     live = state.live_upload(project, cid)
     applied = None
     if live:
-        snippet = youtube.build_body(meta["title"], P.compose_description(meta.get("description") or "", meta.get("hashtags") or []),
+        note = (live.get("ai_voice") or {}).get("line") if (live.get("ai_voice") or {}).get("note") else None
+        snippet = youtube.build_body(meta["title"],
+                                     youtube.with_note(P.compose_description(meta.get("description") or "", meta.get("hashtags") or []), note),
                                      meta.get("tags") or [], "private", None, meta["made_for_kids"],
                                      meta.get("category") or "20", meta.get("language"))["snippet"]
         youtube.update_video(live["video_id"], snippet=snippet)

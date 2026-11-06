@@ -1007,6 +1007,10 @@ export interface PublishMeta {
   format: FormatId;
   burn_captions: boolean;
   source: "auto" | "export";
+  /** 1.2.19: a dubbed clip adds "this voice is AI-generated" to the description */
+  ai_voice_note: boolean;
+  /** 1.2.19: a dubbed clip sets YouTube's altered / synthetic content flag */
+  synthetic_media: boolean;
 }
 
 export type LibStatus = "draft" | "scheduled" | "published" | "failed" | "locked";
@@ -1106,6 +1110,7 @@ export interface PublishSetup {
   upload: LibraryRow["upload"];
   youtube: { connected: boolean; manage: boolean; channel: YoutubeStatus["channel"]; lock: YoutubeLock };
   limits: PublishSettings;
+  ai_voice: { dub: string; line: string | null; note: boolean; synthetic: boolean };
 }
 
 export interface CoverInfo {
@@ -1139,6 +1144,9 @@ export interface UploadBody {
   language?: string | null;
   /** an A/B variant upload ("ab:A" source): how it was chosen */
   ab_how?: "bandit" | "pretest" | "manual";
+  /** 1.2.19, dubbed files: false = no AI-voice line in the description / no synthetic flag */
+  ai_voice_note?: boolean;
+  synthetic_media?: boolean;
 }
 
 export type PerfMode = "silent" | "balanced" | "turbo";

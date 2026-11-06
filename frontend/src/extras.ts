@@ -5,6 +5,41 @@ const L = (pid: string, cid: string) => `/api/library/${encodeURIComponent(pid)}
 
 export type CoverFrame = "tall" | "wide";
 
+/** A third-party model / tool and its license (1.2.19: with links and a note of changes). */
+export interface ModelLicense {
+  name: string;
+  by: string;
+  license: string;
+  license_url?: string;
+  source_url?: string;
+  /** what was changed from the original, e.g. "int8_onnx" */
+  changes?: string;
+  changes_by?: string;
+  changes_url?: string;
+}
+
+export interface LicensesView {
+  app: { name: string; version: string; license: string };
+  groups: { id: "voice" | "covers"; items: ModelLicense[] }[];
+}
+
+/** 1.2.19: what an upload of a file says about its AI voice. */
+export interface AiVoiceInfo {
+  dub: string;
+  line: string | null;
+  note: boolean;
+  synthetic: boolean;
+}
+
+export const aboutApi = {
+  licenses: () => req<LicensesView>("GET", "/api/licenses"),
+  aiVoice: (pid: string, cid: string, source: string) =>
+    req<AiVoiceInfo>(
+      "GET",
+      `/api/projects/${encodeURIComponent(pid)}/clips/${encodeURIComponent(cid)}/ai_voice?source=${encodeURIComponent(source)}`,
+    ),
+};
+
 export interface CoverAiPlan {
   use: "gpu" | "cpu" | "fallback";
   build: string | null;
@@ -15,7 +50,7 @@ export interface CoverAiPlan {
   download_bytes: number;
   downloaded_bytes: number;
   minutes_per_picture: number | null;
-  licenses: { name: string; by: string; license: string }[];
+  licenses: ModelLicense[];
 }
 
 export interface AiCoversView {
@@ -132,7 +167,7 @@ export interface VoiceProfile {
   targets: string[];
   model_ready: boolean;
   model_mb: number;
-  licenses: { name: string; by: string; license: string }[];
+  licenses: ModelLicense[];
   ready: boolean;
 }
 

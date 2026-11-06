@@ -199,6 +199,11 @@ export function DubSwitch({ pid, cid, compact }: { pid: string; cid: string; com
         </span>
         <Toggle checked={on} onChange={flip} label={t("dub.switch", { lang: langName })} />
       </div>
+      {on && (
+        <span className="field-hint">
+          <Icon name="mic" size={12} /> {t("aivoice.dub_hint")}
+        </span>
+      )}
       {job && <JobLine job={job} onCancel={() => api.cancelJob(job.id).catch(() => {})} />}
       {d.profile.ready && (
         <button type="button" className="link-btn field-hint" onClick={() => setSetup(true)}>

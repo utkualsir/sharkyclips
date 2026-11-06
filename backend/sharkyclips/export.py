@@ -618,7 +618,8 @@ def run_export(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam
              "request": req.to_dict(), "files": files, "duration": duration, "encoder": encoder,
              "seconds": round(time.perf_counter() - t0, 2), "created_at": _now(),
              "frame": (preset.frame if preset else "vertical") if fmt and fmt.kind != "audio" else None,
-             "subtitle_language": sub_lang, "warnings": warnings, **extra}
+             "subtitle_language": sub_lang, "warnings": warnings,
+             "dub": opts.dub or cand.get("dub") or "", **extra}
     _save_entry(project, entry)
     return entry
 

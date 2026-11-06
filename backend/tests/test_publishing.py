@@ -661,3 +661,70 @@ def test_endpoint_override_is_loopback_only(monkeypatch):
     with pytest.warns(UserWarning):
         assert youtube.url(youtube.API) == youtube.API
 
+
+
+# ===================================================================== 1.2.19: AI voice disclosure
+
+
+def test_ai_voice_note_and_synthetic_flag_helpers():
+    from sharkyclips import dub
+
+    assert dub.disclosure_line("en") == "The English voice in this video is AI-generated from my own voice."
+    assert dub.disclosure_line("de-DE").startswith("Die deutsche Stimme")
+    assert dub.disclosure_line("xx") == dub.DISCLOSURE_FALLBACK
+    note = dub.disclosure_line("en")
+    assert youtube.with_note("Nice.", note) == f"Nice.\n\n{note}"
+    assert youtube.with_note(f"Nice.\n\n{note}", note) == f"Nice.\n\n{note}"  # never twice
+    assert youtube.with_note("Nice.", None) == "Nice."
+    long = youtube.with_note("x" * 6000, note)
+    assert len(long) <= 4900 and long.endswith(note)  # the length limit never cuts the note off
+    body = youtube.build_body("T", "D", [], "private", None, False, synthetic=True)
+    assert body["status"]["containsSyntheticMedia"] is True
+    assert "containsSyntheticMedia" not in youtube.build_body("T", "D", [], "private", None, False)["status"]
+    pocket = dub.LICENSES[0]
+    assert pocket["license_url"].startswith("https://creativecommons.org/licenses/by/4.0")
+    assert pocket["source_url"] == "https://huggingface.co/kyutai/pocket-tts" and pocket["changes_by"] == "k2-fsa/sherpa-onnx"
+
+
+def test_dubbed_upload_says_its_voice_is_ai_made(yt):
+    from sharkyclips.web import state
+
+    project = _project("pub-dub", 3)
+    names = {cid: _ready(project, cid) for cid in ("c01", "c02", "c03")}
+    # c01 / c03: files from before 1.2.19 (no "dub" in the record): the clip's dub choice counts.
+    # c02: rendered with the original voice (recorded), dubbed only afterwards: no disclosure.
+    reg = export.load_registry(project)
+    export._save_entry(project, {**next(e for e in reg if e["clip_id"] == "c02"), "dub": ""})
+    state.save_review(project, {"dub": {"c01": "en", "c02": "en", "c03": "en"}})
+    line = "The English voice in this video is AI-generated from my own voice."
+    with _client() as c:
+        info = c.get(f"/api/projects/{project.id}/clips/c01/ai_voice", params={"source": names["c01"]}).json()
+        assert info == {"dub": "en", "line": line, "note": True, "synthetic": True}
+        assert c.get(f"/api/projects/{project.id}/clips/c02/ai_voice", params={"source": names["c02"]}).json()["dub"] == ""
+        assert c.get(f"/api/library/{project.id}/c01/setup").json()["ai_voice"]["line"] == line
+
+        def up(cid: str, **extra) -> dict:
+            r = c.post(f"/api/projects/{project.id}/clips/{cid}/upload",
+                       json={"source": names[cid], "title": f"Clip {cid}", "description": "Nice.", "tags": [],
+                             "privacy": "private", **extra})
+            assert r.status_code == 200, r.text
+            _wait(_idle)
+            vid = state.live_upload(project, cid)["video_id"]
+            return yt.videos[vid]
+
+        v1 = up("c01")
+        assert v1["status"]["containsSyntheticMedia"] is True
+        assert v1["snippet"]["description"] == f"Nice.\n\n{line}"
+        v2 = up("c02")
+        assert "containsSyntheticMedia" not in v2["status"] and line not in v2["snippet"]["description"]
+        v3 = up("c03", ai_voice_note=False, synthetic_media=False)  # both switched off in the upload screen
+        assert "containsSyntheticMedia" not in v3["status"] and line not in v3["snippet"]["description"]
+
+        # editing the live video's text in the Library keeps the note
+        m = c.get(f"/api/library/{project.id}/c01/setup").json()["meta"]
+        assert m["ai_voice_note"] is True and m["synthetic_media"] is True
+        assert c.put(f"/api/library/{project.id}/c01", json={"meta": {**m, "description": "Changed."}}).status_code == 200
+        assert yt.videos[state.live_upload(project, "c01")["video_id"]]["snippet"]["description"].endswith(line)
+
+        lic = c.get("/api/licenses").json()
+        assert lic["app"]["license"] == "MIT" and {g["id"] for g in lic["groups"]} == {"voice", "covers"}

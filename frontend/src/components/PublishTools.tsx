@@ -19,6 +19,7 @@ import { UI_LANGUAGES, useI18n } from "../i18n";
 import { href } from "../router";
 import { useToast } from "../toast";
 import { CoverStudio, useAiCovers } from "./CoverStudio";
+import { AiVoiceSwitches } from "./Licenses";
 import { PlatformRow } from "./PlatformPost";
 import { Icon } from "./Icons";
 import { Markdown } from "./Shell";
@@ -470,6 +471,15 @@ export function PublishSetupDialog({
                 </select>
               </label>
             </div>
+            {data.ai_voice?.dub && (
+              <AiVoiceSwitches
+                info={data.ai_voice}
+                note={meta.ai_voice_note !== false}
+                synthetic={meta.synthetic_media !== false}
+                onNote={(v) => set({ ai_voice_note: v })}
+                onSynthetic={(v) => set({ synthetic_media: v })}
+              />
+            )}
             <div className="export-two">
               <div className="field">
                 <span className="field-label">{t("yt.kids")}</span>

@@ -7,6 +7,86 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.19] - 2026-11-06
+
+### Changed
+- **Dubbed clips say their voice is AI-made.** When you upload a clip dubbed in your own voice,
+  SharkyClips adds a short line to the description in the clip's language (for example "The
+  English voice in this video is AI-generated from my own voice.") and answers YouTube's
+  "altered or synthetic content" question with yes. Both are on by default and you see them in
+  the upload screen and in the Library, where you can switch each one off. Scheduled and Easy mode
+  uploads do the same, and editing the description later keeps the line.
+- **Credits for the AI models.** The voice model is now credited properly: Pocket TTS by Kyutai
+  (CC-BY 4.0), converted to int8 ONNX by k2-fsa/sherpa-onnx, with links to the license and the
+  original model. You see this in the dubbing settings and in the new **About & licenses** card
+  in Settings, which also lists the cover picture models.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Değişti
+- **Dublajlı klipler sesin yapay zekâyla üretildiğini söyler.** Kendi sesinle dublajlanmış bir
+  klibi yüklediğinde SharkyClips açıklamaya klibin dilinde kısa bir satır ekler (örneğin "The
+  English voice in this video is AI-generated from my own voice.") ve YouTube'un "değiştirilmiş
+  veya sentetik içerik" sorusunu evet olarak yanıtlar. İkisi de varsayılan olarak açıktır;
+  yükleme ekranında ve Kütüphane'de görürsün ve her birini kapatabilirsin. Zamanlanmış ve Kolay
+  mod yüklemeleri de aynısını yapar; açıklamayı sonradan düzenlemek satırı silmez.
+- **Yapay zekâ modellerinin künyesi.** Ses modeli artık doğru şekilde anılıyor: Kyutai'nin
+  Pocket TTS'i (CC-BY 4.0), k2-fsa/sherpa-onnx tarafından int8 ONNX'e dönüştürüldü; lisansa ve
+  orijinal modele bağlantılarla. Bunu dublaj ayarlarında ve Ayarlar'daki yeni **Hakkında ve
+  lisanslar** kartında görürsün; kart kapak resmi modellerini de listeler.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Vertonte Clips sagen, dass die Stimme KI-erzeugt ist:** ein Satz in der Beschreibung (in der
+  Sprache des Clips) und YouTubes Markierung „veränderte oder synthetische Inhalte“. Beides ist an
+  und lässt sich beim Hochladen und in der Bibliothek abschalten.
+- **Lizenzhinweise:** Pocket TTS von Kyutai (CC-BY 4.0), von k2-fsa/sherpa-onnx in int8-ONNX
+  umgewandelt, mit Links; in den Vertonungs-Einstellungen und in der neuen Karte **Über & Lizenzen**.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **A szinkronizált klipek jelzik, hogy a hang MI-vel készült:** egy sor a leírásban (a klip
+  nyelvén) és a YouTube „módosított vagy szintetikus tartalom” jelölése. Mindkettő be van
+  kapcsolva, és a feltöltésnél és a Könyvtárban kikapcsolható.
+- **Licencek:** Pocket TTS (Kyutai, CC-BY 4.0), int8 ONNX-re alakította a k2-fsa/sherpa-onnx,
+  linkekkel; a szinkron beállításainál és az új **Névjegy és licencek** kártyán.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Озвученные клипы сообщают, что голос создан ИИ:** строка в описании (на языке клипа) и
+  отметка YouTube «изменённый или синтетический контент». Оба включены и отключаются на экране
+  загрузки и в Библиотеке.
+- **Лицензии:** Pocket TTS от Kyutai (CC-BY 4.0), преобразована в int8 ONNX проектом
+  k2-fsa/sherpa-onnx, со ссылками; в настройках озвучки и в новой карточке **О программе и лицензии**.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **المقاطع المدبلجة تذكر أن الصوت مولَّد بالذكاء الاصطناعي:** سطر في الوصف (بلغة المقطع) وعلامة
+  يوتيوب "محتوى معدَّل أو اصطناعي". كلاهما مفعَّل ويمكن إيقافه في شاشة الرفع وفي المكتبة.
+- **التراخيص:** Pocket TTS من Kyutai (CC-BY 4.0)، حوّله k2-fsa/sherpa-onnx إلى int8 ONNX، مع
+  روابط؛ في إعدادات الدبلجة وفي بطاقة **حول البرنامج والتراخيص** الجديدة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **配音片段会说明声音由 AI 生成：** 描述中加一行说明（使用片段的语言），并设置 YouTube 的“经过修改或合成的内容”标记。两者默认开启，可在上传界面和媒体库中关闭。
+- **许可证：** Pocket TTS（Kyutai，CC-BY 4.0），由 k2-fsa/sherpa-onnx 转换为 int8 ONNX，附链接；见配音设置和新的 **关于与许可证** 卡片。
+
+</details>
+
 ## [1.2.18] - 2026-11-06
 
 ### Added

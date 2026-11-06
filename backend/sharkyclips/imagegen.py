@@ -49,10 +49,18 @@ MODEL_FILES: dict[str, Remote] = {
                   "ae.safetensors"),
 }
 LICENSES = [
-    {"name": "Z-Image-Turbo", "by": "Tongyi-MAI (Alibaba)", "license": "Apache-2.0"},
-    {"name": "Qwen3-4B-Instruct-2507", "by": "Qwen (Alibaba)", "license": "Apache-2.0"},
-    {"name": "FLUX.1 VAE", "by": "Black Forest Labs", "license": "Apache-2.0"},
-    {"name": "stable-diffusion.cpp", "by": "leejet", "license": "MIT"},
+    {"name": "Z-Image-Turbo", "by": "Tongyi-MAI (Alibaba)", "license": "Apache-2.0",
+     "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+     "source_url": "https://huggingface.co/Tongyi-MAI/Z-Image-Turbo"},
+    {"name": "Qwen3-4B-Instruct-2507", "by": "Qwen (Alibaba)", "license": "Apache-2.0",
+     "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+     "source_url": "https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507"},
+    {"name": "FLUX.1 VAE", "by": "Black Forest Labs", "license": "Apache-2.0",
+     "license_url": "https://www.apache.org/licenses/LICENSE-2.0",
+     "source_url": "https://huggingface.co/black-forest-labs/FLUX.1-schnell"},
+    {"name": "stable-diffusion.cpp", "by": "leejet", "license": "MIT",
+     "license_url": "https://github.com/leejet/stable-diffusion.cpp/blob/master/LICENSE",
+     "source_url": "https://github.com/leejet/stable-diffusion.cpp"},
 ]
 
 SD_TAG = "master-987-a77d362"

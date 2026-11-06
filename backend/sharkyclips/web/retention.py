@@ -196,6 +196,7 @@ def submit_ab(project_id: str, cid: str, job_id: str | None = None, attempt: int
             jobs.update(job, stage="pretest", progress=None)
             feats = abtest.features(project, dest, spec, cand, facecam, spoken, meta.get("mode"), flash_start)
             variants[label] = {**spec, "file": dest.name, "features": feats, "rendered_at": _now(),
+                               "dub": o2.dub or c2.get("dub") or "",
                                "size_bytes": res.size_bytes, "duration": res.info.get("duration") or c2["duration"]}
         judges: dict[str, dict | None] = {k: None for k in variants}
         if A.llm_available():

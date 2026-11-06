@@ -1876,6 +1876,18 @@ const zh: Record<string, string> = {
   "extras.viz_hint": "歌曲：随节拍跳动的可视化效果，封面居中，歌词以卡拉 OK 形式显示。",
   "extras.off": "关闭",
   "extras.auto": "自动",
+  "lic.original": "项目页面",
+  "lic.changes.int8_onnx": "由 {by} 转换为 int8 ONNX",
+  "about.title": "关于与许可证",
+  "about.desc": "SharkyClips {v} 免费且开源（{license} 许可证）。它下载的可选 AI 模型有各自的许可证：",
+  "about.group.voice": "声音模型（用我的声音配音）",
+  "about.group.covers": "封面图片模型（AI 封面）",
+  "aivoice.title": "AI 声音",
+  "aivoice.body": "这个视频里是你自己的声音，由 AI 用另一种语言生成。观众和 YouTube 应该知道这一点。",
+  "aivoice.note": "在描述中加一行说明",
+  "aivoice.synthetic": "告诉 YouTube 视频含有经过修改或合成的内容",
+  "aivoice.synthetic_hint": "对 YouTube 的“经过修改或合成的内容”问题回答“是”，观众可能会看到标签。",
+  "aivoice.dub_hint": "上传时，描述会说明声音由 AI 生成，YouTube 也会收到“合成内容”标记（两者都可以在上传界面关闭）。",
 };
 
 export default zh;

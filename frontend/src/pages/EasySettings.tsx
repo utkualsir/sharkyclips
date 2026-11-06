@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, api, liveApi, phoneApi, type PhoneStatus, type YoutubeStatus } from "../api";
 import { PhoneConnect } from "../components/Phone";
+import { AboutCard } from "../components/Licenses";
 import { Icon } from "../components/Icons";
 import { useToast } from "../toast";
 import { Toggle } from "../components/ui";
@@ -179,6 +180,8 @@ export default function EasySettings() {
           <Icon name="sparkles" size={14} /> {t("easy.set_tour_again")}
         </button>
       </section>
+
+      <AboutCard easy />
 
       <section className="card ez-set-card ez-set-pro">
         <div>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { coversApi, platformsApi, voiceApi, type CoverAiPlan, type PlatformsOverview, type PostPlatform, type VoiceProfile } from "../extras";
 import { VoiceSetup } from "./MyVoice";
+import { LicenseList } from "./Licenses";
 import { fmtBytes } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
@@ -70,13 +71,7 @@ export function CoverAiCard() {
         </div>
         <details className="field-hint">
           <summary>{t("cover_ai.licenses")}</summary>
-          <ul>
-            {plan.licenses.map((l) => (
-              <li key={l.name}>
-                {l.name} · {l.by} · {l.license}
-              </li>
-            ))}
-          </ul>
+          <LicenseList items={plan.licenses} />
         </details>
       </div>
     </section>
@@ -285,13 +280,7 @@ export function MyVoiceCard() {
         </div>
         <details className="field-hint">
           <summary>{t("cover_ai.licenses")}</summary>
-          <ul>
-            {p.licenses.map((l) => (
-              <li key={l.name}>
-                {l.name} · {l.by} · {l.license}
-              </li>
-            ))}
-          </ul>
+          <LicenseList items={p.licenses} />
         </details>
         {open && (
           <VoiceSetup

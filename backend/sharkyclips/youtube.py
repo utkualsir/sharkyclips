@@ -701,8 +701,19 @@ def clean_tags(tags: list[str]) -> list[str]:
     return out
 
 
+def with_note(description: str, note: str | None, limit: int = 4900) -> str:
+    """The description with `note` as its last paragraph (once; never cut off by the length limit)."""
+    description = (description or "").strip()
+    if not note or note in description:
+        return description
+    room = limit - len(note) - 2
+    return f"{description[:max(0, room)].rstrip()}\n\n{note}".strip()
+
+
 def build_body(title: str, description: str, tags: list[str], privacy: str, publish_at: str | None,
-               made_for_kids: bool, category: str = "20", language: str | None = None) -> dict:
+               made_for_kids: bool, category: str = "20", language: str | None = None,
+               synthetic: bool = False) -> dict:
+    """`synthetic`: tell YouTube the video has altered / synthetic content (status.containsSyntheticMedia)."""
     if privacy not in PRIVACY:
         raise SharkyClipsError(f"Unknown privacy '{privacy}'.")
     title = clean_text(title, 100)
@@ -710,6 +721,8 @@ def build_body(title: str, description: str, tags: list[str], privacy: str, publ
         raise SharkyClipsError("The video needs a title.")
     status: dict = {"privacyStatus": privacy, "selfDeclaredMadeForKids": bool(made_for_kids),
                     "embeddable": True}
+    if synthetic:
+        status["containsSyntheticMedia"] = True
     if publish_at:
         try:
             when = datetime.fromisoformat(publish_at.replace("Z", "+00:00"))

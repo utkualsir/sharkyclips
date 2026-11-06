@@ -15,6 +15,7 @@ import { applyMotion, type MotionSetting } from "../motion";
 import { useTheme } from "../theme";
 import { useToast } from "../toast";
 import { CoverAiCard, MyVoiceCard, PlatformsCard } from "../components/ExtrasSettings";
+import { AboutCard } from "../components/Licenses";
 
 function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
   const { t, num } = useI18n();
@@ -720,6 +721,8 @@ export default function Settings() {
           <MyVoiceCard />
 
           <UpdatesCard />
+
+          <AboutCard />
 
           <p className="muted mono" style={{ textAlign: "center", fontSize: 12 }}>
             {t("settings.version", { v: meta?.version ?? "" })}
