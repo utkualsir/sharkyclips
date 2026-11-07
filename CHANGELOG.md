@@ -7,6 +7,69 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.26] - 2026-11-07
+
+### Fixed
+- **No swear words hidden inside names.** A player name with a swear word inside it could end up
+  in a title or description. Such names are now caught too.
+- **No clip timings in titles or descriptions.** Titles sometimes said things like "in the last
+  5.7 seconds" or "+7 seconds", taken from SharkyClips' own notes, not from the video. Those are
+  now rejected.
+- **Always enough titles.** When rewriting an existing project's texts, a clip whose new ideas
+  were almost all rejected now keeps its best old titles instead of ending up with just one.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **İsimlerin içine gizlenmiş küfür yok.** İçinde küfür geçen bir oyuncu adı başlığa ya da
+  açıklamaya girebiliyordu. Artık bunlar da yakalanıyor.
+- **Başlık ve açıklamalarda klip zamanı yok.** Başlıklar bazen "son 5.7 saniyede" ya da
+  "+7 saniyede" gibi ifadeler kullanıyordu; bunlar videodan değil SharkyClips'in kendi
+  notlarından geliyordu. Artık reddediliyor.
+- **Her zaman yeterli başlık.** Mevcut bir projenin metinleri yeniden yazılırken yeni fikirlerinin
+  neredeyse hepsi elenen bir klip artık tek başlıkla kalmıyor, en iyi eski başlıklarını koruyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Keine in Namen versteckten Schimpfwörter und keine internen Clip-Zeiten („+7 Sekunden“) mehr in
+  Titeln und Beschreibungen; Clips behalten beim Neuschreiben immer genug Titel.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Nincs több nevekbe rejtett káromkodás és belső klipidő („+7 másodperc”) a címekben és
+  leírásokban; újraíráskor a klipeknek mindig marad elég címe.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Больше никаких ругательств, спрятанных в именах, и внутренних отметок времени («+7 секунд») в
+  названиях и описаниях; при переписывании у клипа всегда остаётся достаточно названий.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- لا شتائم مخفية داخل الأسماء ولا أوقات المقطع الداخلية ("+7 ثوان") في العناوين والأوصاف بعد الآن؛
+  ويحتفظ كل مقطع دائما بعناوين كافية عند إعادة الكتابة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 标题和简介中不再出现藏在名字里的脏话和内部片段时间（"+7 秒"）；重新撰写时每个片段都会保留足够的标题。
+
+</details>
+
+
 ## [1.2.25] - 2026-11-07
 
 ### Fixed

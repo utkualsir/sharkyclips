@@ -379,3 +379,24 @@ def test_lol_project_analysis_names_only_lol(monkeypatch):
     assert meta["hashtags"][0] == "utkualsirr" and meta["tags"] == c2["publish"]["tags"]
     full = publishing.compose_description(meta["description"], meta["hashtags"], lang="tr")
     assert full.endswith(SOCIALS[-1]) and "#utkualsirr #shorts #leagueoflegends" in full
+
+
+# ===================================================================== 1.2.26 follow-ups (seen on real projects)
+
+
+def test_glued_swears_and_clip_times_never_reach_titles():
+    assert analyze.has_profanity("Deepfuck diye bi oyuncu var mı?")  # a player name with a swear inside
+    assert not analyze.has_profanity("Kule altında sıkıştım, kombo geldi")
+    for t in ["Son 5.7 saniyede gelen OUTPLAY", "+7 saniyede gelen ses", "at +14s it happened"]:
+        assert analyze.has_timestamp(t), t
+    for t in ["3 saniyede 3 KILL", "Son 10 saniye", "1v4 CLUTCH"]:
+        assert not analyze.has_timestamp(t), t
+    f = analyze._forbidden("lol")
+    assert f("Warzone gibi") == "Warzone" and f("Son 5.7 saniyede") == "a clip time" and f("Bu PENTAKILL") is None
+
+
+def test_metadata_only_tops_up_too_few_titles_with_clean_old_ones():
+    new = [{"style": "punchy", "text": "Bu PENTAKILL kimse beklemiyordu 💀"}]
+    old = ["Deepfuck ile yayına girdik", "Warzone'da 1v4", "Kule altında üç kişiyi indirdim", "Takım beni yine sattı"]
+    out = analyze._top_up(new, old, "tr", analyze._forbidden("lol"))
+    assert [t["text"] for t in out] == [new[0]["text"], "Kule altında üç kişiyi indirdim", "Takım beni yine sattı"]

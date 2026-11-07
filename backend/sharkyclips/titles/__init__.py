@@ -27,7 +27,7 @@ from . import feedback, lexicon
 from .glossary import Glossary
 
 EXAMPLES_DIR = Path(__file__).resolve().parent / "examples"
-TITLES_VERSION = 2
+TITLES_VERSION = 3
 N_TITLES = 6
 N_DRAFT = 9
 N_DRAFT_FAST = 6  # "Fast analysis": fewer drafts, and a second round only when too few survive
@@ -55,7 +55,7 @@ FORMULA_HINTS = {
     "shock": "the most shocking moment, said hard and short",
     "question": 'a real question to the viewer, ending with "?"',
     "nobody_expected": '"nobody expected this" angle, in your own words',
-    "number": "a number or challenge that is REALLY in the clip (1v4, 3 kills, 8k, last 10 seconds)",
+    "number": "a number or challenge that is REALLY in the clip (1v4, 3 kills, 8k, last 10 seconds); never the clip times from the transcript list (+7s)",
     "story": "a mini story with a twist: what happened first, then what",
     "punchy": "very short and hard, 3-6 words",
 }
@@ -603,7 +603,7 @@ def write(model, *, system: str, context: str, lang: str, lang_label: str, mode:
             elif has_profanity(final["text"]) or is_rude(final["text"], lang):
                 reason = "swearing or rude word"
             elif g := other(final["text"]):
-                reason = f"names another game: {g}"
+                reason = f"not allowed: {g}"
             elif any(too_similar(final["text"], e, phrases=False) for e in example_texts):
                 reason = "copies an example title"
             elif len(plain) > 80 or (punchy and lang not in ("zh", "ja") and len(plain) > 70):

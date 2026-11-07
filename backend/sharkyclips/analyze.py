@@ -99,10 +99,21 @@ PROFANITY = re.compile(
     r"бля\w*|сука|сук[иу]\w*|хуй\w*|пизд\w*|scheisse|fick\w*|kurva\w*|bazdmeg)\b")
 
 
+# Roots that are never innocent, even glued into a name ("Deepfuck", "#ShitShow").
+EMBEDDED_PROFANITY = re.compile(r"fuck|shit|bitch|motherf|orospu|siktir|yarrak|pussy|cunt")
+# The clip's own timing in the prompt ("+7s") must never reach a title or description.
+TIMESTAMP_RE = re.compile(r"[+＋]\s?\d+(?:[.,]\d+)?\s?(?:s|sn|saniye\w*|sec\w*)?\b|\b\d+[.,]\d+\s?(?:s|sn|saniye\w*|sec\w*)\b", re.I)
+
+
 def has_profanity(text: str) -> bool:
     # Not re.I: it would treat Turkish dotless ı as i ("sıkıştı" = "got stuck" is fine).
     t = "".join(ch for ch in unicodedata.normalize("NFKD", text.lower()) if not unicodedata.combining(ch))
-    return bool(PROFANITY.search(t.replace("ß", "ss")))
+    t = t.replace("ß", "ss")
+    return bool(PROFANITY.search(t) or EMBEDDED_PROFANITY.search(t))
+
+
+def has_timestamp(text: str) -> bool:
+    return bool(TIMESTAMP_RE.search(text or ""))
 STOPWORDS = {"the", "and", "this", "that", "with", "for", "bir", "bu", "ve", "ile", "için", "çok",
              "abi", "kanka", "lan", "ya", "der", "die", "das", "und", "это", "как", "что"}
 
@@ -387,7 +398,7 @@ TASK: judge this clip and write its publish package.
 """
 
 
-DESCRIPTION_VERSION = 3  # 1.2.25: game-aware, ends with a question
+DESCRIPTION_VERSION = 4  # 1.2.26: no clip times; 1.2.25: game-aware, ends with a question
 DESCRIPTION_SCHEMA = {
     "type": "object",
     "properties": {"description": {"type": "string", "minLength": 40, "maxLength": 480}},
@@ -443,6 +454,7 @@ TASK: write the YouTube description of this clip in {lang_name(out_lang)}.
 - Only what the CLIP lines and game events show; never invent events, scores or names. Don't mention swearing.
 - Spell these names exactly like this: {names}
 - Don't repeat the title word for word. No hashtags, emojis, links or ALL CAPS (the hashtags and links are added later).
+- Never mention the times from the transcript list (like "+7s" or "at 14 seconds"): viewers don't see them.
 """
 
 
@@ -477,6 +489,8 @@ def _description_checker(out_lang: str, game_id: str | None = None) -> Callable[
             errs.append("no swearing or insults in the description, even if the streamer swears")
         if game_id and (other := banks.other_game(text, game_id)):
             errs.append(f"never mention {other}: this clip is not from that game")
+        if has_timestamp(text):
+            errs.append('never mention the clip times like "+7s" or "5.7 seconds": viewers don\'t see them')
         if "#" in text or "http" in text:
             errs.append("no hashtags or links in the description")
         n = _sentence_count(text)
@@ -597,6 +611,30 @@ def translate_lines(model, lines: list[dict], src: str, dst: str, context: str) 
 # ------------------------------------------------------------------ main
 
 
+def _forbidden(gid: str | None) -> Callable[[str], str | None]:
+    """Why a title / hook / cover text can't be used: another game's name, or a clip time ("+7s")."""
+    from .titles import banks
+
+    def check(text: str) -> str | None:
+        if gid and (g := banks.other_game(text, gid)):
+            return g
+        return "a clip time" if has_timestamp(text) else None
+
+    return check
+
+
+def _top_up(new: list[dict], old: list[str], lang: str, forbidden, n: int = 4) -> list[dict]:
+    """Metadata-only run: too few new titles survived -> add the clip's old titles that pass today's checks."""
+    out = list(new)
+    for t in old:
+        if len(out) >= n:
+            break
+        if (t and not has_profanity(t) and not titles_mod.is_rude(t, lang) and not forbidden(t)
+                and not any(too_similar(t, x["text"], phrases=False) for x in out)):
+            out.append({"style": "story", "text": t})
+    return out
+
+
 def _judge_from_saved(c: dict) -> dict | None:
     """A clip's earlier judgement (highlights.json), for a metadata-only run without the judge cache."""
     info, pub = c.get("llm") or {}, c.get("publish") or {}
@@ -713,7 +751,7 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 if not cached:
                     record_speed(profile, model.model, time.perf_counter() - t0, "analysis")
                 tw = titles_mod.refilter(tw, out_lang, has_profanity,
-                                         forbidden=(lambda t: banks.other_game(t, gid)) if gid else None)
+                                         forbidden=_forbidden(gid))
             except SharkyClipsError as exc:  # one bad clip must not stop the batch
                 console.print(f"[yellow]#{c['rank']}: skipped ({exc.message[:160]})[/]")
                 failed.append({"rank": c["rank"], "error": exc.message})
@@ -746,6 +784,8 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
             cover_text = tw["cover_text"] or (j.get("cover_text") or "").strip()
             if meta_only:
                 pub = c["publish"]
+                if len(tw["titles"]) < 4:
+                    tw = {**tw, "titles": _top_up(tw["titles"], pub.get("titles") or [], out_lang, _forbidden(gid))}
                 old_cover = pub.get("cover_text") or ""
                 pub.update({"titles": [t["text"] for t in tw["titles"]], "title_styles": [t["style"] for t in tw["titles"]],
                             "title_checks": tw.get("checks"), "hashtags": hashtags, "tags": tags,
@@ -873,7 +913,7 @@ def _write_titles(model, meta: dict, mode: str, c: dict, transcript: dict, out_l
         cover_text=j.get("cover_text") or "", clip_lines=_clip_lines(transcript, c),
         too_similar=too_similar, has_profanity=has_profanity, avoid=avoid, temperature=temperature,
         script_check=_titles_script_checker(out_lang),
-        forbidden=(lambda t: banks.other_game(t, gid)) if gid else None,
+        forbidden=_forbidden(gid),
         keywords=words.get("keywords"), vocab=words.get("vocab"), facts=banks.facts_text(facts or {}),
         punchy=gaming, game=gid)
 
