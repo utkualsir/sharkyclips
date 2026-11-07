@@ -857,7 +857,7 @@ const de: Record<string, string> = {
   "edit.bleeps_n_one": "{n} Schimpfwort in diesem Clip",
   "edit.bleeps_n_other": "{n} Schimpfwörter in diesem Clip",
   "edit.bleeps_none": "Keine Schimpfwörter in diesem Clip",
-  "edit.profanity_auto_hint": "Auto piept in Hochkant-Videos (Shorts, TikTok, Reels)",
+  "edit.profanity_auto_hint": "Auto piept jeden Clip",
   "edit.mask_captions": "Auch in den Untertiteln verbergen (a**)",
   "edit.cuts": "Pausen",
   "edit.cuts.off": "Aus",
@@ -1953,7 +1953,7 @@ const de: Record<string, string> = {
   "edit.swear_strict.normal": "Normal",
   "edit.swear_strict.strict": "Streng",
   "edit.swear_strict.paranoid": "Paranoid",
-  "edit.swear_strict_hint.auto": "Auto: Streng für Hochkant-Videos (Shorts, TikTok, Reels), Normal für 16:9",
+  "edit.swear_strict_hint.auto": "Auto: Streng bei jedem Clip",
   "edit.swear_strict_hint.normal": "Normal: sichere und wahrscheinliche Schimpfwörter",
   "edit.swear_strict_hint.strict": "Streng: jedes „vielleicht“ über einer niedrigen Schwelle, breitere Pieptöne",
   "edit.swear_strict_hint.paranoid": "Paranoid: jeder Kandidat, auch unwahrscheinliche",
@@ -2001,6 +2001,10 @@ const de: Record<string, string> = {
   "about.group.swears": "Schimpfwort-Prüfung (exakte Wortzeiten, zweites Anhören)",
   "lic.changes.onnx_int8": "Von {a} nach ONNX exportiert und auf int8 quantisiert",
   "lic.changes.ct2": "Von {a} nach CTranslate2 konvertiert",
+  "edit.bleep_visual": "Gepiepte Wörter als **** mit kleinem Pop zeigen",
+  "edit.bleep_icon": "Piep-Abzeichen neben der Facecam",
+  "swear.warn.swear_check_failed": "Die Schimpfwort-Prüfung hatte ein Problem, für diesen Clip wurde die einfache Erkennung benutzt. Die Pieptöne bleiben an.",
+  "swear.warn.swear_safety_net": "Ein Schimpfwort, das die neue Prüfung übersehen hat, wurde von der einfachen Erkennung gepiept.",
 };
 
 export default de;

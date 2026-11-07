@@ -17,8 +17,10 @@ CJK text. All text (subtitles and the hook) goes through one .ass file.
 
 from __future__ import annotations
 
+import contextvars
 import platform
 import shutil
+import subprocess
 import tempfile
 import time
 from dataclasses import asdict, dataclass, field
@@ -38,6 +40,7 @@ NO_SPACE_LANGS = {"zh", "ja"}
 FLASH_SECONDS = 1.0
 
 GOLD = "&H006AB5D9"  # #D9B56A as ASS &HAABBGGRR
+BLEEP_RED = "&H003C3CE8"  # #E83C3C: censored words + the bleep badge
 WHITE = "&H00FFFFFF"
 NAVY = "&H00331A0E"  # #0E1A33
 BLACK = "&H00000000"
@@ -52,11 +55,14 @@ class ClipOptions:
     hook_flash: bool = False  # show the peak moment for ~1 s before the clip
     subtitle_lang: str = ""  # "" = spoken language; a code = use that translation if available
     # Editing tools (1.2.4, edit/): swear words, silence / filler cuts, zoom, music, brand kit
-    profanity: str = "auto"  # auto (bleep in vertical videos) | bleep | mute | off
+    profanity: str = "auto"  # auto (= bleep, every format since 1.2.22) | bleep | mute | off
     profanity_captions: bool = True  # "a**" in the captions
     bleep_sound: str = "classic"  # classic | boop | custom (profanity "mute" = silence instead)
     # 1.2.21: which "maybe" swears get bleeped: auto (strict for vertical) | normal | strict | paranoid
     swear_strict: str = "auto"
+    # 1.2.22: a bleeped word shows as "****" with a pop, and a small bleep badge near the facecam
+    bleep_visual: bool = True
+    bleep_icon: bool = True
     speaker_colors: bool = True  # captions: one colour per speaker (after the voice pass)
     speaker_names: bool = False  # captions: "Me:" / "Efe:" tag when the speaker changes
     cuts: str = "off"  # off | light | strong
@@ -77,12 +83,13 @@ class ClipOptions:
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
-                "profanity_captions", "bleep_sound", "swear_strict", "speaker_colors", "speaker_names", "cuts", "zoom",
+                "profanity_captions", "bleep_sound", "swear_strict", "bleep_visual", "bleep_icon", "speaker_colors", "speaker_names", "cuts", "zoom",
                 "music", "brand", "loop", "replay", "chat_bubbles", "memes", "dub", "study_cards", "visualizer")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.chat_bubbles = bool(opts.chat_bubbles)
         opts.hook_flash = bool(opts.hook_flash)
         opts.profanity_captions = bool(opts.profanity_captions)
+        opts.bleep_visual, opts.bleep_icon = bool(opts.bleep_visual), bool(opts.bleep_icon)
         opts.music, opts.brand, opts.loop = bool(opts.music), bool(opts.brand), bool(opts.loop)
         opts.speaker_colors, opts.speaker_names = bool(opts.speaker_colors), bool(opts.speaker_names)
         for name, allowed in (("profanity", ("auto", "bleep", "mute", "off")), ("cuts", ("off", "light", "strong")),
@@ -328,7 +335,8 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
               hook_lang: str | None = None, geo: Geometry | None = None,
               style: dict | None = None, hook_start: float = 0.0, extra: list[str] | None = None,
               hook_fade_in: int = 150, speakers: dict | None = None, extra_styles: list[str] | None = None,
-              pauses: list[tuple[float, float]] | None = None) -> str:
+              pauses: list[tuple[float, float]] | None = None,
+              bleep_marks: list[tuple[float, float]] | None = None) -> str:
     """offset: seconds before the clip's main part (intro card + hook flash); subtitles start
     after it. geo: canvas size and text positions (default: the 1080x1920 clip).
     style: brand kit caption look {"font", "primary", "highlight", "outline"} (#RRGGBB).
@@ -336,7 +344,10 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
     speakers: {"me": "custom name" | "", "f1": ...}: words with "spk" get speaker colours /
     name tags (options speaker_colors / speaker_names, or the "speakers" style).
     extra_styles: more Style lines (effects). pauses: (start, end) canvas times with no captions
-    (an instant replay / freeze frame): a caption never runs into one."""
+    (an instant replay / freeze frame): a caption never runs into one.
+    bleep_marks: (start, end) clip times of the bleeps: a small "#@!" badge pops up near the
+    facecam while each one plays (opts.bleep_icon). Censored caption words ("censored") are
+    red and pop when spoken (opts.bleep_visual)."""
     geo = geo or Geometry()
     font = _font_for(lang)
     prim_c, gold_c, black_c = WHITE, GOLD, BLACK
@@ -380,6 +391,8 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
                  f"100,100,0,0,1,0,0,5,{geo.margin_l},{geo.margin_r},0,1")
     lines.append(f"Style: handle,{font},{sz(38)},{WHITE},{WHITE},&H60000000,&H80000000,-1,0,0,0,"
                  f"100,100,0,0,1,{sz(3)},{sz(1)},7,0,0,0,1")
+    lines.append(f"Style: bleepicon,{font},{sz(46)},{WHITE},{WHITE},{BLEEP_RED},{BLEEP_RED},-1,0,0,0,"
+                 f"100,100,0,0,3,{sz(12)},0,5,0,0,0,1")
     lines += extra_styles or []
     lines += ["", "[Events]",
               "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"]
@@ -445,8 +458,16 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
                     w_end = group[wi + 1]["start"] if wi + 1 < len(group) else g_end
                     if w_end <= w_start:
                         continue
-                    parts = [(f"{{\\c{gold_c}}}{t}{{\\c{base_c}}}" if i == wi else t)
-                             for i, t in enumerate(texts)]
+                    def part(i: int, t: str) -> str:
+                        cen = group[i].get("censored") and opts.bleep_visual
+                        if i == wi and cen:  # the bleeped word pops when it's spoken
+                            return (f"{{\\c{BLEEP_RED}\\fscx128\\fscy128\\t(0,140,\\fscx100\\fscy100)}}{t}"
+                                    f"{{\\c{base_c}\\fscx100\\fscy100}}")
+                        if cen:
+                            return f"{{\\c{BLEEP_RED}}}{t}{{\\c{base_c}}}"
+                        return f"{{\\c{gold_c}}}{t}{{\\c{base_c}}}" if i == wi else t
+
+                    parts = [part(i, t) for i, t in enumerate(texts)]
                     if languages.is_rtl(lang):
                         # libass lays out runs split by override tags left-to-right, so the
                         # word order of right-to-left text must be reversed here (measured).
@@ -471,9 +492,25 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
                     out_lines.append(joiner.join(parts))
                 event(g_start, g_end, "karaoke", pos + "{\\fad(60,60)}" + tag + "\\N".join(out_lines))
             else:
-                text = "\\N".join(joiner.join(_ass_escape(w["word"]) for w in ln) for ln in lines_)
+                def wtext(w: dict) -> str:
+                    t = _ass_escape(w["word"])
+                    return f"{{\\c{BLEEP_RED}}}{t}{{\\c{base_c}}}" if (w.get("censored") and opts.bleep_visual) else t
+
+                text = "\\N".join(joiner.join(wtext(w) for w in ln) for ln in lines_)
                 event(g_start, g_end, style, pos + "{\\fad(80,80)}" + tag + f"{{\\c{base_c}}}" + text)
 
+    if opts.bleep_icon and bleep_marks and opts.profanity != "off":
+        # a "#@!" badge near the facecam (split: bottom-right of the camera panel)
+        if layout == "split":
+            bx, by = geo.w - sz(120), (SPLIT_TOP if geo.cap_y is None else geo.cap_y) - sz(150)
+        else:
+            bx, by = geo.w - sz(120), sz(260)
+        for a, b in bleep_marks:
+            if b - a < 0.05:
+                continue
+            event(a, max(b, a + 0.35), "bleepicon",
+                  f"{{\\an5\\pos({bx},{by})\\fscx60\\fscy60\\t(0,110,\\fscx112\\fscy112)"
+                  f"\\t(110,200,\\fscx100\\fscy100)\\fad(40,120)}}#@!", layer=2)
     if opts.hook and hook_text:
         hook_y = geo.hook_y if geo.hook_y is not None else (120 if layout != "fit" else 330)
         text = _ass_escape(hook_text)
@@ -492,6 +529,47 @@ def _even(v: float) -> int:
     return max(2, int(round(v / 2)) * 2)
 
 
+def _floor_even(v: float) -> int:
+    """Even and never rounded up (a crop never reaches past the picture's edge)."""
+    return max(0, int(v // 2) * 2)
+
+
+def source_size(path, meta: dict) -> tuple[int, int, str]:
+    """The picture size the filters really get (1.2.22): the stream's display size after
+    rotation and non-square pixels, from ffprobe (the imported meta can be wrong or old), plus a
+    filter prefix that squares the pixels. Falls back to meta."""
+    w, h = int(meta.get("width") or 1920), int(meta.get("height") or 1080)
+    try:
+        import json as _json
+
+        from .procs import no_window
+
+        out = subprocess.run([require_tool("ffprobe"), "-v", "error", "-select_streams", "v:0", "-show_entries",
+                              "stream=width,height,sample_aspect_ratio:stream_side_data=rotation", "-of", "json",
+                              str(path)], capture_output=True, text=True, timeout=30, **no_window())
+        st = (_json.loads(out.stdout or "{}").get("streams") or [{}])[0]
+        w, h = int(st.get("width") or w), int(st.get("height") or h)
+        rot = 0
+        for sd in st.get("side_data_list") or []:
+            if "rotation" in sd:
+                rot = int(float(sd["rotation"])) % 180
+        num, _, den = str(st.get("sample_aspect_ratio") or "1:1").partition(":")
+        sar = (float(num) / float(den)) if num and den and float(den) and float(num) else 1.0
+    except Exception:  # noqa: BLE001
+        return w, h, ""
+    prefix = ""
+    if abs(sar - 1.0) > 0.01:
+        w = int(round(w * sar / 2)) * 2
+        prefix = f"scale={w}:{h},setsar=1,"
+    if rot == 90:  # ffmpeg turns the picture before the filters see it
+        w, h = h, w
+    return w, h, prefix
+
+
+# The pixel-squaring prefix of the source being rendered (source_size); set per render.
+_SQUARE: contextvars.ContextVar[str] = contextvars.ContextVar("sc_square", default="")
+
+
 def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
                   inp: str = "0:v", out: str = "base", size: tuple[int, int] = (OUT_W, OUT_H),
                   fx: dict | None = None) -> str:
@@ -500,6 +578,10 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
     fx: extra filters (smart zoom) per picture: "full" (crop / fit), "cam" and "game" (split)."""
     W, H = size
     zfx = fx or {}
+    sq = _SQUARE.get()
+    if sq and not inp.endswith("_sq"):  # non-square pixels: square them first, then the same math
+        return f"[{inp}]{sq.rstrip(',')}[{out}_sq];" + _filter_graph(layout, src_w, src_h, facecam, f"{out}_sq", out,
+                                                                    size, fx)
 
     def add(key: str) -> str:
         return f",{zfx[key]}" if zfx.get(key) else ""
@@ -520,9 +602,12 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
                 f"[{bg_}][{fg_}]overlay=(W-w)/2:(H-h)/2,setsar=1[{out}]")
     assert facecam is not None
     bottom_h = OUT_H - SPLIT_TOP
-    # Facecam: cut the region, then center-crop it to the top panel's aspect ratio.
-    fx, fy = facecam.x * src_w, facecam.y * src_h
-    fw, fh = facecam.w * src_w, facecam.h * src_h
+    # Facecam: cut the region (clamped inside the picture: a box from another video / resolution
+    # never reaches outside it), then center-crop it to the top panel's aspect ratio.
+    bx, by = min(max(0.0, facecam.x), 0.95), min(max(0.0, facecam.y), 0.95)
+    bw, bh = min(max(0.05, facecam.w), 1.0 - bx), min(max(0.05, facecam.h), 1.0 - by)
+    fx, fy = bx * src_w, by * src_h
+    fw, fh = bw * src_w, bh * src_h
     target = OUT_W / SPLIT_TOP
     if fw / fh > target:  # too wide -> trim the sides
         nw = fh * target
@@ -532,7 +617,9 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
         nh = fw / target
         fy += (fh - nh) / 2
         fh = nh
-    cam = (f"crop={_even(fw)}:{_even(fh)}:{_even(fx)}:{_even(fy)},"
+    fw, fh = min(fw, src_w), min(fh, src_h)
+    fx, fy = min(max(0.0, fx), src_w - fw), min(max(0.0, fy), src_h - fh)
+    cam = (f"crop={_floor_even(fw)}:{_floor_even(fh)}:{_floor_even(fx)}:{_floor_even(fy)},"
            f"scale={OUT_W}:{SPLIT_TOP}:flags=bicubic")
     # Gameplay: full-height center crop to the bottom panel's aspect ratio, nudged away
     # from the facecam so the camera doesn't show up twice.
@@ -543,7 +630,8 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
         gx = min(cam_r, src_w - gw) if cam_r - gx < gw * 0.25 else gx
     elif cam_l >= src_w / 2 and cam_l < gx + gw:  # facecam on the right
         gx = max(cam_l - gw, 0) if gx + gw - cam_l < gw * 0.25 else gx
-    game = (f"crop={_even(gw)}:{_even(src_h)}:{_even(gx)}:0,"
+    gx = min(max(0.0, gx), src_w - gw)
+    game = (f"crop={_floor_even(gw)}:{_floor_even(src_h)}:{_floor_even(gx)}:0,"
             f"scale={OUT_W}:{bottom_h}:force_original_aspect_ratio=increase:flags=bicubic,"
             f"crop={OUT_W}:{bottom_h}")
     return (f"[{inp}]split=2[{a}][{b}];[{a}]{cam}{add('cam')}[{cam_}];[{b}]{game}{add('game')}[{game_}];"
@@ -688,7 +776,8 @@ def _render_core(project: Project, cand: dict, opts: ClipOptions, facecam: Facec
                                "Re-run: python cli.py ingest <url-or-path>")
     spec = spec or OutputSpec()
     meta = project.load_meta()
-    src_w, src_h = int(meta.get("width") or 1920), int(meta.get("height") or 1080)
+    src_w, src_h, square = source_size(source, meta)  # the real picture size (1.2.22), not the stored one
+    _SQUARE.set(square)
     fps = float(meta.get("fps") or 30)
     start, end = float(cand["start"]), float(cand["end"])
     duration = max(0.5, end - start)
@@ -815,6 +904,16 @@ def prepare_dub(project: Project, cand: dict, opts: ClipOptions,
 # --------------------------------------------------------------------- editing tools (1.2.4)
 
 
+def _bleep_marks(plan, words: list[dict], fxp) -> list[tuple[float, float]]:
+    """Clip times of the bleeps for the badge: the plan's bleeps (no effect inserts moved the
+    timeline), else the censored caption words (already mapped through the inserts)."""
+    if plan.bleep_mode == "off":
+        return []
+    if fxp is None or not getattr(fxp, "inserts", None):
+        return [(float(a), float(b)) for a, b in plan.bleeps]
+    return [(float(w["start"]), float(w["end"])) for w in words if w.get("censored")]
+
+
 def edit_plan(project: Project, cand: dict, opts: ClipOptions, spec: OutputSpec | None, fps: int):
     """The clip's EditPlan when an editing tool changes something, else None (plain render)."""
     from .edit import plan as plan_mod
@@ -890,13 +989,14 @@ def _brand_layers(preset: dict, geo: Geometry, spec: OutputSpec, canvas: tuple[i
 
 
 def _fx_video(g: list[str], fxp, fx_in: list[int], layout: str, src_w: int, src_h: int,
-              facecam: Facecam | None, size: tuple[int, int], F: int, main_frames: int) -> str:
+              facecam: Facecam | None, size: tuple[int, int], F: int, main_frames: int,
+              zbase: float = 1.0) -> str:
     """Effects on the main picture: shakes, then the replays / freeze frames spliced in.
     Returns the pad that carries the result."""
     from .edit import fx as fx_mod
 
     cur = "mainv"
-    sh = fx_mod.shake_filter(fxp.shakes, fxp.punches, F)
+    sh = fx_mod.shake_filter(fxp.shakes, fxp.punches, F, zbase)
     if sh:
         g.append(f"[mainv]{sh}[mainsh]")
         cur = "mainsh"
@@ -1013,7 +1113,8 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         pauses = [(a + lead, b + lead) for a, b, _i in fxp.insert_ranges()]
     ass = build_ass(words, main, opts, layout, lang, hook_text, offset=lead, hook_lang=hook_lang, geo=geo,
                     style=style, hook_start=intro, extra=extra, hook_fade_in=0 if seam is not None else 150,
-                    speakers=plan.speakers, extra_styles=fx_styles, pauses=pauses)
+                    speakers=plan.speakers, extra_styles=fx_styles, pauses=pauses,
+                    bleep_marks=_bleep_marks(plan, words, fxp))
 
     final = ""
     if spec.width and spec.height and (spec.width, spec.height) != (W, H):
@@ -1095,7 +1196,8 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
             g.append(f"[base]setsar=1{white},format=yuv420p[mainv]")
         main_pad = "[mainv]"
         if fxp is not None:
-            main_pad = _fx_video(g, fxp, fx_in, layout, src_w, src_h, facecam, (W, H), F, main_frames)
+            main_pad = _fx_video(g, fxp, fx_in, layout, src_w, src_h, facecam, (W, H), F, main_frames,
+                                 plan.zoom_level if plan.zooms else 1.0)
         logos: list[str] = []
         if logo_i is not None:
             n_logo = 1 + bool(intro) + bool(outro)
@@ -1179,6 +1281,7 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         info = {"plan": plan.fingerprint(), "duration": round(total, 2), "main": round(main, 2),
                 "cut_seconds": max(0.0, round(duration - main, 2)), "cuts": len(plan.removed),
                 "bleeps": len(plan.bleeps) if plan.bleep_mode != "off" else 0, "bleep_mode": plan.bleep_mode,
+                "warnings": list(plan.warnings) or None,
                 "zoom_pulses": len(plan.out_pulses("scene")) + len(plan.out_pulses("cam")) if plan.zooms else 0,
                 "music": mix.music if mix else None, "lufs": mix.lufs if mix else None,
                 "brand": (plan.brand or {}).get("name"), "intro": intro, "outro": outro}

@@ -871,7 +871,7 @@ const ru: Record<string, string> = {
   "edit.bleeps_n_many": "{n} матерных слов в клипе",
   "edit.bleeps_n_other": "{n} матерного слова в клипе",
   "edit.bleeps_none": "В этом клипе нет мата",
-  "edit.profanity_auto_hint": "Авто запикивает вертикальные видео (Shorts, TikTok, Reels)",
+  "edit.profanity_auto_hint": "Авто: запикивание в каждом клипе",
   "edit.mask_captions": "Скрывать и в субтитрах (a**)",
   "edit.cuts": "Паузы",
   "edit.cuts.off": "Выкл",
@@ -2001,7 +2001,7 @@ const ru: Record<string, string> = {
   "edit.swear_strict.normal": "Обычная",
   "edit.swear_strict.strict": "Строгая",
   "edit.swear_strict.paranoid": "Параноидальная",
-  "edit.swear_strict_hint.auto": "Авто: строгая для вертикальных видео (Shorts, TikTok, Reels), обычная для 16:9",
+  "edit.swear_strict_hint.auto": "Авто: строгая для каждого клипа",
   "edit.swear_strict_hint.normal": "Обычная: точные и вероятные ругательства",
   "edit.swear_strict_hint.strict": "Строгая: каждое «возможно» выше низкого порога, более широкий запикивание",
   "edit.swear_strict_hint.paranoid": "Параноидальная: каждый кандидат, даже маловероятный",
@@ -2051,6 +2051,10 @@ const ru: Record<string, string> = {
   "about.group.swears": "Проверка ругательств (точное время слов, повторное прослушивание)",
   "lic.changes.onnx_int8": "Экспортировано в ONNX и квантовано в int8: {a}",
   "lic.changes.ct2": "Сконвертировано в CTranslate2: {a}",
+  "edit.bleep_visual": "Показывать запиканные слова как **** с анимацией",
+  "edit.bleep_icon": "Значок запикивания у вебкамеры",
+  "swear.warn.swear_check_failed": "При проверке ругательств произошла ошибка, для этого клипа использован простой детектор. Запикивание включено.",
+  "swear.warn.swear_safety_net": "Ругательство, пропущенное новой проверкой, запикано простым детектором.",
 };
 
 export default ru;

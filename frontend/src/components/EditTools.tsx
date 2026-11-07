@@ -160,6 +160,18 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
             </div>
           )}
           {options.profanity !== "off" && (
+            <>
+              <label className="edit-check">
+                <input type="checkbox" checked={options.bleep_visual ?? true} onChange={(e) => setOption({ bleep_visual: e.target.checked })} />
+                {t("edit.bleep_visual")}
+              </label>
+              <label className="edit-check">
+                <input type="checkbox" checked={options.bleep_icon ?? true} onChange={(e) => setOption({ bleep_icon: e.target.checked })} />
+                {t("edit.bleep_icon")}
+              </label>
+            </>
+          )}
+          {options.profanity !== "off" && (
             <label className="edit-check">
               <input
                 type="checkbox"

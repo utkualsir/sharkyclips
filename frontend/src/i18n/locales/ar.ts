@@ -830,7 +830,7 @@ const ar: Record<string, string> = {
   "edit.profanity.off": "إيقاف",
   "edit.bleeps_n_other": "شتائم في هذا المقطع: {n}",
   "edit.bleeps_none": "لا شتائم في هذا المقطع",
-  "edit.profanity_auto_hint": "التلقائي يضع صفيرًا في الفيديوهات العمودية (Shorts وTikTok وReels)",
+  "edit.profanity_auto_hint": "تلقائي: صفير في كل مقطع",
   "edit.mask_captions": "أخفها في الترجمة أيضًا (a**)",
   "edit.cuts": "الصمت",
   "edit.cuts.off": "إيقاف",
@@ -1905,7 +1905,7 @@ const ar: Record<string, string> = {
   "edit.swear_strict.normal": "عادي",
   "edit.swear_strict.strict": "صارم",
   "edit.swear_strict.paranoid": "صارم جدًا",
-  "edit.swear_strict_hint.auto": "تلقائي: صارم للفيديوهات العمودية (Shorts وTikTok وReels)، وعادي لـ 16:9",
+  "edit.swear_strict_hint.auto": "تلقائي: صارم في كل مقطع",
   "edit.swear_strict_hint.normal": "عادي: الشتائم المؤكدة والمحتملة",
   "edit.swear_strict_hint.strict": "صارم: كل شتيمة «محتملة» فوق حد منخفض، مع صفير أعرض",
   "edit.swear_strict_hint.paranoid": "صارم جدًا: كل مرشح، حتى غير المرجح",
@@ -1952,6 +1952,10 @@ const ar: Record<string, string> = {
   "about.group.swears": "فحص الشتائم (أوقات الكلمات الدقيقة، استماع ثانٍ)",
   "lic.changes.onnx_int8": "صُدّر إلى ONNX وضُغط إلى int8 بواسطة {a}",
   "lic.changes.ct2": "حُوّل إلى CTranslate2 بواسطة {a}",
+  "edit.bleep_visual": "اعرض الكلمات المصفّرة كـ **** مع حركة قصيرة",
+  "edit.bleep_icon": "شارة صفير قرب الكاميرا",
+  "swear.warn.swear_check_failed": "حدثت مشكلة في فحص الشتائم، فاستُخدم الكاشف الأساسي لهذا المقطع. الصفير ما زال مفعّلًا.",
+  "swear.warn.swear_safety_net": "صُفّرت شتيمة فاتت الفحص الجديد بواسطة الكاشف الأساسي.",
 };
 
 export default ar;

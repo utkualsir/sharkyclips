@@ -294,8 +294,11 @@ export interface ClipOptions {
   dub?: string;
   study_cards?: "off" | "auto";
   visualizer?: "off" | "auto";
-  /** 1.2.21: which "maybe" swears are bleeped (auto = Strict for vertical videos) */
+  /** 1.2.21: which "maybe" swears are bleeped (auto = Strict) */
   swear_strict?: SwearStrict;
+  /** 1.2.22: "****" with a pop in the captions, a "#@!" badge near the facecam */
+  bleep_visual?: boolean;
+  bleep_icon?: boolean;
 }
 
 export type SwearStrict = "auto" | "normal" | "strict" | "paranoid";
@@ -515,6 +518,8 @@ export interface EditPlanView {
     smooth: "mci" | "blend";
     extra: number;
   } | null;
+  /** 1.2.22: swear_check_failed | swear_safety_net */
+  warnings?: string[];
 }
 
 export type Mood = "hype" | "chill" | "sad" | "funny";

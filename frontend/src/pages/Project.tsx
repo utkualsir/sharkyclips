@@ -410,7 +410,7 @@ export default function ProjectPage({ id }: { id: string }) {
   const accepted = useMemo(() => new Set(review?.accepted ?? []), [review]);
   const options: ClipOptions = review?.options ?? {
     layout: "auto", subtitles: "bold", hook: true, hook_flash: false, subtitle_lang: "", profanity: "auto",
-    profanity_captions: true, bleep_sound: "classic", swear_strict: "auto", speaker_colors: true, speaker_names: false,
+    profanity_captions: true, bleep_sound: "classic", swear_strict: "auto", bleep_visual: true, bleep_icon: true, speaker_colors: true, speaker_names: false,
     cuts: "off", zoom: "off", music: false, brand: false, loop: false, replay: "off", chat_bubbles: false, memes: "off",
   };
   const [voicesRev, setVoicesRev] = useState(0);

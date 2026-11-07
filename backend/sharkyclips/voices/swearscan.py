@@ -39,6 +39,7 @@ from . import engines as E
 from . import tracks
 
 VERSION = 1
+RULES = 2  # bump when the vote / lexicon changes: saved checks are re-scored from their readings
 WIN, HOP = 6.0, 3.0
 EDGE = 0.4  # a word this close to a window edge doesn't count for that window
 MIN_BURST = 0.1
@@ -90,7 +91,33 @@ def load(project: Project) -> dict | None:
         data = read_json(p)
     except Exception:  # noqa: BLE001
         return None
-    return data if isinstance(data, dict) and data.get("version") == VERSION else None
+    if not (isinstance(data, dict) and data.get("version") == VERSION):
+        return None
+    if data.get("rules") != RULES and data.get("readings"):
+        try:
+            data = rescore(project, data)
+        except Exception:  # noqa: BLE001 - keep the saved items
+            pass
+    return data
+
+
+def rescore(project: Project, data: dict) -> dict:
+    """Vote again over the saved readings with the current rules (the checked bleep ranges and
+    alignment of items that are still there are kept)."""
+    base, lang = _base_words(project, [tuple(r) for r in data.get("ranges", [])])
+    items = combine(base, data["readings"], lang, learned={}, find_all=bool(data.get("find_all")))
+    old = data.get("items") or []
+    for it in items:
+        m = next((o for o in old if abs(o["start"] - it["start"]) < 0.3), None)
+        if m:
+            for k in ("bleep", "aligned", "align_conf", "leak", "leak_first", "rounds"):
+                if k in m:
+                    it[k] = m[k]
+        if not it.get("bleep"):
+            it["bleep"] = [round(max(0.0, it["start"] - PRE_RAW), 3), round(it["end"] + POST_RAW, 3)]
+    data = {**data, "items": items, "rules": RULES}
+    write_json_atomic(scan_path(project), data)
+    return data
 
 
 def prompt_for(lang: str | None, learned: list[str] | None = None) -> str | None:
@@ -606,13 +633,15 @@ def run_scan(project: Project, *, engines: ScanEngines | None = None, on_progres
         "find_all": find_all, "model": model_used, "aligned": eng.aligner is not None,
         "passes": list(PASSES) + (["mix"] if find_all else []),
         "windows": sum(len(r["windows"]) for r in audio),
-        "items": items,
+        "items": items, "rules": RULES,
         "seconds": round(time.time() - t_start, 1),
         "transcript_created_at": pipeline._transcript_stamp(project),
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
-    if find_all:
-        data["readings"] = readings
+    # the raw readings stay (text + times): a later rules change re-scores without listening again
+    data["readings"] = [{"pass": r["pass"], "w": r["w"],
+                         "words": [{k: w[k] for k in ("start", "end", "word", "p")} for w in r["words"]]}
+                        for r in readings]
     write_json_atomic(scan_path(project), data)
     progress("done", 1.0)
     return data
@@ -846,3 +875,48 @@ def verify_render(project: Project, cand: dict, opts, out_path: Path, asr=None) 
         fx[str(cand["id"])] = [[x, y] for x, y in sorted(set(cur) | set(widened))][:200]
         write_json_atomic(fixes_path(project), fx)
     return widened
+
+
+def tone_share(x: np.ndarray, hz: float = 1000.0) -> float:
+    """Share of the energy within +-60 Hz of `hz` (the classic bleep)."""
+    if len(x) < 256:
+        return 0.0
+    spec = np.abs(np.fft.rfft(x * np.hanning(len(x)))) ** 2
+    f = np.fft.rfftfreq(len(x), 1 / E.SR)
+    return float(spec[(f > hz - 60) & (f < hz + 60)].sum() / (spec.sum() + 1e-12))
+
+
+def missing_bleeps(project: Project, cand: dict, opts, out_path: Path, plan=None) -> list[tuple[float, float]]:
+    """Bleeps the plan has but the rendered file doesn't (source ranges): a classic bleep must
+    carry the 1 kHz tone, a mute must be quiet. Boop / custom sounds: not checked."""
+    from .. import clips as clips_mod
+
+    plan = plan if plan is not None else clips_mod.edit_plan(project, cand, opts, None, 30)
+    if plan is None or not plan.bleep_src or plan.bleep_mode == "off":
+        return []
+    if plan.bleep_mode == "bleep" and plan.bleep_sound != "classic":
+        return []
+    offset = clips_mod.FLASH_SECONDS if getattr(opts, "hook_flash", False) and not getattr(opts, "loop", False) else 0.0
+    offset += float(getattr(plan, "intro_s", 0.0) or 0.0)
+    if plan.fx is not None and getattr(plan.fx, "inserts", None):
+        return []  # inserts move the timeline: the caption-word check covers these clips
+    missing = []
+    for a, b in plan.bleep_src:
+        outs = plan.out_ranges([(a, b)])
+        if not outs:
+            continue
+        oa, ob = outs[0][0] + offset, outs[-1][1] + offset
+        if ob - oa < 0.06:
+            continue
+        x = tracks.read_track(out_path, 0, oa + 0.02, ob - 0.02)
+        if len(x) < 400:
+            missing.append((a, b))
+            continue
+        if plan.bleep_mode == "bleep":
+            ok = tone_share(x) >= 0.25
+        else:
+            ctx = tracks.read_track(out_path, 0, max(0.0, oa - 0.6), oa)
+            ok = float(np.sqrt(np.mean(x ** 2))) <= max(1e-3, 0.3 * float(np.sqrt(np.mean(ctx ** 2)) if len(ctx) else 1.0))
+        if not ok:
+            missing.append((a, b))
+    return missing

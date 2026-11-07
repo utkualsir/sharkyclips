@@ -3911,6 +3911,7 @@ a.edit-note:hover { text-decoration: underline; }
 }
 
 /* ---------------------------------------------------------------- swear check (1.2.21) */
+.swear-warn { margin: 0; padding: 6px 10px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); }
 .swear-scan { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .swear-scan > .muted { flex: 1; min-width: 160px; }
 .edit-line.swear-strict { gap: 8px; }

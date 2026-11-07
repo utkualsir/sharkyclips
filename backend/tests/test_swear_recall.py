@@ -66,7 +66,7 @@ def test_strictness_levels():
     weak = {"status": "maybe", "score": 0.1}
     assert not swears.bleeped(maybe, "normal") and swears.bleeped(maybe, "strict")
     assert not swears.bleeped(weak, "strict") and swears.bleeped(weak, "paranoid")
-    assert swears.resolve_strictness("auto", True) == "strict" and swears.resolve_strictness("auto", False) == "normal"
+    assert swears.resolve_strictness("auto", True) == "strict" and swears.resolve_strictness("auto", False) == "strict"
     assert ClipOptions.from_dict({}).swear_strict == "auto"
     with pytest.raises(SharkyClipsError):
         ClipOptions.from_dict({"swear_strict": "nuclear"})

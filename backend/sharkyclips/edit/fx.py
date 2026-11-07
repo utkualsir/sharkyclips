@@ -529,17 +529,47 @@ def zoom_filter(z: str, cy: float = 0.5) -> str:
             f"x3='{right}':y3='{bottom}':interpolation=linear:eval=frame")
 
 
-def shake_filter(shakes: list[tuple[float, float]], punches: list[tuple[float, float]], fps: int) -> str:
-    """Shake (strong fails) and quick punch-in zooms (light fails) on the main picture."""
+SHAKE_ZOOM, PUNCH_ZOOM = 0.07, 0.12
+
+
+def shake_headroom(base: float) -> float:
+    """How much extra zoom a shake / punch may add on top of a smart zoom of `base` (1.2.22:
+    the product never passes zoom.MAX_ZOOM)."""
+    from .zoom import MAX_ZOOM
+
+    return max(0.0, MAX_ZOOM / max(1.0, base) - 1.0)
+
+
+def shake_zoom_at(t: float, shakes: list[tuple[float, float]], punches: list[tuple[float, float]],
+                  base: float = 1.0) -> float:
+    """The shake / punch zoom factor at time t (mirrors shake_filter; tests)."""
+    import math
+
+    amp = min(1.0, sum((1 - (t - a) / max(0.05, b - a)) for a, b in shakes if a <= t <= b))
+    pun = min(1.0, sum(math.sin(math.pi * min(1, (t - a) / max(0.05, b - a))) for a, b in punches if a <= t <= b))
+    return 1 + min(shake_headroom(base), SHAKE_ZOOM * amp + PUNCH_ZOOM * pun)
+
+
+def shake_filter(shakes: list[tuple[float, float]], punches: list[tuple[float, float]], fps: int,
+                 base: float = 1.0) -> str:
+    """Shake (strong fails) and quick punch-in zooms (light fails) on the main picture.
+    base: the smart zoom already on this picture (the two never stack past zoom.MAX_ZOOM).
+    Overlapping events don't add up; the shake's shift stays inside the zoomed margin, so the
+    picture never leaves the frame."""
     if not shakes and not punches:
+        return ""
+    room = shake_headroom(base)
+    if room <= 0.001:
         return ""
     tt = f"(in/{fps})"
     amp = "+".join(f"between({tt},{a:.3f},{b:.3f})*(1-({tt}-{a:.3f})/{max(0.05, b - a):.3f})" for a, b in shakes) or "0"
     pun = "+".join(f"between({tt},{a:.3f},{b:.3f})*sin(PI*min(1,({tt}-{a:.3f})/{max(0.05, b - a):.3f}))"
                    for a, b in punches) or "0"
-    z = f"(1+0.07*({amp})+0.12*({pun}))"
-    dx = f"(W*0.018*({amp})*sin({tt}*71))"
-    dy = f"(H*0.011*({amp})*cos({tt}*53))"
+    amp, pun = f"min(1,{amp})", f"min(1,{pun})"
+    z = f"(1+min({room:.4f},{SHAKE_ZOOM}*({amp})+{PUNCH_ZOOM}*({pun})))"
+    mx, my = f"(W/2-W/2/{z})", f"(H/2-H/2/{z})"  # the margin the zoom leaves on each side
+    dx = f"clip(W*0.018*({amp})*sin({tt}*71),-{mx},{mx})"
+    dy = f"clip(H*0.011*({amp})*cos({tt}*53),-{my},{my})"
     left, right = f"W/2-W/2/{z}+{dx}", f"W/2+W/2/{z}+{dx}"
     top, bottom = f"H/2-H/2/{z}+{dy}", f"H/2+H/2/{z}+{dy}"
     enable = "+".join(f"between(t,{a:.3f},{b:.3f})" for a, b in shakes + punches)

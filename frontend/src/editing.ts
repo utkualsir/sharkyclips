@@ -25,6 +25,7 @@ export function effectiveRange(c: Candidate, edit: ClipEdit | undefined): { star
 
 export function zoomAt(t: number, pulses: ZoomPulse[], target: "scene" | "cam", level: number): number {
   if (level <= 1) return 1;
+  level = Math.min(level, 1.25); // 1.2.22: the same cap as the renderer
   for (const p of pulses) {
     if (p.target !== target || t < p.t0 || t > p.t1) continue;
     const d = p.t1 - p.t0;

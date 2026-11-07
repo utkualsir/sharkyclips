@@ -93,6 +93,11 @@ export default function SwearReview({ projectId, plan, edit, lang, onChange, onP
             : t("swear.summary", { n: num(on), m: num(maybe) })}
         </span>
       </div>
+      {(plan.warnings ?? []).map((w) => (
+        <p key={w} className="swear-warn small" role="status">
+          {t(`swear.warn.${w}`)}
+        </p>
+      ))}
       <div className="swear-scan">
         <span className="muted small">
           {scanJob

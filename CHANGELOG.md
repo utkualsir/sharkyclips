@@ -7,6 +7,126 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.22] - 2026-11-07
+
+### Fixed
+- **Captions say exactly what you said again.** In 1.2.21 the new swear check could mark a
+  normal word next to a possible swear as censored ("Orası" became "O****"). Now the swear check
+  only adds bleeps and never changes caption text: captions come from the transcript (and
+  proofreading) as before, and only words that really are swears show as "****".
+- **Never zero bleeps by mistake.** If the swear check runs into a problem (for example a model
+  that couldn't be downloaded), the clip uses the basic detector from 1.2.20 and the swear list
+  shows a warning. A swear the basic detector finds is always bleeped.
+- **Zoom can't run away any more.** Smart zoom, meme punches and shakes now share one limit
+  (1.25× in total), the shake never moves the picture out of the frame, and the crop is worked
+  out from the video's real picture size (also for rotated phone videos and unusual pixel
+  shapes). A facecam box that doesn't fit the video is kept inside the picture.
+- **After an update, restart the app once:** the "a newer version is installed" bar does it with
+  one click (the old app kept running the old version after 1.2.21).
+
+### Changed
+- **Bleeps are on for every clip by default, at Strict**, in Easy and Pro, vertical and 16:9.
+- **A more professional bleep:** one level for the whole clip, just under your voice, quick
+  fades with no clicks; classic beep, soft "boop" or mute.
+- **A visual cue:** a bleeped word shows as "****" in red with a short pop, and a small "#@!"
+  badge pops up next to the facecam while the bleep plays (both on by default, switchable next
+  to the swear settings).
+- **Every bleep is checked after the render:** it must really be in the sound, and no swear may
+  still be heard; otherwise the clip is rendered again.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Altyazılar yine tam olarak söylediğini yazıyor.** 1.2.21'de yeni küfür kontrolü, olası bir
+  küfrün yanındaki normal bir kelimeyi sansürlü gösterebiliyordu ("Orası" "O****" oluyordu).
+  Artık küfür kontrolü yalnızca bip ekler, altyazı metnini asla değiştirmez: altyazılar eskisi gibi
+  transkriptten (ve düzeltmeden) gelir, sadece gerçekten küfür olan kelimeler "****" görünür.
+- **Yanlışlıkla sıfır bip asla.** Küfür kontrolü bir sorunla karşılaşırsa (örneğin indirilemeyen
+  bir model) klip 1.2.20'deki temel algılayıcıyı kullanır ve küfür listesinde bir uyarı çıkar.
+  Temel algılayıcının bulduğu bir küfür her zaman bip'lenir.
+- **Zoom artık kontrolden çıkamaz.** Akıllı zoom, meme vuruşları ve sarsıntılar tek bir sınırı
+  paylaşır (toplam 1,25×), sarsıntı görüntüyü asla kadrajın dışına taşımaz ve kırpma videonun
+  gerçek görüntü boyutundan hesaplanır (döndürülmüş telefon videoları ve alışılmadık piksel
+  biçimleri dahil). Videoya uymayan bir kamera kutusu görüntünün içinde tutulur.
+- **Güncellemeden sonra uygulamayı bir kez yeniden başlat:** "daha yeni bir sürüm yüklü" çubuğu
+  bunu tek tıkla yapar (1.2.21'den sonra eski uygulama eski sürümü çalıştırmaya devam etti).
+
+### Değişti
+- **Bip'ler varsayılan olarak her klipte açık, Sıkı seviyede**; Kolay ve Pro modda, dikey ve 16:9.
+- **Daha profesyonel bip:** tüm klip için tek seviye, sesinin biraz altında, tıkırtısız hızlı
+  geçişler; klasik bip, yumuşak "boop" ya da sessiz.
+- **Görsel ipucu:** bip'lenen kelime altyazıda kırmızı "****" olarak kısa bir zıplamayla görünür,
+  bip çalarken kameranın yanında küçük bir "#@!" rozeti belirir (ikisi de varsayılan açık, küfür
+  ayarlarının yanından kapatılabilir).
+- **Her bip render'dan sonra kontrol edilir:** sesin içinde gerçekten olmalı ve hiçbir küfür hâlâ
+  duyulmamalı; yoksa klip yeniden render edilir.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Untertitel stimmen wieder genau:** die Schimpfwort-Prüfung fügt nur Pieptöne hinzu und ändert
+  nie den Untertiteltext; nur echte Schimpfwörter erscheinen als „****“.
+- **Nie versehentlich null Pieptöne:** bei einem Problem greift die einfache Erkennung aus 1.2.20,
+  mit Hinweis.
+- **Zoom bleibt im Rahmen:** alle Zooms zusammen höchstens 1,25×, Ausschnitt aus der echten
+  Bildgröße, Facecam immer im Bild.
+- **Pieptöne standardmäßig in jedem Clip (Streng)**, gleichmäßiger Pegel knapp unter der Stimme,
+  rotes „****“ mit kleinem Pop und „#@!“-Abzeichen neben der Facecam; nach dem Rendern geprüft.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **A feliratok újra pontosak:** a káromkodás-ellenőrzés csak sípolást ad hozzá, a felirat szövegét
+  sosem változtatja meg; csak a valódi káromkodások jelennek meg „****”-ként.
+- **Sosem lesz véletlenül nulla sípolás:** hiba esetén az 1.2.20-as alap felismerő dolgozik,
+  figyelmeztetéssel.
+- **A zoom a képen belül marad:** az összes zoom együtt legfeljebb 1,25×, a vágás a valódi
+  képméretből, a kamera mindig a képen belül.
+- **Alapból minden klipben sípolás (Szigorú)**, egyenletes hangerő a hang alatt, piros „****”
+  kis ugrással és „#@!” jelvény a kamera mellett; renderelés után ellenőrizve.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Субтитры снова точные:** проверка ругательств только добавляет запикивание и никогда не меняет
+  текст субтитров; «****» показываются только настоящие ругательства.
+- **Никогда случайно без запикивания:** при ошибке работает простой детектор из 1.2.20, с
+  предупреждением.
+- **Зум не выходит из кадра:** все зумы вместе максимум 1,25×, обрезка по реальному размеру
+  кадра, вебкамера всегда в кадре.
+- **Запикивание по умолчанию в каждом клипе (строго)**, ровная громкость чуть ниже голоса,
+  красные «****» с анимацией и значок «#@!» у вебкамеры; проверка после рендера.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **الترجمة دقيقة من جديد:** فحص الشتائم يضيف الصفير فقط ولا يغيّر نص الترجمة أبدًا؛ تظهر الشتائم
+  الحقيقية فقط كـ «****».
+- **لا مقطع بلا صفير عن طريق الخطأ:** عند حدوث مشكلة يعمل الكاشف الأساسي من 1.2.20 مع تنبيه.
+- **التكبير يبقى داخل الإطار:** كل التكبيرات معًا 1.25× كحد أقصى، والقص من الحجم الحقيقي للصورة،
+  والكاميرا داخل الصورة دائمًا.
+- **الصفير مفعّل افتراضيًا في كل مقطع (صارم)**، بمستوى ثابت تحت الصوت، و«****» حمراء مع حركة قصيرة
+  وشارة «#@!» قرب الكاميرا؛ مع فحص بعد التصيير.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **字幕重新准确：** 脏话检查只增加哔声，绝不修改字幕文字；只有真正的脏话才显示为“****”。
+- **不会意外地一个哔声都没有：** 出现问题时改用 1.2.20 的基础检测器，并显示提示。
+- **缩放不会超出画面：** 所有缩放合计最多 1.25 倍，按视频真实画面尺寸裁剪，摄像头始终在画面内。
+- **默认每个片段都加哔声（严格）**，音量统一、略低于人声，红色“****”带弹出效果，摄像头旁显示“#@!”徽章；渲染后自动检查。
+
+</details>
+
 ## [1.2.21] - 2026-11-07
 
 ### Added

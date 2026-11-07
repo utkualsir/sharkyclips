@@ -10,7 +10,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-INTENSITY = {"off": 0.0, "subtle": 1.15, "strong": 1.3}
+# 1.2.22: zooms never stack past MAX_ZOOM (smart zoom x punch / shake together); "strong"
+# leaves room for a meme punch on top.
+MAX_ZOOM = 1.25
+INTENSITY = {"off": 0.0, "subtle": 1.12, "strong": 1.2}
 RAMP_IN, RAMP_OUT, HOLD = 0.35, 0.55, 1.1
 MIN_GAP = 3.5  # seconds between two pulses on the same picture
 
@@ -82,6 +85,7 @@ def perspective_filter(pulses_out: list[tuple[float, float]], zmax: float, fps: 
     """Zoom toward the picture's center (cy: vertical focus 0..1)."""
     if not pulses_out or zmax <= 1.0:
         return ""
+    zmax = min(zmax, MAX_ZOOM)
     z = f"({factor_expr(pulses_out, zmax, fps)})"
     left, right = f"W/2-W/2/{z}", f"W/2+W/2/{z}"
     top, bottom = f"H*{cy:g}-H*{cy:g}/{z}", f"H*{cy:g}+H*{1 - cy:g}/{z}"

@@ -272,17 +272,27 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
         jobs.update(job, stage="rendering", progress=0.0)
         res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
                           on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
-        if verify_bleeps(job, project, cand, opts, project.dir / "clips" / name):  # 1.2.21: a swear still heard
+        warns: list[str] = []
+        if verify_bleeps(job, project, cand, opts, project.dir / "clips" / name, warns):  # a bleep is off: once more
             jobs.update(job, stage="rendering_again", progress=0.0)
             res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
                               on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
+            if "bleep_missing" in warns:
+                from ..voices import swearscan
+
+                try:
+                    if not swearscan.missing_bleeps(project, cand, opts, project.dir / "clips" / name):
+                        warns.remove("bleep_missing")
+                except Exception:  # noqa: BLE001
+                    pass
         entry = {"file": name, "id": cand["id"], "rank": cand["rank"], "start": cand["start"],
                  "end": cand["end"], "duration": res.info.get("duration") or cand["duration"],
                  "options": opts.to_dict(), "edit_fp": edit_fp, "dub": opts.dub or cand.get("dub") or "",
                  "facecam": facecam.to_dict() if facecam else None,
                  "rendered_at": state.now_iso(), "size_bytes": res.size_bytes,
                  "render_seconds": round(res.seconds, 2), "encoder": res.encoder,
-                 "edits": res.info or None}
+                 "edits": res.info or None,
+                 "warnings": sorted(set(warns + list((res.info or {}).get("warnings") or []))) or None}
         state.save_clip(project, cand["id"], entry)
         speeds.record("render", res.seconds, cand["duration"])
         return {"clips": [cand["id"]], "encoder": res.encoder, "seconds": round(res.seconds, 1)}
@@ -295,24 +305,36 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
                        persist=True, job_id=job_id, attempt=attempt)
 
 
-def verify_bleeps(job: Job, project, cand: dict, opts: ClipOptions, path) -> bool:
-    """After a render with bleeps (Strict / Paranoid): listen to them once more; True when a
-    bleep had to get wider (the caller renders again, once). Never fails the render."""
+def verify_bleeps(job: Job, project, cand: dict, opts: ClipOptions, path, warnings: list | None = None) -> bool:
+    """After a render with bleeps: (1) every bleep must really be in the file (the tone / the
+    silence), (2) Strict / Paranoid: no swear may still be heard (Whisper listens again). True
+    when the clip must be rendered again (once). Problems go into `warnings` (shown on the clip);
+    this never fails the render."""
     from ..edit import swears
 
     if config.get("swear_verify_render") is False or os.environ.get("SHARKYCLIPS_NO_BLEEP_CHECK"):
         return False
-    if opts.profanity == "off" or swears.resolve_strictness(opts.swear_strict, True) == "normal":
+    if opts.profanity == "off":
         return False
+    warnings = warnings if warnings is not None else []
     try:
         from ..voices import swearscan
 
         jobs.update(job, stage="checking_bleeps", progress=None)
-        return bool(swearscan.verify_render(project, cand, opts, path))
+        if swearscan.missing_bleeps(project, cand, opts, path):
+            warnings.append("bleep_missing")
+            return True
+        if swears.resolve_strictness(opts.swear_strict, True) == "normal":
+            return False
+        if swearscan.verify_render(project, cand, opts, path):
+            warnings.append("bleep_widened")
+            return True
+        return False
     except Exception as exc:  # noqa: BLE001 - the clip is fine as rendered
         from ..ui import console
 
         console.print(f"[yellow]Bleep check skipped: {exc}[/]")
+        warnings.append("bleep_check_skipped")
         return False
 
 

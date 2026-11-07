@@ -842,7 +842,7 @@ const hu: Record<string, string> = {
   "edit.bleeps_n_one": "{n} csúnya szó ebben a klipben",
   "edit.bleeps_n_other": "{n} csúnya szó ebben a klipben",
   "edit.bleeps_none": "Nincs csúnya szó ebben a klipben",
-  "edit.profanity_auto_hint": "Az Auto álló videókban sípol (Shorts, TikTok, Reels)",
+  "edit.profanity_auto_hint": "Automatikus: minden klipben sípol",
   "edit.mask_captions": "A feliratban is elrejti (a**)",
   "edit.cuts": "Szünetek",
   "edit.cuts.off": "Ki",
@@ -1928,7 +1928,7 @@ const hu: Record<string, string> = {
   "edit.swear_strict.normal": "Normál",
   "edit.swear_strict.strict": "Szigorú",
   "edit.swear_strict.paranoid": "Paranoid",
-  "edit.swear_strict_hint.auto": "Automatikus: álló videóknál (Shorts, TikTok, Reels) Szigorú, 16:9-nél Normál",
+  "edit.swear_strict_hint.auto": "Automatikus: minden klipben Szigorú",
   "edit.swear_strict_hint.normal": "Normál: biztos és valószínű káromkodások",
   "edit.swear_strict_hint.strict": "Szigorú: minden „talán” egy alacsony küszöb fölött, szélesebb sípolás",
   "edit.swear_strict_hint.paranoid": "Paranoid: minden jelölt, a valószínűtlenek is",
@@ -1976,6 +1976,10 @@ const hu: Record<string, string> = {
   "about.group.swears": "Káromkodás-ellenőrzés (pontos szóidők, második meghallgatás)",
   "lic.changes.onnx_int8": "ONNX-be exportálta és int8-ra kvantálta: {a}",
   "lic.changes.ct2": "CTranslate2-re konvertálta: {a}",
+  "edit.bleep_visual": "A kisípolt szavak ****-ként, kis ugrással",
+  "edit.bleep_icon": "Sípolás-jelvény a kamera mellett",
+  "swear.warn.swear_check_failed": "A káromkodás-ellenőrzés hibába ütközött, ennél a klipnél az alap felismerő működött. A sípolás bekapcsolva marad.",
+  "swear.warn.swear_safety_net": "Az új ellenőrzés által kihagyott káromkodást az alap felismerő kisípolta.",
 };
 
 export default hu;

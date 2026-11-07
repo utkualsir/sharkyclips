@@ -859,7 +859,7 @@ const en: Record<string, string> = {
   "edit.bleeps_n_one": "{n} swear word in this clip",
   "edit.bleeps_n_other": "{n} swear words in this clip",
   "edit.bleeps_none": "No swear words in this clip",
-  "edit.profanity_auto_hint": "Auto bleeps vertical videos (Shorts, TikTok, Reels)",
+  "edit.profanity_auto_hint": "Auto bleeps every clip",
   "edit.mask_captions": "Hide them in the captions too (a**)",
   "edit.cuts": "Silences",
   "edit.cuts.off": "Off",
@@ -1955,7 +1955,7 @@ const en: Record<string, string> = {
   "edit.swear_strict.normal": "Normal",
   "edit.swear_strict.strict": "Strict",
   "edit.swear_strict.paranoid": "Paranoid",
-  "edit.swear_strict_hint.auto": "Auto: Strict for vertical videos (Shorts, TikTok, Reels), Normal for 16:9",
+  "edit.swear_strict_hint.auto": "Auto: Strict on every clip",
   "edit.swear_strict_hint.normal": "Normal: sure swears and likely ones",
   "edit.swear_strict_hint.strict": "Strict: every \"maybe\" swear above a low threshold, wider bleeps",
   "edit.swear_strict_hint.paranoid": "Paranoid: every candidate, even unlikely ones",
@@ -2003,6 +2003,10 @@ const en: Record<string, string> = {
   "about.group.swears": "Swear check (exact word times, second listen)",
   "lic.changes.onnx_int8": "Exported to ONNX and quantized to int8 by {a}",
   "lic.changes.ct2": "Converted to CTranslate2 by {a}",
+  "edit.bleep_visual": "Show bleeped words as **** with a pop",
+  "edit.bleep_icon": "Bleep badge near the facecam",
+  "swear.warn.swear_check_failed": "The swear check had a problem, so the basic detector was used for this clip. Bleeps are still on.",
+  "swear.warn.swear_safety_net": "A swear the newer check missed was bleeped by the basic detector.",
 };
 
 export default en;

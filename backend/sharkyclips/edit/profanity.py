@@ -55,10 +55,22 @@ def find_words(words: list[dict], lang: str | None, entries: list[str] | None = 
 
 
 def resolve(mode: str, vertical: bool) -> str:
-    """"auto" -> bleep for vertical Shorts / TikTok / Reels videos, off for 16:9 and audio."""
+    """"auto" -> bleep, on every clip and every format (1.2.22: bleeps get more views)."""
     if mode == "auto":
-        return "bleep" if vertical else "off"
+        return "bleep"
     return mode if mode in MODES else "off"
+
+
+def censor(word: str) -> str:
+    """The caption of a bleeped word: '****' (punctuation kept), 3-8 stars."""
+    import re
+
+    lead = re.match(r"^[\W_]*", word).group(0)
+    trail = re.search(r"[\W_]*$", word).group(0)
+    core = word[len(lead):len(word) - len(trail)] if trail else word[len(lead):]
+    if not core:
+        return word
+    return lead + "*" * max(3, min(8, len(core))) + trail
 
 
 __all__ = ["DEFAULTS", "MODES", "find_words", "mask", "resolve", "word_list"]

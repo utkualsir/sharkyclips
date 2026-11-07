@@ -32,10 +32,10 @@ LEVELS = ("auto", "normal", "strict", "paranoid")
 
 
 def resolve_strictness(level: str | None, vertical: bool) -> str:
-    """"auto" -> strict for vertical Shorts / TikTok / Reels, normal for 16:9."""
+    """"auto" -> Strict on every clip (1.2.22; vertical and 16:9 alike)."""
     if level in STRICTNESS:
         return str(level)
-    return "strict" if vertical else "normal"
+    return "strict"
 
 _MASKED = re.compile(r"^[^\W\d_]+\*+[^\W\d_]*$|^\*+[^\W\d_]+$|^[^\W\d_]\*{2,}$", re.UNICODE)
 
@@ -128,12 +128,15 @@ def is_masked(word: str) -> bool:
 
 
 def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
-           entries: list[str] | None = None, learned: dict | None = None) -> list[dict]:
+           entries: list[str] | None = None, learned: dict | None = None, legacy: bool = False) -> list[dict]:
     """words: [{"start", "end", "word", "probability"?, "spk"?}] (absolute times).
     hints: [{"start", "end", "word", "src": pass2|acoustic, "spk"?, "score"?}].
     learned: {"add": [tokens], "ignore": {token: n}} (default: swearlearn.py; {} = none).
+    legacy: the 1.2.20 detector (word list + fuzzy only) - the fallback when anything newer fails.
     Returns [{"i", "start", "end", "word", "spk", "status", "why", "score"}] sorted by time."""
     entries = entries if entries is not None else profanity.word_list(lang)
+    if legacy:
+        learned = {}
     if learned is None:
         from . import swearlearn
 
@@ -171,7 +174,7 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
             continue
         tok = token(w["word"], lang)
         p = float(w.get("probability", w.get("p", 1.0)) or 0.0)
-        lex = swearlex.classify(w["word"], lang, p)
+        lex = None if legacy else swearlex.classify(w["word"], lang, p)
         if lex is not None:
             put(i, lex[0], lex[2], lex[1])
             continue

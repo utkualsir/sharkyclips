@@ -842,7 +842,7 @@ const tr: Record<string, string> = {
   "edit.profanity.off": "Kapalı",
   "edit.bleeps_n_other": "Bu klipte {n} küfür var",
   "edit.bleeps_none": "Bu klipte küfür yok",
-  "edit.profanity_auto_hint": "Otomatik: dikey videolarda (Shorts, TikTok, Reels) bip",
+  "edit.profanity_auto_hint": "Otomatik: her klipte bip",
   "edit.mask_captions": "Altyazıda da gizle (a**)",
   "edit.cuts": "Sessizlik",
   "edit.cuts.off": "Kapalı",
@@ -1923,7 +1923,7 @@ const tr: Record<string, string> = {
   "edit.swear_strict.normal": "Normal",
   "edit.swear_strict.strict": "Sıkı",
   "edit.swear_strict.paranoid": "Çok sıkı",
-  "edit.swear_strict_hint.auto": "Otomatik: dikey videolarda (Shorts, TikTok, Reels) Sıkı, 16:9'da Normal",
+  "edit.swear_strict_hint.auto": "Otomatik: her klipte Sıkı",
   "edit.swear_strict_hint.normal": "Normal: kesin küfürler ve büyük ihtimalle küfür olanlar",
   "edit.swear_strict_hint.strict": "Sıkı: düşük bir eşiğin üstündeki her \"belki\" küfür, daha geniş bip",
   "edit.swear_strict_hint.paranoid": "Çok sıkı: ihtimali düşük olanlar dahil her aday",
@@ -1970,6 +1970,10 @@ const tr: Record<string, string> = {
   "about.group.swears": "Küfür kontrolü (tam kelime zamanları, ikinci dinleme)",
   "lic.changes.onnx_int8": "{a} tarafından ONNX'e aktarılıp int8'e sıkıştırıldı",
   "lic.changes.ct2": "{a} tarafından CTranslate2'ye dönüştürüldü",
+  "edit.bleep_visual": "Bip'lenen kelimeler **** ve hafif bir zıplamayla görünsün",
+  "edit.bleep_icon": "Kameranın yanında bip rozeti",
+  "swear.warn.swear_check_failed": "Küfür kontrolünde bir sorun oldu, bu klipte temel algılayıcı kullanıldı. Bip'ler yine açık.",
+  "swear.warn.swear_safety_net": "Yeni kontrolün kaçırdığı bir küfür temel algılayıcıyla bip'lendi.",
 };
 
 export default tr;

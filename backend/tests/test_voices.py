@@ -162,14 +162,14 @@ def test_plan_bleeps_every_speaker_and_respects_the_review_list():
     # "amına" + "siktir" are 100 ms apart: one bleep (closer than 150 ms after padding)
     assert len(p.bleeps) == 2 and p.bleep_sound == "boop"
     caps = [w["word"] for w in p.out_words()]
-    assert "s*****" in caps and "a****" in caps and "o*****" in caps  # censored for every speaker
+    assert caps == ["abi", "*****", "******", "git", "******"]  # censored for every speaker
     # the user: unbleep "siktir", bleep "git" by hand
     p2 = plan.build(proj, cand, opts, words=[dict(w) for w in words], lang="tr", fps=30,
                     edit={"unbleep": [[2.0, 2.4]], "bleep": [[2.5, 2.9]]})
     by2 = {it["word"]: it for it in p2.swears}
     assert not by2["siktir"]["bleep"] and by2["git"]["bleep"] and by2["git"]["status"] == "manual"
     caps2 = [w["word"] for w in p2.out_words()]
-    assert "siktir" in caps2 and "g**" in caps2
+    assert "siktir" in caps2 and "***" in caps2
     shutil.rmtree(proj.dir, ignore_errors=True)
 
 

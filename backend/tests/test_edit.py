@@ -68,7 +68,7 @@ def test_profanity_lists_per_language_and_custom():
         assert profanity.find_words(W((0, 1, "heck"), (1, 2, "fuck")), "en") == [0]
     finally:
         config.update(profanity_lists={})
-    assert profanity.resolve("auto", True) == "bleep" and profanity.resolve("auto", False) == "off"
+    assert profanity.resolve("auto", True) == "bleep" and profanity.resolve("auto", False) == "bleep"  # 1.2.22: every clip
     assert profanity.resolve("mute", False) == "mute"
 
 
@@ -116,7 +116,7 @@ def test_plan_deleted_words_map_and_mask(tmp_path):
     assert p.cuts and len(p.keep) == 2
     assert p.out_duration == pytest.approx(3.0 - 0.55, abs=1 / 30 + 1e-6)
     out = p.out_words()
-    assert [w["word"] for w in out] == ["Hello", "f******", "again"]
+    assert [w["word"] for w in out] == ["Hello", "*******", "again"] and out[1]["censored"]
     assert out[-1]["start"] == pytest.approx(12.0 - 10.0 - 0.55, abs=0.05)
     # vertical -> Strict: 120 ms before the word (Whisper's times can be early or late)
     assert p.bleeps and p.bleeps[0][0] == pytest.approx(0.70 - 0.12, abs=0.02)

@@ -120,6 +120,8 @@ class EditPlan:
     bleeps: list[tuple[float, float]] = field(default_factory=list)
     bleep_src: list[tuple[float, float]] = field(default_factory=list)  # the same, in source time
     strictness: str = "normal"
+    censor_full: bool = False  # captions: "****" instead of "a***" (bleep_visual)
+    warnings: list[str] = field(default_factory=list)  # e.g. "swear_check_failed", "swear_safety_net"
     swears: list[dict] = field(default_factory=list)  # review list: edit/swears.py items + "bleep"
     speakers: dict = field(default_factory=dict)  # {"me": "custom name" | "", "f1": ...} (voice pass)
     mask_captions: bool = False
@@ -203,8 +205,11 @@ class EditPlan:
             e = self.to_out(min(w["end"], b))
             if s is None or e is None:
                 continue
-            text = profanity.mask(w["word"]) if (w.get("bleep") and self.mask_captions) else w["word"]
+            masked = bool(w.get("bleep") and self.mask_captions)
+            text = (profanity.censor(w["word"]) if self.censor_full else profanity.mask(w["word"])) if masked else w["word"]
             item = {"start": round(s, 3), "end": round(max(e, s + 0.05), 3), "word": text}
+            if masked:
+                item["censored"] = True
             if w.get("spk"):
                 item["spk"] = w["spk"]
             out.append(item)
@@ -262,7 +267,7 @@ class EditPlan:
                       for w in self.words],
             "bleep_mode": self.bleep_mode, "bleep_sound": self.bleep_sound,
             "bleeps": [[round(a, 3), round(b, 3)] for a, b in self.bleeps],
-            "swears": self.swears, "speakers": self.speakers,
+            "swears": self.swears, "speakers": self.speakers, "warnings": self.warnings,
             "mask_captions": self.mask_captions,
             "zoom_level": self.zoom_level, "pulses": [p.to_dict() for p in self.pulses],
             "music": self.music, "brand": self.brand is not None,
@@ -322,7 +327,6 @@ def swear_review(project: Project, words: list[dict], lang: str | None, start: f
 def merge_scan(items: list[dict], scanned: list[dict], words: list[dict], lang: str | None) -> list[dict]:
     """The deep check's items (voted over passes, exact times, checked bleep ranges) + the
     transcript's own items it has nothing for (learned words, edits made since)."""
-    from . import swears
     from .words import token
 
     out = []
@@ -332,14 +336,16 @@ def merge_scan(items: list[dict], scanned: list[dict], words: list[dict], lang: 
               "votes": s.get("votes"), "heard": s.get("heard"), "aligned": bool(s.get("aligned"))}
         if s.get("bleep"):
             it["bleep_at"] = [float(s["bleep"][0]), float(s["bleep"][1])]
+        # 1.2.22: the deep check only ADDS bleeps. A caption word is censored only when the
+        # caption itself says a swear there (the same word, or one the caption detector flags);
+        # a "maybe" from a prompted pass never masks "Orası" or "kahretsin".
         under = [i for i, w in enumerate(words) if w["start"] < s["end"] + 0.05 and w["end"] > s["start"] - 0.05]
-        alike = [i for i in under if swears.sounds_alike(words[i]["word"], s["word"], lang)
-                 or token(words[i]["word"], lang) == token(s["word"], lang)]
-        pick = alike or (under if len(under) == 1 else [])
+        flagged = {d["i"] for d in items if d.get("i") is not None}
+        pick = [i for i in under if i in flagged or token(words[i]["word"], lang) == token(s["word"], lang)]
         if pick:
             it["i"] = pick[0]
-            if not it["spk"]:
-                it["spk"] = words[pick[0]].get("spk")
+        if under and not it["spk"]:
+            it["spk"] = words[under[0]].get("spk")
         out.append(it)
     for it in items:
         twin = next((s for s in out if s["start"] < it["end"] + 0.1 and s["end"] > it["start"] - 0.1), None)
@@ -352,6 +358,53 @@ def merge_scan(items: list[dict], scanned: list[dict], words: list[dict], lang: 
             twin["i"] = it["i"]
     out.sort(key=lambda it: it["start"])
     return out
+
+
+def legacy_review(words: list[dict], lang: str | None, start: float, end: float, edit: dict,
+                  strictness: str) -> list[dict]:
+    """The 1.2.20 detector (word list + fuzzy) with the user's review choices."""
+    from . import swears
+
+    items = [it for it in swears.detect(words, lang, legacy=True) if start - 0.05 <= it["start"] <= end + 0.05]
+    remove = [(float(a), float(b)) for a, b in (edit.get("unbleep") or [])]
+    add = [(float(a), float(b)) for a, b in (edit.get("bleep") or [])]
+    for it in items:
+        it["bleep"] = swears.bleeped(it, strictness) and not swears.in_ranges(it["start"], it["end"], remove)
+    for a, b in add:
+        if b > a and not any(swears.in_ranges(it["start"], it["end"], [(a, b)]) for it in items):
+            items.append({"i": None, "start": a, "end": b, "word": "", "spk": None, "status": "manual",
+                          "why": "manual", "score": 1.0, "bleep": True})
+    return sorted(items, key=lambda it: it["start"])
+
+
+def _safety_net(plan, words: list[dict], lang: str | None, start: float, end: float, edit: dict) -> None:
+    """Never fewer bleeps than 1.2.20: a sure swear of the old detector that nothing covers (and
+    the user didn't unbleep) is added back, with a warning."""
+    from . import swears
+
+    try:
+        old = [it for it in swears.detect(words, lang, legacy=True) if it["status"] == "sure"
+               and start - 0.05 <= it["start"] <= end + 0.05]
+    except Exception:  # noqa: BLE001
+        return
+    remove = [(float(a), float(b)) for a, b in (edit.get("unbleep") or [])]
+    on = [it for it in plan.swears if it.get("bleep")]
+    added = False
+    for it in old:
+        if swears.in_ranges(it["start"], it["end"], remove):
+            continue
+        mid = (it["start"] + it["end"]) / 2
+        if any(o["start"] - 0.1 <= mid <= o["end"] + 0.1 for o in on):
+            continue
+        twin = next((o for o in plan.swears if o.get("i") == it["i"] and it["i"] is not None), None)
+        if twin is not None:
+            twin["bleep"] = True
+        else:
+            plan.swears.append({**it, "bleep": True, "why": it["why"] + "+safety"})
+        added = True
+    if added:
+        plan.swears.sort(key=lambda it: it["start"])
+        plan.warnings.append("swear_safety_net")
 
 
 # Bleep padding (seconds before, after) around a swear without a checked range from the deep
@@ -469,8 +522,16 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
 
     strictness = swears_mod.resolve_strictness(getattr(opts, "swear_strict", "auto"), vertical)
     plan.strictness = strictness
-    plan.swears = swear_review(project, words, lang, start, end, edit, vdata,
-                               use_hints=not given, strictness=strictness)
+    try:
+        plan.swears = swear_review(project, words, lang, start, end, edit, vdata,
+                                   use_hints=not given, strictness=strictness)
+    except Exception as exc:  # noqa: BLE001 - the newer detection broke: the 1.2.20 detector, visibly
+        from ..ui import console
+
+        console.print(f"[yellow]Swear check failed ({exc!r}): using the basic detector.[/]")
+        plan.warnings.append("swear_check_failed")
+        plan.swears = legacy_review(words, lang, start, end, edit, strictness)
+    _safety_net(plan, words, lang, start, end, edit)
     if mode != "off":
         ranges = []
         pre, post = BLEEP_PAD.get(strictness, BLEEP_PAD["normal"])
@@ -490,6 +551,7 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
         plan.bleep_mode = mode
         plan.bleep_sound = getattr(opts, "bleep_sound", "classic") or "classic"
         plan.mask_captions = bool(getattr(opts, "profanity_captions", True))
+        plan.censor_full = bool(getattr(opts, "bleep_visual", True))
         if not given and ranges:  # widened after a render where part of a swear was still heard
             from ..voices import swearscan
 

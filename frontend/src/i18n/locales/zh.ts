@@ -829,7 +829,7 @@ const zh: Record<string, string> = {
   "edit.profanity.off": "关闭",
   "edit.bleeps_n_other": "此片段有 {n} 个脏话",
   "edit.bleeps_none": "此片段没有脏话",
-  "edit.profanity_auto_hint": "自动：竖屏视频（Shorts、TikTok、Reels）加哔声",
+  "edit.profanity_auto_hint": "自动：每个片段都加哔声",
   "edit.mask_captions": "字幕里也遮住（a**）",
   "edit.cuts": "静音段",
   "edit.cuts.off": "关闭",
@@ -1899,7 +1899,7 @@ const zh: Record<string, string> = {
   "edit.swear_strict.normal": "普通",
   "edit.swear_strict.strict": "严格",
   "edit.swear_strict.paranoid": "极严格",
-  "edit.swear_strict_hint.auto": "自动：竖屏视频（Shorts、TikTok、Reels）用严格，16:9 用普通",
+  "edit.swear_strict_hint.auto": "自动：每个片段都用严格",
   "edit.swear_strict_hint.normal": "普通：确定的和很可能的脏话",
   "edit.swear_strict_hint.strict": "严格：低阈值以上的每个“可能”脏话，哔声更宽",
   "edit.swear_strict_hint.paranoid": "极严格：每个候选，即使可能性很低",
@@ -1946,6 +1946,10 @@ const zh: Record<string, string> = {
   "about.group.swears": "脏话检查（精确词语时间、第二次识别）",
   "lic.changes.onnx_int8": "由 {a} 导出为 ONNX 并量化为 int8",
   "lic.changes.ct2": "由 {a} 转换为 CTranslate2",
+  "edit.bleep_visual": "被哔掉的词显示为 **** 并带弹出效果",
+  "edit.bleep_icon": "摄像头旁显示哔声徽章",
+  "swear.warn.swear_check_failed": "脏话检查出现问题，此片段使用了基础检测器。哔声仍然开启。",
+  "swear.warn.swear_safety_net": "新检查漏掉的一个脏话已由基础检测器哔掉。",
 };
 
 export default zh;

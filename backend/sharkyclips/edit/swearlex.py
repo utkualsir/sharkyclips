@@ -309,6 +309,8 @@ def classify(word: str, lang: str | None, prob: float = 1.0) -> tuple[str, float
         return None
     best = 9.0
     for s in stems:
+        if len(pk) > len(s) + 3:  # "kahretsizsin" only starts like "kahpe": another word
+            continue
         head = pk[:len(s)] if len(pk) > len(s) else pk
         if abs(len(head) - len(s)) > 1:
             continue

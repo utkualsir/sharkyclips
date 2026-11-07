@@ -133,13 +133,26 @@ def _voice_rms(y: np.ndarray, ia: int, ib: int) -> float:
     return own
 
 
+def clip_voice_rms(y: np.ndarray) -> float:
+    """How loud the speech of the whole clip is (the louder frames), for one bleep level."""
+    hop = _n(0.05)
+    k = len(y) // hop
+    if k < 2:
+        return float(np.sqrt(np.mean(y ** 2) + 1e-12)) if len(y) else 0.05
+    fr = np.sqrt(np.mean(y[:k * hop].reshape(k, hop, -1) ** 2, axis=(1, 2)))
+    loud = fr[fr > max(1e-4, float(np.percentile(fr, 40)))]
+    return float(np.percentile(loud if len(loud) else fr, 70))
+
+
 def apply_bleeps(y: np.ndarray, ranges: list[tuple[float, float]], mode: str, sound: str = "classic",
                  custom: np.ndarray | None = None) -> np.ndarray:
-    """Bleep (or mute) the ranges with short fades. The bleep's loudness follows the voice
-    (3 dB under it) so it never jumps out of a quiet clip or drowns in a loud one."""
+    """Bleep (or mute) the ranges with short fades. 1.2.22: ONE level for every bleep of the clip,
+    3 dB under the clip's speech (a consistent, professional sound, never a jump), 12 ms
+    raised-cosine fades (no clicks), the tone starting at zero phase."""
     if mode not in ("bleep", "mute"):
         return y
     fade = _n(BLEEP_FADE)
+    level = min(0.25, max(0.02, clip_voice_rms(y) * 0.71))
     for a, b in ranges:
         ia, ib = max(0, _n(a)), min(len(y), _n(b))
         if ib - ia < 2:
@@ -154,8 +167,7 @@ def apply_bleeps(y: np.ndarray, ranges: list[tuple[float, float]], mode: str, so
         if mode == "mute":
             y[ia:ib] = seg * (1 - env)[:, None]
             continue
-        target = min(0.25, max(0.02, _voice_rms(y, ia, ib) * 0.71))
-        tone = _bleep_tone(ib - ia, sound, custom) * target
+        tone = _bleep_tone(ib - ia, sound, custom) * level
         y[ia:ib] = seg * (1 - env)[:, None] + (tone * env)[:, None]
     return y
 
