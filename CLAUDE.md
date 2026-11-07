@@ -31,6 +31,16 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   abandoned**. A flag older than 12 hours counts as stale: the banner hides and Settings shows a
   small note with a Remove button (`welcome.py`, `STALE_HOURS`).
 
+### 3. Restart the running app after a release
+
+- After the push, the user's running SharkyClips still runs the OLD Python code behind the new
+  UI files (1.2.9 and 1.2.22 "bugs" were exactly that). So after every release: find the servers
+  on ports 8000-8010 (`/api/app` shows `version`), and for each one still on the old version
+  check `/api/jobs`: if nothing is queued / running, `POST /api/update/restart` (the supervisor
+  restarts it on the new code) and wait until `/api/app` reports the new version. If jobs are
+  running, don't interrupt them: tell the user (the UI shows a "restart to finish the update"
+  bar). Only then test on the user's app or report the release as done.
+
 ## Working here
 
 - Tests: `.venv/Scripts/python -m pytest -q` (from the repo root; tests use a throwaway
@@ -42,6 +52,11 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   frontend/scripts/layout-check.mjs http://127.0.0.1:8799 <project-id> [shots]` (`LAYOUT_QUICK=1`
   for a fast pass). It fails on overlapping panels, squeezed lists, cut-off content and sideways
   page scroll on every screen at 1024-1920 px, 700-1080 px high and phone width.
+- Preview check (same CI job, same server): `node frontend/scripts/preview-check.mjs
+  http://127.0.0.1:8799 <project-id>` compares the 9:16 live preview's pixels with the server's
+  render plan (crop rects + zoom / shake samples) for split / crop / fit. The preview's cut and
+  zoom math lives in `frontend/src/previewMath.ts`, a copy of `clips.split_rects`,
+  `zoom.factor_out` and `fx.shake_at`: change both sides together (`test_preview_math.py`).
 - Icons/logo come from `installer/make_icons.py` (one geometry; `frontend/src/components/Brand.tsx`
   and `backend/sharkyclips/web/splash.html` copy the same paths).
 - Settings folder: `~/.sharkyclips` (`config.config_dir()`); `migrate.py` moves an old `~/.clipforge`

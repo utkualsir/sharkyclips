@@ -430,7 +430,7 @@ def make(project: Project, cand: dict, lang: str, on_progress: ProgressFn | None
     from . import governor
 
     require_ready(lang)
-    transcript = read_json(project.transcript_path) if project.transcript_path.is_file() else {}
+    transcript = project.load_transcript() if project.transcript_path.is_file() else {}
     spoken = transcript.get("language")
     if spoken == lang:
         raise SharkyClipsError("This clip is already in that language.")

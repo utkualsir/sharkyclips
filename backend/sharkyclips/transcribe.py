@@ -463,7 +463,7 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
 
     # Already done with the same settings?
     if project.transcript_path.is_file() and not force:
-        old = read_json(project.transcript_path)
+        old = project.load_transcript()
         if (old.get("request", {}).get("language") == lang
                 and old.get("request", {}).get("model") == model):
             console.print(f"[green]Already transcribed[/] ({old.get('model')}, "
@@ -571,6 +571,9 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
     transcript = _assemble(project, cache, chunks, lang, model, locked, duration)
     transcript["timing"]["this_run_seconds"] = round(run_elapsed, 2)
     transcript["timing"]["this_run_audio_seconds"] = round(processed_audio, 2)
+    from .textutil import clean_transcript
+
+    clean_transcript(transcript)  # no endless "Zzzz..." words
     write_json_atomic(project.transcript_path, transcript)
 
     meta["transcript"] = {"file": project.transcript_path.name, "language": transcript["language"],

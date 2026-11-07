@@ -530,7 +530,7 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
         raise SharkyClipsError("No transcript yet.", f"Run: python cli.py transcribe {project.id}")
     out_lang = languages.require(out_lang or config.get("output_language") or "tr").code
     hl = read_json(hl_path)
-    transcript = read_json(project.transcript_path)
+    transcript = project.load_transcript()
     meta = project.load_meta()
     mode = hl.get("mode") or meta.get("mode") or "gaming"
     preset = get_mode(mode)
@@ -748,7 +748,7 @@ def translate_clip(project: Project, cid: str, lang: str) -> list[dict]:
     have = (c.get("translations") or {}).get(lang)
     if have:
         return have
-    transcript = read_json(project.transcript_path)
+    transcript = project.load_transcript()
     spoken = transcript.get("language")
     lines = sentences(transcript, c["start"], c["end"])
     if not lines or not spoken or spoken == lang:
@@ -775,7 +775,7 @@ def regenerate_titles(project: Project, cid: str) -> dict:
         raise SharkyClipsError("Analyze this clip with the LLM first.", f"python cli.py analyze {project.id}")
     pub = c["publish"]
     out_lang = pub["language"]
-    transcript = read_json(project.transcript_path)
+    transcript = project.load_transcript()
     meta = project.load_meta()
     mode = hl.get("mode") or meta.get("mode") or "gaming"
     others = [t for o in hl["candidates"] if o is not c for t in (o.get("publish") or {}).get("titles", [])]
@@ -832,7 +832,7 @@ def benchmark(project: Project, on_progress: Callable[[str, int, int], None] | N
     from . import llm
 
     hl = read_json(project.dir / "highlights.json")
-    transcript = read_json(project.transcript_path)
+    transcript = project.load_transcript()
     meta = project.load_meta()
     mode = hl.get("mode") or meta.get("mode") or "gaming"
     out_lang = languages.require(config.get("output_language") or "tr").code

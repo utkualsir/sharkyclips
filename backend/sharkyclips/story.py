@@ -469,7 +469,7 @@ def propose(project: Project, model=None, lang: str | None = None,
 def _all_words(project: Project) -> list[dict]:
     if not project.transcript_path.is_file():
         return []
-    tr = read_json(project.transcript_path)
+    tr = project.load_transcript()
     return [{"start": float(w["start"]), "end": float(w["end"]), "word": w["word"].strip()}
             for seg in tr.get("segments", []) for w in seg.get("words", []) if w["word"].strip()]
 

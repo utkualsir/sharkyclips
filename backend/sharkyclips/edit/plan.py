@@ -19,7 +19,7 @@ import numpy as np
 
 from .. import config
 from ..errors import SharkyClipsError
-from ..project import Project, read_json
+from ..project import Project
 from . import fillers, profanity, silence, zoom
 from .loop import Seam
 
@@ -88,7 +88,7 @@ def transcript_words(project: Project, start: float, end: float,
     speaker, with a speaker id ("spk")."""
     if not project.transcript_path.is_file():
         return [], None
-    tr = read_json(project.transcript_path)
+    tr = project.load_transcript()
     out = []
     for seg in tr.get("segments", []):
         if seg["end"] < start - 1 or seg["start"] > end + 1:
@@ -102,7 +102,9 @@ def transcript_words(project: Project, start: float, end: float,
     if voices:
         from .. import voices as voices_mod
 
-        out = voices_mod.words_for(project, start, end, out)
+        from ..textutil import clean_words
+
+        out = [{**w, "word": w["word"].strip()} for w in clean_words(voices_mod.words_for(project, start, end, out))]
     return out, tr.get("language")
 
 

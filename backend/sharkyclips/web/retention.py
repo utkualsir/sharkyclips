@@ -100,9 +100,8 @@ def api_stories(project_id: str) -> dict:
     data = story_mod.load(project)
     lang = project.load_meta().get("language")
     if project.transcript_path.is_file():
-        from ..project import read_json
 
-        lang = read_json(project.transcript_path).get("language") or lang
+        lang = project.load_transcript().get("language") or lang
     active = next((j.to_dict() for j in A.jobs.for_project(project_id)
                    if j.kind in ("story", "story_render") and j.status in ("queued", "running")), None)
     return {**data, "stories": [_story_view(project, s, lang) for s in data["stories"]],
@@ -163,7 +162,6 @@ def submit_ab(project_id: str, cid: str, job_id: str | None = None, attempt: int
     cand0 = A._cand(project, cid)
 
     def run(job: Job):
-        from ..project import read_json
 
         project = A.get_project(project_id)
         review = state.load_review(project)
@@ -171,7 +169,7 @@ def submit_ab(project_id: str, cid: str, job_id: str | None = None, attempt: int
         opts = ClipOptions.from_dict(review["options"])
         facecam = review.get("facecam")
         meta = project.load_meta()
-        spoken = read_json(project.transcript_path).get("language") if project.transcript_path.is_file() else None
+        spoken = project.load_transcript().get("language") if project.transcript_path.is_file() else None
         pub = cand.get("publish") or {}
         statement = review["hooks"].get(cid) or pub.get("hook_text") or first_sentence(cand.get("text") or "")
         words = _clip_words(project, cand["start"], cand["end"])
@@ -354,9 +352,8 @@ def polish_loop(project, cand: dict, opts: ClipOptions, max_len: float | None = 
         return
     from .. import llm
     from ..edit import loop
-    from ..project import read_json
 
-    spoken = read_json(project.transcript_path).get("language") if project.transcript_path.is_file() else None
+    spoken = project.load_transcript().get("language") if project.transcript_path.is_file() else None
     pub = cand.get("publish") or {}
     hook = opts.hook_text or pub.get("hook_text") or first_sentence(cand.get("text") or "")
     deleted = [(float(a), float(b)) for a, b in (cand.get("edit") or {}).get("deleted") or []]

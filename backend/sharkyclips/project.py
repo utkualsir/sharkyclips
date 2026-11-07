@@ -96,6 +96,12 @@ class Project:
     def transcript_path(self) -> Path:
         return self.dir / "transcript.json"
 
+    def load_transcript(self) -> dict[str, Any]:
+        """transcript.json with Whisper's junk words cleaned (textutil.clean_transcript)."""
+        from .textutil import clean_transcript
+
+        return clean_transcript(read_json(self.transcript_path))
+
     @property
     def cache_dir(self) -> Path:
         return self.dir / "cache"

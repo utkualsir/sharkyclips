@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
-import { api, type Candidate, type ClipEdit, type ClipOptions, type EditPlanView, type ZoomPulse } from "./api";
+import { api, type Candidate, type ClipEdit, type ClipOptions, type EditPlanView } from "./api";
 
 // Editing tools (1.2.4): helpers shared by the project page, the transcript editor, the live
-// 9:16 preview and fast review. Zoom math mirrors backend/sharkyclips/edit/zoom.py.
-
-const RAMP_IN = 0.35;
-const RAMP_OUT = 0.55;
+// 9:16 preview and fast review. The preview's zoom / crop math is in previewMath.ts.
 
 /** The range the render uses: a seamless loop may move the start out of a word and the end to its seam. */
 export function renderRange(
@@ -21,20 +18,6 @@ export function effectiveRange(c: Candidate, edit: ClipEdit | undefined): { star
   const start = edit?.start ?? c.start;
   const end = edit?.end ?? c.end;
   return end - start >= 1 ? { start, end } : { start: c.start, end: c.end };
-}
-
-export function zoomAt(t: number, pulses: ZoomPulse[], target: "scene" | "cam", level: number): number {
-  if (level <= 1) return 1;
-  level = Math.min(level, 1.25); // 1.2.22: the same cap as the renderer
-  for (const p of pulses) {
-    if (p.target !== target || t < p.t0 || t > p.t1) continue;
-    const d = p.t1 - p.t0;
-    const ri = Math.min(RAMP_IN, d / 3);
-    const ro = Math.min(RAMP_OUT, d / 3);
-    const s = Math.min(Math.max(0, Math.min(1, (t - p.t0) / ri)), Math.max(0, Math.min(1, (p.t1 - t) / ro)));
-    return 1 + (level - 1) * s * s * (3 - 2 * s);
-  }
-  return 1;
 }
 
 /** Source-time ranges that are bleeped / muted (the review list's "on" items, every speaker). */

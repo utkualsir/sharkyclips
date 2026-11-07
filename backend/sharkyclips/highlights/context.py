@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 
 from .. import audio as audio_mod
-from ..project import Project, read_json
+from ..project import Project
 from .modes import ModePreset
 
 SENTENCE_END = tuple(".!?。！？…؟")
@@ -42,7 +42,7 @@ class AnalysisContext:
         with wave.open(str(self.audio_path), "rb") as w:
             self.duration = w.getnframes() / w.getframerate()
         self.n = max(1, math.ceil(self.duration))  # one score per second
-        self.transcript = (read_json(project.transcript_path)
+        self.transcript = (project.load_transcript()
                            if project.transcript_path.is_file() else None)
         self.language = (self.transcript or {}).get("language")
         self.cache_dir = project.cache_dir / "signals"

@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, type RefObject } from "react";
-import { urls, type BrandPreset, type Candidate, type ClipOptions, type Facecam, type Word, type ZoomPulse } from "../api";
+import { urls, type BrandPreset, type Candidate, type ClipOptions, type Facecam, type Word } from "../api";
 import { captionAt, groupWords, joinerFor, upper } from "../captions";
-import { zoomAt } from "../editing";
+import { coverRect, OUT_W, SPLIT_TOP as OUT_SPLIT, splitRects, zoomRect, zoomsAt, type PreviewFx, type Rect } from "../previewMath";
 
-// Canvas size (9:16). Drawing math mirrors backend/sharkyclips/clips.py at 1080x1920.
+// Canvas size (9:16). The picture is cut and zoomed with previewMath.ts = what the renderer
+// does (backend/sharkyclips/clips.py at 1080x1920); captions / hook / brand are drawn on top.
 const W = 360;
 const H = 640;
-const S = W / 1080; // scale from the 1080-wide render to this canvas
-const SPLIT_TOP = 768 * S;
+const S = W / OUT_W; // scale from the 1080-wide render to this canvas
+const SPLIT_TOP = OUT_SPLIT * S;
 const GOLD = "#D9B56A";
 
 interface Props {
@@ -20,7 +21,8 @@ interface Props {
   words: Word[];
   lang: string | null;
   hookText: string;
-  zoom?: { pulses: ZoomPulse[]; level: number } | null;
+  /** smart zoom + meme shake / punch from the render plan (null: none) */
+  fx?: PreviewFx | null;
   brand?: BrandPreset | null;
 }
 
@@ -30,32 +32,11 @@ export function resolveLayout(layout: ClipOptions["layout"], facecam: Facecam | 
   return layout;
 }
 
-/** Shrink a source rect around its center (cy = vertical focus) for a zoom factor z. */
-function zoomRect(sx: number, sy: number, sw: number, sh: number, z: number, cy = 0.5): [number, number, number, number] {
-  if (z <= 1.0001) return [sx, sy, sw, sh];
-  const nw = sw / z;
-  const nh = sh / z;
-  return [sx + (sw - nw) / 2, sy + (sh - nh) * cy, nw, nh];
+function blit(ctx: CanvasRenderingContext2D, v: CanvasImageSource, r: Rect, dx: number, dy: number, dw: number, dh: number) {
+  if (r[2] > 0 && r[3] > 0) ctx.drawImage(v, r[0], r[1], r[2], r[3], dx, dy, dw, dh);
 }
 
-function cover(ctx: CanvasRenderingContext2D, v: HTMLVideoElement, sx: number, sy: number, sw: number, sh: number,
-  dx: number, dy: number, dw: number, dh: number, z = 1, cy = 0.5) {
-  // crop the source rect to the destination aspect ratio (centered), then draw
-  const target = dw / dh;
-  if (sw / sh > target) {
-    const nw = sh * target;
-    sx += (sw - nw) / 2;
-    sw = nw;
-  } else {
-    const nh = sw / target;
-    sy += (sh - nh) / 2;
-    sh = nh;
-  }
-  [sx, sy, sw, sh] = zoomRect(sx, sy, sw, sh, z, cy);
-  ctx.drawImage(v, sx, sy, sw, sh, dx, dy, dw, dh);
-}
-
-export default function VerticalPreview({ video, clip, range, options, facecam, words, lang, hookText, zoom, brand }: Props) {
+export default function VerticalPreview({ video, clip, range, options, facecam, words, lang, hookText, fx, brand }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const tiny = useMemo(() => {
     const c = document.createElement("canvas");
@@ -99,37 +80,41 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
       const vh = v.videoHeight;
       const t = v.currentTime;
       const inClip = !!clip && t >= start - 0.05 && t <= end + 0.05;
-      const lvl = inClip ? zoom?.level ?? 0 : 0;
-      const zScene = zoom ? zoomAt(t, zoom.pulses, "scene", lvl) : 1;
-      const zCam = zoom ? zoomAt(t, zoom.pulses, "cam", lvl) : 1;
+      // zoom factors, all from scratch for this frame (nothing carries over between frames or clips)
+      const z = zoomsAt(t, inClip ? fx ?? null : null);
       if (v.readyState >= 2 && vw && vh) {
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
+        ctx.save();
+        if (z.shake.z > 1.0001) {
+          // meme shake / punch: the renderer zooms the whole picture (not the captions)
+          const k = z.shake.z;
+          const left = (0.5 - 0.5 / k + z.shake.dx) * W;
+          const top = (0.5 - 0.5 / k + z.shake.dy) * H;
+          ctx.setTransform(dpr * k, 0, 0, dpr * k, -left * dpr * k, -top * dpr * k);
+        }
+        const whole: Rect = [0, 0, vw, vh];
         if (layout === "crop") {
-          cover(ctx, v, 0, 0, vw, vh, 0, 0, W, H, Math.max(zScene, zCam));
+          blit(ctx, v, zoomRect(coverRect(whole, W, H), z.full), 0, 0, W, H);
         } else if (layout === "fit") {
           const tc = tiny.getContext("2d")!;
-          cover(tc, v, 0, 0, vw, vh, 0, 0, tiny.width, tiny.height);
+          blit(tc, v, coverRect(whole, tiny.width, tiny.height), 0, 0, tiny.width, tiny.height);
           ctx.drawImage(tiny, 0, 0, W, H);
           ctx.fillStyle = "rgba(0,0,0,0.25)";
           ctx.fillRect(0, 0, W, H);
           const scale = Math.min(W / vw, H / vh);
           const dw = vw * scale;
           const dh = vh * scale;
-          const [sx, sy, sw, sh] = zoomRect(0, 0, vw, vh, Math.max(zScene, zCam));
-          ctx.drawImage(v, sx, sy, sw, sh, (W - dw) / 2, (H - dh) / 2, dw, dh);
+          blit(ctx, v, zoomRect(whole, z.full), (W - dw) / 2, (H - dh) / 2, dw, dh);
         } else if (facecam) {
-          cover(ctx, v, facecam.x * vw, facecam.y * vh, facecam.w * vw, facecam.h * vh, 0, 0, W, SPLIT_TOP, zCam, 0.45);
-          // gameplay: full-height crop, nudged away from the facecam (same rule as the renderer)
+          // the renderer's exact crops (clips.split_rects): the cam rect is scaled to the panel,
+          // the gameplay rect center-cropped to it, then each zoomed around its focus point
+          const { cam, game } = splitRects(vw, vh, facecam);
           const bottomH = H - SPLIT_TOP;
-          const gw = Math.min(vw, (vh * W) / bottomH);
-          let gx = (vw - gw) / 2;
-          const camL = facecam.x * vw;
-          const camR = (facecam.x + facecam.w) * vw;
-          if (camR <= vw / 2 && camR > gx) gx = camR - gx < gw * 0.25 ? Math.min(camR, vw - gw) : gx;
-          else if (camL >= vw / 2 && camL < gx + gw) gx = gx + gw - camL < gw * 0.25 ? Math.max(camL - gw, 0) : gx;
-          cover(ctx, v, gx, 0, gw, vh, 0, SPLIT_TOP, W, bottomH, zScene);
+          blit(ctx, v, zoomRect(cam, z.cam, 0.45), 0, 0, W, SPLIT_TOP);
+          blit(ctx, v, zoomRect(coverRect(game, W, bottomH), z.scene), 0, SPLIT_TOP, W, bottomH);
         }
+        ctx.restore();
       }
 
       if (inClip && clip) {
@@ -257,7 +242,7 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
       events.forEach((e) => v.removeEventListener(e, kick));
       logo?.removeEventListener("load", kick);
     };
-  }, [video, clip, range?.start, range?.end, options, facecam, groups, lang, hookText, tiny, zoom, brand, logo]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [video, clip, range?.start, range?.end, options, facecam, groups, lang, hookText, tiny, fx, brand, logo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <canvas ref={canvas} width={W} height={H} aria-hidden="true" />;
 }

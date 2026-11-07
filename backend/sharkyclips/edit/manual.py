@@ -38,7 +38,7 @@ def _save(project: Project, clips: list[dict]) -> None:
 def _text(project: Project, start: float, end: float) -> str:
     if not project.transcript_path.is_file():
         return ""
-    tr = read_json(project.transcript_path)
+    tr = project.load_transcript()
     joiner = "" if tr.get("language") in ("zh", "ja") else " "
     words = []
     for seg in tr.get("segments", []):

@@ -104,3 +104,18 @@ def factor_at(t: float, pulses_src: list[Pulse], target: str, zmax: float) -> fl
         s = min(max(0.0, min(1.0, (t - p.t0) / ri)), max(0.0, min(1.0, (p.t1 - t) / ro)))
         return 1 + (zmax - 1) * s * s * (3 - 2 * s)
     return 1.0
+
+
+def factor_out(tm: float, pulses_out: list[tuple[float, float]], zmax: float) -> float:
+    """What perspective_filter's expression gives at main time tm (preview check + tests;
+    mirrored by frontend/src/previewMath.ts factorAt). Overlapping pulses add up, like the
+    expression; outside every pulse the filter is off."""
+    if not pulses_out or zmax <= 1.0 or not any(a <= tm <= b for a, b in pulses_out):
+        return 1.0
+    zmax = min(zmax, MAX_ZOOM)
+    acc = 0.0
+    for t0, t1 in pulses_out:
+        ri, ro = min(RAMP_IN, (t1 - t0) / 3), min(RAMP_OUT, (t1 - t0) / 3)
+        s = min(min(1.0, max(0.0, (tm - t0) / ri)), min(1.0, max(0.0, (t1 - tm) / ro)))
+        acc += s * s * (3 - 2 * s)
+    return 1 + (zmax - 1) * acc

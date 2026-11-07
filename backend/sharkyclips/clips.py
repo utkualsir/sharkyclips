@@ -29,7 +29,7 @@ from typing import Callable
 
 from . import languages
 from .errors import SharkyClipsError, require_tool
-from .project import Project, read_json, replace_retry
+from .project import Project, replace_retry
 from .render import Encoder, RenderResult, run_ffmpeg
 
 OUT_W, OUT_H = 1080, 1920
@@ -566,6 +566,76 @@ def source_size(path, meta: dict) -> tuple[int, int, str]:
     return w, h, prefix
 
 
+def split_rects(src_w: int, src_h: int, facecam: Facecam) -> tuple[tuple[int, int, int, int], tuple[int, int, int, int]]:
+    """The split layout's source crops (x, y, w, h in source pixels): facecam panel, gameplay.
+    The renderer cuts exactly these; the live preview gets them too (preview_geometry)."""
+    bottom_h = OUT_H - SPLIT_TOP
+    # Facecam: cut the region (clamped inside the picture: a box from another video / resolution
+    # never reaches outside it), then center-crop it to the top panel's aspect ratio.
+    bx, by = min(max(0.0, facecam.x), 0.95), min(max(0.0, facecam.y), 0.95)
+    bw, bh = min(max(0.05, facecam.w), 1.0 - bx), min(max(0.05, facecam.h), 1.0 - by)
+    fx, fy = bx * src_w, by * src_h
+    fw, fh = bw * src_w, bh * src_h
+    target = OUT_W / SPLIT_TOP
+    if fw / fh > target:  # too wide -> trim the sides
+        nw = fh * target
+        fx += (fw - nw) / 2
+        fw = nw
+    else:  # too tall -> trim top/bottom
+        nh = fw / target
+        fy += (fh - nh) / 2
+        fh = nh
+    fw, fh = min(fw, src_w), min(fh, src_h)
+    fx, fy = min(max(0.0, fx), src_w - fw), min(max(0.0, fy), src_h - fh)
+    # Gameplay: full-height center crop to the bottom panel's aspect ratio, nudged away
+    # from the facecam so the camera doesn't show up twice.
+    gw = min(src_w, src_h * OUT_W / bottom_h)
+    gx = (src_w - gw) / 2
+    cam_l, cam_r = facecam.x * src_w, (facecam.x + facecam.w) * src_w
+    if cam_r <= src_w / 2 and cam_r > gx:  # facecam on the left
+        gx = min(cam_r, src_w - gw) if cam_r - gx < gw * 0.25 else gx
+    elif cam_l >= src_w / 2 and cam_l < gx + gw:  # facecam on the right
+        gx = max(cam_l - gw, 0) if gx + gw - cam_l < gw * 0.25 else gx
+    gx = min(max(0.0, gx), src_w - gw)
+    return ((_floor_even(fx), _floor_even(fy), _floor_even(fw), _floor_even(fh)),
+            (_floor_even(gx), 0, _floor_even(gw), _floor_even(src_h)))
+
+
+def preview_geometry(layout: str, src_w: int, src_h: int, facecam: Facecam | None) -> dict:
+    """What the live preview needs to draw exactly what the renderer cuts (1.2.23): the
+    resolved layout and, for split, the source rects as fractions of the source size."""
+    layout = resolve_layout(layout, facecam)
+    out: dict = {"layout": layout, "src": [src_w, src_h], "split_top": SPLIT_TOP, "out": [OUT_W, OUT_H]}
+    if layout == "split" and facecam is not None:
+        cam, game = split_rects(src_w, src_h, facecam)
+        out["cam"] = [round(cam[0] / src_w, 6), round(cam[1] / src_h, 6), round(cam[2] / src_w, 6), round(cam[3] / src_h, 6)]
+        out["game"] = [round(game[0] / src_w, 6), round(game[1] / src_h, 6), round(game[2] / src_w, 6),
+                       round(game[3] / src_h, 6)]
+    return out
+
+
+
+def picture_at(plan, layout: str, t: float) -> dict:
+    """The render's zoom on each picture at source time t (smart zoom per picture, the meme
+    shake / punch on top), from the same expressions the filters use. For the preview check."""
+    from .edit import fx as fx_mod
+    from .edit import zoom
+    from .edit.plan import merge
+
+    tm = plan.to_out(t)
+    out = {"t": t, "tm": tm, "scene": 1.0, "cam": 1.0, "full": 1.0, "shake": [1.0, 0.0, 0.0]}
+    if tm is None:
+        return out
+    z = plan.zoom_level if plan.zooms else 0.0
+    if z:
+        ps, pc = plan.out_pulses("scene"), plan.out_pulses("cam")
+        out["scene"] = zoom.factor_out(tm, ps, z)
+        out["cam"] = zoom.factor_out(tm, pc, z)
+        out["full"] = zoom.factor_out(tm, merge(ps + pc), z)
+    if plan.fx is not None:
+        out["shake"] = list(fx_mod.shake_at(tm, plan.fx.shakes, plan.fx.punches, z or 1.0, plan.fps))
+    return out
+
 # The pixel-squaring prefix of the source being rendered (source_size); set per render.
 _SQUARE: contextvars.ContextVar[str] = contextvars.ContextVar("sc_square", default="")
 
@@ -602,36 +672,9 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
                 f"[{bg_}][{fg_}]overlay=(W-w)/2:(H-h)/2,setsar=1[{out}]")
     assert facecam is not None
     bottom_h = OUT_H - SPLIT_TOP
-    # Facecam: cut the region (clamped inside the picture: a box from another video / resolution
-    # never reaches outside it), then center-crop it to the top panel's aspect ratio.
-    bx, by = min(max(0.0, facecam.x), 0.95), min(max(0.0, facecam.y), 0.95)
-    bw, bh = min(max(0.05, facecam.w), 1.0 - bx), min(max(0.05, facecam.h), 1.0 - by)
-    fx, fy = bx * src_w, by * src_h
-    fw, fh = bw * src_w, bh * src_h
-    target = OUT_W / SPLIT_TOP
-    if fw / fh > target:  # too wide -> trim the sides
-        nw = fh * target
-        fx += (fw - nw) / 2
-        fw = nw
-    else:  # too tall -> trim top/bottom
-        nh = fw / target
-        fy += (fh - nh) / 2
-        fh = nh
-    fw, fh = min(fw, src_w), min(fh, src_h)
-    fx, fy = min(max(0.0, fx), src_w - fw), min(max(0.0, fy), src_h - fh)
-    cam = (f"crop={_floor_even(fw)}:{_floor_even(fh)}:{_floor_even(fx)}:{_floor_even(fy)},"
-           f"scale={OUT_W}:{SPLIT_TOP}:flags=bicubic")
-    # Gameplay: full-height center crop to the bottom panel's aspect ratio, nudged away
-    # from the facecam so the camera doesn't show up twice.
-    gw = min(src_w, src_h * OUT_W / bottom_h)
-    gx = (src_w - gw) / 2
-    cam_l, cam_r = facecam.x * src_w, (facecam.x + facecam.w) * src_w
-    if cam_r <= src_w / 2 and cam_r > gx:  # facecam on the left
-        gx = min(cam_r, src_w - gw) if cam_r - gx < gw * 0.25 else gx
-    elif cam_l >= src_w / 2 and cam_l < gx + gw:  # facecam on the right
-        gx = max(cam_l - gw, 0) if gx + gw - cam_l < gw * 0.25 else gx
-    gx = min(max(0.0, gx), src_w - gw)
-    game = (f"crop={_floor_even(gw)}:{_floor_even(src_h)}:{_floor_even(gx)}:0,"
+    (fx, fy, fw, fh), (gx, gy, gw, gh) = split_rects(src_w, src_h, facecam)
+    cam = f"crop={fw}:{fh}:{fx}:{fy},scale={OUT_W}:{SPLIT_TOP}:flags=bicubic"
+    game = (f"crop={gw}:{gh}:{gx}:{gy},"
             f"scale={OUT_W}:{bottom_h}:force_original_aspect_ratio=increase:flags=bicubic,"
             f"crop={OUT_W}:{bottom_h}")
     return (f"[{inp}]split=2[{a}][{b}];[{a}]{cam}{add('cam')}[{cam_}];[{b}]{game}{add('game')}[{game_}];"
@@ -648,7 +691,7 @@ def speaker_names(project: Project) -> dict:
 def clip_text(project: Project, cand: dict, opts: ClipOptions) -> tuple[list[dict], str | None, str, str | None]:
     """(words relative to the clip start, their language, hook text, hook language)."""
     start, end = float(cand["start"]), float(cand["end"])
-    transcript = read_json(project.transcript_path) if project.transcript_path.is_file() else {}
+    transcript = project.load_transcript() if project.transcript_path.is_file() else {}
     lang = transcript.get("language")
     translated = (cand.get("translations") or {}).get(opts.subtitle_lang) if opts.subtitle_lang else None
     if translated and opts.subtitle_lang != lang:

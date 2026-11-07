@@ -262,7 +262,7 @@ def clip_cues(project: Project, cand: dict, opts: ClipOptions, lang: str | None,
     duration = max(0.5, plan.out_duration if plan is not None else end - start)
     spoken = None
     if project.transcript_path.is_file():
-        spoken = read_json(project.transcript_path).get("language")
+        spoken = project.load_transcript().get("language")
     want = lang or spoken
     if want and want != spoken and not (cand.get("translations") or {}).get(want):
         if translate is None:

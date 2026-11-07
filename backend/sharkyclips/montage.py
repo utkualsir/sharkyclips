@@ -348,7 +348,7 @@ def write_package(project: Project, items: list[dict], lang: str,
     # Same local fixes as clip titles: sentence case (no Title Case), diacritics, glossary spelling.
     from .titles import glossary as glossary_mod, lexicon
 
-    transcript = read_json(project.transcript_path) if project.transcript_path.is_file() else {}
+    transcript = project.load_transcript() if project.transcript_path.is_file() else {}
     topic = next(((it["cand"].get("llm") or {}).get("game_or_topic") for it in items
                   if (it["cand"].get("llm") or {}).get("game_or_topic")), "")
     gl = glossary_mod.build(transcript, lang, meta.get("title", ""), topic)

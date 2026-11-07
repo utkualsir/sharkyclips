@@ -40,6 +40,9 @@ jobs:
             sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
           fi
           ffmpeg -hide_banner -version | head -1
+      - uses: actions/setup-node@v4  # Node 24 runs frontend/src/previewMath.ts in test_preview_math.py
+        with:
+          node-version: 24
       - name: Lint (ruff)
         run: python -m ruff check backend installer
       - name: Tests (pytest)
@@ -111,7 +114,7 @@ jobs:
     # Every screen at laptop / desktop / phone sizes, light + dark, Turkish / Arabic / English:
     # fails when panels overlap, a list is squeezed, content is cut off or the page scrolls
     # sideways (frontend/scripts/layout-check.mjs). Runs against the committed frontend/dist.
-    name: Layout (no overlapping panels)
+    name: Layout (no overlapping panels, preview = render)
     runs-on: ubuntu-24.04  # Playwright 1.55 can't install Chromium on ubuntu-latest (26.04) yet
     timeout-minutes: 25
     steps:
@@ -128,9 +131,12 @@ jobs:
           python -m pip install -r "$RUNNER_TEMP/requirements-ci.txt"
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+      - name: Install ffmpeg (the fixture's playable test video for the preview check)
+        timeout-minutes: 10
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
       - name: Install Playwright + Chromium
         working-directory: frontend
         run: |
@@ -148,6 +154,9 @@ jobs:
       - name: Layout check
         working-directory: frontend
         run: node scripts/layout-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
+      - name: Preview matches the render plan
+        working-directory: frontend
+        run: node scripts/preview-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
       - name: Screenshots of failing views
         if: failure()
         uses: actions/upload-artifact@v4

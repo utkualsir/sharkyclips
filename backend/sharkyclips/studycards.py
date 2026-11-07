@@ -65,7 +65,7 @@ SCHEMA = {
 def _lines(project: Project, cand: dict) -> tuple[list[dict], str | None]:
     from .textutil import sentences
 
-    tr = read_json(project.transcript_path) if project.transcript_path.is_file() else {}
+    tr = project.load_transcript() if project.transcript_path.is_file() else {}
     return sentences(tr, float(cand["start"]), float(cand["end"])) if tr else [], tr.get("language")
 
 

@@ -11,7 +11,8 @@ from fastapi import APIRouter, Request
 from fastapi.responses import FileResponse
 
 from .. import config, languages
-from ..clips import ClipOptions
+from .. import clips as clips_mod
+from ..clips import ClipOptions, Facecam
 from ..edit import brand, fillers, manual, music, profanity
 from ..edit import plan as plan_mod
 from ..errors import SharkyClipsError
@@ -56,7 +57,30 @@ def api_plan(project_id: str, cid: str, body: dict | None = None) -> dict:
     out["clip_id"] = cid
     out["suggestion"] = music.suggest(eff, project.load_meta().get("mode"))
     out["brand_preset"] = plan.brand
+    if body.get("frame") != "wide":
+        fc = body["facecam"] if "facecam" in body else review.get("facecam")
+        w, h = _source_size(project)
+        out["geometry"] = clips_mod.preview_geometry(opts.layout, w, h, Facecam.from_dict(fc))
+        if body.get("samples"):  # the render's zoom at these source times (preview check)
+            lay = out["geometry"]["layout"]
+            out["samples"] = [clips_mod.picture_at(plan, lay, float(t)) for t in list(body["samples"])[:200]]
     return out
+
+
+_SIZES: dict[tuple[str, float], tuple[int, int]] = {}
+
+
+def _source_size(project) -> tuple[int, int]:
+    """The picture size the renderer works with (clips.source_size, cached per file)."""
+    meta = project.load_meta()
+    src = project.source_path
+    if src is None:
+        return int(meta.get("width") or 1920), int(meta.get("height") or 1080)
+    key = (str(src), src.stat().st_mtime)
+    if key not in _SIZES:
+        w, h, _ = clips_mod.source_size(src, meta)
+        _SIZES[key] = (w, h)
+    return _SIZES[key]
 
 
 # ------------------------------------------------------------------ manual clips

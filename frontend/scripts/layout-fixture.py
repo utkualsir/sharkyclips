@@ -47,10 +47,13 @@ def _ff(*args: str) -> None:
         subprocess.run([ff, "-y", "-hide_banner", "-loglevel", "error", *args], check=True, capture_output=True)
 
 
-def _video(path: Path, size: str, seconds: float) -> None:
+def _video(path: Path, size: str, seconds: float, vp9: bool = False) -> None:
+    """vp9: playable in Playwright's own Chromium (no H.264 there), for the preview check."""
     if shutil.which("ffmpeg"):
+        codec = (["-c:v", "libvpx-vp9", "-deadline", "realtime", "-cpu-used", "8", "-b:v", "600k", "-g", "15"] if vp9
+                 else ["-c:v", "libx264", "-preset", "ultrafast"])
         _ff("-f", "lavfi", "-i", f"testsrc2=size={size}:rate=30:duration={seconds}", "-f", "lavfi", "-i",
-            f"sine=frequency=300:sample_rate=48000:duration={seconds}", "-c:v", "libx264", "-preset", "ultrafast",
+            f"sine=frequency=300:sample_rate=48000:duration={seconds}", *codec,
             "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", str(path))
     else:
         path.write_bytes(b"\0" * 1000)
@@ -70,15 +73,19 @@ def build(root: Path) -> str:
     _json(home / "config.json", {"workspace_dir": str(ws), "onboarding_done": True, "llm_enabled": False,
                                  "publish_auto": False, "ui_language": "en", "ui_motion": "off",
                                  "seen_version": version, "easy_tour_done": True})  # no popups over the page
-    _video(d / "source.mp4", "640x360", SECONDS)
+    _video(d / "source.mp4", "640x360", SECONDS, vp9=True)
     _json(d / "meta.json", {
         "id": PID, "title": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get cut off (DELTA FORCE)",
         "mode": "gaming", "duration": SECONDS, "resolution": "640x360", "width": 640, "height": 360, "fps": 30.0,
-        "audio_codec": "aac", "video_codec": "h264", "files": {"source": "source.mp4"},
+        "audio_codec": "aac", "video_codec": "vp9", "files": {"source": "source.mp4"},
         "source": {"type": "file", "value": "source.mp4"}, "created_at": "2026-10-01T00:00:00+00:00",
         "transcript": {"language": "tr", "segments": 1, "words": 40}})
+    # c01 (1.0-3.6 s) holds one of Whisper's endless "words" on silence: it must not stretch the
+    # page (preview-check.mjs; the 1.2.22 "preview zooms in and shifts" report)
+    junk = {"start": 2.25, "end": 2.45, "word": " Z" + "z" * 300}
+    tr_words = [{"start": 0.5 + i, "end": 1.2 + i, "word": f" kelime{i}"} for i in range(48)]
     _json(d / "transcript.json", {"language": "tr", "segments": [
-        {"start": 0.5, "end": 50.0, "words": [{"start": 0.5 + i, "end": 1.2 + i, "word": f" kelime{i}"} for i in range(48)]}]})
+        {"start": 0.5, "end": 50.0, "words": sorted([*tr_words, junk], key=lambda w: w["start"])}]})
     # "Hear every speaker" result: three voices, swears from a friend (swear review list, speaker chips)
     spoken = ["abi", "amına", "koyayım", "kanka", "siktir", "git", "orosbu", "geldim", "s**yim", "tamam"]
     _json(d / "voices.json", {
@@ -87,9 +94,9 @@ def build(root: Path) -> str:
         "speakers": {"me": {"seconds": 30.0}, "f1": {"seconds": 12.0}, "f2": {"seconds": 6.0}},
         "names": {"f1": "Efe Can Yıldırımoğlu"}, "separated": True, "diarized": True, "hints": [],
         "transcript_created_at": None, "created_at": "2026-10-01T00:00:00",
-        "words": [{"start": 0.5 + i, "end": 1.2 + i, "word": spoken[i % len(spoken)] if i % 3 else f"kelime{i}",
+        "words": sorted([{"start": 0.5 + i, "end": 1.2 + i, "word": spoken[i % len(spoken)] if i % 3 else f"kelime{i}",
                    "p": 0.6 if i % 4 else 0.3, "spk": ("me", "f1", "f2")[(i // 4) % 3], "src": "voc"}
-                  for i in range(48)]})
+                  for i in range(48)] + [{**junk, "p": 0.4, "spk": "me", "src": "voc"}], key=lambda w: w["start"])})
     cands = []
     for i in range(N_CANDS):
         s = 1.0 + i * (SECONDS - 8) / N_CANDS

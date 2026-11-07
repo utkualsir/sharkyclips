@@ -96,7 +96,7 @@ def whole_ranges(duration: float, step: float = 60.0) -> list[tuple[float, float
 def base_words(project: Project) -> tuple[list[dict], str | None]:
     if not project.transcript_path.is_file():
         return [], None
-    tr = read_json(project.transcript_path)
+    tr = project.load_transcript()
     out = []
     for seg in tr.get("segments", []):
         for w in seg.get("words", []):
@@ -400,7 +400,7 @@ def _top(seconds: dict[str, float]) -> str:
 
 def _transcript_stamp(project: Project) -> str | None:
     try:
-        return read_json(project.transcript_path).get("created_at")
+        return project.load_transcript().get("created_at")
     except Exception:  # noqa: BLE001
         return None
 

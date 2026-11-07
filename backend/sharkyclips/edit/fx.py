@@ -295,9 +295,8 @@ def meme_language(project, cand: dict) -> str:
     lang = pub.get("language") or config.get("output_language")
     if not lang or lang == "auto":
         try:
-            from ..project import read_json
 
-            lang = read_json(project.transcript_path).get("language") if project.transcript_path.is_file() else None
+            lang = project.load_transcript().get("language") if project.transcript_path.is_file() else None
         except Exception:  # noqa: BLE001
             lang = None
     return str(lang or "en")
@@ -549,6 +548,27 @@ def shake_zoom_at(t: float, shakes: list[tuple[float, float]], punches: list[tup
     pun = min(1.0, sum(math.sin(math.pi * min(1, (t - a) / max(0.05, b - a))) for a, b in punches if a <= t <= b))
     return 1 + min(shake_headroom(base), SHAKE_ZOOM * amp + PUNCH_ZOOM * pun)
 
+
+
+def shake_at(tm: float, shakes: list[tuple[float, float]], punches: list[tuple[float, float]], base: float,
+             fps: float) -> tuple[float, float, float]:
+    """What shake_filter does at main time tm: (zoom, dx, dy), shifts as fractions of the
+    picture (preview check + tests; mirrored by frontend/src/previewMath.ts shakeAt)."""
+    import math
+
+    if not any(a <= tm <= b for a, b in [*shakes, *punches]):
+        return 1.0, 0.0, 0.0
+    room = shake_headroom(base)
+    if room <= 0.001:
+        return 1.0, 0.0, 0.0
+    tt = round(tm * fps) / fps  # the filter works per frame
+    amp = min(1.0, sum((1 - (tt - a) / max(0.05, b - a)) for a, b in shakes if a <= tt <= b))
+    pun = min(1.0, sum(math.sin(math.pi * min(1, (tt - a) / max(0.05, b - a))) for a, b in punches if a <= tt <= b))
+    z = 1 + min(room, SHAKE_ZOOM * amp + PUNCH_ZOOM * pun)
+    m = 0.5 - 0.5 / z
+    dx = min(m, max(-m, 0.018 * amp * math.sin(tt * 71)))
+    dy = min(m, max(-m, 0.011 * amp * math.cos(tt * 53)))
+    return z, dx, dy
 
 def shake_filter(shakes: list[tuple[float, float]], punches: list[tuple[float, float]], fps: int,
                  base: float = 1.0) -> str:

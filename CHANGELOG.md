@@ -7,6 +7,83 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.23] - 2026-11-07
+
+### Fixed
+- **The 9:16 preview no longer zooms in and shifts.** On some clips the preview next to the
+  player suddenly showed a huge, cut-off part of the picture. The cause was one strange "word"
+  in the transcript: on silence or snoring the speech recognition sometimes writes hundreds of
+  letters in a row ("Zzzzzz…"). That one word made the transcript box extremely wide, which
+  stretched the player and, with it, the preview. Such words are now shortened ("Zzz") or
+  removed everywhere (transcript, captions, titles), also in existing projects, and the page
+  layout can't be stretched by a long word any more.
+- **The preview shows exactly what the clip will look like.** It now cuts the facecam and the
+  gameplay with the same numbers as the render, and shows smart zoom, meme punches and shakes
+  the same way (with the same 1.25× limit). Checked against real renders.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **9:16 önizleme artık yakınlaşıp kaymıyor.** Bazı kliplerde oynatıcının yanındaki önizleme
+  birden görüntünün devasa, kesik bir parçasını gösteriyordu. Sebebi transkriptteki tek bir
+  garip "kelime"ydi: ses tanıma, sessizlikte ya da horlamada bazen art arda yüzlerce harf yazıyor
+  ("Zzzzzz…"). Bu tek kelime transkript kutusunu aşırı genişletiyor, oynatıcıyı ve onunla birlikte
+  önizlemeyi büyütüyordu. Bu tür kelimeler artık her yerde (transkript, altyazı, başlıklar)
+  kısaltılıyor ("Zzz") ya da çıkarılıyor, mevcut projelerde de; sayfa düzeni de artık uzun bir
+  kelimeyle genişleyemez.
+- **Önizleme klibin tam olarak nasıl görüneceğini gösteriyor.** Kamerayı ve oyunu render ile aynı
+  sayılarla kırpıyor; akıllı zoom, meme vuruşları ve sarsıntıları da aynı şekilde (aynı 1,25×
+  sınırıyla) gösteriyor. Gerçek render'larla karşılaştırılarak kontrol edildi.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Die 9:16-Vorschau zoomt und verrutscht nicht mehr:** schuld war ein endloses „Wort“ der
+  Spracherkennung („Zzzzzz…“), das die Seite gedehnt hat. Solche Wörter werden jetzt gekürzt oder
+  entfernt, auch in bestehenden Projekten.
+- **Die Vorschau zeigt genau den fertigen Clip:** gleicher Ausschnitt, gleicher Zoom (max. 1,25×).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **A 9:16-os előnézet már nem nagyít és csúszik el:** a beszédfelismerés egy végtelen „szava”
+  („Zzzzzz…”) nyújtotta meg az oldalt. Az ilyen szavakat most lerövidítjük vagy töröljük, a
+  meglévő projektekben is.
+- **Az előnézet pontosan a kész klipet mutatja:** ugyanaz a kivágás és zoom (legfeljebb 1,25×).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Превью 9:16 больше не увеличивается и не съезжает:** виновато было бесконечное «слово»
+  распознавания речи («Zzzzzz…»), растягивавшее страницу. Такие слова теперь сокращаются или
+  удаляются, и в старых проектах тоже.
+- **Превью показывает ровно готовый клип:** та же обрезка и тот же зум (максимум 1,25×).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **معاينة 9:16 لم تعد تتكبّر وتنزاح:** السبب "كلمة" لا نهائية من التعرّف على الكلام
+  ("Zzzzzz…") كانت تمدّ الصفحة. تُختصر هذه الكلمات أو تُحذف الآن، في المشاريع القديمة أيضًا.
+- **المعاينة تعرض المقطع النهائي تمامًا:** نفس القصّ ونفس التكبير (حتى 1.25×).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **9:16 预览不再放大和偏移：** 原因是语音识别写出的一个无限长的"词"（"Zzzzzz…"）把页面撑宽了。
+  这类词现在会被缩短或删除，旧项目也一样。
+- **预览与成片完全一致：** 相同的裁剪和缩放（最多 1.25×）。
+
+</details>
+
 ## [1.2.22] - 2026-11-07
 
 ### Fixed

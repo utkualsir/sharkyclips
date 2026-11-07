@@ -35,6 +35,7 @@ import { Icon } from "../components/Icons";
 import { fmtRatio, PublishPanel, SignalStats } from "../components/Panels";
 import { JobLine, Segmented, Toggle } from "../components/ui";
 import VerticalPreview, { resolveLayout } from "../components/VerticalPreview";
+import type { PreviewFx } from "../previewMath";
 import { fmtBytes, fmtCompact, fmtTime, sourceLabel } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -427,6 +428,13 @@ export default function ProjectPage({ id }: { id: string }) {
   });
   // A seamless loop moves the end to its seam (and a start out of a word): preview what the render does.
   const shownRange = renderRange(range, options, plan);
+  // the render plan's zoom / shake for the 9:16 preview; one object per plan, so the preview
+  // doesn't restart its drawing loop on every page render
+  const previewFx = useMemo<PreviewFx | null>(
+    () => (plan ? { level: plan.zoom_level, pulses: plan.pulses, keep: plan.keep, loop: !!(options.loop && plan.loop),
+      shakes: plan.fx?.shakes ?? [], punches: plan.fx?.punches ?? [], fps: plan.fps || 30 } : null),
+    [plan, options.loop],
+  );
   const subLangs = [...new Set(cands.flatMap((c) => c.subtitle_languages ?? []))].filter((l) => l !== project?.language);
   const hookText = selected ? review?.hooks[selected.id] ?? selected.default_hook : "";
   const hookEdited = !!(selected && review?.hooks[selected.id] != null);
@@ -458,7 +466,8 @@ export default function ProjectPage({ id }: { id: string }) {
     // would otherwise make the two resize each other forever.
     const ro = new ResizeObserver(() =>
       setPreviewH((cur) => {
-        const next = window.innerWidth > 720 ? el.clientHeight : null;
+        // capped to the window: the preview can never outgrow the screen, whatever the player does
+        const next = window.innerWidth > 720 ? Math.min(el.clientHeight, Math.round(window.innerHeight * 0.8)) : null;
         return cur != null && next != null && Math.abs(cur - next) < 3 ? cur : next;
       }),
     );
@@ -1017,7 +1026,7 @@ export default function ProjectPage({ id }: { id: string }) {
                         words={previewWords}
                         lang={project.language}
                         hookText={hookText}
-                        zoom={plan && plan.zoom_level > 1 ? { pulses: plan.pulses, level: plan.zoom_level } : null}
+                        fx={previewFx}
                         brand={options.brand ? activeBrand : null}
                       />
                     </div>
@@ -1602,7 +1611,7 @@ export default function ProjectPage({ id }: { id: string }) {
               words={previewWords}
               lang={project.language}
               hookText={hookText}
-              zoom={plan && plan.zoom_level > 1 ? { pulses: plan.pulses, level: plan.zoom_level } : null}
+              fx={previewFx}
               brand={options.brand ? activeBrand : null}
             />
           }

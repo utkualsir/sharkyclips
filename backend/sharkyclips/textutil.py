@@ -2,8 +2,59 @@
 
 from __future__ import annotations
 
+import re
+
 SENTENCE_END = tuple(".!?。！？…؟")
 NO_SPACE_LANGS = {"zh", "ja"}
+
+# Whisper sometimes "hears" one endless word on silence or snoring ("Zzzzzz..." x 300) or
+# writes broken bytes. One such word stretched the whole project page (1.2.23) and would run
+# off the burned-in captions, so words are cleaned whenever a transcript is read or written.
+MAX_WORD = 40  # longer than any real word in the 7 UI languages (and still fits a caption)
+_RUN = re.compile(r"(\w)\1{4,}", re.UNICODE)  # 5+ times the same letter -> 3
+_JUNK = re.compile("[�\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]")
+
+
+def clean_word(word: str) -> str:
+    """The word as captions can show it ("" = drop it). Keeps the leading space Whisper uses."""
+    if not word:
+        return word
+    w = _JUNK.sub("", word)
+    w = _RUN.sub(lambda m: m.group(1) * 3, w)
+    lead = " " if w[:1].isspace() else ""
+    core = w.strip()
+    if len(core) > MAX_WORD:
+        core = core[:MAX_WORD - 1] + "…"
+    return lead + core if core else ""
+
+
+def clean_words(words: list[dict]) -> list[dict]:
+    """Copies of the words with clean text; words that are pure junk are left out."""
+    out = []
+    for w in words:
+        text = w.get("word")
+        if not isinstance(text, str):
+            out.append(w)
+            continue
+        new = clean_word(text)
+        if new == text:
+            out.append(w)
+        elif new.strip():
+            out.append({**w, "word": new})
+    return out
+
+
+def clean_transcript(transcript: dict) -> dict:
+    """Cleans the words and segment texts in place (idempotent) and returns the transcript."""
+    for seg in transcript.get("segments", []) or []:
+        if seg.get("words"):
+            seg["words"] = clean_words(seg["words"])
+        text = seg.get("text")
+        if isinstance(text, str):
+            cleaned = " ".join(t for t in (clean_word(x) for x in text.split()) if t)
+            if cleaned != " ".join(text.split()):
+                seg["text"] = (" " if text[:1].isspace() else "") + cleaned
+    return transcript
 
 
 def words_between(transcript: dict, start: float, end: float) -> list[dict]:

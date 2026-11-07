@@ -77,7 +77,7 @@ def detect(title: str, transcript: dict | None) -> tuple[str | None, str]:
 def _mentioned(project: Project, name: str) -> bool:
     words = _norm_words(project.load_meta().get("title", ""))
     if project.transcript_path.is_file():
-        words += _norm_words(" ".join(s.get("text", "") for s in read_json(project.transcript_path).get("segments", [])))
+        words += _norm_words(" ".join(s.get("text", "") for s in project.load_transcript().get("segments", [])))
     n = presets.normalize(name).replace(" ", "")
     return any(w.startswith(n) and len(w) - len(n) <= 4 for w in words)
 
@@ -96,7 +96,7 @@ def resolve(project: Project) -> dict:
     if cached.get("key") == tkey:
         detected, why = cached.get("game"), cached.get("why", "")
     else:
-        transcript = read_json(project.transcript_path) if project.transcript_path.is_file() else None
+        transcript = project.load_transcript() if project.transcript_path.is_file() else None
         detected, why = detect(meta.get("title", ""), transcript)
         if transcript is not None:
             meta["game_detect"] = {"key": tkey, "game": detected, "why": why}

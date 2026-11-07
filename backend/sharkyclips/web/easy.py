@@ -76,9 +76,8 @@ def _music_ok() -> bool:
 
 def _lang(project: Project) -> str | None:
     try:
-        from ..project import read_json
 
-        return read_json(project.transcript_path).get("language") if project.transcript_path.is_file() else None
+        return project.load_transcript().get("language") if project.transcript_path.is_file() else None
     except Exception:  # noqa: BLE001
         return None
 

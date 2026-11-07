@@ -111,9 +111,8 @@ def prefill(project: Project, cand: dict) -> dict:
     spoken = None
     if project.transcript_path.is_file():
         try:
-            from ..project import read_json
 
-            spoken = read_json(project.transcript_path).get("language")
+            spoken = project.load_transcript().get("language")
         except Exception:  # noqa: BLE001
             spoken = None
     review = state.load_review(project)
