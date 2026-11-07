@@ -76,7 +76,16 @@ function QueueRow({
   const running = job.status === "running";
   const { title, sub } = jobTitle(job, t, projects);
   const link = openLink(job);
-  const cancel = () => api.cancelJob(job.id).catch((e) => toast({ kind: "err", text: e.message }));
+  const [cancelling, setCancelling] = useState(false);
+  // one request: Cancel is final on the server (the job never comes back by itself)
+  const cancel = () => {
+    if (cancelling) return;
+    setCancelling(true);
+    api.cancelJob(job.id).catch((e) => {
+      setCancelling(false);
+      toast({ kind: "err", text: e.message });
+    });
+  };
   return (
     <li
       className={`q-row${running ? " running" : ""}${dragOver ? " drag-over" : ""}`}
@@ -156,7 +165,7 @@ function QueueRow({
             </button>
           </>
         )}
-        <button className="btn btn-sm btn-ghost" onClick={cancel}>
+        <button className="btn btn-sm btn-ghost" onClick={cancel} disabled={cancelling}>
           {t("job.cancel")}
         </button>
       </div>
@@ -394,6 +403,27 @@ export default function Queue() {
   const queuedGpu = gpu.filter((j) => j.status === "queued");
   const history = view?.history ?? [];
   const activeCount = jobs.filter(isActive).length;
+  const paused = !!view?.paused;
+
+  const cancelAll = async () => {
+    if (!window.confirm(t("queue.cancel_all_confirm", { n: activeCount }))) return;
+    try {
+      await api.queueCancel({});
+      refresh();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message });
+    }
+  };
+
+  const togglePause = async () => {
+    try {
+      const r = await api.queuePause(!paused);
+      setView((v) => (v ? { ...v, paused: r.paused } : v));
+      refresh();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message });
+    }
+  };
 
   const move = async (job: Job, to: number) => {
     try {
@@ -461,12 +491,25 @@ export default function Queue() {
           <h2 className="section-title" id="q-now">
             {t("queue.gpu")} <span className="count mono">{gpu.length}</span>
           </h2>
-          {activeCount > 1 && (
-            <button className="btn btn-sm btn-ghost" onClick={() => api.queueCancel({}).then(refresh)}>
-              {t("queue.cancel_all")}
-            </button>
-          )}
+          <div className="q-actions">
+            {(activeCount > 0 || paused) && (
+              <button className={`btn btn-sm${paused ? " btn-primary" : ""}`} onClick={togglePause} aria-pressed={paused}>
+                <Icon name={paused ? "play" : "pause"} size={14} />
+                {paused ? t("queue.resume") : t("queue.pause")}
+              </button>
+            )}
+            {activeCount > 0 && (
+              <button className="btn btn-sm btn-ghost btn-danger-text" onClick={cancelAll}>
+                {t("queue.cancel_all")}
+              </button>
+            )}
+          </div>
         </div>
+        {paused && (
+          <p className="q-paused" role="status">
+            <Icon name="pause" size={14} /> {t("queue.paused_note")}
+          </p>
+        )}
         {gpu.length === 0 ? (
           <div className="q-empty muted">
             <Icon name="check" /> {t("queue.empty")}

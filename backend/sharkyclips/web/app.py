@@ -32,7 +32,7 @@ from ..render import ENCODERS, pick_encoder
 from . import state
 from .auth import LOCAL_HOSTS, LanGuard
 from .auth import router as _auth_router
-from .jobs import ACTIVE, Job, JobManager
+from .jobs import ACTIVE, CLIP_KINDS, Job, JobManager, explicit
 from .power import ShutdownTimer
 
 FRONTEND_DIST = config.REPO_ROOT / "frontend" / "dist"
@@ -45,9 +45,36 @@ BROWSER_CONTAINERS = {".mp4", ".webm", ".m4v", ".mov"}
 jobs = JobManager(store=config.workspace_dir() / "_queue.json")
 power = ShutdownTimer(busy=jobs.busy, changed=jobs.bump)
 jobs.on_finished.append(lambda _job: power.job_finished())
+
+
+def _new_clips(job: Job) -> None:
+    """Clips found again: c01... are new clips, so earlier cancels of clip work don't apply."""
+    if job.kind == "highlights" and job.status == "done" and job.project_id:
+        jobs.clear_tombstones(job.project_id, CLIP_KINDS)
+
+
+jobs.on_finished.append(_new_clips)
+
+
+class ExplicitRequests:
+    """1.2.24: a POST / PUT / DELETE from the UI is the user's own action, so the jobs it
+    starts may restart work the user cancelled before (jobs.explicit). Background logic that
+    runs inside a request (opening an Easy project, the publish scheduler) opts out with
+    jobs.automatic()."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http" and scope.get("method") not in ("GET", "HEAD", "OPTIONS"):
+            with explicit():
+                await self.app(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
 app = FastAPI(title="SharkyClips", version=__version__, docs_url="/api/docs", redoc_url=None)
 app.state.lan_url = None
 app.add_middleware(LanGuard)  # optional access PIN for other devices (--lan)
+app.add_middleware(ExplicitRequests)
 
 
 @app.exception_handler(SharkyClipsError)
@@ -293,6 +320,7 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
                  "render_seconds": round(res.seconds, 2), "encoder": res.encoder,
                  "edits": res.info or None,
                  "warnings": sorted(set(warns + list((res.info or {}).get("warnings") or []))) or None}
+        jobs.update(job)  # cancelled meanwhile: the clip isn't registered (Cancel is final)
         state.save_clip(project, cand["id"], entry)
         speeds.record("render", res.seconds, cand["duration"])
         return {"clips": [cand["id"]], "encoder": res.encoder, "seconds": round(res.seconds, 1)}
@@ -1286,7 +1314,8 @@ def _queue_view() -> dict:
     gpu = lanes["gpu"]
     return {"lanes": lanes, "history": history[:60],
             "eta_total_seconds": gpu[-1]["eta_finish_seconds"] if gpu else 0,
-            "shutdown": power.state(), "speeds": {k: speeds.get(k) for k in Speeds.DEFAULTS}}
+            "shutdown": power.state(), "speeds": {k: speeds.get(k) for k in Speeds.DEFAULTS},
+            "paused": jobs.paused}
 
 
 @app.get("/api/queue")
@@ -1375,6 +1404,12 @@ def api_queue_cancel(body: dict | None = None) -> dict:
         jobs.cancel(j.id)
         n += 1
     return {"cancelled": n}
+
+
+@app.post("/api/queue/pause")
+def api_queue_pause(body: dict) -> dict:
+    """Pause queue: no new job starts (running ones finish); stays paused after a restart."""
+    return {"paused": jobs.set_paused(bool(body.get("paused", True)))}
 
 
 @app.post("/api/queue/clear")

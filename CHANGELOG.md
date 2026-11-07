@@ -7,6 +7,95 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.24] - 2026-11-07
+
+### Fixed
+- **Cancel is final.** Cancelling a render on the Queue screen could look like it worked and then
+  the clip started rendering again a moment later: in Easy projects the automatic "render the best
+  clips" step saw the clip wasn't rendered and queued it once more. Now a cancelled job stays
+  cancelled: nothing automatic brings it back (not Easy, not scheduled publishing, not a restart
+  of the app). Only you can start it again, with **Retry** (or by editing the clip / pressing
+  Try again).
+- **Cancel stops the work right away.** The video encoder of a cancelled job is stopped at once,
+  even while SharkyClips is paused for a game, it no longer switches to a second (CPU) attempt,
+  and half-written files are deleted.
+
+### New
+- **Pause queue:** nothing new starts while the queue is paused (a job that is already running
+  finishes). It stays paused after a restart until you press **Resume queue**.
+- **Cancel all** now asks once before it cancels everything in the queue.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **İptal kesindir.** Kuyruk ekranında bir render'ı iptal etmek işe yaramış gibi görünüp birkaç
+  saniye sonra klibin yeniden render edilmeye başlamasına yol açabiliyordu: Kolay projelerde
+  otomatik "en iyi klipleri render et" adımı klibin render edilmediğini görüp onu tekrar kuyruğa
+  ekliyordu. Artık iptal edilen iş iptal edilmiş olarak kalır: hiçbir otomatik adım onu geri
+  getirmez (Kolay mod, zamanlanmış yayın ya da uygulamanın yeniden başlaması). Yalnızca sen
+  **Tekrar dene** ile (ya da klibi düzenleyerek / Tekrar dene'ye basarak) yeniden başlatabilirsin.
+- **İptal işi hemen durdurur.** İptal edilen işin video kodlayıcısı anında durdurulur (SharkyClips
+  bir oyun yüzünden duraklamışken bile), artık ikinci bir (CPU) denemesine geçmez ve yarım kalan
+  dosyalar silinir.
+
+### Yeni
+- **Kuyruğu duraklat:** kuyruk duraklatılmışken yeni iş başlamaz (çalışmakta olan iş biter).
+  Uygulama yeniden başlasa da **Kuyruğu sürdür**'e basana kadar duraklatılmış kalır.
+- **Hepsini iptal et** artık her şeyi iptal etmeden önce bir kez sorar.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Abbrechen ist endgültig:** ein abgebrochener Render startet nicht mehr von selbst neu (auch
+  nicht im Einfach-Modus, beim geplanten Veröffentlichen oder nach einem Neustart). Nur **Erneut
+  versuchen** startet ihn wieder. Der Encoder stoppt sofort, halbe Dateien werden gelöscht.
+- **Neu:** „Warteschlange pausieren“ (bleibt nach einem Neustart pausiert) und „Alle abbrechen“
+  mit Rückfrage.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **A megszakítás végleges:** a megszakított renderelés magától már nem indul újra (Egyszerű
+  módban, ütemezett közzétételnél és újraindítás után sem). Csak az **Újra** indítja el. A kódoló
+  azonnal leáll, a félkész fájlok törlődnek.
+- **Új:** „Sor szüneteltetése” (újraindítás után is szünetel) és „Összes megszakítása” megerősítéssel.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Отмена окончательна:** отменённый рендер больше не запускается сам (ни в простом режиме, ни
+  при запланированной публикации, ни после перезапуска). Запустить снова можно только кнопкой
+  **Повторить**. Кодировщик останавливается сразу, недописанные файлы удаляются.
+- **Новое:** «Приостановить очередь» (пауза сохраняется после перезапуска) и «Отменить всё» с
+  подтверждением.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **الإلغاء نهائي:** لم يعد العرض الملغى يبدأ من جديد تلقائيًا (لا في الوضع السهل ولا في النشر
+  المجدول ولا بعد إعادة التشغيل). وحده زر **إعادة المحاولة** يشغّله مجددًا. يتوقف المُرمِّز فورًا
+  وتُحذف الملفات غير المكتملة.
+- **جديد:** "إيقاف قائمة الانتظار مؤقتًا" (يبقى بعد إعادة التشغيل) و"إلغاء الكل" مع تأكيد.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **取消即最终：** 已取消的渲染不会再自行重新开始（简易模式、定时发布、重启应用后都不会）。
+  只有 **重试** 才能再次开始。编码器立即停止，未写完的文件会被删除。
+- **新增：** "暂停队列"（重启后仍保持暂停）和带确认的"全部取消"。
+
+</details>
+
+
 ## [1.2.23] - 2026-11-07
 
 ### Fixed

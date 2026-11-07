@@ -18,7 +18,7 @@ from .. import config, easy as E, publishing as P
 from ..errors import SharkyClipsError
 from ..project import MODES, Project
 from . import state
-from .jobs import ACTIVE, Job
+from .jobs import ACTIVE, Job, automatic
 
 router = APIRouter()
 # Jobs that belong to "finding the clips" (the grid renders once they are all done)
@@ -106,9 +106,19 @@ def pipeline_busy(project_id: str) -> bool:
     return any(j.kind in PIPE and j.status in ACTIVE for j in _app().jobs.for_project(project_id))
 
 
-def ensure_renders(project: Project, auto: bool = True, only: str | None = None) -> list[str]:
+def ensure_renders(project: Project, auto: bool = True, only: str | None = None,
+                   explicit: bool = False) -> list[str]:
     """Queue a 9:16 render for every clip on the grid that isn't rendered with the Easy settings.
-    auto=True (after a job ended) leaves clips whose last render failed alone (no retry loop)."""
+    auto=True (after a job ended) leaves clips whose last render failed alone (no retry loop).
+    A clip whose render the user cancelled stays as it is (1.2.24) unless explicit=True (the
+    user pressed Try again / edited that clip)."""
+    if not explicit:
+        with automatic():
+            return _ensure_renders(project, auto, only, False)
+    return _ensure_renders(project, auto, only, True)
+
+
+def _ensure_renders(project: Project, auto: bool, only: str | None, explicit: bool) -> list[str]:
     A = _app()
     hl = _hl(project)
     if not hl.get("candidates"):
@@ -130,8 +140,11 @@ def ensure_renders(project: Project, auto: bool = True, only: str | None = None)
             continue  # it re-checks when this one ends
         if auto and j is not None and j.status == "error":
             continue
-        A.submit_render_clip(project.id, c["id"], opts, hook, {"easy": True})
-        out.append(c["id"])
+        if not explicit and A.jobs.is_cancelled("render", project.id, f"render:{project.id}:{c['id']}"):
+            continue  # the user cancelled it: only they start it again
+        job = A.submit_render_clip(project.id, c["id"], opts, hook, {"easy": True})
+        if not job.blocked:
+            out.append(c["id"])
     return out
 
 
@@ -630,7 +643,7 @@ def api_retry(project_id: str) -> dict:
     elif not (project.dir / "highlights.json").is_file():
         A.submit_highlights(project.id)
     else:
-        ensure_renders(project, auto=False)
+        ensure_renders(project, auto=False, explicit=True)  # "Try again"
     return view(project)
 
 
@@ -669,7 +682,7 @@ def api_edit(project_id: str, cid: str, body: dict) -> dict:
         cur["start"] = None if abs(start - cand["start"]) < 0.05 else round(start, 2)
         cur["end"] = None if abs(end - cand["end"]) < 0.05 else round(end, 2)
         state.save_review(project, {"edits": {**review["edits"], cid: cur}})
-    ensure_renders(project, auto=False, only=cid)
+    ensure_renders(project, auto=False, only=cid, explicit=True)  # the user changed this clip
     return view(project)
 
 

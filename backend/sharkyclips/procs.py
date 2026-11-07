@@ -286,18 +286,67 @@ _lock = threading.Lock()
 _suspended: set[int] = set()
 
 
+_owner: dict[int, str] = {}  # pid -> id of the web job that started it (Cancel kills it at once)
+
+
 def track(proc: subprocess.Popen) -> subprocess.Popen:
-    """Register a long-running child: suspended while the governor pauses, killed on exit."""
+    """Register a long-running child: suspended while the governor pauses, killed on exit and
+    when the job that started it is cancelled."""
+    job = _current_job()
     with _lock:
         _tracked.add(proc)
+        if job is not None:
+            _owner[proc.pid] = str(job.id)
         paused = _paused
+    if job is not None and getattr(job, "cancel_requested", False):
+        _kill_tree(proc.pid)  # started after its job was cancelled
+        return proc
     if paused:
         _suspend(proc)
     return proc
 
 
+def _current_job():
+    try:
+        from . import governor
+
+        return governor.current_job()
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _kill_tree(pid: int) -> None:
+    """Kill a process and everything it started (resumed first: a suspended one can't die)."""
+    try:
+        root = psutil.Process(pid)
+        procs = [root, *root.children(recursive=True)]
+    except psutil.Error:
+        return
+    for k in procs:
+        try:
+            if k.status() == psutil.STATUS_STOPPED or k.pid in _suspended:
+                k.resume()
+        except (psutil.Error, OSError):
+            pass
+        try:
+            k.kill()
+        except (psutil.Error, OSError):
+            pass
+    psutil.wait_procs(procs, timeout=3)
+
+
+def kill_owned(job_id: str) -> int:
+    """Cancel: kill the child processes (ffmpeg, image / voice tools ...) of this job now."""
+    with _lock:
+        pids = [p.pid for p in list(_tracked) if _owner.get(p.pid) == str(job_id) and p.poll() is None]
+    for pid in pids:
+        _kill_tree(pid)
+    return len(pids)
+
+
 def untrack(proc: subprocess.Popen) -> None:
     with _lock:
+        _owner.pop(proc.pid, None)
         _tracked.discard(proc)
         _suspended.discard(proc.pid)
 

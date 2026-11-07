@@ -194,6 +194,7 @@ def run_ffmpeg(cmd: list[str], duration: float,
 
     if any(e in cmd for e in CPU_ENCODERS) and "-threads" not in cmd:
         cmd = [*cmd[:-1], "-threads", str(governor.cpu_threads()), cmd[-1]]
+    _stop_if_cancelled(cmd)  # e.g. the CPU fallback after a cancel killed the GPU encode
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
                             encoding="utf-8", errors="replace", **no_window(),
                             cwd=str(cwd) if cwd else None)
@@ -210,11 +211,33 @@ def run_ffmpeg(cmd: list[str], duration: float,
     except BaseException:  # cancelled (web UI) or Ctrl+C: don't leave ffmpeg running
         proc.kill()
         proc.wait()
+        _drop_partial(cmd)
         raise
     finally:
         procs.untrack(proc)
     err = proc.stderr.read() if proc.stderr else ""
-    return proc.wait(), err
+    code = proc.wait()
+    _stop_if_cancelled(cmd)  # Cancel killed it: the job ends here, no retry
+    return code, err
+
+
+def _drop_partial(cmd: list[str]) -> None:
+    """A cancelled encode leaves no half-written file behind."""
+    out = Path(str(cmd[-1])) if cmd else None
+    if out is not None and ".partial" in out.name:
+        try:
+            out.unlink(missing_ok=True)
+        except OSError:
+            pass
+
+
+def _stop_if_cancelled(cmd: list[str]) -> None:
+    from . import governor
+
+    job = governor.current_job()
+    if job is not None and getattr(job, "cancel_requested", False):
+        _drop_partial(cmd)
+        raise governor.JobCancelled()
 
 
 def export_preview(source: Path, start: float, end: float, dest: Path, max_height: int = 720,

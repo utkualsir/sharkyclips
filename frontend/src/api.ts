@@ -69,6 +69,8 @@ export interface QueueView {
   eta_total_seconds: number | null;
   shutdown: ShutdownState;
   speeds: Record<string, number>;
+  /** 1.2.24 "Pause queue": no new job starts */
+  paused?: boolean;
 }
 
 export interface AcceptedOverview {
@@ -1499,6 +1501,7 @@ export const api = {
   retryJob: (jobId: string) => req<Job>("POST", `/api/jobs/${jobId}/retry`),
   forgetJob: (jobId: string) => req<{ removed: boolean }>("DELETE", `/api/jobs/${jobId}`),
   queue: () => req<QueueView>("GET", "/api/queue"),
+  queuePause: (paused: boolean) => req<{ paused: boolean }>("POST", "/api/queue/pause", { paused }),
   queueAccepted: () => req<AcceptedOverview[]>("GET", "/api/queue/accepted"),
   queueRender: (project_ids: string[], rerender = false) =>
     req<{ queued: number; jobs: Job[] }>("POST", "/api/queue/render", { project_ids, rerender }),

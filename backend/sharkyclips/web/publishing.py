@@ -34,7 +34,7 @@ from ..clips import Facecam
 from ..errors import SharkyClipsError
 from ..project import Project
 from . import state
-from .jobs import ACTIVE, Job
+from .jobs import ACTIVE, CLIP_KINDS, Job, automatic
 
 router = APIRouter()
 STATS_EVERY_H = 6
@@ -689,7 +689,7 @@ class Scheduler:
             self._wake.wait(60)
 
     def tick(self, now: datetime | None = None) -> list[str]:
-        with self._lock:
+        with self._lock, automatic():  # background logic: never restarts what the user cancelled
             acts = self._tick(now or P.now_utc())
             self.last_tick = time.time()
             self.last_actions = acts
@@ -754,6 +754,9 @@ class Scheduler:
                 break
             key = P.key_of(it["project_id"], it["clip_id"])
             project, cand = it.pop("_project"), it.pop("_cand")
+            if A.jobs.blocks_clip(project.id, cand["id"], key):
+                acts.append(f"cancelled:{key}")  # the user cancelled its render / export / upload
+                continue
             try:
                 step, info = next_step(project, cand, it)
                 if step == "wait":  # Easy clip still rendering
@@ -953,9 +956,17 @@ def api_setup_save(project_id: str, cid: str, body: dict) -> dict:
     return {"ok": True, "applied": applied, "meta": meta}
 
 
+def _restart_clip(project_id: str, cid: str) -> None:
+    """The user (re)scheduled or retried this clip: earlier cancels of its work no longer apply."""
+    _app().jobs.clear_tombstones(project_id, CLIP_KINDS, clip_id=cid)
+
+
 @router.post("/api/library/schedule")
 def api_schedule(body: dict) -> dict:
     mode = "manual" if body.get("mode") == "manual" else "auto"
+    for c in list(body.get("clips") or []):
+        if isinstance(c, dict) and c.get("project_id") and c.get("clip_id") and not body.get("dry_run"):
+            _restart_clip(str(c["project_id"]), str(c["clip_id"]))
     return schedule(list(body.get("clips") or []), mode, bool(body.get("dry_run")))
 
 
@@ -965,6 +976,7 @@ def api_reschedule(project_id: str, cid: str, body: dict) -> dict:
     from .. import youtube
 
     project, cand, key = _key_parts(project_id, cid)
+    _restart_clip(project.id, cid)
     wanted = P.parse(body.get("publish_at"))
     if wanted is None:
         raise SharkyClipsError("Pick a date and time.")
@@ -991,6 +1003,7 @@ def api_publish_now(project_id: str, cid: str) -> dict:
     from .. import youtube
 
     project, cand, key = _key_parts(project_id, cid)
+    _restart_clip(project.id, cid)
     item = _item_for(project, cid)
     privacy = item["meta"].get("privacy") or "public"
     rel = releases()
@@ -1049,6 +1062,7 @@ def api_cancel(project_id: str, cid: str) -> dict:
 def api_retry(project_id: str, cid: str) -> dict:
     """The fix button of a clip that needs attention."""
     project, cand, key = _key_parts(project_id, cid)
+    _restart_clip(project.id, cid)
     item = P.get(key)
     if item is None:
         raise SharkyClipsError("This clip isn't scheduled.")
