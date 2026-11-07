@@ -7,6 +7,137 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.21] - 2026-11-07
+
+### Added
+- **Much stricter swear detection: almost no swear gets through any more.** A new deep check
+  listens to your clips again: every voice (also quiet friends and short "aq!" bursts the
+  transcript skipped), with quiet voices turned up, in several passes with the full Whisper
+  large-v3 model. It also understands Turkish word forms (siktir, sikerler, amına, götünü...),
+  spellings with ı instead of i, stretched letters ("siiiiktir"), short forms (amk, aq) and words
+  Whisper wrote censored ("s**"), in all seven app languages. Real words that look similar
+  ("sıkıntı", "götür", "aman") are left alone. On our test stream the bleeps now catch 14 of 14
+  swears, up from 8 of 14.
+- **Bleeps sit exactly on the word.** The exact start and end of every swear are found with a
+  free local alignment model, a little margin is added, and every bleep is listened to again:
+  if part of the word is still audible, the bleep gets wider. After a render, the bleeps are
+  checked once more (and the clip is rendered again if needed). Partly audible bleeps on our
+  test stream: 1 of 14, down from 4 of 8.
+- **Strictness:** Normal, Strict (the default for Shorts, TikTok and Reels) and Paranoid (bleeps
+  every candidate), next to the swear settings. In Easy mode: one switch, "Check swears
+  strictly" (on). Easy mode runs the deep check by itself on the clips it makes.
+- **It learns from you.** Every word you bleep by hand (B key, the waveform, the swear list) is
+  remembered for its language and bleeped from then on; every word you unbleep counts as "not a
+  swear". See and edit them in Studio > Word lists > Learned from you.
+- **"Check thoroughly"** button in the swear list of every clip, and a review page in Studio >
+  Word lists to listen to each found swear (as said and with the bleep).
+
+### Notes
+- The deep check downloads the Whisper large-v3 model (3.1 GB) and the alignment model (290 MB)
+  once. On computers without a strong graphics card it uses the normal model instead.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Eklendi
+- **Çok daha sıkı küfür tespiti: artık neredeyse hiçbir küfür kaçmıyor.** Yeni derin kontrol
+  kliplerini yeniden dinler: her sesi (transkriptin atladığı sessiz arkadaşları ve kısa "aq!"
+  patlamalarını da), sessiz sesleri yükselterek, tam Whisper large-v3 modeliyle birkaç geçişte.
+  Türkçe kelime biçimlerini (siktir, sikerler, amına, götünü...), i yerine ı ile yazılanları,
+  uzatılmış harfleri ("siiiiktir"), kısaltmaları (amk, aq) ve Whisper'ın sansürlü yazdıklarını
+  ("s**") da anlar; uygulamanın yedi dilinin hepsinde. Benzeyen gerçek kelimelere ("sıkıntı",
+  "götür", "aman") dokunmaz. Test yayınımızda bip'ler artık 14 küfürden 14'ünü yakalıyor (önce 8).
+- **Bip tam kelimenin üstünde.** Her küfrün tam başlangıcı ve bitişi ücretsiz, yerel bir hizalama
+  modeliyle bulunur, biraz pay eklenir ve her bip yeniden dinlenir: kelimenin bir kısmı hâlâ
+  duyuluyorsa bip genişler. Render'dan sonra bip'ler bir kez daha kontrol edilir (gerekirse klip
+  yeniden render edilir). Test yayınımızda kısmen duyulan bip: 14'te 1 (önce 8'de 4).
+- **Sıkılık:** Normal, Sıkı (Shorts, TikTok ve Reels için varsayılan) ve Çok sıkı (her adayı
+  bip'ler), küfür ayarlarının yanında. Kolay modda tek anahtar: "Küfürleri sıkı denetle" (açık).
+  Kolay mod yaptığı kliplerde derin kontrolü kendisi çalıştırır.
+- **Senden öğrenir.** Elle bip'lediğin her kelime (B tuşu, dalga formu, küfür listesi) diline göre
+  hatırlanır ve bundan sonra bip'lenir; bip'ini kaldırdığın her kelime "küfür değil" sayılır.
+  Stüdyo > Kelime listeleri > Senden öğrenilenler'de görüp düzenleyebilirsin.
+- Her klibin küfür listesinde **"Derinlemesine kontrol et"** düğmesi ve Stüdyo > Kelime
+  listeleri'nde bulunan her küfrü (söylendiği gibi ve bip'li) dinleyebileceğin bir inceleme sayfası.
+
+### Notlar
+- Derin kontrol Whisper large-v3 modelini (3,1 GB) ve hizalama modelini (290 MB) bir kez indirir.
+  Güçlü ekran kartı olmayan bilgisayarlarda normal modeli kullanır.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Viel strengere Schimpfwort-Erkennung:** eine gründliche Prüfung hört die Clips neu an (alle
+  Stimmen, auch leise und sehr kurze), mit Whisper large-v3 in mehreren Durchgängen, versteht
+  Wortformen, Schreibvarianten, gedehnte Buchstaben, Abkürzungen und zensierte Wörter in allen
+  sieben Sprachen. Testvideo: 14 von 14 Schimpfwörtern gepiept (vorher 8).
+- **Pieptöne genau auf dem Wort:** exakte Wortzeiten mit einem lokalen Ausrichtungsmodell, jeder
+  Piepton wird erneut angehört und bei Bedarf breiter, auch nach dem Rendern. Teilweise hörbar:
+  1 von 14 (vorher 4 von 8).
+- **Strenge:** Normal, Streng (Standard für Shorts / TikTok / Reels), Paranoid. Im Easy-Modus ein
+  Schalter „Schimpfwörter streng prüfen“ (an).
+- **Lernt von dir:** von Hand gepiepte Wörter werden gemerkt, entfernte zählen als „kein
+  Schimpfwort“ (Studio > Wortlisten).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Sokkal szigorúbb káromkodás-felismerés:** az alapos ellenőrzés újrahallgatja a klipeket (minden
+  hang, a halk és nagyon rövid is), Whisper large-v3-mal több menetben, és felismeri a szóalakokat,
+  írásváltozatokat, nyújtott betűket, rövidítéseket és cenzúrázott szavakat mind a hét nyelven.
+  Tesztvideó: 14-ből 14 káromkodás kisípolva (előtte 8).
+- **A sípolás pontosan a szón:** pontos szóidők egy helyi igazító modellel, minden sípolást újra
+  meghallgat, és szükség esetén szélesít, renderelés után is. Részben hallható: 14-ből 1 (előtte 8-ból 4).
+- **Szigorúság:** Normál, Szigorú (alapértelmezett Shorts / TikTok / Reels esetén), Paranoid. Easy
+  módban egy kapcsoló: „Káromkodások szigorú ellenőrzése” (be).
+- **Tanul tőled:** a kézzel kisípolt szavakat megjegyzi, a visszavontak „nem káromkodás”-nak
+  számítanak (Stúdió > Szólisták).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Гораздо более строгое распознавание ругательств:** тщательная проверка заново слушает клипы
+  (все голоса, даже тихие и очень короткие) моделью Whisper large-v3 в несколько проходов и
+  понимает словоформы, варианты написания, растянутые буквы, сокращения и зацензуренные слова на
+  всех семи языках. Тестовое видео: запикано 14 из 14 ругательств (раньше 8).
+- **Запикивание точно на слове:** точное время слов с локальной моделью выравнивания, каждое
+  запикивание прослушивается снова и при необходимости расширяется, в том числе после рендера.
+  Частично слышно: 1 из 14 (раньше 4 из 8).
+- **Строгость:** обычная, строгая (по умолчанию для Shorts / TikTok / Reels), параноидальная. В
+  простом режиме один переключатель «Строго проверять ругательства» (вкл.).
+- **Учится у вас:** запиканные вручную слова запоминаются, отменённые считаются «не ругательством»
+  (Студия > Списки слов).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **كشف أشد صرامة للشتائم:** يستمع الفحص الدقيق إلى المقاطع من جديد (كل الأصوات، حتى الخافتة
+  والقصيرة جدًا) بنموذج Whisper large-v3 على عدة مرات، ويفهم صيغ الكلمات وطرق الكتابة والحروف
+  الممدودة والاختصارات والكلمات المراقَبة بكل اللغات السبع. فيديو الاختبار: صُفّرت 14 من 14 شتيمة (سابقًا 8).
+- **الصفير على الكلمة تمامًا:** أوقات دقيقة للكلمات بنموذج محاذاة محلي، ويُستمع إلى كل صفير من
+  جديد ويُوسَّع عند الحاجة، حتى بعد التصيير. مسموع جزئيًا: 1 من 14 (سابقًا 4 من 8).
+- **الصرامة:** عادي، صارم (الافتراضي لـ Shorts وTikTok وReels)، صارم جدًا. في الوضع السهل مفتاح
+  واحد: «افحص الشتائم بصرامة» (مفعّل).
+- **يتعلّم منك:** تُحفظ الكلمات التي تصفّرها يدويًا، والتي تزيل صفيرها تُعدّ «ليست شتيمة» (الاستوديو > قوائم الكلمات).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **更严格的脏话识别：** 彻底检查会用 Whisper large-v3 多次重新识别片段（所有人声，包括很小声和很短的），并能理解七种语言的词形、写法变体、拉长的字母、缩写和被审查的词。测试视频：14 个脏话全部哔掉（之前 8 个）。
+- **哔声精确落在词上：** 用本地对齐模型找到精确的词语时间，每个哔声都会重新试听，必要时加宽，渲染后也会检查。仍能部分听到：14 个中 1 个（之前 8 个中 4 个）。
+- **严格程度：** 普通、严格（Shorts / TikTok / Reels 默认）、极严格。简易模式只有一个开关“严格检查脏话”（开）。
+- **向你学习：** 你手动哔掉的词会被记住，取消哔声的词算作“不是脏话”（工作室 > 词语列表）。
+
+</details>
+
 ## [1.2.20] - 2026-11-06
 
 ### Changed

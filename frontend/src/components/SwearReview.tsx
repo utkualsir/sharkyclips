@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { api, type ClipEdit, type EditPlanView, type SwearItem } from "../api";
+import { api, type ClipEdit, type EditPlanView, type SwearItem, type SwearScanView } from "../api";
+import { useJobs } from "../jobs";
 import { mergeRanges, speakerLabel, subtractRange } from "../editing";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
@@ -32,6 +33,19 @@ export default function SwearReview({ projectId, plan, edit, lang, onChange, onP
   const on = items.filter((s) => s.bleep).length;
   const maybe = items.filter((s) => s.status === "maybe" && !s.bleep).length;
   const [peaks, setPeaks] = useState<number[]>([]);
+  const [scan, setScan] = useState<SwearScanView | null>(null);
+  const { jobs } = useJobs();
+  const scanJob = jobs.find((j) => j.kind === "swearscan" && j.project_id === projectId && (j.status === "queued" || j.status === "running"));
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .swearScan(projectId)
+      .then((s) => !cancelled && setScan(s))
+      .catch(() => !cancelled && setScan(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId, !!scanJob]);
   const [sel, setSel] = useState<[number, number] | null>(null);
   const drag = useRef<number | null>(null);
   const strip = useRef<HTMLDivElement>(null);
@@ -60,7 +74,12 @@ export default function SwearReview({ projectId, plan, edit, lang, onChange, onP
   };
   const pct = (v: number) => `${((v - start) / dur) * 100}%`;
   const name = (spk: string | null) => (spk ? speakerLabel(spk, plan.speakers, t) : t("swear.someone"));
-  const why = (s: SwearItem) => t(`swear.why.${s.why.split("+")[0]}`);
+  const why = (s: SwearItem) => {
+    const k = s.why.startsWith("scan") ? "scan" : s.why.split("+")[0];
+    const base = t(`swear.why.${k}`);
+    const heard = s.heard && s.heard.length > 1 ? ` · ${s.heard.slice(0, 4).join(", ")}` : "";
+    return s.votes ? `${base} (${t("swear.votes", { v: s.votes })})${heard}` : base;
+  };
 
   return (
     <section className="panel swear-review" aria-labelledby="swear-title">
@@ -73,6 +92,21 @@ export default function SwearReview({ projectId, plan, edit, lang, onChange, onP
             ? t("swear.off")
             : t("swear.summary", { n: num(on), m: num(maybe) })}
         </span>
+      </div>
+      <div className="swear-scan">
+        <span className="muted small">
+          {scanJob
+            ? t(`stage.${scanJob.stage ?? "swears_listening"}`)
+            : scan?.done
+              ? t(scan.stale ? "swear.scan_stale" : "swear.scan_done", { n: num(scan.items?.length ?? 0) })
+              : t("swear.scan_hint")}
+        </span>
+        {!scanJob && (
+          <button className="btn btn-sm btn-ghost" onClick={() => api.runSwearScan(projectId).catch(() => undefined)}>
+            <Icon name="scan" />
+            {scan?.done ? t("swear.scan_again") : t("swear.scan")}
+          </button>
+        )}
       </div>
       <div
         className="swear-wave"

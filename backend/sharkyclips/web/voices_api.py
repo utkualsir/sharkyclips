@@ -303,3 +303,117 @@ def api_facecam_forget_all() -> dict:
 
     write_json_atomic(fc_mod._layouts_path(), {"layouts": []})
     return {"ok": True}
+
+
+# ------------------------------------------------------------------ deep swear check (1.2.21)
+
+
+def submit_swearscan(project_id: str, find_all: bool = False, clip_ids: list[str] | None = None):
+    """The deep swear check (voices/swearscan.py) over every clip, or only clip_ids (Easy: the
+    clips it renders)."""
+    A = _app()
+
+    def run(job):
+        from ..voices import pipeline, swearscan
+
+        def progress(stage: str, f: float) -> None:
+            A.jobs.update(job, stage=f"swears_{stage}", progress=f)
+
+        project = A.get_project(project_id)
+        ranges = None
+        if clip_ids:
+            hl = state.load_highlights(project) or {}
+            dur = float(project.load_meta().get("duration") or 0)
+            rs = [(max(0.0, float(c["start"]) - pipeline.PAD), min(dur or 1e9, float(c["end"]) + pipeline.PAD))
+                  for c in hl.get("candidates", []) if c["id"] in clip_ids]
+            ranges = pipeline.merge_ranges(rs) or None
+        data = swearscan.run_scan(project, on_progress=progress, find_all=find_all, ranges=ranges)
+        items = data["items"]
+        return {"items": len(items), "sure": sum(1 for i in items if i["status"] == "sure"),
+                "model": data["model"], "seconds": data["seconds"]}
+
+    return A.jobs.submit("swearscan", "gpu", project_id, {"find_all": find_all, "clip_ids": clip_ids or []}, run,
+                         key=f"swearscan:{project_id}")
+
+
+def _scan_view(project) -> dict:
+    from ..edit import swears
+    from ..voices import align, swearscan
+
+    data = swearscan.load(project)
+    view: dict = {"done": data is not None, "aligner_ready": align.ready()}
+    if data:
+        items = data.get("items") or []
+        view.update({
+            "created_at": data.get("created_at"), "model": data.get("model"), "aligned": data.get("aligned"),
+            "seconds": data.get("seconds"), "windows": data.get("windows"), "ranges": data.get("ranges"),
+            "stale": data.get("transcript_created_at") != voices.pipeline._transcript_stamp(project),
+            "count": {lvl: sum(1 for i in items if swears.bleeped(i, lvl)) for lvl in swears.STRICTNESS},
+            "items": [{k: i.get(k) for k in ("start", "end", "word", "heard", "spk", "status", "score", "votes",
+                                             "why", "bleep", "aligned", "leak", "leak_first", "rounds")}
+                      for i in items],
+        })
+    return view
+
+
+@router.get("/api/projects/{project_id}/swearscan")
+def api_swearscan(project_id: str) -> dict:
+    return _scan_view(_app()._project(project_id))
+
+
+@router.post("/api/projects/{project_id}/swearscan/run")
+def api_swearscan_run(project_id: str, body: dict | None = None) -> dict:
+    project = _app()._project(project_id)
+    if not project.transcript_path.is_file():
+        raise SharkyClipsError("Transcribe the video first.")
+    return submit_swearscan(project.id, find_all=bool((body or {}).get("find_all"))).to_dict()
+
+
+@router.get("/api/projects/{project_id}/swearscan/snippet")
+def api_swearscan_snippet(project_id: str, start: float, end: float, bleep: str = ""):
+    """A short WAV of the main audio (listen back), optionally with a bleep mixed in ("a,b")."""
+    import io
+    import wave
+
+    import numpy as np
+    from fastapi.responses import Response
+
+    from .. import audio
+    from ..voices import swearscan
+
+    project = _app()._project(project_id)
+    if end <= start or end - start > 30:
+        raise SharkyClipsError("Range too long (max 30 seconds).")
+    if not project.audio_path.is_file():
+        raise SharkyClipsError("The audio of this project is missing.")
+    x = audio.read_wav_segment(project.audio_path, max(0.0, start), end)
+    for part in [bleep] if bleep else []:
+        try:
+            a, b = (float(v) for v in part.split(",")[:2])
+        except ValueError:
+            continue
+        x = swearscan.bleep_into(x, a, b, max(0.0, start))
+    pcm = (np.clip(x, -1, 1) * 32767).astype("<i2").tobytes()
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(16000)
+        w.writeframes(pcm)
+    return Response(buf.getvalue(), media_type="audio/wav", headers={"Cache-Control": "no-cache"})
+
+
+@router.get("/api/projects/{project_id}/swearscan/labels")
+def api_swear_labels(project_id: str) -> dict:
+    from ..edit import swear_eval
+
+    return swear_eval.load_labels(_app()._project(project_id))
+
+
+@router.put("/api/projects/{project_id}/swearscan/labels")
+def api_swear_labels_put(project_id: str, body: dict) -> dict:
+    """One item's label from the review page: {"key", "label": yes|no|unsure|null, "note"?}."""
+    from ..edit import swear_eval
+
+    return swear_eval.set_label(_app()._project(project_id), str(body.get("key") or ""), body.get("label"),
+                                str(body.get("note") or ""), by="user")

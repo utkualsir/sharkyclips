@@ -223,7 +223,8 @@ def fallback_chain(plan: BackendPlan, hw: HardwareInfo) -> list[BackendPlan]:
 
 
 # Rough VRAM need of each setup (weights + work memory), measured on CUDA with faster-whisper.
-WHISPER_VRAM_MB = {("large-v3-turbo", "float16"): 2600, ("large-v3-turbo", "int8_float16"): 1500,
+WHISPER_VRAM_MB = {("large-v3", "float16"): 4300, ("large-v3", "int8_float16"): 2500,
+                   ("large-v3-turbo", "float16"): 2600, ("large-v3-turbo", "int8_float16"): 1500,
                    ("medium", "float16"): 2400, ("medium", "int8_float16"): 1300,
                    ("small", "float16"): 1000, ("small", "int8_float16"): 700}
 
@@ -263,7 +264,7 @@ def _load_from(chain: list[BackendPlan], start: int):
         console.print(f"Loading model [bold]{p.model}[/] ({p.label}) ...")
         mlx = p.backend == "mlx-whisper"
         if not is_cached(MLX_REPOS[p.model] if mlx else p.model, mlx=mlx):
-            size = {"large-v3-turbo": "1.6 GB", "medium": "1.5 GB", "small": "0.5 GB"}.get(p.model, "")
+            size = {"large-v3": "3.1 GB", "large-v3-turbo": "1.6 GB", "medium": "1.5 GB", "small": "0.5 GB"}.get(p.model, "")
             console.print(f"[dim]First use downloads the model ({size}); it's cached afterwards.[/]")
         try:
             engine = _load_engine(p)
@@ -346,12 +347,20 @@ def _verify_gpu_once(hw: HardwareInfo, plan: BackendPlan) -> BackendPlan:
 
 def load_whisper(model: str = "auto"):
     """A Whisper engine picked like transcribe_project does (hardware, GPU check, governor's
-    VRAM budget, LLM unloaded first). The caller releases it with memory.release_current()."""
+    VRAM budget, LLM unloaded first). The caller releases it with memory.release_current().
+    model "check": the full large-v3 (not turbo) on a GPU with 6 GB+, for the swear check's
+    second pass; elsewhere (CPU, small GPU, short VRAM budget) the normal model."""
     hw = hardware.detect_hardware()
     cfg = config.load()
     cuda_ok = bool(hw.best_nvidia) and not cfg.get("force_cpu") and hardware.cuda_device_count() > 0
-    plan = hardware.choose_plan(hw, model, cuda_ok=cuda_ok, force_cpu=bool(cfg.get("force_cpu")),
-                                force_cpu_reason=cfg.get("force_cpu_reason"))
+    check = model == "check"
+    plan = hardware.choose_plan(hw, "auto" if check else model, cuda_ok=cuda_ok,
+                                force_cpu=bool(cfg.get("force_cpu")), force_cpu_reason=cfg.get("force_cpu_reason"))
+    if check and plan.device in ("cuda", "mlx") and (hw.best_nvidia is None or hw.best_nvidia.vram_gb >= 6):
+        compute = plan.compute_type if plan.device == "mlx" else (
+            "float16" if hw.best_nvidia and hw.best_nvidia.vram_gb >= 8 else "int8_float16")
+        plan = replace(plan, model="large-v3", compute_type=compute, batch_size=1,
+                       reason=plan.reason + "; swear check -> large-v3")
     if plan.device == "cuda":
         plan = _verify_gpu_once(hw, plan)
     if governor.get() is not None:
@@ -385,6 +394,49 @@ def transcribe_short(engine, samples: np.ndarray, language: str | None, hotwords
     segments, _info = model.transcribe(samples, language=language, task="transcribe", word_timestamps=True,
                                        vad_filter=vad, beam_size=5, condition_on_previous_text=False,
                                        hotwords=hotwords or None, no_speech_threshold=0.75)
+    out = []
+    for seg in segments:
+        out.append({"start": seg.start, "end": seg.end, "text": seg.text.strip(),
+                    "avg_logprob": seg.avg_logprob, "no_speech_prob": seg.no_speech_prob,
+                    "compression_ratio": seg.compression_ratio,
+                    "words": [{"start": w.start, "end": w.end, "word": w.word, "probability": w.probability}
+                              for w in (seg.words or [])]})
+    return out
+
+
+def check_model_ready() -> bool:
+    """The swear check's large-v3 is downloaded (renders never wait for a 3 GB download)."""
+    try:
+        hw = hardware.detect_hardware()
+        mlx = bool(hw.apple_silicon and not hw.rosetta)
+        return is_cached(MLX_REPOS["large-v3"] if mlx else "large-v3", mlx=mlx)
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def transcribe_check(engine, samples: np.ndarray, language: str | None, prompt: str | None = None,
+                     temperature: float = 0.0, hotwords: str | None = None) -> list[dict]:
+    """One decoding pass of a short window for the swear check: no VAD (quiet bursts stay),
+    beam search at temperature 0 (sampling with best-of-5 above), an optional initial prompt
+    (the swear words of the language), no fallback and no silence skipping."""
+    if isinstance(engine, MlxWhisperEngine):
+        import mlx_whisper
+
+        res = mlx_whisper.transcribe(samples, path_or_hf_repo=engine.repo, language=language,
+                                     word_timestamps=True, condition_on_previous_text=False, verbose=None,
+                                     initial_prompt=prompt, temperature=temperature, no_speech_threshold=None)
+        segs = res.get("segments", [])
+        return [{"start": s["start"], "end": s["end"], "text": s["text"].strip(),
+                 "avg_logprob": s.get("avg_logprob", 0.0), "no_speech_prob": s.get("no_speech_prob", 0.0),
+                 "compression_ratio": s.get("compression_ratio", 1.0),
+                 "words": [{"start": w["start"], "end": w["end"], "word": w["word"],
+                            "probability": w.get("probability", 0.0)} for w in s.get("words", [])]}
+                for s in segs]
+    segments, _info = engine.model.transcribe(
+        samples, language=language, task="transcribe", word_timestamps=True, vad_filter=False,
+        beam_size=5, best_of=5, temperature=[float(temperature)], condition_on_previous_text=False,
+        initial_prompt=prompt or None, hotwords=hotwords or None, no_speech_threshold=None,
+        log_prob_threshold=None, compression_ratio_threshold=None)
     out = []
     for seg in segments:
         out.append({"start": seg.start, "end": seg.end, "text": seg.text.strip(),

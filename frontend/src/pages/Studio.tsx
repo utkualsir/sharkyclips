@@ -18,6 +18,7 @@ import { isActive, useJobs } from "../jobs";
 import { useMeta } from "../meta";
 import { href, type StudioTab } from "../router";
 import { useToast } from "../toast";
+import { LearnedWords, SwearCheckReview } from "../components/SwearCheck";
 
 const MOODS: Mood[] = ["hype", "chill", "sad", "funny"];
 const POSITIONS: LogoPos[] = ["tl", "tr", "bl", "br"];
@@ -611,6 +612,7 @@ function WordsTab() {
           </div>
         </div>
       </section>
+      <LearnedWords data={data} code={code} onData={setData} />
       <section className="card setting">
         <div>
           <h2>{t("words.fillers")}</h2>
@@ -676,6 +678,7 @@ function WordsTab() {
           {t("common.save")}
         </button>
       </div>
+      <SwearCheckReview />
     </div>
   );
 }

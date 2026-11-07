@@ -105,7 +105,9 @@ def save_review(project: Project, changes: dict[str, Any]) -> dict:
             review["facecam_checked"] = True
         if "rejected" in changes:
             review["rejected"] = [str(c) for c in changes["rejected"]][:500]
+        old_edits = None
         if "edits" in changes:
+            old_edits = dict(review.get("edits") or {})
             review["edits"] = {str(k): e for k, v in (changes["edits"] or {}).items() if (e := clean_edit(v))}
         if "music" in changes:
             review["music"] = {str(k): (str(v)[:200] if v else "") for k, v in (changes["music"] or {}).items()
@@ -115,7 +117,14 @@ def save_review(project: Project, changes: dict[str, Any]) -> dict:
 
             review["dub"] = {str(k): str(v) for k, v in (changes["dub"] or {}).items() if v in TARGETS}
         write_json_atomic(project.dir / "review.json", review)
-        return review
+    if old_edits is not None:  # manual bleeps / unbleeps -> the user's learned words (1.2.21)
+        try:
+            from ..edit import swearlearn
+
+            swearlearn.from_edits(project, old_edits, review["edits"])
+        except Exception:  # noqa: BLE001 - learning is a bonus, never block saving
+            pass
+    return review
 
 
 def clean_edit(e: dict | None) -> dict | None:

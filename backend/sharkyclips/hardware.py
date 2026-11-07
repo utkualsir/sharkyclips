@@ -25,9 +25,10 @@ from .procs import no_window
 # Model names SharkyClips accepts on the command line.
 MODEL_CHOICES = ("auto", "large-v3-turbo", "medium", "small")
 # When a model doesn't fit, step down to the next one.
-MODEL_FALLBACK = {"large-v3-turbo": "medium", "medium": "small", "small": None}
+MODEL_FALLBACK = {"large-v3": "large-v3-turbo", "large-v3-turbo": "medium", "medium": "small", "small": None}
 # MLX (Apple Silicon) model repos on Hugging Face.
 MLX_REPOS = {
+    "large-v3": "mlx-community/whisper-large-v3-mlx",  # the swear check's second pass (1.2.21)
     "large-v3-turbo": "mlx-community/whisper-large-v3-turbo",
     "medium": "mlx-community/whisper-medium-mlx",
     "small": "mlx-community/whisper-small-mlx",

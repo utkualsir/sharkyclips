@@ -101,6 +101,8 @@ def save_settings(body: dict) -> dict:
         changes["easy_study_cards"] = body["study_cards"]
     if body.get("visualizer") in ("off", "auto"):
         changes["easy_visualizer"] = body["visualizer"]
+    if body.get("swear_strict") in ("auto", "normal"):
+        changes["easy_swear_strict"] = body["swear_strict"] == "auto"
     if changes:
         config.update(**changes)
     return settings()
@@ -212,7 +214,10 @@ def hook_style() -> str:
 def extras_settings() -> dict:
     """1.2.18 switches (off / auto): study cards in study mode, the visualizer in music mode."""
     sc, mv = config.get("easy_study_cards"), config.get("easy_visualizer")
-    return {"study_cards": sc if sc in ("off", "auto") else "auto", "visualizer": mv if mv in ("off", "auto") else "auto"}
+    # 1.2.21 "Check swears strictly" (on): "auto" = Strict for the vertical clips Easy makes
+    strict = config.get("easy_swear_strict") is not False
+    return {"study_cards": sc if sc in ("off", "auto") else "auto", "visualizer": mv if mv in ("off", "auto") else "auto",
+            "swear_strict": "auto" if strict else "normal"}
 
 
 def render_options(prefs: dict, style: str, music_ok: bool, fx: dict | None = None) -> tuple[dict, str | None]:

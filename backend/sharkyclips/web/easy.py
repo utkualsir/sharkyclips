@@ -22,7 +22,7 @@ from .jobs import ACTIVE, Job
 
 router = APIRouter()
 # Jobs that belong to "finding the clips" (the grid renders once they are all done)
-PIPE = {"import", "transcribe", "highlights", "facecam", "voices", "proofread", "analyze", "proxy"}
+PIPE = {"import", "transcribe", "highlights", "facecam", "voices", "proofread", "analyze", "proxy", "swearscan"}
 
 
 def _app():
@@ -333,6 +333,14 @@ def on_job_finished(job: Job) -> None:
         from .voices_api import submit_voices
 
         submit_voices(pid)  # every speaker in the captions (only the clip ranges)
+    # 1.2.21 "Check swears strictly": the deep check on the clips Easy renders, before the renders
+    deep = (job.kind == "voices" or (job.kind == "highlights" and not _voices_ok())) and job.status in ("done", "failed")
+    if deep and E.extras_settings()["swear_strict"] == "auto":
+        from .voices_api import submit_swearscan
+
+        top = _top(project, data, _hl(project))
+        if top:
+            submit_swearscan(pid, clip_ids=[c["id"] for c in top])
     if job.kind not in PIPE | {"render"} or pipeline_busy(pid):
         return
     ensure_renders(project)

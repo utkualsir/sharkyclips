@@ -159,7 +159,8 @@ def test_plan_bleeps_every_speaker_and_respects_the_review_list():
     p = plan.build(proj, cand, opts, words=[dict(w) for w in words], lang="tr", fps=30)
     by = {it["word"]: it for it in p.swears}
     assert by["amına"]["spk"] == "me" and by["siktir"]["spk"] == "f1" and by["siktir"]["bleep"]
-    assert len(p.bleeps) == 3 and p.bleep_sound == "boop"
+    # "amına" + "siktir" are 100 ms apart: one bleep (closer than 150 ms after padding)
+    assert len(p.bleeps) == 2 and p.bleep_sound == "boop"
     caps = [w["word"] for w in p.out_words()]
     assert "s*****" in caps and "a****" in caps and "o*****" in caps  # censored for every speaker
     # the user: unbleep "siktir", bleep "git" by hand

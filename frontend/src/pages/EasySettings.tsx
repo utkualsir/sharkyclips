@@ -109,6 +109,17 @@ export default function EasySettings() {
         <h2 id="ez-set-fx">{t("easy.set_fx")}</h2>
         <div className="toggle-line">
           <span>
+            <b>{t("easy.swear_strict")}</b>
+            <span className="muted ez-hint">{t("easy.swear_strict_hint")}</span>
+          </span>
+          <Toggle
+            checked={(settings?.swear_strict ?? "auto") === "auto"}
+            onChange={(v) => update({ swear_strict: v ? "auto" : "normal" })}
+            label={t("easy.swear_strict")}
+          />
+        </div>
+        <div className="toggle-line">
+          <span>
             <b>{t("fx.replay")}</b>
             <span className="muted ez-hint">{t("fx.replay_hint")}</span>
           </span>

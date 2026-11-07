@@ -728,4 +728,4 @@ def test_dubbed_upload_says_its_voice_is_ai_made(yt):
         assert yt.videos[state.live_upload(project, "c01")["video_id"]]["snippet"]["description"].endswith(line)
 
         lic = c.get("/api/licenses").json()
-        assert lic["app"]["license"] == "MIT" and {g["id"] for g in lic["groups"]} == {"voice", "covers"}
+        assert lic["app"]["license"] == "MIT" and {g["id"] for g in lic["groups"]} == {"voice", "covers", "swears"}

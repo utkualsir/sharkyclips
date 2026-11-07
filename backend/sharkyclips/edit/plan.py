@@ -118,6 +118,8 @@ class EditPlan:
     bleep_mode: str = "off"  # bleep | mute | off
     bleep_sound: str = "classic"  # classic | boop | custom
     bleeps: list[tuple[float, float]] = field(default_factory=list)
+    bleep_src: list[tuple[float, float]] = field(default_factory=list)  # the same, in source time
+    strictness: str = "normal"
     swears: list[dict] = field(default_factory=list)  # review list: edit/swears.py items + "bleep"
     speakers: dict = field(default_factory=dict)  # {"me": "custom name" | "", "f1": ...} (voice pass)
     mask_captions: bool = False
@@ -271,21 +273,30 @@ class EditPlan:
 
 
 def swear_review(project: Project, words: list[dict], lang: str | None, start: float, end: float,
-                 edit: dict, vdata: dict | None = None, use_hints: bool = True) -> list[dict]:
+                 edit: dict, vdata: dict | None = None, use_hints: bool = True,
+                 strictness: str = "normal", scan: dict | None = None) -> list[dict]:
     """Every detected / "maybe" swear of the clip with "bleep" = what the render does, plus
-    the user's manual bleeps (time ranges, status "manual")."""
+    the user's manual bleeps (time ranges, status "manual"). Where the deep check
+    (voices/swearscan.py) ran, its voted, aligned items replace the transcript's own."""
     from . import swears
 
     hints = []
     if use_hints:
         from .. import voices as voices_mod
+        from ..voices import swearscan
 
         hints = voices_mod.hints_for(project, start, end, vdata)
+        scan = scan if scan is not None else swearscan.load(project)
     items = [it for it in swears.detect(words, lang, hints) if start - 0.05 <= it["start"] <= end + 0.05]
+    if scan is not None:
+        from ..voices import swearscan
+
+        if swearscan.covers(scan, start, end):
+            items = merge_scan(items, swearscan.items_for(scan, start, end), words, lang)
     add = [(float(a), float(b)) for a, b in (edit.get("bleep") or [])]
     remove = [(float(a), float(b)) for a, b in (edit.get("unbleep") or [])]
     for it in items:
-        it["bleep"] = swears.bleeped(it)
+        it["bleep"] = swears.bleeped(it, strictness)
         if swears.in_ranges(it["start"], it["end"], remove):
             it["bleep"] = False
         elif swears.in_ranges(it["start"], it["end"], add):
@@ -306,6 +317,47 @@ def swear_review(project: Project, words: list[dict], lang: str | None, start: f
             words[i]["bleep"] = True
     items.sort(key=lambda it: it["start"])
     return items
+
+
+def merge_scan(items: list[dict], scanned: list[dict], words: list[dict], lang: str | None) -> list[dict]:
+    """The deep check's items (voted over passes, exact times, checked bleep ranges) + the
+    transcript's own items it has nothing for (learned words, edits made since)."""
+    from . import swears
+    from .words import token
+
+    out = []
+    for s in scanned:
+        it = {"i": None, "start": s["start"], "end": s["end"], "word": s["word"], "spk": s.get("spk"),
+              "status": s["status"], "why": s.get("why", "scan"), "score": float(s.get("score", 0.5)),
+              "votes": s.get("votes"), "heard": s.get("heard"), "aligned": bool(s.get("aligned"))}
+        if s.get("bleep"):
+            it["bleep_at"] = [float(s["bleep"][0]), float(s["bleep"][1])]
+        under = [i for i, w in enumerate(words) if w["start"] < s["end"] + 0.05 and w["end"] > s["start"] - 0.05]
+        alike = [i for i in under if swears.sounds_alike(words[i]["word"], s["word"], lang)
+                 or token(words[i]["word"], lang) == token(s["word"], lang)]
+        pick = alike or (under if len(under) == 1 else [])
+        if pick:
+            it["i"] = pick[0]
+            if not it["spk"]:
+                it["spk"] = words[pick[0]].get("spk")
+        out.append(it)
+    for it in items:
+        twin = next((s for s in out if s["start"] < it["end"] + 0.1 and s["end"] > it["start"] - 0.1), None)
+        if twin is None:
+            out.append(it)
+            continue
+        if it["status"] == "sure" and twin["status"] != "sure":
+            twin.update(status="sure", score=1.0, why=twin["why"] + "+" + it["why"])
+        if twin.get("i") is None and it.get("i") is not None:
+            twin["i"] = it["i"]
+    out.sort(key=lambda it: it["start"])
+    return out
+
+
+# Bleep padding (seconds before, after) around a swear without a checked range from the deep
+# check: Whisper's word times are often 50-200 ms off, so a little more for vertical videos.
+BLEEP_PAD = {"normal": (0.08, 0.12), "strict": (0.12, 0.18), "paranoid": (0.15, 0.22)}
+BLEEP_MERGE_GAP = 0.15
 
 
 def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: float = 30.0,
@@ -413,9 +465,15 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
     # ---- swear words: every speaker, misheard ones, other passes (edit/swears.py) + the user's
     # own choices in the review list (edit "bleep" = add, "unbleep" = remove)
     mode = profanity.resolve(getattr(opts, "profanity", "off"), vertical)
-    plan.swears = swear_review(project, words, lang, start, end, edit, vdata, use_hints=not given)
+    from . import swears as swears_mod
+
+    strictness = swears_mod.resolve_strictness(getattr(opts, "swear_strict", "auto"), vertical)
+    plan.strictness = strictness
+    plan.swears = swear_review(project, words, lang, start, end, edit, vdata,
+                               use_hints=not given, strictness=strictness)
     if mode != "off":
         ranges = []
+        pre, post = BLEEP_PAD.get(strictness, BLEEP_PAD["normal"])
         for it in plan.swears:
             if not it["bleep"]:
                 continue
@@ -423,11 +481,22 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
                 words[it["i"]]["bleep"] = True
                 if words[it["i"]].get("removed"):
                     continue
-            ranges.append((it["start"] - 0.03, it["end"] + 0.03))
+            if it.get("bleep_at"):  # aligned + checked by the deep check
+                ranges.append((float(it["bleep_at"][0]), float(it["bleep_at"][1])))
+            elif it["status"] == "manual":
+                ranges.append((it["start"], it["end"]))
+            else:
+                ranges.append((it["start"] - pre, it["end"] + post))
         plan.bleep_mode = mode
         plan.bleep_sound = getattr(opts, "bleep_sound", "classic") or "classic"
         plan.mask_captions = bool(getattr(opts, "profanity_captions", True))
-        plan.bleeps = plan.out_ranges(merge(ranges))
+        if not given and ranges:  # widened after a render where part of a swear was still heard
+            from ..voices import swearscan
+
+            fixes = [(float(x), float(y)) for x, y in swearscan.load_fixes(project).get(str(cand.get("id")), [])]
+            ranges += [f for f in fixes if any(f[0] < b + 0.2 and f[1] > a - 0.2 for a, b in ranges)]
+        plan.bleep_src = merge(ranges, BLEEP_MERGE_GAP)
+        plan.bleeps = plan.out_ranges(plan.bleep_src)
     for it in plan.swears:
         if it.get("i") is not None and it["status"] == "maybe" and not it["bleep"]:
             words[it["i"]]["maybe"] = True

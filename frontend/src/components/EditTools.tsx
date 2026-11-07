@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, urls, type BleepSound, type BrandState, type ClipOptions, type CutLevel, type EditPlanView, type MemeLevel, type MusicTrack, type ProfanityMode, type ZoomLevel } from "../api";
+import { api, urls, type BleepSound, type BrandState, type ClipOptions, type CutLevel, type EditPlanView, type MemeLevel, type MusicTrack, type ProfanityMode, type SwearStrict, type ZoomLevel } from "../api";
 import { gameReasonLabel } from "../pages/GameDebug";
 import { useI18n } from "../i18n";
 import { href } from "../router";
@@ -7,6 +7,7 @@ import { Icon } from "./Icons";
 import { Segmented, Toggle } from "./ui";
 
 const PROFANITY: ProfanityMode[] = ["auto", "bleep", "mute", "off"];
+const STRICT: SwearStrict[] = ["auto", "normal", "strict", "paranoid"];
 const SOUNDS: BleepSound[] = ["classic", "boop", "custom"];
 const CUTS: CutLevel[] = ["off", "light", "strong"];
 const ZOOMS: ZoomLevel[] = ["off", "subtle", "strong"];
@@ -139,6 +140,24 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
               {maybes > 0 && ` · ${t("edit.maybes_n", { n: maybes })}`}
               {options.profanity === "auto" && ` · ${t("edit.profanity_auto_hint")}`}
             </span>
+          )}
+          {options.profanity !== "off" && (
+            <div className="edit-line swear-strict">
+              <span className="muted small">{t("edit.swear_strict")}</span>
+              <select
+                className="select select-sm"
+                value={options.swear_strict ?? "auto"}
+                onChange={(e) => setOption({ swear_strict: e.target.value as SwearStrict })}
+                aria-label={t("edit.swear_strict")}
+                title={t(`edit.swear_strict_hint.${options.swear_strict ?? "auto"}`)}
+              >
+                {STRICT.map((m) => (
+                  <option key={m} value={m}>
+                    {t(`edit.swear_strict.${m}`)}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
           {options.profanity !== "off" && (
             <label className="edit-check">

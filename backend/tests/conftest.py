@@ -28,6 +28,7 @@ os.environ["OBS_HOME"] = str(_home / "no-obs")  # never read the real OBS settin
 os.environ["SHARKYCLIPS_NO_KEYCHAIN"] = "1"  # macOS: never touch the real login Keychain
 os.environ.pop("SHARKYCLIPS_YT_ENDPOINT", None)
 os.environ["SHARKYCLIPS_NO_BROWSER"] = "1"  # "Connect with Google" must not open a real browser
+os.environ["SHARKYCLIPS_NO_BLEEP_CHECK"] = "1"  # renders never load Whisper to re-listen to bleeps (tested directly)
 # no built-in Google client unless a test sets one (the shipped google_client.json may be filled in)
 os.environ["SHARKYCLIPS_SHARED_CLIENT"] = str(_home / "no-shared-client.json")
 os.environ.pop("CLIPFORGE_HOME", None)

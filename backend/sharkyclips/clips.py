@@ -55,6 +55,8 @@ class ClipOptions:
     profanity: str = "auto"  # auto (bleep in vertical videos) | bleep | mute | off
     profanity_captions: bool = True  # "a**" in the captions
     bleep_sound: str = "classic"  # classic | boop | custom (profanity "mute" = silence instead)
+    # 1.2.21: which "maybe" swears get bleeped: auto (strict for vertical) | normal | strict | paranoid
+    swear_strict: str = "auto"
     speaker_colors: bool = True  # captions: one colour per speaker (after the voice pass)
     speaker_names: bool = False  # captions: "Me:" / "Efe:" tag when the speaker changes
     cuts: str = "off"  # off | light | strong
@@ -75,7 +77,7 @@ class ClipOptions:
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
-                "profanity_captions", "bleep_sound", "speaker_colors", "speaker_names", "cuts", "zoom",
+                "profanity_captions", "bleep_sound", "swear_strict", "speaker_colors", "speaker_names", "cuts", "zoom",
                 "music", "brand", "loop", "replay", "chat_bubbles", "memes", "dub", "study_cards", "visualizer")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.chat_bubbles = bool(opts.chat_bubbles)
@@ -87,7 +89,8 @@ class ClipOptions:
                               ("zoom", ("off", "subtle", "strong")), ("replay", ("off", "auto")),
                               ("memes", ("off", "light", "strong")),
                               ("study_cards", ("off", "auto")), ("visualizer", ("off", "auto")),
-                              ("bleep_sound", ("classic", "boop", "custom"))):
+                              ("bleep_sound", ("classic", "boop", "custom")),
+                              ("swear_strict", ("auto", "normal", "strict", "paranoid"))):
             if getattr(opts, name) not in allowed:
                 raise SharkyClipsError(f"Unknown {name} setting '{getattr(opts, name)}'.",
                                        f"Use one of: {', '.join(allowed)}")

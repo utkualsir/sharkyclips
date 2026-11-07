@@ -8,9 +8,13 @@ detect() returns one item per swear (or "maybe" swear) with the speaker, time an
   phonetic  sounds like a list word (Turkish spelling folded: ı/i, ğ, ş/s, ç/c, k/q...) -> maybe
   pass2     another transcription pass (separated voices / another track) heard a swear here
   acoustic  a re-listen of the vocal stem with the swear words as hints heard one here
+  form      a swear form the lexicon knows (swearlex.py: stem + suffix, abbreviation, leet,
+            stretched letters) -> sure; "dotless"/"sound" forms -> maybe
+  learned   a word the user bleeped by hand before (swearlearn.py) -> sure
+  scan      the deep check (voices/swearscan.py) heard one here, with votes over passes
 
-"sure" items are bleeped. "maybe" items are bleeped when their score is high enough (two
-signals agree, or the re-listen confirmed it); all of them show up in the review list.
+"sure" items are bleeped. "maybe" items are bleeped when their score reaches the strictness
+level (STRICTNESS: normal 0.6, strict 0.35, paranoid any); all show up in the review list.
 """
 
 from __future__ import annotations
@@ -18,10 +22,20 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from . import profanity
+from . import profanity, swearlex
 from .words import compile_entries, find, fold, token
 
 BLEEP_MAYBE_AT = 0.6
+# The score from which a "maybe" swear is bleeped, per strictness level.
+STRICTNESS = {"normal": 0.6, "strict": 0.35, "paranoid": 0.0}
+LEVELS = ("auto", "normal", "strict", "paranoid")
+
+
+def resolve_strictness(level: str | None, vertical: bool) -> str:
+    """"auto" -> strict for vertical Shorts / TikTok / Reels, normal for 16:9."""
+    if level in STRICTNESS:
+        return str(level)
+    return "strict" if vertical else "normal"
 
 _MASKED = re.compile(r"^[^\W\d_]+\*+[^\W\d_]*$|^\*+[^\W\d_]+$|^[^\W\d_]\*{2,}$", re.UNICODE)
 
@@ -110,15 +124,24 @@ def sounds_alike(a: str, b: str, lang: str | None) -> bool:
 
 def is_masked(word: str) -> bool:
     w = word.strip().strip(".,!?;:\"'()[]…")
-    return "*" in w and bool(_MASKED.match(w))
+    return "*" in w and (bool(_MASKED.match(w)) or swearlex.is_censored(w))
 
 
 def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
-           entries: list[str] | None = None) -> list[dict]:
+           entries: list[str] | None = None, learned: dict | None = None) -> list[dict]:
     """words: [{"start", "end", "word", "probability"?, "spk"?}] (absolute times).
     hints: [{"start", "end", "word", "src": pass2|acoustic, "spk"?, "score"?}].
+    learned: {"add": [tokens], "ignore": {token: n}} (default: swearlearn.py; {} = none).
     Returns [{"i", "start", "end", "word", "spk", "status", "why", "score"}] sorted by time."""
     entries = entries if entries is not None else profanity.word_list(lang)
+    if learned is None:
+        from . import swearlearn
+
+        try:
+            learned = {"add": swearlearn.entries(lang), "ignore": swearlearn.ignored(lang)}
+        except Exception:  # noqa: BLE001 - unreadable settings: no learned words
+            learned = {}
+    ignore = dict(learned.get("ignore") or {})
     items: dict[int, dict] = {}
 
     def put(i: int, status: str, why: str, score: float) -> None:
@@ -135,6 +158,10 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
     for a, b, _e in find(texts, full, lang):
         for i in range(a, b + 1):
             put(i, "sure", "list", 1.0)
+    if learned.get("add"):
+        for a, b, _e in find(texts, compile_entries(list(learned["add"]), lang), lang):
+            for i in range(a, b + 1):
+                put(i, "sure", "learned", 1.0)
     stems = _stems(lang, entries)
     for i, w in enumerate(words):
         if i in items:
@@ -143,9 +170,13 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
             put(i, "sure", "masked", 1.0)
             continue
         tok = token(w["word"], lang)
+        p = float(w.get("probability", w.get("p", 1.0)) or 0.0)
+        lex = swearlex.classify(w["word"], lang, p)
+        if lex is not None:
+            put(i, lex[0], lex[2], lex[1])
+            continue
         if len(tok) < 3 or _common_word(tok, lang):
             continue
-        p = float(w.get("probability", w.get("p", 1.0)) or 0.0)
         hit = _near(tok, stems)
         if hit is None:
             continue
@@ -154,6 +185,15 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
             put(i, "maybe", "phonetic", 0.65 if p < 0.9 else 0.55)
         elif p < 0.75:
             put(i, "maybe", "fuzzy", 0.45 + (0.75 - p) * 0.3)
+    # The user's "not a swear" choices: a maybe goes away, a list word unbleeped twice -> maybe.
+    for i, it in list(items.items()):
+        n = ignore.get(token(it["word"], lang), 0)
+        if not n or it["why"] in ("learned", "masked"):
+            continue
+        if it["status"] == "maybe":
+            items.pop(i)
+        elif n >= 2:
+            it.update(status="maybe", why=it["why"] + "+unbleeped", score=0.5)
 
     out = list(items.values())
     # Other passes: confirm a word here (only one that sounds like the hint), or add a swear
@@ -185,9 +225,12 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
     return out
 
 
-def bleeped(item: dict) -> bool:
-    """Bleeped by default (before the user's own choices)?"""
-    return item["status"] == "sure" or item["score"] >= BLEEP_MAYBE_AT
+def bleeped(item: dict, strictness: str = "normal") -> bool:
+    """Bleeped by default (before the user's own choices)? Paranoid bleeps every candidate."""
+    if item["status"] == "sure":
+        return True
+    at = STRICTNESS.get(strictness, BLEEP_MAYBE_AT)
+    return item["score"] > 0 if at <= 0 else item["score"] >= at
 
 
 def in_ranges(t0: float, t1: float, ranges: list) -> bool:

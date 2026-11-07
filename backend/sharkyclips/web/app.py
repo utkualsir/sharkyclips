@@ -272,6 +272,10 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
         jobs.update(job, stage="rendering", progress=0.0)
         res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
                           on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
+        if verify_bleeps(job, project, cand, opts, project.dir / "clips" / name):  # 1.2.21: a swear still heard
+            jobs.update(job, stage="rendering_again", progress=0.0)
+            res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
+                              on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
         entry = {"file": name, "id": cand["id"], "rank": cand["rank"], "start": cand["start"],
                  "end": cand["end"], "duration": res.info.get("duration") or cand["duration"],
                  "options": opts.to_dict(), "edit_fp": edit_fp, "dub": opts.dub or cand.get("dub") or "",
@@ -289,6 +293,27 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
               "project_title": project.load_meta().get("title") or project_id, **(batch or {})}
     return jobs.submit("render", "gpu", project_id, params, run, key=f"render:{project_id}:{cid}",
                        persist=True, job_id=job_id, attempt=attempt)
+
+
+def verify_bleeps(job: Job, project, cand: dict, opts: ClipOptions, path) -> bool:
+    """After a render with bleeps (Strict / Paranoid): listen to them once more; True when a
+    bleep had to get wider (the caller renders again, once). Never fails the render."""
+    from ..edit import swears
+
+    if config.get("swear_verify_render") is False or os.environ.get("SHARKYCLIPS_NO_BLEEP_CHECK"):
+        return False
+    if opts.profanity == "off" or swears.resolve_strictness(opts.swear_strict, True) == "normal":
+        return False
+    try:
+        from ..voices import swearscan
+
+        jobs.update(job, stage="checking_bleeps", progress=None)
+        return bool(swearscan.verify_render(project, cand, opts, path))
+    except Exception as exc:  # noqa: BLE001 - the clip is fine as rendered
+        from ..ui import console
+
+        console.print(f"[yellow]Bleep check skipped: {exc}[/]")
+        return False
 
 
 def submit_render(project_id: str, clip_ids: list[str], options: ClipOptions,
@@ -771,6 +796,10 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
             return None
     if kind == "facecam":
         return submit_facecam(pid, bool(p.get("fresh")))
+    if kind == "swearscan":
+        from . import voices_api
+
+        return voices_api.submit_swearscan(pid, bool(p.get("find_all")), list(p.get("clip_ids") or []) or None)
     if kind in ("voices", "proofread"):
         from . import voices_api
 
@@ -842,9 +871,11 @@ def api_app_state() -> dict:
 def api_licenses() -> dict:
     """About & licenses: the app and the optional AI models it downloads (with credit links)."""
     from .. import dub, imagegen
+    from ..voices import align
 
     return {"app": {"name": "SharkyClips", "version": __version__, "license": "MIT"},
-            "groups": [{"id": "voice", "items": dub.LICENSES}, {"id": "covers", "items": imagegen.LICENSES}]}
+            "groups": [{"id": "voice", "items": dub.LICENSES}, {"id": "covers", "items": imagegen.LICENSES},
+                       {"id": "swears", "items": align.LICENSES}]}
 
 
 @app.get("/api/changelog/{version}")

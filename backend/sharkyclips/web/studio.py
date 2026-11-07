@@ -248,7 +248,35 @@ def _lists_view() -> dict:
                                   "custom": isinstance(custom_p.get(code), list)}
         out["fillers"][code] = {**fillers.lists(code), "default": fillers.DEFAULTS.get(code, {"sure": [], "maybe": []}),
                                 "custom": isinstance(custom_f.get(code), dict)}
+    out["learned"] = _learned_view()
     return out
+
+
+def _learned_view() -> dict:
+    """Swears learned from manual bleeps / unbleeps (edit/swearlearn.py), per language."""
+    from ..edit import swearlearn
+
+    out: dict[str, Any] = {}
+    for code in languages.codes():
+        add, ign = swearlearn.words(code, "add"), swearlearn.words(code, "ignore")
+        if add or ign:
+            def row(k: str, v: dict) -> dict:
+                return {"word": k, "n": int(v.get("n", 0)), "spk": dict(v.get("spk") or {}), "last": v.get("last")}
+
+            out[code] = {"add": sorted((row(k, v) for k, v in add.items()), key=lambda r: -r["n"]),
+                         "ignore": sorted((row(k, v) for k, v in ign.items()), key=lambda r: -r["n"])}
+    return out
+
+
+@router.delete("/api/wordlists/learned")
+def api_learned_delete(lang: str, word: str, kind: str = "add") -> dict:
+    from ..edit import swearlearn
+
+    languages.require(lang)
+    if kind not in ("add", "ignore"):
+        raise SharkyClipsError("Unknown list.")
+    swearlearn.remove(lang, word, kind)
+    return _lists_view()
 
 
 def _words(v) -> list[str]:

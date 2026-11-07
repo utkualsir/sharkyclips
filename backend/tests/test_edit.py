@@ -118,7 +118,8 @@ def test_plan_deleted_words_map_and_mask(tmp_path):
     out = p.out_words()
     assert [w["word"] for w in out] == ["Hello", "f******", "again"]
     assert out[-1]["start"] == pytest.approx(12.0 - 10.0 - 0.55, abs=0.05)
-    assert p.bleeps and p.bleeps[0][0] == pytest.approx(0.67, abs=0.05)
+    # vertical -> Strict: 120 ms before the word (Whisper's times can be early or late)
+    assert p.bleeps and p.bleeps[0][0] == pytest.approx(0.70 - 0.12, abs=0.02)
     for fa, fb in p.frames():  # cut points sit on the frame grid
         assert fb > fa
     assert p.to_out(11.3) is None and p.to_out(11.3, "fwd") == pytest.approx(p.to_out(11.6), abs=0.04)

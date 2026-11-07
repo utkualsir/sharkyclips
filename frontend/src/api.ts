@@ -30,7 +30,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -294,8 +294,11 @@ export interface ClipOptions {
   dub?: string;
   study_cards?: "off" | "auto";
   visualizer?: "off" | "auto";
+  /** 1.2.21: which "maybe" swears are bleeped (auto = Strict for vertical videos) */
+  swear_strict?: SwearStrict;
 }
 
+export type SwearStrict = "auto" | "normal" | "strict" | "paranoid";
 export type ReplayMode = "off" | "auto";
 export type MemeLevel = "off" | "light" | "strong";
 
@@ -349,6 +352,52 @@ export interface SwearItem {
   why: string;
   score: number;
   bleep: boolean;
+  /** deep check (1.2.21): passes that heard it ("3/4"), what they heard, exact times */
+  votes?: string | null;
+  heard?: string[] | null;
+  aligned?: boolean;
+}
+
+export interface SwearScanItem {
+  start: number;
+  end: number;
+  word: string;
+  heard: string[] | null;
+  spk: string | null;
+  status: "sure" | "maybe";
+  score: number;
+  votes: string | null;
+  why: string;
+  bleep: [number, number] | null;
+  aligned: boolean | null;
+  leak: string | null;
+  leak_first: string | null;
+  rounds: number | null;
+}
+
+export interface SwearScanView {
+  done: boolean;
+  aligner_ready: boolean;
+  created_at?: string;
+  model?: string;
+  aligned?: boolean;
+  seconds?: number;
+  windows?: number;
+  stale?: boolean;
+  count?: { normal: number; strict: number; paranoid: number };
+  items?: SwearScanItem[];
+}
+
+export interface SwearLabels {
+  version: number;
+  items: Record<string, { start: number; end: number; word: string; heard?: string[]; label?: "yes" | "no" | "unsure"; note?: string; by?: string }>;
+}
+
+export interface LearnedWord {
+  word: string;
+  n: number;
+  spk: Record<string, number>;
+  last: string | null;
 }
 
 export interface VoiceTrack {
@@ -531,6 +580,8 @@ export interface WordLists {
   fillers: Record<string, { sure: string[]; maybe: string[]; default: { sure: string[]; maybe: string[] }; custom: boolean }>;
   silence_ms: { light: number; strong: number };
   silence_default_ms: { light: number; strong: number };
+  /** 1.2.21: swears learned from manual bleeps (add) and unbleeps (ignore), per language */
+  learned?: Record<string, { add: LearnedWord[]; ignore: LearnedWord[] }>;
 }
 
 export interface RenderEdits {
@@ -1504,6 +1555,13 @@ export const api = {
     fillers?: Record<string, { sure: string[]; maybe: string[] } | null>;
     silence_ms?: Partial<{ light: number; strong: number }>;
   }) => req<WordLists>("PUT", "/api/wordlists", body),
+  forgetLearned: (lang: string, word: string, kind: "add" | "ignore") =>
+    req<WordLists>("DELETE", `/api/wordlists/learned?lang=${encodeURIComponent(lang)}&word=${encodeURIComponent(word)}&kind=${kind}`),
+  swearScan: (id: string) => req<SwearScanView>("GET", `${P(id)}/swearscan`),
+  runSwearScan: (id: string, findAll = false) => req<Job>("POST", `${P(id)}/swearscan/run`, { find_all: findAll }),
+  swearLabels: (id: string) => req<SwearLabels>("GET", `${P(id)}/swearscan/labels`),
+  setSwearLabel: (id: string, key: string, label: "yes" | "no" | "unsure" | null, note?: string) =>
+    req<SwearLabels>("PUT", `${P(id)}/swearscan/labels`, { key, label, note }),
   jobs: () => req<Job[]>("GET", "/api/jobs"),
   // stories, A/B hooks (1.2.5)
   stories: (id: string) => req<StoriesView>("GET", `${P(id)}/stories`),
@@ -1631,6 +1689,8 @@ export interface EasySettings {
   platform: "youtube" | "tiktok" | "reels";
   study_cards: "off" | "auto";
   visualizer: "off" | "auto";
+  /** 1.2.21 "Check swears strictly": auto (= Strict for vertical clips) or normal */
+  swear_strict: "auto" | "normal";
 }
 
 // ---------------------------------------------------------------- automation + live (1.2.17)

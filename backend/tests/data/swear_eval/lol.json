@@ -1,0 +1,3421 @@
+{
+"version": 1,
+"name": "lol",
+"language": "tr",
+"labels": [
+{
+"start": 310.5,
+"end": 311.9,
+"word": "Siktir",
+"heard": [
+"Siktir"
+],
+"label": "no",
+"note": "unprompted passes: Hımm,  birazcık  yorulmasını  izin  veredim  ben."
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "kahpe.",
+"heard": [
+"kahpe."
+],
+"label": "no",
+"note": "unprompted passes: Bugün  güzel  geçeceğiz.  Söyledim  biliyorum."
+},
+{
+"start": 436.91,
+"end": 438.31,
+"word": "Siktir",
+"heard": [
+"Siktir"
+],
+"label": "no",
+"note": "unprompted passes: Böyle  mantıklı  hareketler  yapma  ama"
+},
+{
+"start": 438.99,
+"end": 439.27,
+"word": "amk.",
+"heard": [
+"amk."
+],
+"label": "no",
+"note": "unprompted passes: Böyle  mantıklı  hareketler  yapma  ama."
+},
+{
+"start": 1148.93,
+"end": 1148.98,
+"word": "Siktir",
+"heard": [
+"Siktir"
+],
+"label": "no",
+"note": "unprompted passes: Çalma  kanka  Alistar  niye  çalıyorsun  o  kiliyi"
+},
+{
+"start": 1149.18,
+"end": 1149.62,
+"word": "siktir",
+"heard": [
+"siktir"
+],
+"label": "no",
+"note": "unprompted passes: Çalma  kanka  Alistar  niye  çalıyorsun  o  kili  ya."
+},
+{
+"start": 1748.47,
+"end": 1748.75,
+"word": "yerek",
+"heard": [
+"yerek"
+],
+"label": "no",
+"note": "unprompted passes: Ağrıları  almama  gerek  var  mı  yani?"
+}
+],
+"base": [
+{
+"start": 308.12,
+"end": 308.52,
+"word": "Karşı",
+"p": 0.806
+},
+{
+"start": 308.52,
+"end": 308.82,
+"word": "anglına",
+"p": 0.42
+},
+{
+"start": 308.82,
+"end": 309.18,
+"word": "Ekko.",
+"p": 0.442
+},
+{
+"start": 309.5,
+"end": 309.5,
+"word": "Hmm.",
+"p": 0.265
+},
+{
+"start": 311.32,
+"end": 311.88,
+"word": "Birazcık",
+"p": 0.859
+},
+{
+"start": 311.88,
+"end": 312.2,
+"word": "numara",
+"p": 0.459
+},
+{
+"start": 312.2,
+"end": 312.62,
+"word": "olmasına",
+"p": 0.89
+},
+{
+"start": 312.62,
+"end": 312.82,
+"word": "izin",
+"p": 0.999
+},
+{
+"start": 312.82,
+"end": 313.16,
+"word": "verelim.",
+"p": 0.982
+},
+{
+"start": 437.66,
+"end": 438.3,
+"word": "Mantıklı",
+"p": 0.796
+},
+{
+"start": 438.3,
+"end": 438.7,
+"word": "hareketler",
+"p": 0.999
+},
+{
+"start": 438.7,
+"end": 439.04,
+"word": "yapma",
+"p": 0.998
+},
+{
+"start": 439.04,
+"end": 439.46,
+"word": "ama...",
+"p": 0.877
+},
+{
+"start": 440.78,
+"end": 441.44,
+"word": "Aramız",
+"p": 0.625
+},
+{
+"start": 441.44,
+"end": 441.84,
+"word": "bozulur",
+"p": 0.888
+},
+{
+"start": 441.84,
+"end": 442.22,
+"word": "kanka.",
+"p": 0.981
+},
+{
+"start": 1147.355,
+"end": 1147.935,
+"word": "Çalma",
+"p": 0.883
+},
+{
+"start": 1147.935,
+"end": 1148.295,
+"word": "kanka",
+"p": 0.958
+},
+{
+"start": 1148.295,
+"end": 1148.735,
+"word": "Alistar",
+"p": 0.78
+},
+{
+"start": 1148.735,
+"end": 1148.875,
+"word": "niye",
+"p": 0.842
+},
+{
+"start": 1148.875,
+"end": 1149.275,
+"word": "çalıyorsun",
+"p": 0.874
+},
+{
+"start": 1149.275,
+"end": 1149.515,
+"word": "o",
+"p": 0.655
+},
+{
+"start": 1149.515,
+"end": 1149.755,
+"word": "killi",
+"p": 0.863
+},
+{
+"start": 1149.755,
+"end": 1149.915,
+"word": "ya?",
+"p": 0.958
+},
+{
+"start": 1747.87,
+"end": 1748.09,
+"word": "AR",
+"p": 0.31
+},
+{
+"start": 1748.09,
+"end": 1748.21,
+"word": "'ı",
+"p": 0.404
+},
+{
+"start": 1748.21,
+"end": 1748.51,
+"word": "almama",
+"p": 0.953
+},
+{
+"start": 1748.51,
+"end": 1748.75,
+"word": "gerek",
+"p": 0.997
+},
+{
+"start": 1748.75,
+"end": 1748.99,
+"word": "var",
+"p": 0.997
+},
+{
+"start": 1748.99,
+"end": 1749.09,
+"word": "mı",
+"p": 0.978
+},
+{
+"start": 1749.09,
+"end": 1749.33,
+"word": "yani?",
+"p": 0.994
+},
+{
+"start": 1750.82,
+"end": 1751.3,
+"word": "Aha",
+"p": 0.958
+},
+{
+"start": 1751.3,
+"end": 1751.9,
+"word": "öldü",
+"p": 0.78
+}
+],
+"readings": [
+{
+"pass": "hint0",
+"w": [
+301.57,
+307.57
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+301.57,
+307.57
+],
+"words": []
+},
+{
+"pass": "plain",
+"w": [
+301.57,
+307.57
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+301.57,
+307.57
+],
+"words": []
+},
+{
+"pass": "hint0",
+"w": [
+302.45,
+308.45
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+302.45,
+308.45
+],
+"words": []
+},
+{
+"pass": "plain",
+"w": [
+302.45,
+308.45
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+302.45,
+308.45
+],
+"words": []
+},
+{
+"pass": "hint0",
+"w": [
+303.28,
+309.28
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+303.28,
+309.28
+],
+"words": []
+},
+{
+"pass": "plain",
+"w": [
+303.28,
+309.28
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+303.28,
+309.28
+],
+"words": [
+{
+"start": 307.86,
+"end": 308.44,
+"word": "Karşı",
+"p": 0.879
+},
+{
+"start": 308.44,
+"end": 308.74,
+"word": "angına",
+"p": 0.373
+},
+{
+"start": 308.74,
+"end": 309.06,
+"word": "Ekko.",
+"p": 0.711
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+303.68,
+309.68
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+303.68,
+309.68
+],
+"words": []
+},
+{
+"pass": "plain",
+"w": [
+303.68,
+309.68
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+303.68,
+309.68
+],
+"words": [
+{
+"start": 307.99,
+"end": 308.28,
+"word": "Kar",
+"p": 0.99
+},
+{
+"start": 308.28,
+"end": 308.68,
+"word": "şangını",
+"p": 0.513
+},
+{
+"start": 308.68,
+"end": 309.1,
+"word": "Ekko.",
+"p": 0.787
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+305.67,
+311.67
+],
+"words": [
+{
+"start": 308.41,
+"end": 308.97,
+"word": "yoruldu.",
+"p": 0.968
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+305.67,
+311.67
+],
+"words": []
+},
+{
+"pass": "plain",
+"w": [
+305.67,
+311.67
+],
+"words": [
+{
+"start": 308.0,
+"end": 308.41,
+"word": "Yardımcı",
+"p": 0.418
+},
+{
+"start": 308.41,
+"end": 308.87,
+"word": "alınacak.",
+"p": 0.308
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+305.67,
+311.67
+],
+"words": [
+{
+"start": 307.85,
+"end": 308.41,
+"word": "Karşı",
+"p": 0.907
+},
+{
+"start": 308.41,
+"end": 308.75,
+"word": "angına",
+"p": 0.391
+},
+{
+"start": 308.75,
+"end": 309.11,
+"word": "Ekko.",
+"p": 0.669
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+306.0,
+312.0
+],
+"words": [
+{
+"start": 307.58,
+"end": 308.06,
+"word": "'ım",
+"p": 0.93
+},
+{
+"start": 308.06,
+"end": 308.52,
+"word": "yalan",
+"p": 0.585
+},
+{
+"start": 308.52,
+"end": 309.32,
+"word": "kalma,",
+"p": 0.917
+},
+{
+"start": 309.42,
+"end": 310.32,
+"word": "Allah",
+"p": 0.52
+},
+{
+"start": 310.32,
+"end": 310.6,
+"word": "'ım",
+"p": 0.991
+},
+{
+"start": 310.6,
+"end": 310.65,
+"word": "yalan",
+"p": 0.914
+},
+{
+"start": 310.6,
+"end": 311.12,
+"word": "kalma.",
+"p": 0.989
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+306.0,
+312.0
+],
+"words": [
+{
+"start": 308.36,
+"end": 309.2,
+"word": "yukarı,",
+"p": 0.982
+},
+{
+"start": 309.2,
+"end": 310.32,
+"word": "yukarı,",
+"p": 0.99
+},
+{
+"start": 310.62,
+"end": 310.67,
+"word": "yukarı,",
+"p": 0.993
+},
+{
+"start": 310.62,
+"end": 310.67,
+"word": "yukarı,",
+"p": 0.995
+},
+{
+"start": 310.62,
+"end": 311.46,
+"word": "yukarı,",
+"p": 0.995
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.995
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.46,
+"end": 311.51,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.997
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.995
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.996
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.995
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.995
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.994
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.993
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.994
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.993
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.992
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.994
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.993
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.993
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.992
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.993
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.99
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.989
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.991
+},
+{
+"start": 311.68,
+"end": 311.73,
+"word": "yukarı,",
+"p": 0.989
+},
+{
+"start": 311.76,
+"end": 311.88,
+"word": "yukarı,",
+"p": 0.986
+},
+{
+"start": 311.88,
+"end": 311.93,
+"word": "yukarı,",
+"p": 0.99
+},
+{
+"start": 311.88,
+"end": 311.93,
+"word": "yukarı,",
+"p": 0.988
+},
+{
+"start": 311.88,
+"end": 311.98,
+"word": "yukarı",
+"p": 0.987
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+306.0,
+312.0
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+306.0,
+312.0
+],
+"words": [
+{
+"start": 307.88,
+"end": 308.44,
+"word": "Karşı",
+"p": 0.895
+},
+{
+"start": 308.44,
+"end": 308.74,
+"word": "angına",
+"p": 0.35
+},
+{
+"start": 308.74,
+"end": 309.08,
+"word": "Ekko.",
+"p": 0.697
+},
+{
+"start": 311.24,
+"end": 311.8,
+"word": "Birazcık",
+"p": 0.618
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+306.5,
+312.5
+],
+"words": [
+{
+"start": 310.5,
+"end": 311.9,
+"word": "Siktir",
+"p": 0.266
+},
+{
+"start": 311.9,
+"end": 311.95,
+"word": "git!",
+"p": 0.001
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+306.5,
+312.5
+],
+"words": [
+{
+"start": 310.5,
+"end": 311.9,
+"word": "Siktir",
+"p": 0.266
+},
+{
+"start": 311.9,
+"end": 311.95,
+"word": "git!",
+"p": 0.001
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+306.5,
+312.5
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+306.5,
+312.5
+],
+"words": [
+{
+"start": 307.98,
+"end": 308.46,
+"word": "Karşı",
+"p": 0.936
+},
+{
+"start": 308.46,
+"end": 308.76,
+"word": "anklına",
+"p": 0.437
+},
+{
+"start": 308.76,
+"end": 308.98,
+"word": "eco.",
+"p": 0.235
+},
+{
+"start": 309.18,
+"end": 309.38,
+"word": "Hmm.",
+"p": 0.103
+},
+{
+"start": 311.3,
+"end": 311.78,
+"word": "Birazcık",
+"p": 0.944
+},
+{
+"start": 311.78,
+"end": 312.02,
+"word": "normal",
+"p": 0.149
+},
+{
+"start": 312.02,
+"end": 312.36,
+"word": "olması",
+"p": 0.576
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+308.74,
+314.74
+],
+"words": [
+{
+"start": 310.4,
+"end": 311.8,
+"word": "Açık.",
+"p": 0.609
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+308.74,
+314.74
+],
+"words": []
+},
+{
+"pass": "plain",
+"w": [
+308.74,
+314.74
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+308.74,
+314.74
+],
+"words": []
+},
+{
+"pass": "hint0",
+"w": [
+309.04,
+315.04
+],
+"words": [
+{
+"start": 311.38,
+"end": 311.94,
+"word": "Siktir",
+"p": 0.27
+},
+{
+"start": 311.94,
+"end": 312.22,
+"word": "git!",
+"p": 0.0
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+309.04,
+315.04
+],
+"words": []
+},
+{
+"pass": "plain",
+"w": [
+309.04,
+315.04
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+309.04,
+315.04
+],
+"words": [
+{
+"start": 309.04,
+"end": 309.58,
+"word": "Hımm",
+"p": 0.563
+},
+{
+"start": 310.84,
+"end": 311.8,
+"word": "Birazcık",
+"p": 0.506
+},
+{
+"start": 311.8,
+"end": 312.54,
+"word": "Masan",
+"p": 0.08
+},
+{
+"start": 312.54,
+"end": 312.78,
+"word": "izin",
+"p": 0.824
+},
+{
+"start": 312.78,
+"end": 313.1,
+"word": "verelim",
+"p": 0.614
+},
+{
+"start": 313.1,
+"end": 313.52,
+"word": "Hımm",
+"p": 0.505
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+316.95,
+322.95
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+316.95,
+322.95
+],
+"words": [
+{
+"start": 321.37,
+"end": 322.09,
+"word": "Orospu",
+"p": 0.219
+},
+{
+"start": 322.09,
+"end": 322.14,
+"word": "çocuğu,",
+"p": 0.303
+},
+{
+"start": 322.21,
+"end": 322.57,
+"word": "sikeyim,",
+"p": 0.002
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "piç,",
+"p": 0.045
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "yarrak,",
+"p": 0.001
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "göt,",
+"p": 0.0
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "amk,",
+"p": 0.014
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "aq,",
+"p": 0.004
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "amç,",
+"p": 0.008
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "kahpe.",
+"p": 0.002
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+316.95,
+322.95
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+316.95,
+322.95
+],
+"words": [
+{
+"start": 320.67,
+"end": 321.91,
+"word": "Bugün",
+"p": 0.71
+},
+{
+"start": 321.91,
+"end": 322.53,
+"word": "düzen",
+"p": 0.72
+},
+{
+"start": 322.53,
+"end": 322.93,
+"word": "geçirme.",
+"p": 0.498
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+434.63,
+440.63
+],
+"words": [
+{
+"start": 437.11,
+"end": 437.85,
+"word": "Bilemem",
+"p": 0.26
+},
+{
+"start": 437.85,
+"end": 438.21,
+"word": "aldıkları",
+"p": 0.805
+},
+{
+"start": 438.21,
+"end": 438.67,
+"word": "hareketler",
+"p": 0.88
+},
+{
+"start": 438.67,
+"end": 439.05,
+"word": "yapmam",
+"p": 0.776
+},
+{
+"start": 439.05,
+"end": 439.25,
+"word": "ya.",
+"p": 0.274
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+434.63,
+440.63
+],
+"words": [
+{
+"start": 434.63,
+"end": 434.71,
+"word": "..",
+"p": 0.001
+},
+{
+"start": 437.99,
+"end": 438.31,
+"word": "..",
+"p": 0.74
+},
+{
+"start": 438.31,
+"end": 438.39,
+"word": "..",
+"p": 0.858
+},
+{
+"start": 438.39,
+"end": 438.81,
+"word": "..",
+"p": 0.867
+},
+{
+"start": 438.81,
+"end": 438.89,
+"word": "..",
+"p": 0.889
+},
+{
+"start": 438.89,
+"end": 439.17,
+"word": "..",
+"p": 0.891
+},
+{
+"start": 439.17,
+"end": 439.22,
+"word": "..",
+"p": 0.897
+},
+{
+"start": 439.19,
+"end": 439.35,
+"word": "..",
+"p": 0.902
+},
+{
+"start": 439.35,
+"end": 439.55,
+"word": "..",
+"p": 0.915
+},
+{
+"start": 439.55,
+"end": 439.75,
+"word": "..",
+"p": 0.912
+},
+{
+"start": 439.75,
+"end": 439.91,
+"word": "..",
+"p": 0.915
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+434.63,
+440.63
+],
+"words": [
+{
+"start": 437.19,
+"end": 437.85,
+"word": "Bilemi",
+"p": 0.332
+},
+{
+"start": 437.85,
+"end": 438.21,
+"word": "aldıkları",
+"p": 0.826
+},
+{
+"start": 438.21,
+"end": 438.67,
+"word": "hareketler",
+"p": 0.83
+},
+{
+"start": 438.67,
+"end": 438.97,
+"word": "yapma",
+"p": 0.67
+},
+{
+"start": 438.97,
+"end": 439.13,
+"word": "ama.",
+"p": 0.61
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+434.63,
+440.63
+],
+"words": [
+{
+"start": 437.39,
+"end": 438.19,
+"word": "mantıklı",
+"p": 0.703
+},
+{
+"start": 438.19,
+"end": 438.65,
+"word": "hareketler",
+"p": 0.995
+},
+{
+"start": 438.65,
+"end": 438.99,
+"word": "yapma",
+"p": 0.991
+},
+{
+"start": 438.99,
+"end": 439.17,
+"word": "ama",
+"p": 0.991
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+435.09,
+441.09
+],
+"words": [
+{
+"start": 436.91,
+"end": 438.31,
+"word": "Siktir",
+"p": 0.235
+},
+{
+"start": 438.31,
+"end": 438.41,
+"word": "git!",
+"p": 0.002
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+435.09,
+441.09
+],
+"words": [
+{
+"start": 436.91,
+"end": 438.31,
+"word": "Siktir",
+"p": 0.235
+},
+{
+"start": 438.31,
+"end": 438.41,
+"word": "git!",
+"p": 0.002
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+435.09,
+441.09
+],
+"words": [
+{
+"start": 435.09,
+"end": 437.71,
+"word": "Bu",
+"p": 0.082
+},
+{
+"start": 437.71,
+"end": 437.77,
+"word": "da",
+"p": 0.048
+},
+{
+"start": 437.77,
+"end": 439.03,
+"word": "yapmam",
+"p": 0.43
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+435.09,
+441.09
+],
+"words": [
+{
+"start": 437.39,
+"end": 438.19,
+"word": "mantıklı",
+"p": 0.729
+},
+{
+"start": 438.19,
+"end": 438.67,
+"word": "hareketler",
+"p": 0.995
+},
+{
+"start": 438.67,
+"end": 438.99,
+"word": "yapma",
+"p": 0.992
+},
+{
+"start": 438.99,
+"end": 439.17,
+"word": "ama",
+"p": 0.989
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+438.73,
+444.73
+],
+"words": [
+{
+"start": 438.73,
+"end": 438.78,
+"word": "Hadi",
+"p": 0.008
+},
+{
+"start": 438.75,
+"end": 438.99,
+"word": "yapma",
+"p": 0.702
+},
+{
+"start": 438.99,
+"end": 439.27,
+"word": "amk.",
+"p": 0.155
+},
+{
+"start": 440.69,
+"end": 441.37,
+"word": "Aramız",
+"p": 0.737
+},
+{
+"start": 441.37,
+"end": 441.79,
+"word": "bozuldu.",
+"p": 0.792
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+438.73,
+444.73
+],
+"words": [
+{
+"start": 438.73,
+"end": 438.78,
+"word": "Ne",
+"p": 0.042
+},
+{
+"start": 438.75,
+"end": 439.05,
+"word": "yapalım?",
+"p": 0.686
+},
+{
+"start": 440.73,
+"end": 441.37,
+"word": "Aramız",
+"p": 0.741
+},
+{
+"start": 441.37,
+"end": 441.79,
+"word": "bozuldu.",
+"p": 0.746
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+438.73,
+444.73
+],
+"words": [
+{
+"start": 438.73,
+"end": 438.78,
+"word": "Ne",
+"p": 0.042
+},
+{
+"start": 438.75,
+"end": 439.05,
+"word": "yapalım?",
+"p": 0.686
+},
+{
+"start": 440.67,
+"end": 441.37,
+"word": "Aramız",
+"p": 0.741
+},
+{
+"start": 441.37,
+"end": 441.79,
+"word": "bozuldu.",
+"p": 0.746
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+438.73,
+444.73
+],
+"words": [
+{
+"start": 438.73,
+"end": 439.01,
+"word": "yapma",
+"p": 0.737
+},
+{
+"start": 439.01,
+"end": 439.19,
+"word": "ama",
+"p": 0.998
+},
+{
+"start": 440.69,
+"end": 441.37,
+"word": "aramız",
+"p": 0.815
+},
+{
+"start": 441.37,
+"end": 441.79,
+"word": "bozulur",
+"p": 0.908
+},
+{
+"start": 441.79,
+"end": 442.11,
+"word": "kanka.",
+"p": 0.989
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+440.59,
+446.59
+],
+"words": [
+{
+"start": 440.59,
+"end": 441.39,
+"word": "Aramız",
+"p": 0.654
+},
+{
+"start": 441.39,
+"end": 441.79,
+"word": "bozuldu",
+"p": 0.744
+},
+{
+"start": 441.79,
+"end": 442.09,
+"word": "kanka.",
+"p": 0.502
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+440.59,
+446.59
+],
+"words": [
+{
+"start": 440.59,
+"end": 441.39,
+"word": "Aramız",
+"p": 0.654
+},
+{
+"start": 441.39,
+"end": 441.81,
+"word": "bozuldu.",
+"p": 0.744
+},
+{
+"start": 441.83,
+"end": 442.55,
+"word": "Aaa!",
+"p": 0.17
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+440.59,
+446.59
+],
+"words": [
+{
+"start": 440.59,
+"end": 441.39,
+"word": "Aramız",
+"p": 0.654
+},
+{
+"start": 441.39,
+"end": 441.81,
+"word": "bozuldu.",
+"p": 0.744
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+440.59,
+446.59
+],
+"words": [
+{
+"start": 440.59,
+"end": 441.39,
+"word": "Aramız",
+"p": 0.753
+},
+{
+"start": 441.39,
+"end": 441.79,
+"word": "bozulur",
+"p": 0.83
+},
+{
+"start": 441.79,
+"end": 442.11,
+"word": "kanka.",
+"p": 0.967
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+441.54,
+447.54
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+441.54,
+447.54
+],
+"words": [
+{
+"start": 441.54,
+"end": 441.59,
+"word": "Şuraya",
+"p": 0.259
+},
+{
+"start": 441.54,
+"end": 441.66,
+"word": "bir",
+"p": 0.301
+},
+{
+"start": 441.66,
+"end": 441.98,
+"word": "durayım.",
+"p": 0.179
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+441.54,
+447.54
+],
+"words": [
+{
+"start": 441.54,
+"end": 443.96,
+"word": "Oooo",
+"p": 0.278
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+441.54,
+447.54
+],
+"words": [
+{
+"start": 441.54,
+"end": 442.06,
+"word": "Kanka",
+"p": 0.381
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+442.06,
+448.06
+],
+"words": [
+{
+"start": 442.06,
+"end": 443.76,
+"word": "Ooo,",
+"p": 0.255
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+442.06,
+448.06
+],
+"words": [
+{
+"start": 442.06,
+"end": 443.76,
+"word": "Ooo!",
+"p": 0.255
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+442.06,
+448.06
+],
+"words": [
+{
+"start": 442.06,
+"end": 444.02,
+"word": "Oooo",
+"p": 0.37
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+442.06,
+448.06
+],
+"words": [
+{
+"start": 442.06,
+"end": 443.68,
+"word": "Oh",
+"p": 0.053
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1142.12,
+1148.12
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+1142.12,
+1148.12
+],
+"words": [
+{
+"start": 1147.64,
+"end": 1147.88,
+"word": "Çalma",
+"p": 0.801
+},
+{
+"start": 1147.88,
+"end": 1147.98,
+"word": "ka",
+"p": 0.086
+},
+{
+"start": 1147.98,
+"end": 1148.1,
+"word": "-",
+"p": 0.376
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1142.12,
+1148.12
+],
+"words": [
+{
+"start": 1146.48,
+"end": 1147.88,
+"word": "Çalma",
+"p": 0.801
+},
+{
+"start": 1147.88,
+"end": 1148.1,
+"word": "kanka!",
+"p": 0.21
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1142.12,
+1148.12
+],
+"words": [
+{
+"start": 1146.48,
+"end": 1147.88,
+"word": "Çalma",
+"p": 0.796
+},
+{
+"start": 1147.88,
+"end": 1148.1,
+"word": "kanka.",
+"p": 0.259
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1145.44,
+1151.44
+],
+"words": [
+{
+"start": 1147.12,
+"end": 1147.88,
+"word": "Çalma",
+"p": 0.854
+},
+{
+"start": 1147.88,
+"end": 1148.26,
+"word": "kanka",
+"p": 0.922
+},
+{
+"start": 1148.26,
+"end": 1148.7,
+"word": "Alistar,",
+"p": 0.777
+},
+{
+"start": 1148.7,
+"end": 1148.8,
+"word": "niye",
+"p": 0.907
+},
+{
+"start": 1148.8,
+"end": 1149.18,
+"word": "çalıyorsun",
+"p": 0.934
+},
+{
+"start": 1149.18,
+"end": 1149.62,
+"word": "siktir",
+"p": 0.305
+},
+{
+"start": 1149.62,
+"end": 1149.78,
+"word": "ya?",
+"p": 0.549
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+1145.44,
+1151.44
+],
+"words": [
+{
+"start": 1147.16,
+"end": 1147.88,
+"word": "Çalma",
+"p": 0.854
+},
+{
+"start": 1147.88,
+"end": 1148.28,
+"word": "kanka,",
+"p": 0.922
+},
+{
+"start": 1148.3,
+"end": 1148.66,
+"word": "Alistar",
+"p": 0.802
+},
+{
+"start": 1148.66,
+"end": 1148.82,
+"word": "niye",
+"p": 0.845
+},
+{
+"start": 1148.82,
+"end": 1149.18,
+"word": "çalıyorsun?",
+"p": 0.922
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1145.44,
+1151.44
+],
+"words": [
+{
+"start": 1147.14,
+"end": 1147.88,
+"word": "Çalma",
+"p": 0.854
+},
+{
+"start": 1147.88,
+"end": 1148.26,
+"word": "kanka",
+"p": 0.922
+},
+{
+"start": 1148.26,
+"end": 1148.7,
+"word": "Alistar",
+"p": 0.777
+},
+{
+"start": 1148.7,
+"end": 1148.82,
+"word": "niye",
+"p": 0.754
+},
+{
+"start": 1148.82,
+"end": 1149.18,
+"word": "çalıyorsun?",
+"p": 0.919
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1145.44,
+1151.44
+],
+"words": [
+{
+"start": 1147.28,
+"end": 1147.88,
+"word": "Çalma",
+"p": 0.868
+},
+{
+"start": 1147.88,
+"end": 1148.26,
+"word": "kanka",
+"p": 0.949
+},
+{
+"start": 1148.26,
+"end": 1148.7,
+"word": "Alistar",
+"p": 0.939
+},
+{
+"start": 1148.7,
+"end": 1148.82,
+"word": "niye",
+"p": 0.62
+},
+{
+"start": 1148.82,
+"end": 1149.18,
+"word": "çalıyorsun",
+"p": 0.915
+},
+{
+"start": 1149.18,
+"end": 1149.42,
+"word": "o",
+"p": 0.928
+},
+{
+"start": 1149.42,
+"end": 1149.62,
+"word": "kili",
+"p": 0.565
+},
+{
+"start": 1149.62,
+"end": 1149.82,
+"word": "ya",
+"p": 0.937
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1145.8,
+1151.8
+],
+"words": [
+{
+"start": 1147.16,
+"end": 1147.9,
+"word": "Çalma",
+"p": 0.853
+},
+{
+"start": 1147.9,
+"end": 1148.26,
+"word": "kanka",
+"p": 0.92
+},
+{
+"start": 1148.26,
+"end": 1148.7,
+"word": "Alistar,",
+"p": 0.832
+},
+{
+"start": 1148.7,
+"end": 1148.8,
+"word": "niye",
+"p": 0.896
+},
+{
+"start": 1148.8,
+"end": 1149.18,
+"word": "çalıyorsun?",
+"p": 0.938
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+1145.8,
+1151.8
+],
+"words": [
+{
+"start": 1147.16,
+"end": 1147.9,
+"word": "Çalma",
+"p": 0.853
+},
+{
+"start": 1147.9,
+"end": 1148.26,
+"word": "kanka",
+"p": 0.92
+},
+{
+"start": 1148.26,
+"end": 1148.7,
+"word": "Alistar",
+"p": 0.832
+},
+{
+"start": 1148.7,
+"end": 1148.82,
+"word": "niye",
+"p": 0.711
+},
+{
+"start": 1148.82,
+"end": 1149.2,
+"word": "çalıyorsun?",
+"p": 0.931
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1145.8,
+1151.8
+],
+"words": [
+{
+"start": 1147.16,
+"end": 1147.9,
+"word": "Çalma",
+"p": 0.853
+},
+{
+"start": 1147.9,
+"end": 1148.26,
+"word": "kanka",
+"p": 0.92
+},
+{
+"start": 1148.26,
+"end": 1148.7,
+"word": "Alistar",
+"p": 0.832
+},
+{
+"start": 1148.7,
+"end": 1148.82,
+"word": "niye",
+"p": 0.711
+},
+{
+"start": 1148.82,
+"end": 1149.2,
+"word": "çalıyorsun?",
+"p": 0.931
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1145.8,
+1151.8
+],
+"words": [
+{
+"start": 1147.18,
+"end": 1147.9,
+"word": "Çalma",
+"p": 0.886
+},
+{
+"start": 1147.9,
+"end": 1148.26,
+"word": "kanka",
+"p": 0.952
+},
+{
+"start": 1148.26,
+"end": 1148.7,
+"word": "Alistar",
+"p": 0.932
+},
+{
+"start": 1148.7,
+"end": 1148.8,
+"word": "Niye",
+"p": 0.236
+},
+{
+"start": 1148.8,
+"end": 1149.18,
+"word": "çalıyorsun",
+"p": 0.948
+},
+{
+"start": 1149.18,
+"end": 1149.42,
+"word": "o",
+"p": 0.947
+},
+{
+"start": 1149.42,
+"end": 1149.68,
+"word": "kiliyi",
+"p": 0.551
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1148.93,
+1154.93
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+1148.93,
+1154.93
+],
+"words": [
+{
+"start": 1148.93,
+"end": 1148.98,
+"word": "Siktir",
+"p": 0.174
+},
+{
+"start": 1148.95,
+"end": 1149.13,
+"word": "git!",
+"p": 0.016
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1148.93,
+1154.93
+],
+"words": []
+},
+{
+"pass": "mix",
+"w": [
+1148.93,
+1154.93
+],
+"words": [
+{
+"start": 1148.93,
+"end": 1148.98,
+"word": "Ne",
+"p": 0.109
+},
+{
+"start": 1148.93,
+"end": 1149.19,
+"word": "çalıyorsun",
+"p": 0.647
+},
+{
+"start": 1149.19,
+"end": 1149.43,
+"word": "o",
+"p": 0.779
+},
+{
+"start": 1149.43,
+"end": 1149.61,
+"word": "kili",
+"p": 0.521
+},
+{
+"start": 1149.61,
+"end": 1149.81,
+"word": "ya?",
+"p": 0.917
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1744.98,
+1750.98
+],
+"words": [
+{
+"start": 1747.98,
+"end": 1748.3,
+"word": "Ağrılarına",
+"p": 0.462
+},
+{
+"start": 1748.3,
+"end": 1748.46,
+"word": "o",
+"p": 0.411
+},
+{
+"start": 1748.46,
+"end": 1748.76,
+"word": "yörek",
+"p": 0.547
+},
+{
+"start": 1748.76,
+"end": 1748.92,
+"word": "var",
+"p": 0.986
+},
+{
+"start": 1748.92,
+"end": 1749.04,
+"word": "mı",
+"p": 0.956
+},
+{
+"start": 1749.04,
+"end": 1749.2,
+"word": "yani?",
+"p": 0.891
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+1744.98,
+1750.98
+],
+"words": [
+{
+"start": 1747.78,
+"end": 1748.22,
+"word": "Ağrıdan",
+"p": 0.601
+},
+{
+"start": 1748.22,
+"end": 1748.44,
+"word": "almak",
+"p": 0.305
+},
+{
+"start": 1748.44,
+"end": 1748.66,
+"word": "gerek",
+"p": 0.841
+},
+{
+"start": 1748.66,
+"end": 1748.92,
+"word": "var",
+"p": 0.907
+},
+{
+"start": 1748.92,
+"end": 1749.02,
+"word": "mı",
+"p": 0.983
+},
+{
+"start": 1749.02,
+"end": 1749.18,
+"word": "yani?",
+"p": 0.9
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1744.98,
+1750.98
+],
+"words": [
+{
+"start": 1747.78,
+"end": 1748.22,
+"word": "Ağrıdan",
+"p": 0.601
+},
+{
+"start": 1748.22,
+"end": 1748.44,
+"word": "almak",
+"p": 0.305
+},
+{
+"start": 1748.44,
+"end": 1748.66,
+"word": "gerek",
+"p": 0.841
+},
+{
+"start": 1748.66,
+"end": 1748.92,
+"word": "var",
+"p": 0.907
+},
+{
+"start": 1748.92,
+"end": 1749.02,
+"word": "mı",
+"p": 0.983
+},
+{
+"start": 1749.02,
+"end": 1749.18,
+"word": "yani?",
+"p": 0.9
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1744.98,
+1750.98
+],
+"words": [
+{
+"start": 1747.8,
+"end": 1748.2,
+"word": "Aileler",
+"p": 0.257
+},
+{
+"start": 1748.2,
+"end": 1748.46,
+"word": "almama",
+"p": 0.864
+},
+{
+"start": 1748.46,
+"end": 1748.66,
+"word": "gerek",
+"p": 0.987
+},
+{
+"start": 1748.66,
+"end": 1748.9,
+"word": "var",
+"p": 0.988
+},
+{
+"start": 1748.9,
+"end": 1749.04,
+"word": "mı",
+"p": 0.966
+},
+{
+"start": 1749.04,
+"end": 1749.22,
+"word": "yani?",
+"p": 0.91
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1745.15,
+1751.15
+],
+"words": []
+},
+{
+"pass": "hint4",
+"w": [
+1745.15,
+1751.15
+],
+"words": [
+{
+"start": 1747.75,
+"end": 1748.23,
+"word": "Ağrıları",
+"p": 0.479
+},
+{
+"start": 1748.23,
+"end": 1748.41,
+"word": "almak",
+"p": 0.656
+},
+{
+"start": 1748.41,
+"end": 1748.67,
+"word": "gerek",
+"p": 0.708
+},
+{
+"start": 1748.67,
+"end": 1748.91,
+"word": "var",
+"p": 0.781
+},
+{
+"start": 1748.91,
+"end": 1749.01,
+"word": "mı",
+"p": 0.995
+},
+{
+"start": 1749.01,
+"end": 1749.19,
+"word": "yani?",
+"p": 0.806
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1745.15,
+1751.15
+],
+"words": [
+{
+"start": 1747.57,
+"end": 1748.05,
+"word": "Ağrı",
+"p": 0.591
+},
+{
+"start": 1748.05,
+"end": 1748.43,
+"word": "almak",
+"p": 0.248
+},
+{
+"start": 1748.43,
+"end": 1748.67,
+"word": "gerek",
+"p": 0.747
+},
+{
+"start": 1748.67,
+"end": 1748.91,
+"word": "var",
+"p": 0.775
+},
+{
+"start": 1748.91,
+"end": 1749.01,
+"word": "mı",
+"p": 0.995
+},
+{
+"start": 1749.01,
+"end": 1749.19,
+"word": "yani?",
+"p": 0.753
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1745.15,
+1751.15
+],
+"words": [
+{
+"start": 1747.73,
+"end": 1748.17,
+"word": "Ağrıları",
+"p": 0.633
+},
+{
+"start": 1748.17,
+"end": 1748.47,
+"word": "almama",
+"p": 0.906
+},
+{
+"start": 1748.47,
+"end": 1748.67,
+"word": "gerek",
+"p": 0.989
+},
+{
+"start": 1748.67,
+"end": 1748.89,
+"word": "var",
+"p": 0.988
+},
+{
+"start": 1748.89,
+"end": 1749.03,
+"word": "mı",
+"p": 0.977
+},
+{
+"start": 1749.03,
+"end": 1749.23,
+"word": "yani?",
+"p": 0.927
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1745.73,
+1751.73
+],
+"words": [
+{
+"start": 1747.61,
+"end": 1748.05,
+"word": "Ağrı,",
+"p": 0.514
+},
+{
+"start": 1748.13,
+"end": 1748.37,
+"word": "ama",
+"p": 0.31
+},
+{
+"start": 1748.37,
+"end": 1748.47,
+"word": "o",
+"p": 0.764
+},
+{
+"start": 1748.47,
+"end": 1748.69,
+"word": "gerek",
+"p": 0.417
+},
+{
+"start": 1748.69,
+"end": 1748.91,
+"word": "var",
+"p": 0.993
+},
+{
+"start": 1748.91,
+"end": 1749.01,
+"word": "mı",
+"p": 0.976
+},
+{
+"start": 1749.01,
+"end": 1749.19,
+"word": "yani?",
+"p": 0.801
+},
+{
+"start": 1750.77,
+"end": 1751.21,
+"word": "Aha!",
+"p": 0.797
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+1745.73,
+1751.73
+],
+"words": [
+{
+"start": 1745.73,
+"end": 1745.81,
+"word": "Hı?",
+"p": 0.031
+},
+{
+"start": 1747.69,
+"end": 1748.05,
+"word": "Ağrı,",
+"p": 0.537
+},
+{
+"start": 1748.13,
+"end": 1748.35,
+"word": "ama",
+"p": 0.257
+},
+{
+"start": 1748.35,
+"end": 1748.47,
+"word": "o",
+"p": 0.762
+},
+{
+"start": 1748.47,
+"end": 1748.75,
+"word": "yerek",
+"p": 0.447
+},
+{
+"start": 1748.75,
+"end": 1748.91,
+"word": "var",
+"p": 0.979
+},
+{
+"start": 1748.91,
+"end": 1749.01,
+"word": "mı",
+"p": 0.972
+},
+{
+"start": 1749.01,
+"end": 1749.19,
+"word": "yani?",
+"p": 0.744
+},
+{
+"start": 1750.85,
+"end": 1751.21,
+"word": "Aha!",
+"p": 0.742
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1745.73,
+1751.73
+],
+"words": [
+{
+"start": 1747.59,
+"end": 1748.03,
+"word": "Ama",
+"p": 0.027
+},
+{
+"start": 1748.03,
+"end": 1748.47,
+"word": "o",
+"p": 0.37
+},
+{
+"start": 1748.47,
+"end": 1748.69,
+"word": "gerek",
+"p": 0.349
+},
+{
+"start": 1748.69,
+"end": 1748.91,
+"word": "var",
+"p": 0.99
+},
+{
+"start": 1748.91,
+"end": 1749.01,
+"word": "mı",
+"p": 0.971
+},
+{
+"start": 1749.01,
+"end": 1749.19,
+"word": "yani?",
+"p": 0.79
+},
+{
+"start": 1750.77,
+"end": 1751.21,
+"word": "Aha!",
+"p": 0.801
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1745.73,
+1751.73
+],
+"words": [
+{
+"start": 1747.73,
+"end": 1748.17,
+"word": "ağrıları",
+"p": 0.678
+},
+{
+"start": 1748.17,
+"end": 1748.47,
+"word": "almama",
+"p": 0.85
+},
+{
+"start": 1748.47,
+"end": 1748.67,
+"word": "gerek",
+"p": 0.985
+},
+{
+"start": 1748.67,
+"end": 1748.89,
+"word": "var",
+"p": 0.984
+},
+{
+"start": 1748.89,
+"end": 1749.03,
+"word": "mı",
+"p": 0.928
+},
+{
+"start": 1749.03,
+"end": 1749.23,
+"word": "yani",
+"p": 0.858
+},
+{
+"start": 1750.67,
+"end": 1751.11,
+"word": "aha",
+"p": 0.55
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1748.72,
+1754.72
+],
+"words": [
+{
+"start": 1749.68,
+"end": 1750.16,
+"word": "Aha!",
+"p": 0.288
+},
+{
+"start": 1751.34,
+"end": 1751.8,
+"word": "Öldü",
+"p": 0.973
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+1748.72,
+1754.72
+],
+"words": [
+{
+"start": 1749.68,
+"end": 1750.16,
+"word": "Aha!",
+"p": 0.288
+},
+{
+"start": 1751.34,
+"end": 1751.8,
+"word": "Öldü",
+"p": 0.973
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1748.72,
+1754.72
+],
+"words": [
+{
+"start": 1751.06,
+"end": 1751.46,
+"word": "Aha",
+"p": 0.288
+},
+{
+"start": 1751.46,
+"end": 1751.86,
+"word": "öldü",
+"p": 0.835
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1748.72,
+1754.72
+],
+"words": [
+{
+"start": 1748.72,
+"end": 1748.77,
+"word": "Börek",
+"p": 0.342
+},
+{
+"start": 1748.72,
+"end": 1748.92,
+"word": "var",
+"p": 0.932
+},
+{
+"start": 1748.92,
+"end": 1749.02,
+"word": "mı",
+"p": 0.951
+},
+{
+"start": 1749.02,
+"end": 1749.22,
+"word": "yani?",
+"p": 0.899
+},
+{
+"start": 1751.06,
+"end": 1751.46,
+"word": "Aha",
+"p": 0.806
+},
+{
+"start": 1751.46,
+"end": 1751.86,
+"word": "öldü",
+"p": 0.707
+}
+]
+},
+{
+"pass": "hint0",
+"w": [
+1751.42,
+1757.42
+],
+"words": [
+{
+"start": 1751.42,
+"end": 1751.8,
+"word": "Öldü",
+"p": 0.792
+}
+]
+},
+{
+"pass": "hint4",
+"w": [
+1751.42,
+1757.42
+],
+"words": [
+{
+"start": 1751.42,
+"end": 1751.8,
+"word": "Öldü",
+"p": 0.792
+}
+]
+},
+{
+"pass": "plain",
+"w": [
+1751.42,
+1757.42
+],
+"words": [
+{
+"start": 1751.42,
+"end": 1751.8,
+"word": "Öldü",
+"p": 0.792
+}
+]
+},
+{
+"pass": "mix",
+"w": [
+1751.42,
+1757.42
+],
+"words": [
+{
+"start": 1751.42,
+"end": 1751.78,
+"word": "Öldü",
+"p": 0.835
+}
+]
+}
+],
+"items": [
+{
+"start": 165.15,
+"end": 165.43,
+"word": "Orospu",
+"status": "maybe",
+"score": 0.39,
+"bleep": [
+165.01,
+165.63
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 165.85,
+"end": 166.91,
+"word": "siktir",
+"status": "maybe",
+"score": 0.4,
+"bleep": [
+165.71,
+167.11
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 168.33,
+"end": 168.85,
+"word": "Orospu",
+"status": "maybe",
+"score": 0.43,
+"bleep": [
+168.19,
+169.05
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 170.75,
+"end": 170.8,
+"word": "kahpe.",
+"status": "maybe",
+"score": 0.48,
+"bleep": [
+170.47,
+171.19
+],
+"aligned": false,
+"leak_first": "both",
+"leak": null
+},
+{
+"start": 310.5,
+"end": 311.9,
+"word": "Siktir",
+"status": "maybe",
+"score": 0.54,
+"bleep": [
+310.36,
+312.1
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 321.37,
+"end": 322.09,
+"word": "Orospu",
+"status": "maybe",
+"score": 0.43,
+"bleep": [
+321.23,
+322.29
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 322.21,
+"end": 322.57,
+"word": "sikeyim,",
+"status": "maybe",
+"score": 0.43,
+"bleep": [
+322.07,
+322.77
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 322.93,
+"end": 322.98,
+"word": "piç,",
+"status": "maybe",
+"score": 0.48,
+"bleep": [
+322.65,
+323.37
+],
+"aligned": false,
+"leak_first": "both",
+"leak": null
+},
+{
+"start": 436.91,
+"end": 438.31,
+"word": "Siktir",
+"status": "maybe",
+"score": 0.5,
+"bleep": [
+436.77,
+438.51
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 438.99,
+"end": 439.27,
+"word": "amk.",
+"status": "maybe",
+"score": 0.65,
+"bleep": [
+438.85,
+439.47
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 1148.93,
+"end": 1148.98,
+"word": "Siktir",
+"status": "maybe",
+"score": 0.39,
+"bleep": [
+1148.77,
+1149.21
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 1149.18,
+"end": 1149.62,
+"word": "siktir",
+"status": "maybe",
+"score": 0.4,
+"bleep": [
+1149.04,
+1149.82
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 1311.21,
+"end": 1312.31,
+"word": "Orospu",
+"status": "maybe",
+"score": 0.41,
+"bleep": [
+1311.07,
+1312.51
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 1312.87,
+"end": 1312.97,
+"word": "siktir",
+"status": "maybe",
+"score": 0.41,
+"bleep": [
+1312.71,
+1313.2
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 1314.63,
+"end": 1316.29,
+"word": "siktir",
+"status": "maybe",
+"score": 0.41,
+"bleep": [
+1314.49,
+1316.49
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 1748.57,
+"end": 1748.824,
+"word": "yerek",
+"status": "maybe",
+"score": 0.5,
+"bleep": [
+1748.43,
+1749.024
+],
+"aligned": true,
+"leak_first": "both",
+"leak": null
+},
+{
+"start": 1992.86,
+"end": 1993.44,
+"word": "Orospu",
+"status": "maybe",
+"score": 0.49,
+"bleep": [
+1992.72,
+1993.64
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+},
+{
+"start": 1993.68,
+"end": 1993.88,
+"word": "siktir",
+"status": "maybe",
+"score": 0.48,
+"bleep": [
+1993.54,
+1994.08
+],
+"aligned": false,
+"leak_first": null,
+"leak": null
+}
+],
+"floors": {
+"recall_strict": 1.0,
+"precision_strict": -0.1,
+"recall_normal": 1.0
+},
+"measured": {
+"before": {
+"true": 0,
+"caught": 0,
+"bleeps": 0,
+"recall": 1.0,
+"precision": 1.0,
+"missed": []
+},
+"after_strict": {
+"true": 0,
+"caught": 0,
+"bleeps": 1,
+"recall": 1.0,
+"precision": 0.0,
+"missed": []
+},
+"after_normal": {
+"true": 0,
+"caught": 0,
+"bleeps": 0,
+"recall": 1.0,
+"precision": 1.0,
+"missed": []
+}
+}
+}
