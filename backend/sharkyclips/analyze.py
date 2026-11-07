@@ -198,6 +198,28 @@ def clean_hashtags(tags: list[str], topic: str, exclude: list[str] | None = None
     return out[:10]
 
 
+def clip_tags(mode: str, game: dict, facts: dict, moment: str | None, lang: str, llm_hashtags: list[str],
+              topic: str, exclude: list[str]) -> tuple[list[str], list[str]]:
+    """(hashtags, YouTube tags) of one clip. Gaming: built from the game's bank, the clip's facts
+    and the channel's own tags; the model's hashtags only fill gaps and must be real words about
+    this game. Other modes: the channel's tags + the model's hashtags."""
+    from . import youtube
+    from .edit import brand
+    from .titles import banks
+
+    channel = brand.channel_hashtags()
+    names = brand.channel_names()
+    if mode == "gaming":
+        bank = banks.get(game["id"])
+        return (banks.build_hashtags(bank, facts, moment, lang, channel=channel, llm=llm_hashtags, exclude=exclude),
+                banks.build_tags(bank, facts, moment, lang, channel=names))
+    keep = [h for h in clean_hashtags(llm_hashtags, topic, exclude=exclude)]
+    out = list(channel) + [h for h in keep if h.casefold() not in {c.casefold() for c in channel}]
+    hashtags = out[:max(8, len(channel) + 3)]
+    tags = [h.lstrip("#") for h in keep if h.lower() != "#shorts"] + [topic] + names + [mode, "shorts"]
+    return hashtags, youtube.clean_tags([t for t in tags if t])[:20]
+
+
 def length_fit(duration: float, mode: str) -> int:
     lo, hi = SWEET_SPOT.get(mode, (18, 45))
     if lo <= duration <= hi:
@@ -310,12 +332,32 @@ def _signals_text(c: dict) -> str:
     return out
 
 
-def _context_block(meta: dict, mode: str, c: dict, transcript: dict) -> str:
+def game_lines(game: dict | None, facts: dict | None = None) -> str:
+    """The project's ONE game (never guessed per clip) + this clip's facts, for every prompt."""
+    if not game:
+        return ""
+    from .titles import banks
+
+    if game.get("known"):
+        out = (f"Game: {game['name']} (the whole video is {game['name']}; every clip is from this game. "
+               "Never name or hint at any other game.)")
+    else:
+        out = ("Game: unknown. Never name or guess a game, a game's characters, maps or modes; "
+               "write about the moment itself.")
+    ft = banks.facts_text(facts or {})
+    if ft:
+        out += f"\nClip facts (from the game screen and the clip's words, reliable): {ft}"
+    return out
+
+
+def _context_block(meta: dict, mode: str, c: dict, transcript: dict, game: dict | None = None,
+                   facts: dict | None = None) -> str:
     """Shared start of the judge and the titles prompt (Ollama reuses the cached prefix)."""
     spoken = transcript.get("language") or "unknown"
+    gl = game_lines(game, facts) if mode == "gaming" else ""
     return f"""Video title: {meta.get('title', '')}
 Channel: {(meta.get('source') or {}).get('uploader') or 'unknown'}
-Content type: {mode}
+Content type: {mode}{chr(10) + gl if gl else ''}
 Spoken language: {lang_name(spoken)}
 Clip: {c['duration']:.1f} s long (hype rank #{c['rank']}, hype {c['hype_score']}/100)
 {_signals_text(c)}
@@ -324,22 +366,28 @@ Transcript around the clip (times are relative to the clip start; CLIP lines are
 {_context(transcript, c['start'], c['end'])}"""
 
 
-def _prompt(meta: dict, mode: str, c: dict, transcript: dict, out_lang: str) -> str:
-    return _context_block(meta, mode, c, transcript) + f"""
+def _prompt(meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, game: dict | None = None,
+            facts: dict | None = None) -> str:
+    if mode == "gaming" and game:
+        topic = (f'1. game_or_topic: exactly "{game["name"]}".' if game.get("known")
+                 else '1. game_or_topic: exactly "Gaming" (the game is unknown: never guess it).')
+    else:
+        topic = '1. game_or_topic: the game or topic, from the video title and transcript (e.g. "Delta Force").'
+    return _context_block(meta, mode, c, transcript, game, facts) + f"""
 
 TASK: judge this clip and write its publish package.
-1. game_or_topic: the game or topic, from the video title and transcript (e.g. "Delta Force").
+{topic}
 2. what_happens (English): what actually happens in the CLIP lines, 1-2 sentences. Not the whole video. Mention names, places and items only as they are said.
 3. Judge it: self_contained (understandable without the rest of the video?), moment_type, funny/exciting/useful 0-10.
 4. hook_score: how strong the first 3 seconds are. retention_score: will people watch to the end. trend_fit_score: how well it fits what does well on Shorts/TikTok for this game/topic right now. Use the full 0-100 range honestly.
 5. start_shift_s / end_shift_s (-10..10): move the start earlier (negative) to include needed setup, or later to cut dead air; move the end so the clip ends right after the payoff/reaction. 0 if the cut is already good.
-6. hashtags: 6-10 hashtags: a few general ones (the game/topic, gaming or study, etc.), the rest specific to this clip; mix {lang_name(out_lang)} and universal English tags. No channel or person names.
-7. hook_text: max 6 words in {lang_name(out_lang)}, correct spelling, shown on screen in the first seconds to make people stay. Casual, about this clip, no swearing, no emojis.
-8. cover_scene (English): describe one striking image for the thumbnail based on what really happens (subject, action, emotion, setting). cover_text: 1-4 punchy words in {lang_name(out_lang)} for the thumbnail.
+6. hashtags: 6-10 hashtags about what happens in THIS clip (moment, event, character, map); mix {lang_name(out_lang)} and universal English tags. Never another game, no channel or person names, no #viral / #fyp.
+7. hook_text: 2-4 punchy words in {lang_name(out_lang)}, correct spelling, shown on screen in the first seconds to make people stay; one key word may be in CAPITALS. About this clip, no swearing, no emojis.
+8. cover_scene (English): describe one striking image for the thumbnail based on what really happens (subject, action, emotion, setting). cover_text: 2-4 punchy words in {lang_name(out_lang)} for the thumbnail, same style as the hook.
 """
 
 
-DESCRIPTION_VERSION = 2
+DESCRIPTION_VERSION = 3  # 1.2.25: game-aware, ends with a question
 DESCRIPTION_SCHEMA = {
     "type": "object",
     "properties": {"description": {"type": "string", "minLength": 40, "maxLength": 480}},
@@ -360,25 +408,45 @@ def _channel_names(meta: dict) -> list[str]:
 TR_FORMAL = re.compile(r"\w+(?:mekte|makta)(?:dır|dir|dırlar|dirler)\b|\w+(?:mış|miş|muş|müş)(?:tır|tir|tur|tür)\b", re.I)
 
 
+DESCRIPTION_QUESTIONS = {
+    "tr": "\"Sen olsan ne yapardın?\", \"Sizce kim haklıydı?\"",
+    "en": "\"What would you have done?\", \"Who was right here?\"",
+    "de": "\"Was hättest du gemacht?\"", "hu": "\"Te mit csináltál volna?\"", "ru": "\"А ты бы что сделал?\"",
+    "ar": "\"ماذا كنت ستفعل؟\"", "zh": "\"换你会怎么做？\"",
+}
+
+
 def _description_prompt(meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict,
-                        title: str, terms: list[str]) -> str:
+                        title: str, terms: list[str], game: dict | None = None, facts: dict | None = None) -> str:
     names = ", ".join(terms[:20]) or "none"
-    tone = {"tr": " Use casual spoken Turkish (\"indirdim\", \"bakın ne oldu\"), never news style like \"-mektedir\" or \"-mıştır\"."}
-    return _context_block(meta, mode, c, transcript) + f"""
+    tone = {"tr": " Use casual spoken Turkish (\"indirdim\", \"bakın ne oldu\", \"chat çıldırdı\"), never news style like \"-mektedir\" or \"-mıştır\"."}
+    gaming = mode == "gaming"
+    if gaming:
+        where = (f"Write it like a streamer who plays {game['name']}: use the game's own words where they fit "
+                 "(only names from the clip facts or the list below)." if game and game.get("known")
+                 else "The game is unknown: never name or guess a game.")
+        body = (f"- 2-3 short, lively sentences in the creator's own voice (first person: I / we), natural streamer tone: "
+                f"what happens in THIS clip and why it's worth watching. {where}\n"
+                f"- The LAST sentence is a short question that makes viewers comment, like {DESCRIPTION_QUESTIONS.get(out_lang, DESCRIPTION_QUESTIONS['en'])}.")
+    else:
+        body = ("- 2-3 short, natural sentences in the creator's own voice (first person: I / we), casual like a streamer "
+                "talking to viewers: what happens and why it's worth watching. The last sentence may ask viewers a "
+                "question or invite a comment.")
+    return _context_block(meta, mode, c, transcript, game, facts) + f"""
 
 What happens in the clip: {j['what_happens']}
 Chosen title: {title}
 
 TASK: write the YouTube description of this clip in {lang_name(out_lang)}.
-- 2-3 short, natural sentences in the creator's own voice (first person: I / we), casual like a streamer talking to viewers: what happens and why it's worth watching. The last sentence may ask viewers a question or invite a comment.{tone.get(out_lang, "")}
+{body}{tone.get(out_lang, "")}
 - Never mention the channel or the creator by name, and never describe the creator in the third person.
 - Only what the CLIP lines and game events show; never invent events, scores or names. Don't mention swearing.
 - Spell these names exactly like this: {names}
-- Don't repeat the title word for word. No hashtags, emojis, links or ALL CAPS.
+- Don't repeat the title word for word. No hashtags, emojis, links or ALL CAPS (the hashtags and links are added later).
 """
 
 
-def _description_soft_checker(out_lang: str, channel: list[str]) -> Callable[[dict], list[str]]:
+def _description_soft_checker(out_lang: str, channel: list[str], question: bool = False) -> Callable[[dict], list[str]]:
     """Style problems: asked to be fixed, but an answer that still has them is kept."""
     keys = [_name_key(n) for n in channel if len(_name_key(n)) >= 3]
 
@@ -390,19 +458,25 @@ def _description_soft_checker(out_lang: str, channel: list[str]) -> Callable[[di
             errs.append("don't name the channel/creator: write in the first person (I / we)")
         if out_lang == "tr" and TR_FORMAL.search(text):
             errs.append("write casual spoken Turkish, not news style (-mektedir / -mıştır)")
+        if question and not text.rstrip().endswith(titles_mod.QUESTION_END):
+            errs.append("end with a short question to the viewers (the last sentence ends with '?')")
         return errs
 
     return check
 
 
-def _description_checker(out_lang: str) -> Callable[[dict], list[str]]:
+def _description_checker(out_lang: str, game_id: str | None = None) -> Callable[[dict], list[str]]:
     script = SCRIPT.get(out_lang)
 
     def check(d: dict) -> list[str]:
+        from .titles import banks
+
         text = d.get("description", "")
         errs = []
         if has_profanity(text):  # hard: a description with swearing is never used
             errs.append("no swearing or insults in the description, even if the streamer swears")
+        if game_id and (other := banks.other_game(text, game_id)):
+            errs.append(f"never mention {other}: this clip is not from that game")
         if "#" in text or "http" in text:
             errs.append("no hashtags or links in the description")
         n = _sentence_count(text)
@@ -416,21 +490,27 @@ def _description_checker(out_lang: str) -> Callable[[dict], list[str]]:
 
 
 def write_description(model, meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict,
-                      title: str, gl) -> str:
+                      title: str, gl, game: dict | None = None, facts: dict | None = None) -> str:
     """The model's 2-3 sentences (finish_description() cleans them and adds the hashtags)."""
+    gaming = mode == "gaming"
     d = model.json(SYSTEM, _description_prompt(meta, mode, c, transcript, out_lang, j, title,
-                                               list(gl.terms) if gl else []),
-                   DESCRIPTION_SCHEMA, temperature=0.6, check=_description_checker(out_lang),
-                   soft=_description_soft_checker(out_lang, _channel_names(meta)), num_predict=700)
+                                               list(gl.terms) if gl else [], game, facts),
+                   DESCRIPTION_SCHEMA, temperature=0.65 if gaming else 0.6,
+                   check=_description_checker(out_lang, (game or {}).get("id") if gaming else None),
+                   soft=_description_soft_checker(out_lang, _channel_names(meta), question=gaming), num_predict=700)
     return d["description"]
 
 
-def finish_description(text: str, out_lang: str, gl, hashtags: list[str]) -> str:
-    """Spelling fixes + the hashtags at the end (YouTube shows the first three above the title)."""
-    from .titles import lexicon
+def finish_description(text: str, out_lang: str, gl, hashtags: list[str], game_id: str | None = None) -> str:
+    """Spelling fixes + the hashtags at the end (YouTube shows the first three above the title).
+    game_id: sentences that name another game are dropped."""
+    from .titles import banks, lexicon
 
     out = lexicon.strip_emoji(text).strip().strip("\"'“”«»")
     out = re.sub(r"\s*#\w+", "", out).strip()
+    if game_id and banks.other_game(out, game_id):
+        parts = re.split(r"(?<=[.!?…。！？؟])\s+", out)
+        out = " ".join(p for p in parts if not banks.other_game(p, game_id)).strip()
     if gl is not None:
         out = gl.canonicalize(out)
     out, _f = lexicon.repair_diacritics(out, out_lang, gl.allowed if gl else frozenset())
@@ -517,10 +597,25 @@ def translate_lines(model, lines: list[dict], src: str, dst: str, context: str) 
 # ------------------------------------------------------------------ main
 
 
+def _judge_from_saved(c: dict) -> dict | None:
+    """A clip's earlier judgement (highlights.json), for a metadata-only run without the judge cache."""
+    info, pub = c.get("llm") or {}, c.get("publish") or {}
+    if not info.get("what_happens"):
+        return None
+    return {"game_or_topic": info.get("game_or_topic") or "", "what_happens": info["what_happens"],
+            "moment_type": info.get("moment_type") or "other", "hashtags": list(pub.get("hashtags") or []),
+            "hook_text": pub.get("hook_text") or "", "cover_text": pub.get("cover_text") or "",
+            "cover_scene": "", "start_shift_s": info.get("start_shift_s") or 0, "end_shift_s": info.get("end_shift_s") or 0}
+
+
 def analyze_project(project: Project, out_lang: str | None = None, force: bool = False,
                     refine: bool = True, ranks: list[int] | None = None, translate: bool = True,
-                    on_progress: Callable[[int, int, dict], None] | None = None) -> dict:
+                    on_progress: Callable[[int, int, dict], None] | None = None,
+                    meta_only: bool = False) -> dict:
+    """meta_only=True: only titles, description, hashtags, tags and cover text are written again
+    (cuts, scores, hook texts and subtitles stay, so rendered clips stay valid)."""
     from . import llm
+    from .titles import banks
 
     hl_path = project.dir / "highlights.json"
     if not hl_path.is_file():
@@ -528,8 +623,10 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                                f"Run: python cli.py highlights {project.id}")
     if not project.transcript_path.is_file():
         raise SharkyClipsError("No transcript yet.", f"Run: python cli.py transcribe {project.id}")
-    out_lang = languages.require(out_lang or config.get("output_language") or "tr").code
     hl = read_json(hl_path)
+    if meta_only:
+        out_lang = out_lang or (hl.get("analysis") or {}).get("language")
+    out_lang = languages.require(out_lang or config.get("output_language") or "tr").code
     transcript = project.load_transcript()
     meta = project.load_meta()
     mode = hl.get("mode") or meta.get("mode") or "gaming"
@@ -537,9 +634,18 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
     spoken = transcript.get("language")
     cands = sorted(hl["candidates"], key=lambda c: c["rank"])
     todo = [c for c in cands if ranks is None or c["rank"] in ranks]
+    if meta_only:
+        todo = [c for c in todo if (c.get("publish") or {}).get("available")]
     cache_dir = project.cache_dir / "llm"
     cache_dir.mkdir(parents=True, exist_ok=True)
     duration = float(hl.get("duration") or meta.get("duration") or 0)
+
+    # ONE game for the whole project (override > HUD pick / detection > title + transcript)
+    game = banks.project_game(project)
+    bank = banks.get(game["id"])
+    gid = game["id"] if mode == "gaming" else None
+    game_terms = banks.glossary_terms(bank) if mode == "gaming" else []
+    caps_words = banks.caps_words(bank) if mode == "gaming" else []
 
     t_start = time.perf_counter()
     timings = []
@@ -548,109 +654,147 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
     glossaries: dict = {}
 
     def glossary_for(topic: str):
-        game = titles_mod.glossary.detect_game(meta.get("title", ""), topic) or ""
-        if game not in glossaries:
-            glossaries[game] = titles_mod.glossary.build(transcript, out_lang, meta.get("title", ""), topic)
-        return glossaries[game]
+        name = game["name"] if mode == "gaming" else (titles_mod.glossary.detect_game(meta.get("title", ""), topic) or "")
+        if name not in glossaries:
+            glossaries[name] = titles_mod.glossary.build(
+                transcript, out_lang, meta.get("title", ""), topic,
+                game=name if mode == "gaming" else None, game_terms=game_terms, extra_allowed=caps_words)
+        return glossaries[name]
 
-    style = titles_mod.style_digest(out_lang, mode)
+    style = titles_mod.style_digest(out_lang, mode, gid)
     fast = llm.fast_analysis()
     profile = "fast" if fast else "normal"
     gl = None
+    gtag = f"{game['id']}:{banks.BANK_VERSION}" if mode == "gaming" else "-"
     with llm.lazy_session() as model:
         for i, c in enumerate(todo):
             t0 = time.perf_counter()
             calls0 = model.calls
             orig = c.get("llm", {}).get("original") or {"start": c["start"], "end": c["end"]}
             # always judge the original cut, so results don't drift between runs
-            c["start"], c["end"] = orig["start"], orig["end"]
-            c["duration"] = round(c["end"] - c["start"], 2)
-            key = _cache_key(model.model, out_lang, c, mode, transcript)
+            # (meta_only: on a copy, the clip keeps its refined cut)
+            w = dict(c) if meta_only else c
+            w["start"], w["end"] = orig["start"], orig["end"]
+            w["duration"] = round(w["end"] - w["start"], 2)
+            facts = banks.clip_facts(bank, w, transcript) if mode == "gaming" else {}
+            key = _cache_key(model.model, out_lang, w, mode, transcript)
             cache_file = cache_dir / f"judge_{key}.json"
             cached = True
             try:
                 if cache_file.is_file() and not force:
                     j = read_json(cache_file)
+                elif meta_only:
+                    j = _judge_from_saved(c)
+                    if j is None:
+                        raise SharkyClipsError("No earlier AI judgement for this clip.")
                 else:
-                    j = model.json(SYSTEM, _prompt(meta, mode, c, transcript, out_lang),
+                    j = model.json(SYSTEM, _prompt(meta, mode, w, transcript, out_lang, game, facts),
                                    _schema(lang_name(out_lang)), check=_hard_checker(out_lang),
                                    soft=_checker(out_lang))
                     j = _repair(j)
                     write_json_atomic(cache_file, j)
                     cached = False
+                j = dict(j)
+                if mode == "gaming":  # the project's game, never the model's per-clip guess
+                    j["game_or_topic"] = game["name"] or "Gaming"
+                    j["what_happens"] = banks.scrub(j["what_happens"], gid)
                 gl = glossary_for(j["game_or_topic"])
                 gdig = hashlib.sha1(gl.digest().encode()).hexdigest()[:10]
-                tkey = _cache_key(model.model, out_lang, c, mode, transcript,
-                                  extra=f"titles:{style}:{gdig}" + (":fast" if fast else ""))
+                tkey = _cache_key(model.model, out_lang, w, mode, transcript,
+                                  extra=f"titles:{style}:{gdig}:{gtag}" + (":fast" if fast else ""))
                 tfile = cache_dir / f"titles_{tkey}.json"
                 if tfile.is_file() and not force:
                     tw = read_json(tfile)
                 else:
-                    tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, used_titles, fast=fast)
+                    tw = _write_titles(model, meta, mode, w, transcript, out_lang, j, gl, used_titles, fast=fast,
+                                       game=game, facts=facts, bank=bank)
                     write_json_atomic(tfile, tw)
                     cached = False
                 if not cached:
                     record_speed(profile, model.model, time.perf_counter() - t0, "analysis")
-                tw = titles_mod.refilter(tw, out_lang, has_profanity)  # cached answers meet today's filters
+                tw = titles_mod.refilter(tw, out_lang, has_profanity,
+                                         forbidden=(lambda t: banks.other_game(t, gid)) if gid else None)
             except SharkyClipsError as exc:  # one bad clip must not stop the batch
                 console.print(f"[yellow]#{c['rank']}: skipped ({exc.message[:160]})[/]")
                 failed.append({"rank": c["rank"], "error": exc.message})
                 continue
             used_titles += [t["text"] for t in tw["titles"]]
 
-            # neighbours limit how far the boundaries may move (no overlaps)
-            others = [o for o in cands if o is not c]
-            lo = max([0.0] + [o["end"] for o in others if o["end"] <= orig["start"] + 0.01])
-            hi = min([duration or orig["end"] + MAX_SHIFT] + [o["start"] for o in others
-                                                              if o["start"] >= orig["end"] - 0.01])
-            lo, hi = max(lo, orig["start"] - MAX_SHIFT), min(hi, orig["end"] + MAX_SHIFT)
-            if refine and not c.get("manual"):  # a hand-marked clip keeps its exact cut
-                start, end = snap_boundaries(
-                    transcript, orig["start"] + j["start_shift_s"], orig["end"] + j["end_shift_s"],
-                    lo, hi, preset.clip_min * 0.8, preset.clip_max)
+            if meta_only:
+                start, end = c["start"], c["end"]
             else:
-                start, end = orig["start"], orig["end"]
-            c["start"], c["end"], c["duration"] = start, end, round(end - start, 2)
+                # neighbours limit how far the boundaries may move (no overlaps)
+                others = [o for o in cands if o is not c]
+                lo = max([0.0] + [o["end"] for o in others if o["end"] <= orig["start"] + 0.01])
+                hi = min([duration or orig["end"] + MAX_SHIFT] + [o["start"] for o in others
+                                                                  if o["start"] >= orig["end"] - 0.01])
+                lo, hi = max(lo, orig["start"] - MAX_SHIFT), min(hi, orig["end"] + MAX_SHIFT)
+                if refine and not c.get("manual"):  # a hand-marked clip keeps its exact cut
+                    start, end = snap_boundaries(
+                        transcript, orig["start"] + j["start_shift_s"], orig["end"] + j["end_shift_s"],
+                        lo, hi, preset.clip_min * 0.8, preset.clip_max)
+                else:
+                    start, end = orig["start"], orig["end"]
+                c["start"], c["end"], c["duration"] = start, end, round(end - start, 2)
             lines = sentences(transcript, start, end)
-            joiner = "" if spoken in NO_SPACE_LANGS else " "
-            c["text"] = joiner.join(x["text"] for x in lines) or c.get("text", "")
+            if not meta_only:
+                joiner = "" if spoken in NO_SPACE_LANGS else " "
+                c["text"] = joiner.join(x["text"] for x in lines) or c.get("text", "")
 
-            lf = length_fit(c["duration"], mode)
-            score = viral_score(c, j, lf)
-            c["publish"] = {
-                "available": True, "language": out_lang, "model": model.model,
-                "viral_score": score, "viral_label": viral_label(score),
-                "sub_scores": {"hook": calibrate(j["hook_score"]), "retention": calibrate(j["retention_score"]),
-                               "trend_fit": calibrate(j["trend_fit_score"]), "length_fit": lf},
-                "titles": [t["text"] for t in tw["titles"]],
-                "title_styles": [t["style"] for t in tw["titles"]],
-                "title_checks": tw.get("checks"),
-                "hashtags": clean_hashtags(j["hashtags"], j["game_or_topic"], exclude=_channel_names(meta)),
-                "hook_text": tw["hook_text"] or " ".join(j["hook_text"].split()[:6]),
-                "cover_text": tw["cover_text"] or j["cover_text"].strip(),
-                "cover_prompt": f"{j['cover_scene'].strip().rstrip('.')}. "
-                                + COVER_STYLE.format(text=tw["cover_text"] or j["cover_text"].strip()),
-                "analyzed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            }
-            c["llm"] = {"game_or_topic": j["game_or_topic"], "what_happens": j["what_happens"],
-                        "self_contained": j["self_contained"], "moment_type": j["moment_type"],
-                        "funny": j["funny"], "exciting": j["exciting"], "useful": j["useful"],
-                        "start_shift_s": j["start_shift_s"], "end_shift_s": j["end_shift_s"],
-                        "original": orig, "refined": (start, end) != (orig["start"], orig["end"])}
+            hashtags, tags = clip_tags(mode, game, facts, j.get("moment_type"), out_lang, j.get("hashtags") or [],
+                                       j["game_or_topic"], _channel_names(meta))
+            cover_text = tw["cover_text"] or (j.get("cover_text") or "").strip()
+            if meta_only:
+                pub = c["publish"]
+                old_cover = pub.get("cover_text") or ""
+                pub.update({"titles": [t["text"] for t in tw["titles"]], "title_styles": [t["style"] for t in tw["titles"]],
+                            "title_checks": tw.get("checks"), "hashtags": hashtags, "tags": tags,
+                            "cover_text": cover_text or old_cover, "language": out_lang,
+                            "metadata_at": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+                if pub.get("cover_prompt") and old_cover and cover_text:
+                    pub["cover_prompt"] = pub["cover_prompt"].replace(f'"{old_cover}"', f'"{cover_text}"')
+                c.setdefault("llm", {})["game_or_topic"] = j["game_or_topic"]
+                c["llm"]["what_happens"] = j["what_happens"]
+            else:
+                lf = length_fit(c["duration"], mode)
+                score = viral_score(c, j, lf)
+                c["publish"] = {
+                    "available": True, "language": out_lang, "model": model.model,
+                    "viral_score": score, "viral_label": viral_label(score),
+                    "sub_scores": {"hook": calibrate(j["hook_score"]), "retention": calibrate(j["retention_score"]),
+                                   "trend_fit": calibrate(j["trend_fit_score"]), "length_fit": lf},
+                    "titles": [t["text"] for t in tw["titles"]],
+                    "title_styles": [t["style"] for t in tw["titles"]],
+                    "title_checks": tw.get("checks"),
+                    "hashtags": hashtags, "tags": tags,
+                    "hook_text": tw["hook_text"] or " ".join(j["hook_text"].split()[:5]),
+                    "cover_text": cover_text,
+                    "cover_prompt": f"{j['cover_scene'].strip().rstrip('.')}. " + COVER_STYLE.format(text=cover_text),
+                    "analyzed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                }
+                c["llm"] = {"game_or_topic": j["game_or_topic"], "what_happens": j["what_happens"],
+                            "self_contained": j["self_contained"], "moment_type": j["moment_type"],
+                            "funny": j["funny"], "exciting": j["exciting"], "useful": j["useful"],
+                            "start_shift_s": j["start_shift_s"], "end_shift_s": j["end_shift_s"],
+                            "original": orig, "refined": (start, end) != (orig["start"], orig["end"])}
+            pub = c["publish"]
+            if mode == "gaming":
+                pub["game"] = {"id": game["id"], "name": game["name"], "source": game["source"]}
+                pub["facts"] = {"events": [e["label"] for e in facts.get("events", [])],
+                                "terms": [t["term"] for t in facts.get("terms", [])]}
 
             # YouTube description (own cache: clips analyzed before 1.2.1 only need this call)
-            pub = c["publish"]
-            dkey = _cache_key(model.model, out_lang, c, mode, transcript,
-                              extra=f"desc{DESCRIPTION_VERSION}:{gdig}:{(pub['titles'] or [''])[0]}")
+            dkey = _cache_key(model.model, out_lang, w, mode, transcript,
+                              extra=f"desc{DESCRIPTION_VERSION}:{gdig}:{gtag}:{(pub['titles'] or [''])[0]}")
             dfile = cache_dir / f"desc_{dkey}.json"
             try:
                 if dfile.is_file() and not force:
                     raw = read_json(dfile)["text"]
                 else:
-                    raw = write_description(model, meta, mode, c, transcript, out_lang, j,
-                                            (pub["titles"] or [""])[0], gl)
+                    raw = write_description(model, meta, mode, w, transcript, out_lang, j,
+                                            (pub["titles"] or [""])[0], gl, game=game, facts=facts)
                     write_json_atomic(dfile, {"text": raw})
-                pub["description"] = finish_description(raw, out_lang, gl, pub["hashtags"])
+                pub["description"] = finish_description(raw, out_lang, gl, pub["hashtags"], game_id=gid)
                 if not pub["description"] or pub["description"].startswith("#"):  # no usable text
                     pub["description"] = None
                     dfile.unlink(missing_ok=True)  # try again on the next run
@@ -659,7 +803,7 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 pub["description"] = None
 
             # subtitles in the output language (segment timing kept)
-            if translate and spoken and out_lang != spoken and lines:
+            if translate and not meta_only and spoken and out_lang != spoken and lines:
                 tkey = _cache_key(model.model, out_lang, c, mode, transcript, extra=f"tr:{start}:{end}")
                 tfile = cache_dir / f"translate_{tkey}.json"
                 if tfile.is_file() and not force:
@@ -669,10 +813,13 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                     write_json_atomic(tfile, tr_lines)
                 c.setdefault("translations", {})[out_lang] = tr_lines
 
-            hl["analysis"] = {"language": out_lang, "model": model.model, "fast": fast,
+            prev = hl.get("analysis") or {}
+            hl["analysis"] = {**(prev if meta_only else {}), "language": out_lang, "model": model.model, "fast": fast,
                               "prompt_version": PROMPT_VERSION,
                               "titles_version": titles_mod.TITLES_VERSION, "glossary": gl.terms if gl else [],
-                              "analyzed_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+                              "game": {"id": game["id"], "name": game["name"], "source": game["source"]},
+                              ("metadata_at" if meta_only else "analyzed_at"):
+                                  datetime.now(timezone.utc).isoformat(timespec="seconds")}
             write_json_atomic(hl_path, hl)  # after every clip: an interrupted run keeps its work
             took = time.perf_counter() - t0
             timings.append({"rank": c["rank"], "seconds": round(took, 1), "cached": cached,
@@ -683,12 +830,14 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                  "load_seconds": round(model.load_seconds or 0.0, 1), "model": model.model,
                  "tokens_per_second": round(model.tokens_per_second, 1)}
 
-    _sync_hype_curve(project, hl)
-    meta["analysis"] = {"language": out_lang, "model": stats["model"], "count": len(todo)}
-    project.save_meta(meta)
+    if not meta_only:
+        _sync_hype_curve(project, hl)
+        meta = project.load_meta()
+        meta["analysis"] = {"language": out_lang, "model": stats["model"], "count": len(todo)}
+        project.save_meta(meta)
     done = {t["rank"] for t in timings}
     return {"language": out_lang, "candidates": [c for c in todo if c["rank"] in done],
-            "failed": failed, "timings": timings, **stats,
+            "failed": failed, "timings": timings, "game": game, **stats,
             "total_seconds": round(time.perf_counter() - t_start, 1)}
 
 
@@ -710,14 +859,23 @@ def _clip_lines(transcript: dict, c: dict) -> str:
 
 def _write_titles(model, meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict, gl,
                   used_titles: list[str], avoid: list[str] | None = None, temperature: float = 0.75,
-                  fast: bool = False) -> dict:
+                  fast: bool = False, game: dict | None = None, facts: dict | None = None,
+                  bank: dict | None = None) -> dict:
+    from .titles import banks
+
+    gaming = mode == "gaming"
+    gid = (game or {}).get("id") if gaming else None
+    words = banks.title_words(bank or banks.get(gid), facts or {}, out_lang) if gaming else {}
     return titles_mod.write(
-        model, fast=fast, system=SYSTEM, context=_context_block(meta, mode, c, transcript), lang=out_lang,
+        model, fast=fast, system=SYSTEM, context=_context_block(meta, mode, c, transcript, game, facts), lang=out_lang,
         lang_label=lang_name(out_lang), mode=mode, what_happens=j["what_happens"], topic=j["game_or_topic"],
         glossary=gl, used_titles=used_titles, hook_text=j.get("hook_text") or "",
         cover_text=j.get("cover_text") or "", clip_lines=_clip_lines(transcript, c),
         too_similar=too_similar, has_profanity=has_profanity, avoid=avoid, temperature=temperature,
-        script_check=_titles_script_checker(out_lang))
+        script_check=_titles_script_checker(out_lang),
+        forbidden=(lambda t: banks.other_game(t, gid)) if gid else None,
+        keywords=words.get("keywords"), vocab=words.get("vocab"), facts=banks.facts_text(facts or {}),
+        punchy=gaming, game=gid)
 
 
 def _sync_hype_curve(project: Project, hl: dict) -> None:
@@ -778,13 +936,25 @@ def regenerate_titles(project: Project, cid: str) -> dict:
     transcript = project.load_transcript()
     meta = project.load_meta()
     mode = hl.get("mode") or meta.get("mode") or "gaming"
+    from .titles import banks
+
     others = [t for o in hl["candidates"] if o is not c for t in (o.get("publish") or {}).get("titles", [])]
-    gl = titles_mod.glossary.build(transcript, out_lang, meta.get("title", ""), c["llm"].get("game_or_topic", ""))
-    j = {"what_happens": c["llm"]["what_happens"], "game_or_topic": c["llm"].get("game_or_topic", ""),
+    game = banks.project_game(project)
+    bank = banks.get(game["id"])
+    gaming = mode == "gaming"
+    topic = (game["name"] or "Gaming") if gaming else c["llm"].get("game_or_topic", "")
+    gl = titles_mod.glossary.build(
+        transcript, out_lang, meta.get("title", ""), topic, game=(game["name"] if gaming else None),
+        game_terms=banks.glossary_terms(bank) if gaming else None,
+        extra_allowed=banks.caps_words(bank) if gaming else None)
+    what = banks.scrub(c["llm"]["what_happens"], game["id"]) if gaming else c["llm"]["what_happens"]
+    j = {"what_happens": what, "game_or_topic": topic,
          "hook_text": pub.get("hook_text") or "", "cover_text": pub.get("cover_text") or ""}
+    facts = banks.clip_facts(bank, c, transcript) if gaming else {}
     with llm.session() as model:
         tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, others,
-                           avoid=list(pub["titles"]), temperature=0.95, fast=llm.fast_analysis())
+                           avoid=list(pub["titles"]), temperature=0.95, fast=llm.fast_analysis(),
+                           game=game, facts=facts, bank=bank)
     if tw["titles"]:
         pub["titles"] = [t["text"] for t in tw["titles"]]
         pub["title_styles"] = [t["style"] for t in tw["titles"]]
@@ -840,6 +1010,9 @@ def benchmark(project: Project, on_progress: Callable[[str, int, int], None] | N
     orig = (c.get("llm") or {}).get("original") or {"start": c["start"], "end": c["end"]}
     c["start"], c["end"] = orig["start"], orig["end"]
     c["duration"] = round(c["end"] - c["start"], 2)
+    from .titles import banks
+
+    game = banks.project_game(project)
     profiles = [("normal", llm.choose_model(ignore_fast=True), False), ("fast", llm.fast_model(), True)]
     out = {}
     for i, (profile, name, fast) in enumerate(profiles):
@@ -851,7 +1024,7 @@ def benchmark(project: Project, on_progress: Callable[[str, int, int], None] | N
                            check=_hard_checker(out_lang), soft=_checker(out_lang))
             j = _repair(j)
             gl = titles_mod.glossary.build(transcript, out_lang, meta.get("title", ""), j["game_or_topic"])
-            tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, [], fast=fast)
+            tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, [], fast=fast, game=game)
             took = time.perf_counter() - t0
             record_speed(profile, name, took, "benchmark")
             out[profile] = {"model": name, "seconds": round(took, 1), "titles": len(tw["titles"]),

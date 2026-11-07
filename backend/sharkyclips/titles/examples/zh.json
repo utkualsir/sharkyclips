@@ -1,45 +1,130 @@
 {
   "language": "zh",
-  "_note": "Style references for the title prompt: casual, natural short-video titles (Simplified Chinese). Most titles have no '！'. Edit freely; the LLM copies the tone, not the content.",
+  "_note": "Style references for the title prompt. \"gaming\" is game-neutral (1.2.25 punchy style: 1-2 CAPS key words, one emoji at the end, formulas shock / question / nobody_expected / number / story / punchy); \"gaming.<game id>\" examples are shown only for that game. Edit freely; the LLM copies the tone, not the content.",
   "gaming": [
-    {"text": "这人到底从哪冒出来的？", "style": "question"},
-    {"text": "最后一颗子弹，一打三", "style": "story"},
-    {"text": "队友又把我卖了", "style": "funny"},
-    {"text": "这场直播我最喜欢的一刻", "style": "calm"},
-    {"text": "我们从来没笑成这样", "style": "funny"},
-    {"text": "撤离前10秒，发生了这个", "style": "curiosity"},
-    {"text": "为什么每次倒霉的都是我？", "style": "question"},
-    {"text": "悄悄绕到他身后，然后……", "style": "curiosity"},
-    {"text": "给蹲点的人上一课", "style": "punchy"},
-    {"text": "这把枪没人用，到底为什么？", "style": "question"},
-    {"text": "只剩一条命，这局靠我了", "style": "story"},
-    {"text": "第一次玩这张图，结果是这样", "style": "story"},
-    {"text": "开着麦千万别做的事", "style": "funny"},
-    {"text": "我在扶队友，三个人冲了过来", "style": "story"},
-    {"text": "这完全不在计划里！", "style": "hype"}
+    {
+      "text": "最后一秒1v4残局翻盘，弹幕直接炸了😱",
+      "style": "shock"
+    },
+    {
+      "text": "这波ACE真的没人想到💀",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "只剩一颗子弹，这局是怎么翻过来的？",
+      "style": "question"
+    },
+    {
+      "text": "3秒3杀，队友全看呆了",
+      "style": "number"
+    },
+    {
+      "text": "队友全跑了，我留下来，然后……👀",
+      "style": "story"
+    },
+    {
+      "text": "我就是为这种残局而活🔥",
+      "style": "punchy"
+    },
+    {
+      "text": "这局真的是我的锅吗？",
+      "style": "question"
+    },
+    {
+      "text": "最后10秒一个人改写了整场比赛",
+      "style": "number"
+    },
+    {
+      "text": "一个小失误，整局游戏全变了",
+      "style": "story"
+    },
+    {
+      "text": "弹幕到现在都不敢相信🤯",
+      "style": "punchy"
+    }
   ],
   "study": [
-    {"text": "导数其实就这么简单", "style": "calm"},
-    {"text": "为什么学校不这样讲？", "style": "question"},
-    {"text": "一分钟看懂质数", "style": "punchy"},
-    {"text": "考试前必须知道的一个公式", "style": "curiosity"},
-    {"text": "不用死记硬背的学法", "style": "calm"},
-    {"text": "大多数人这道题都做错了", "style": "curiosity"},
-    {"text": "老师教我的最好用的技巧", "style": "story"},
-    {"text": "天空为什么是蓝色的，简单说说", "style": "calm"},
-    {"text": "分数学不好？看这个", "style": "punchy"},
-    {"text": "记笔记最大的错误是什么？", "style": "question"}
+    {
+      "text": "导数其实就这么简单",
+      "style": "calm"
+    },
+    {
+      "text": "为什么学校不这样讲？",
+      "style": "question"
+    },
+    {
+      "text": "一分钟看懂质数",
+      "style": "punchy"
+    },
+    {
+      "text": "考试前必须知道的一个公式",
+      "style": "curiosity"
+    },
+    {
+      "text": "不用死记硬背的学法",
+      "style": "calm"
+    },
+    {
+      "text": "大多数人这道题都做错了",
+      "style": "curiosity"
+    },
+    {
+      "text": "老师教我的最好用的技巧",
+      "style": "story"
+    },
+    {
+      "text": "天空为什么是蓝色的，简单说说",
+      "style": "calm"
+    },
+    {
+      "text": "分数学不好？看这个",
+      "style": "punchy"
+    },
+    {
+      "text": "记笔记最大的错误是什么？",
+      "style": "question"
+    }
   ],
   "music": [
-    {"text": "副歌一响，我起鸡皮疙瘩了", "style": "story"},
-    {"text": "这段现场唱真的不容易", "style": "calm"},
-    {"text": "观众比我先唱了出来", "style": "story"},
-    {"text": "凌晨3点在录音室写出的旋律", "style": "curiosity"},
-    {"text": "这个drop你绝对没想到", "style": "punchy"},
-    {"text": "我能唱上这个音吗？", "style": "question"},
-    {"text": "第一次用木吉他弹这首歌", "style": "calm"},
-    {"text": "吉他solo一开始，全场安静了", "style": "story"},
-    {"text": "这个beat我10分钟做完", "style": "punchy"},
-    {"text": "你知道这首歌背后的故事吗？", "style": "question"}
+    {
+      "text": "副歌一响，我起鸡皮疙瘩了",
+      "style": "story"
+    },
+    {
+      "text": "这段现场唱真的不容易",
+      "style": "calm"
+    },
+    {
+      "text": "观众比我先唱了出来",
+      "style": "story"
+    },
+    {
+      "text": "凌晨3点在录音室写出的旋律",
+      "style": "curiosity"
+    },
+    {
+      "text": "这个drop你绝对没想到",
+      "style": "punchy"
+    },
+    {
+      "text": "我能唱上这个音吗？",
+      "style": "question"
+    },
+    {
+      "text": "第一次用木吉他弹这首歌",
+      "style": "calm"
+    },
+    {
+      "text": "吉他solo一开始，全场安静了",
+      "style": "story"
+    },
+    {
+      "text": "这个beat我10分钟做完",
+      "style": "punchy"
+    },
+    {
+      "text": "你知道这首歌背后的故事吗？",
+      "style": "question"
+    }
   ]
 }

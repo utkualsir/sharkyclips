@@ -1,0 +1,45 @@
+{
+  "id": "valorant",
+  "name": "Valorant",
+  "short": "valorant",
+  "aliases": ["valorant", "valo"],
+  "hashtags": ["#valorant", "#valoranttr", "#valorantclips", "#valo", "#valorantturkiye"],
+  "tags": ["valorant", "valorant türkçe", "valorant türkiye", "valorant tr", "valorant clips", "valorant highlights",
+           "valorant shorts", "valorant gameplay", "valo"],
+  "search": {
+    "tr": ["valorant türkçe", "valorant komik anlar", "valorant {term}", "valorant {event}", "{term} türkçe"],
+    "en": ["valorant funny moments", "valorant {term}", "valorant {event}", "{term} valorant montage", "valorant ranked"]
+  },
+  "terms": {
+    "agents": ["Jett", "Phoenix", "Sage", "Sova", "Reyna", "Raze", "Omen", "Brimstone", "Viper", "Cypher", "Killjoy", "Breach",
+               "Skye", "Yoru", "Astra", "KAY/O", "Chamber", "Neon", "Fade", "Harbor", "Gekko", "Deadlock", "Iso", "Clove",
+               "Vyse", "Tejo", "Waylay"],
+    "maps": ["Ascent", "Bind", "Haven", "Split", "Icebox", "Breeze", "Fracture", "Pearl", "Lotus", "Sunset", "Abyss", "Corrode"],
+    "weapons": ["Vandal", "Phantom", "Operator", "Sheriff", "Spectre", "Odin", "Ghost", "Marshal", "Outlaw", "Judge", "Classic"],
+    "ranked": ["Iron", "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Ascendant", "Immortal", "Radiant", "ranked", "dereceli"]
+  },
+  "hashtag_kinds": ["agents", "maps", "weapons"],
+  "ambiguous": ["Sage", "Phoenix", "Viper", "Breach", "Fade", "Harbor", "Split", "Bind", "Haven", "Ghost", "Judge", "Sunset",
+                "Pearl", "Lotus", "Iso", "Neon", "Omen", "Skye", "Clove", "Deadlock", "Classic", "Operator", "Abyss", "Iron",
+                "Bronze", "Silver", "Gold", "Platinum", "Diamond", "Breeze", "Marshal", "Outlaw", "Chamber", "Astra"],
+  "hints": ["spike", "defuse", "plant", "agent", "ajan", "vandal", "phantom", "radiant", "immortal", "ascent", "jett",
+            "reyna", "sage", "ulti", "round"],
+  "events": {
+    "ace": {"word": "ACE", "label": "Ace", "hashtags": ["#ace"], "tags": ["valorant ace"], "say": ["ace", "eys"]},
+    "headshot": {"word": "HEADSHOT", "label": "Headshot", "hashtags": ["#headshot"], "tags": ["valorant headshot"], "say": ["headshot"]},
+    "one_tap": {"word": "ONE TAP", "label": "One tap", "hashtags": ["#onetap"], "tags": ["valorant one tap"], "say": ["one tap", "tek tik"]},
+    "defuse": {"word": "DEFUSE", "label": "Spike defuse", "hashtags": [], "tags": ["valorant defuse"], "say": ["defuse"]}
+  },
+  "keywords": ["ACE", "CLUTCH", "1v2", "1v3", "1v4", "1v5", "HEADSHOT", "ONE TAP", "RADIANT", "İNANILMAZ", "EFSANE", "REZALET"],
+  "vocab": {
+    "tr": ["round", "spike", "defuse", "ulti", "tek tık", "kafa", "dereceli", "ajan", "takım"],
+    "en": ["round", "spike", "defuse", "ult", "one tap", "headshot", "ranked", "agent", "team"]
+  },
+  "moments": {
+    "funny": {"hashtags": {"tr": ["#komikanlar"], "en": ["#valorantfunny"]}, "tags": {"tr": ["valorant komik anlar"], "en": ["valorant funny moments"]}},
+    "fail": {"hashtags": {"tr": ["#komikanlar"], "en": ["#valorantfails"]}, "tags": {"tr": ["valorant komik anlar"], "en": ["valorant fails"]}},
+    "skill": {"hashtags": {"tr": ["#clutch"], "en": ["#clutch"]}, "tags": {"tr": ["valorant clutch"], "en": ["valorant clutch"]}},
+    "exciting": {"hashtags": {"tr": ["#valoranthighlights"], "en": ["#valoranthighlights"]}, "tags": {"tr": ["valorant en iyi anlar"], "en": ["valorant best moments"]}},
+    "emotional": {"hashtags": {"tr": ["#valorantclips"], "en": ["#valorantclips"]}, "tags": {"tr": ["valorant yayın anları"], "en": ["valorant stream moments"]}}
+  }
+}

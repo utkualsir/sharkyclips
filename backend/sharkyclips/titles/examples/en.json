@@ -1,45 +1,166 @@
 {
   "language": "en",
-  "_note": "Style references for the title prompt: casual, natural Shorts titles. Most titles have no '!'. Edit freely; the LLM copies the tone, not the content.",
+  "_note": "Style references for the title prompt. \"gaming\" is game-neutral (1.2.25 punchy style: 1-2 CAPS key words, one emoji at the end, formulas shock / question / nobody_expected / number / story / punchy); \"gaming.<game id>\" examples are shown only for that game. Edit freely; the LLM copies the tone, not the content.",
   "gaming": [
-    {"text": "Where did this guy even come from?", "style": "question"},
-    {"text": "Last bullet, 1v3, no pressure", "style": "story"},
-    {"text": "My teammate sold me again", "style": "funny"},
-    {"text": "This was my favorite moment of the stream", "style": "calm"},
-    {"text": "We have never laughed this hard", "style": "funny"},
-    {"text": "10 seconds before extract and then this", "style": "curiosity"},
-    {"text": "Why does this always happen to me?", "style": "question"},
-    {"text": "I crept up behind him and...", "style": "curiosity"},
-    {"text": "A small lesson for campers", "style": "punchy"},
-    {"text": "Nobody uses this gun, but why?", "style": "question"},
-    {"text": "One life left, the round is on me", "style": "story"},
-    {"text": "First game on this map, it ended like this", "style": "story"},
-    {"text": "Things you should never do with your mic on", "style": "funny"},
-    {"text": "Reviving my friend while three guys push me", "style": "story"},
-    {"text": "We did not plan this at all!", "style": "hype"}
+    {
+      "text": "Last second 1v4 CLUTCH and chat lost it 😱",
+      "style": "shock"
+    },
+    {
+      "text": "Nobody saw this ACE coming, not even me 💀",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "How did this round FLIP with one bullet left?",
+      "style": "question"
+    },
+    {
+      "text": "3 kills in 3 seconds and my team just froze",
+      "style": "number"
+    },
+    {
+      "text": "Everyone ran, I stayed, and then this happened 👀",
+      "style": "story"
+    },
+    {
+      "text": "I live for this CLUTCH 🔥",
+      "style": "punchy"
+    },
+    {
+      "text": "My team gave up, so I pulled off a COMEBACK",
+      "style": "shock"
+    },
+    {
+      "text": "Was this round really my fault?",
+      "style": "question"
+    },
+    {
+      "text": "No one has ever played this BADLY before 😂",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "I turned the whole match in the last 10 seconds",
+      "style": "number"
+    },
+    {
+      "text": "One small mistake and the whole game changed",
+      "style": "story"
+    },
+    {
+      "text": "Chat still can't believe it 🤯",
+      "style": "punchy"
+    }
   ],
   "study": [
-    {"text": "Derivatives are actually this simple", "style": "calm"},
-    {"text": "Why don't schools explain it like this?", "style": "question"},
-    {"text": "Prime numbers in one minute", "style": "punchy"},
-    {"text": "The one formula to know before the exam", "style": "curiosity"},
-    {"text": "How to learn it without memorizing", "style": "calm"},
-    {"text": "Most people get this question wrong", "style": "curiosity"},
-    {"text": "The best trick my teacher ever showed me", "style": "story"},
-    {"text": "Why the sky is blue, explained quickly", "style": "calm"},
-    {"text": "Bad at fractions? Watch this", "style": "punchy"},
-    {"text": "What is the biggest note-taking mistake?", "style": "question"}
+    {
+      "text": "Derivatives are actually this simple",
+      "style": "calm"
+    },
+    {
+      "text": "Why don't schools explain it like this?",
+      "style": "question"
+    },
+    {
+      "text": "Prime numbers in one minute",
+      "style": "punchy"
+    },
+    {
+      "text": "The one formula to know before the exam",
+      "style": "curiosity"
+    },
+    {
+      "text": "How to learn it without memorizing",
+      "style": "calm"
+    },
+    {
+      "text": "Most people get this question wrong",
+      "style": "curiosity"
+    },
+    {
+      "text": "The best trick my teacher ever showed me",
+      "style": "story"
+    },
+    {
+      "text": "Why the sky is blue, explained quickly",
+      "style": "calm"
+    },
+    {
+      "text": "Bad at fractions? Watch this",
+      "style": "punchy"
+    },
+    {
+      "text": "What is the biggest note-taking mistake?",
+      "style": "question"
+    }
   ],
   "music": [
-    {"text": "The chorus hit and I got chills", "style": "story"},
-    {"text": "This part is not easy to sing live", "style": "calm"},
-    {"text": "The crowd sang it before I did", "style": "story"},
-    {"text": "A melody from the studio at 3 a.m.", "style": "curiosity"},
-    {"text": "You did not see this drop coming", "style": "punchy"},
-    {"text": "Can my voice hit this note?", "style": "question"},
-    {"text": "Playing this song acoustic for the first time", "style": "calm"},
-    {"text": "The guitar solo started and everyone went quiet", "style": "story"},
-    {"text": "I made this beat in 10 minutes", "style": "punchy"},
-    {"text": "Do you know the story behind this song?", "style": "question"}
+    {
+      "text": "The chorus hit and I got chills",
+      "style": "story"
+    },
+    {
+      "text": "This part is not easy to sing live",
+      "style": "calm"
+    },
+    {
+      "text": "The crowd sang it before I did",
+      "style": "story"
+    },
+    {
+      "text": "A melody from the studio at 3 a.m.",
+      "style": "curiosity"
+    },
+    {
+      "text": "You did not see this drop coming",
+      "style": "punchy"
+    },
+    {
+      "text": "Can my voice hit this note?",
+      "style": "question"
+    },
+    {
+      "text": "Playing this song acoustic for the first time",
+      "style": "calm"
+    },
+    {
+      "text": "The guitar solo started and everyone went quiet",
+      "style": "story"
+    },
+    {
+      "text": "I made this beat in 10 minutes",
+      "style": "punchy"
+    },
+    {
+      "text": "Do you know the story behind this song?",
+      "style": "question"
+    }
+  ],
+  "gaming.lol": [
+    {
+      "text": "Nobody expected this PENTAKILL 💀",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "1v3 OUTPLAY under their tower, they were shocked 😱",
+      "style": "shock"
+    },
+    {
+      "text": "Who STEALS Baron from this angle?",
+      "style": "question"
+    }
+  ],
+  "gaming.delta_force": [
+    {
+      "text": "Full backpack and a last second EXTRACTION 😅",
+      "style": "story"
+    },
+    {
+      "text": "Solo SQUAD WIPE and nowhere left to run 🔥",
+      "style": "shock"
+    },
+    {
+      "text": "Drop the Red Card and run, or fight for it?",
+      "style": "question"
+    }
   ]
 }

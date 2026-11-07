@@ -4221,3 +4221,20 @@ a.edit-note:hover { text-decoration: underline; }
 .ai-voice-box { gap: 8px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-sm); background: var(--surface-2); }
 .ai-voice-line { overflow-wrap: anywhere; font-style: italic; }
 .ai-remind { display: flex; gap: 6px; align-items: flex-start; margin: 0; color: var(--warn, inherit); }
+
+/* 1.2.25 Brand kit > Channel text, Studio > Games */
+.channel-text .channel-preview {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--radius, 10px);
+  background: var(--surface-2, rgba(127, 127, 127, 0.08));
+  border: 1px solid var(--border);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.channel-text .channel-heads > summary { cursor: pointer; font-size: 13px; color: var(--muted, inherit); margin-bottom: 8px; }
+.games-json { min-height: 420px; font-size: 12px; white-space: pre; overflow: auto; tab-size: 2; }
+.field-error { color: var(--danger); font-size: 13px; margin: 6px 0 0; }

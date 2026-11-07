@@ -430,29 +430,48 @@ def split_hashtags(description: str) -> tuple[str, list[str]]:
     return "\n".join(lines).rstrip(), tags
 
 
-def compose_description(text: str, hashtags: list[str], credit: str | None = None) -> str:
-    out = (text or "").strip()
+def compose_description(text: str, hashtags: list[str], credit: str | None = None, lang: str | None = None,
+                        socials: bool = True) -> str:
+    """The YouTube description: the text, the music credit, the hashtags (channel tag first),
+    then the channel's socials block from the Brand kit (once; its heading in `lang`)."""
+    from .edit import brand
+
+    body, block = brand.split_socials(text or "")
+    out = body.strip()
     tags = " ".join(("#" + h.lstrip("#")).replace(" ", "") for h in hashtags if h.strip("# "))
     if credit and credit not in out:
         out = f"{out}\n\n{credit}".strip()
     if tags:
         out = f"{out}\n\n{tags}".strip()
-    return out
+    if block:  # the user's own block (typed into the description) stays, at the end
+        return f"{out}\n\n{block}".strip()
+    return brand.with_socials(out, lang, limit=4900) if socials else out
 
 
 def suggest_tags(pub: dict, meta: dict, mode: str) -> list[str]:
-    """YouTube tags from the AI's publish package: its hashtags (as words), the game / topic,
-    and a few general words. Max 500 characters (youtube.clean_tags keeps the limit)."""
+    """YouTube tags: the ones the analysis built (game bank: game variants, names, events, TR + EN
+    search phrases, channel). Older analyses: from the hashtags + topic, without other games."""
     from . import youtube
+    from .edit import brand
+    from .titles import banks
 
+    if pub.get("tags"):
+        return youtube.clean_tags(list(pub["tags"]))
+    gid = (pub.get("game") or {}).get("id")
     out: list[str] = []
     for h in pub.get("hashtags") or []:
         w = str(h).lstrip("#").strip()
         if w:
             out.append(w)
     game = (meta.get("game") or {}).get("name") if isinstance(meta.get("game"), dict) else meta.get("game")
+    if game in ("auto", "other"):
+        game = None
     for extra in (game, pub.get("topic"), {"gaming": "gaming", "study": "study", "music": "music"}.get(mode),
-                  "shorts", "highlights", "clips"):
+                  *brand.channel_names(), "shorts", "highlights", "clips"):
         if extra:
             out.append(str(extra))
+    if gid:
+        out = [t for t in out if not banks.other_game(t, gid)]
     return youtube.clean_tags(out)
+
+

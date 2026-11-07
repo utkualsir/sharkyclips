@@ -4,6 +4,8 @@ import {
   urls,
   type BrandPreset,
   type BrandState,
+  type ChannelText,
+  type GameBank,
   type LogoPos,
   type Mood,
   type MusicLibrary,
@@ -324,7 +326,127 @@ function BrandMock({ p }: { p: BrandPreset }) {
   );
 }
 
+// Brand kit > Channel text: the channel's hashtags (the first one always leads), the names used
+// as YouTube tags, and the socials block at the end of every description / caption.
+function splitTags(text: string): string[] {
+  const out: string[] = [];
+  for (const raw of text.split(/[\s,]+/)) {
+    const w = raw.replace(/^#+/, "").replace(/[^\p{L}\p{N}_]/gu, "");
+    if (w && !out.some((x) => x.toLowerCase() === `#${w}`.toLowerCase())) out.push(`#${w}`);
+  }
+  return out;
+}
+
+function ChannelTextCard() {
+  const { t } = useI18n();
+  const toast = useToast();
+  const [d, setD] = useState<ChannelText | null>(null);
+  const [tags, setTags] = useState("");
+  const [names, setNames] = useState("");
+  const [socials, setSocials] = useState("");
+  const [heads, setHeads] = useState<Record<string, string>>({});
+  const [on, setOn] = useState(true);
+  const fill = (x: ChannelText) => {
+    setD(x);
+    setTags(x.hashtags.join(" "));
+    setNames(x.names.join(", "));
+    setSocials(x.socials.lines.join("\n"));
+    setHeads(x.socials.headings);
+    setOn(x.socials.enabled);
+  };
+  useEffect(() => {
+    api.channelText().then(fill).catch(() => {});
+  }, []);
+  if (!d) return null;
+  const body = {
+    hashtags: splitTags(tags),
+    names: names.split(",").map((x) => x.trim()).filter(Boolean),
+    socials: { enabled: on, lines: lines(socials), headings: Object.fromEntries(Object.entries(heads).filter(([, v]) => v.trim())) },
+  };
+  const dirty = JSON.stringify(body) !== JSON.stringify({ hashtags: d.hashtags, names: d.names, socials: d.socials });
+  const save = async () => {
+    try {
+      fill(await api.saveChannelText(body));
+      toast({ kind: "ok", text: t("common.saved") });
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+  const head = (code: string) => heads[code] ?? "";
+  return (
+    <section className="card setting channel-text">
+      <div>
+        <h2>{t("channel.title")}</h2>
+        <p>{t("channel.desc")}</p>
+      </div>
+      <div style={{ display: "grid", gap: 12, minWidth: 0 }}>
+        <label>
+          <span className="field-label">{t("channel.hashtags")}</span>
+          <input className="input" value={tags} placeholder="#mychannel" onChange={(e) => setTags(e.target.value)} />
+          <span className="field-hint">{t("channel.hashtags_hint")}</span>
+        </label>
+        <label>
+          <span className="field-label">{t("channel.names")}</span>
+          <input className="input" value={names} onChange={(e) => setNames(e.target.value)} />
+          <span className="field-hint">{t("channel.names_hint")}</span>
+        </label>
+        <div className="toggle-line">
+          <span>{t("channel.socials")}</span>
+          <Toggle checked={on} onChange={setOn} label={t("channel.socials")} />
+        </div>
+        {on && (
+          <>
+            <label>
+              <span className="field-label">{t("channel.lines")}</span>
+              <textarea className="textarea words-area short" value={socials} placeholder={"🟩 Kick: https://kick.com/...\n📸 Instagram: https://www.instagram.com/..."} onChange={(e) => setSocials(e.target.value)} />
+              <span className="field-hint">{t("channel.lines_hint")}</span>
+            </label>
+            <details className="channel-heads">
+              <summary>{t("channel.headings")}</summary>
+              <div className="brand-grid">
+                {UI_LANGUAGES.map((l) => (
+                  <label key={l.code}>
+                    <span className="field-label">{l.name}</span>
+                    <input
+                      className="input"
+                      dir={l.code === "ar" ? "rtl" : "auto"}
+                      value={head(l.code)}
+                      placeholder={d.default_headings[l.code] ?? ""}
+                      onChange={(e) => setHeads({ ...heads, [l.code]: e.target.value })}
+                    />
+                  </label>
+                ))}
+              </div>
+            </details>
+            {d.preview && (
+              <div>
+                <span className="field-label">{t("channel.preview")}</span>
+                <pre className="channel-preview" dir="auto">{d.preview}</pre>
+              </div>
+            )}
+          </>
+        )}
+        <div className="save-line">
+          <span className="muted">{t("channel.applies")}</span>
+          <button className="btn btn-primary btn-sm" disabled={!dirty} onClick={save}>
+            {t("common.save")}
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function BrandTab() {
+  return (
+    <div className="settings-list">
+      <ChannelTextCard />
+      <BrandPresets />
+    </div>
+  );
+}
+
+function BrandPresets() {
   const { t } = useI18n();
   const toast = useToast();
   const [state, setState] = useState<BrandState | null>(null);
@@ -683,11 +805,107 @@ function WordsTab() {
   );
 }
 
+// ------------------------------------------------------------------ game banks
+
+// Studio > Games: per game, the hashtags, YouTube tags, names (champions / operators / maps /
+// weapons), events and CAPS key words the titles, descriptions, hashtags and tags use.
+function GamesTab() {
+  const { t } = useI18n();
+  const toast = useToast();
+  const [games, setGames] = useState<GameBank[] | null>(null);
+  const [sel, setSel] = useState("lol");
+  const [text, setText] = useState("");
+  const [err, setErr] = useState<string | null>(null);
+  const cur = games?.find((g) => g.id === sel) ?? null;
+  const show = (list: GameBank[], id: string) => {
+    setGames(list);
+    setSel(id);
+    const g = list.find((x) => x.id === id);
+    setText(g ? JSON.stringify(g.bank, null, 2) : "");
+    setErr(null);
+  };
+  useEffect(() => {
+    api.gameBanks().then((d) => show(d.games, "lol")).catch(() => {});
+  }, []);
+  if (!games) return <div className="card skeleton" style={{ height: 300 }} />;
+  const dirty = !!cur && text !== JSON.stringify(cur.bank, null, 2);
+  const save = async () => {
+    let bank: Record<string, unknown>;
+    try {
+      bank = JSON.parse(text);
+    } catch (e: any) {
+      setErr(t("games.bad_json", { msg: String(e.message || e) }));
+      return;
+    }
+    try {
+      const g = await api.saveGameBank(sel, bank);
+      show(games.map((x) => (x.id === g.id ? g : x)), g.id);
+      toast({ kind: "ok", text: t("common.saved") });
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+  const reset = async () => {
+    if (!window.confirm(t("games.reset_confirm", { name: cur?.name || t("games.generic") }))) return;
+    try {
+      const d = await api.resetGameBank(sel);
+      show(d.games, sel);
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+  return (
+    <div className="settings-list">
+      <div className="lang-tabs" role="group">
+        {games.map((g) => (
+          <button key={g.id} type="button" aria-pressed={g.id === sel} onClick={() => show(games, g.id)}>
+            {g.name || t("games.generic")}
+            {g.custom && <span className="n">•</span>}
+          </button>
+        ))}
+      </div>
+      <section className="card setting">
+        <div>
+          <h2>{cur?.name || t("games.generic")}</h2>
+          <p>{sel === "generic" ? t("games.generic_desc") : t("games.desc")}</p>
+          <p className="field-hint" style={{ marginTop: 8 }}>
+            {t("games.keys")}
+          </p>
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <textarea
+            className="textarea words-area games-json"
+            spellCheck={false}
+            aria-label={t("games.json")}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              setErr(null);
+            }}
+          />
+          {err && <p className="field-error">{err}</p>}
+          <div className="save-line">
+            <span className="muted">{t("games.applies")}</span>
+            {cur?.custom && (
+              <button className="btn btn-sm btn-ghost" onClick={reset}>
+                {t("words.reset")}
+              </button>
+            )}
+            <button className="btn btn-primary btn-sm" disabled={!dirty} onClick={save}>
+              {t("common.save")}
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ page
 
 export default function Studio({ tab }: { tab: StudioTab }) {
   const { t } = useI18n();
-  const tabs: StudioTab[] = ["music", "brand", "words"];
+  const tabs: StudioTab[] = ["music", "brand", "words", "games"];
   return (
     <main className="page page-narrow">
       <div className="page-head">
@@ -699,7 +917,7 @@ export default function Studio({ tab }: { tab: StudioTab }) {
       <div className="side-tabs studio-tabs" role="tablist">
         {tabs.map((x) => (
           <a key={x} role="tab" aria-selected={tab === x} href={href.studio(x)}>
-            <Icon name={x === "music" ? "music" : x === "brand" ? "image" : "list"} size={14} />
+            <Icon name={x === "music" ? "music" : x === "brand" ? "image" : x === "games" ? "gamepad" : "list"} size={14} />
             {t(`studio.tab.${x}`)}
           </a>
         ))}
@@ -707,6 +925,7 @@ export default function Studio({ tab }: { tab: StudioTab }) {
       {tab === "music" && <MusicTab />}
       {tab === "brand" && <BrandTab />}
       {tab === "words" && <WordsTab />}
+      {tab === "games" && <GamesTab />}
     </main>
   );
 }

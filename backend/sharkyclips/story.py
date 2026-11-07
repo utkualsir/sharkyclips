@@ -353,12 +353,18 @@ PUBLISH_SCHEMA = {
 
 
 def ai_publish(model, project: Project, story: dict, cands: dict[str, dict], lang: str) -> dict:
-    from .analyze import COVER_STYLE, SYSTEM, clean_hashtags, has_profanity, lang_name
+    from .analyze import COVER_STYLE, SYSTEM, clip_tags, has_profanity, lang_name
+    from .titles import banks
 
     meta = project.load_meta()
+    mode = meta.get("mode") or "gaming"
+    game = banks.project_game(project)
+    gid = game["id"] if mode == "gaming" else None
     acts = "\n".join(f"{k + 1}. ({s.get('role') or 'part'}) {((cands[s['cid']].get('llm') or {}).get('what_happens') or '')[:240]}"
                      for k, s in enumerate(story["segments"]))
-    prompt = (f"Stream: {meta.get('title') or project.id}\nThis Short tells a story ({story['arc'].replace('_', ' ')}): "
+    gline = (f"Game: {game['name']} (never name any other game)\n" if gid and game["known"]
+             else "Game: unknown (never name or guess a game)\n" if gid else "")
+    prompt = (f"Stream: {meta.get('title') or project.id}\n{gline}This Short tells a story ({story['arc'].replace('_', ' ')}): "
               f"{story['pitch']}\nIts parts:\n{acts}\n\nWrite in {lang_name(lang)}: 4-6 different titles for the "
               "Short (YouTube Shorts / TikTok, curious but honest, no clickbait lies), a 2-3 sentence description "
               "that teases the story without spoiling the payoff, 5-10 hashtags, an on-screen hook text for the "
@@ -366,13 +372,22 @@ def ai_publish(model, project: Project, story: dict, cands: dict[str, dict], lan
 
     def check(d: dict) -> list[str]:
         bad = [t for t in d["titles"] + d["hashtags"] + [d["hook_text"], d["cover_text"]] if has_profanity(t)]
-        return [f"not advertiser-friendly: {b}" for b in bad[:3]]
+        errs = [f"not advertiser-friendly: {b}" for b in bad[:3]]
+        if gid:
+            errs += [f"'{t}' names {g}, but this video is {game['name'] or 'another game'}"
+                     for t in d["titles"] + [d["description"]] if (g := banks.other_game(t, gid))][:3]
+        return errs
 
     d = model.json(SYSTEM, prompt, PUBLISH_SCHEMA, check=check, temperature=0.6, num_predict=1200)
     topic = next(((cands[s["cid"]].get("llm") or {}).get("game_or_topic") for s in story["segments"]
                   if (cands[s["cid"]].get("llm") or {}).get("game_or_topic")), "") or ""
-    return {"titles": [" ".join(t.split()) for t in d["titles"]], "description": d["description"].strip(),
-            "hashtags": clean_hashtags(d["hashtags"], topic), "hook_text": " ".join(d["hook_text"].split()),
+    if gid:
+        topic = game["name"] or "Gaming"
+    hashtags, tags = clip_tags(mode, game, {"events": [], "terms": []}, None, lang, d["hashtags"], topic,
+                               [n for n in ((meta.get("source") or {}).get("uploader"),) if n])
+    titles = [" ".join(t.split()) for t in d["titles"] if not (gid and banks.other_game(t, gid))]
+    return {"titles": titles or [" ".join(d["titles"][0].split())], "description": d["description"].strip(),
+            "hashtags": hashtags, "tags": tags, "hook_text": " ".join(d["hook_text"].split()),
             "cover_text": d["cover_text"].strip(),
             "cover_prompt": f"{d['cover_scene'].strip().rstrip('.')}. " + COVER_STYLE.format(text=d["cover_text"].strip()),
             "language": lang, "source": "ai"}

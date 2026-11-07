@@ -737,6 +737,17 @@ export default function ProjectPage({ id }: { id: string }) {
     }
   };
 
+  // 1.2.25: the game every title / description / hashtag / tag is about (no re-render)
+  const chooseMetaGame = async (choice: string) => {
+    try {
+      const r = await api.setMetadataGame(id, choice);
+      if (r.job) toast({ kind: "ok", text: t("metagame.rerun") });
+      load();
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+
   const analyzeAI = async () => {
     try {
       await api.analyze(id, outLang ?? undefined);
@@ -932,6 +943,29 @@ export default function ProjectPage({ id }: { id: string }) {
                   {project.analysis ? t("project.ai_again") : t("publish.analyze")}
                 </button>
               </div>
+            )}
+            {mode === "gaming" && project.metadata_game && (
+              <select
+                className="select select-sm game-select"
+                value={project.metadata_game.choice}
+                onChange={(e) => chooseMetaGame(e.target.value)}
+                aria-label={t("metagame.label")}
+                title={t("metagame.hint")}
+                disabled={!!pipelineJob || !!llmJob}
+              >
+                <option value="auto">
+                  {project.metadata_game.choice === "auto"
+                    ? project.metadata_game.known
+                      ? t("metagame.auto", { name: project.metadata_game.name })
+                      : t("metagame.auto_unknown")
+                    : t("metagame.auto_plain")}
+                </option>
+                {project.metadata_game.choices.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.id === "generic" ? t("metagame.generic") : t("metagame.for", { name: g.name })}
+                  </option>
+                ))}
+              </select>
             )}
             {project.highlights && (
               <a className="btn btn-sm" href={href.stories(id)} title={t("story.button_hint")}>

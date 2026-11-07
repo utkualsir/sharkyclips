@@ -270,11 +270,14 @@ def safe_name(text: str, limit: int = 70) -> str:
     return s or "clip"
 
 
-def post_text(title: str, description: str, hashtags: list[str]) -> str:
+def post_text(title: str, description: str, hashtags: list[str], socials: str = "") -> str:
+    """Title, description, hashtags, then the channel's socials block (Brand kit)."""
     tags = " ".join(f"#{h.lstrip('#')}" for h in hashtags if h)
     parts = [title.strip(), "", (description or "").strip()]
     if tags:
         parts += ["", tags]
+    if socials and socials not in (description or ""):
+        parts += ["", socials]
     return "\n".join(parts).strip() + "\n"
 
 

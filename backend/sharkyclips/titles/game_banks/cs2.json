@@ -1,0 +1,44 @@
+{
+  "id": "cs2",
+  "name": "Counter-Strike 2",
+  "short": "cs2",
+  "aliases": ["counter-strike 2", "counter strike 2", "counter-strike", "counter strike", "counterstrike", "cs2", "cs:go", "csgo", "cs go"],
+  "hashtags": ["#cs2", "#counterstrike2", "#cs2tr", "#counterstrike", "#cs2clips"],
+  "tags": ["cs2", "counter strike 2", "cs2 türkçe", "cs2 türkiye", "cs2 tr", "cs2 clips", "cs2 highlights",
+           "counter strike 2 highlights", "cs2 shorts", "cs2 gameplay"],
+  "search": {
+    "tr": ["cs2 türkçe", "cs2 komik anlar", "cs2 {term}", "cs2 {event}", "cs2 rekabetçi"],
+    "en": ["cs2 funny moments", "cs2 {term}", "cs2 {event}", "{term} cs2 highlights", "cs2 premier"]
+  },
+  "terms": {
+    "maps": ["Mirage", "Inferno", "Dust II", "Nuke", "Overpass", "Vertigo", "Ancient", "Anubis", "Train", "Office"],
+    "weapons": ["AK-47", "M4A4", "M4A1-S", "AWP", "Desert Eagle", "Deagle", "USP-S", "Glock", "SSG 08", "Scout", "MP9",
+                "MAC-10", "Galil", "FAMAS", "Negev", "Zeus"],
+    "ranked": ["Premier", "Faceit", "Silver", "Gold Nova", "Global Elite", "rekabetçi", "competitive"],
+    "terms": ["eco", "force buy", "one tap", "ninja defuse", "smoke", "flash", "molotov"]
+  },
+  "hashtag_kinds": ["maps", "weapons"],
+  "ambiguous": ["Train", "Office", "Ancient", "Nuke", "Scout", "Silver", "smoke", "flash", "eco", "Zeus", "Gold Nova"],
+  "hints": ["bomba", "defuse", "plant", "eco", "awp", "faceit", "premier", "dust", "mirage", "inferno", "terrorist",
+            "terörist", "ct", "molotof", "smoke", "deagle", "round"],
+  "events": {
+    "ace": {"word": "ACE", "label": "Ace", "hashtags": ["#ace"], "tags": ["cs2 ace"], "say": ["ace", "eys"]},
+    "ninja_defuse": {"word": "NINJA DEFUSE", "label": "Ninja defuse", "hashtags": ["#ninjadefuse"], "tags": ["cs2 ninja defuse"], "say": ["ninja defuse"]},
+    "headshot": {"word": "HEADSHOT", "label": "Headshot", "hashtags": ["#headshot"], "tags": ["cs2 headshot"], "say": ["headshot"]},
+    "one_tap": {"word": "ONE TAP", "label": "One tap", "hashtags": ["#onetap"], "tags": ["cs2 one tap"], "say": ["one tap", "tek tik"]},
+    "awp_shot": {"word": "AWP", "label": "AWP shot", "hashtags": ["#awp"], "tags": ["cs2 awp"], "say": ["awp"]}
+  },
+  "keywords": ["ACE", "CLUTCH", "1v2", "1v3", "1v4", "1v5", "HEADSHOT", "ONE TAP", "NINJA DEFUSE", "AWP", "ECO",
+               "İNANILMAZ", "EFSANE", "REZALET"],
+  "vocab": {
+    "tr": ["round", "bomba", "defuse", "eco", "tek tık", "kafa", "smoke", "rekabetçi", "takım"],
+    "en": ["round", "bomb", "defuse", "eco", "one tap", "headshot", "smoke", "premier", "team"]
+  },
+  "moments": {
+    "funny": {"hashtags": {"tr": ["#komikanlar"], "en": ["#cs2funny"]}, "tags": {"tr": ["cs2 komik anlar"], "en": ["cs2 funny moments"]}},
+    "fail": {"hashtags": {"tr": ["#komikanlar"], "en": ["#cs2fails"]}, "tags": {"tr": ["cs2 komik anlar"], "en": ["cs2 fails"]}},
+    "skill": {"hashtags": {"tr": ["#clutch"], "en": ["#clutch"]}, "tags": {"tr": ["cs2 clutch"], "en": ["cs2 clutch"]}},
+    "exciting": {"hashtags": {"tr": ["#cs2highlights"], "en": ["#cs2highlights"]}, "tags": {"tr": ["cs2 en iyi anlar"], "en": ["cs2 best moments"]}},
+    "emotional": {"hashtags": {"tr": ["#cs2clips"], "en": ["#cs2clips"]}, "tags": {"tr": ["cs2 yayın anları"], "en": ["cs2 stream moments"]}}
+  }
+}

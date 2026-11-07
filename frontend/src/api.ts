@@ -203,6 +203,11 @@ export interface Publish {
   titles: string[];
   title_styles: string[] | null;
   hashtags: string[];
+  /** YouTube tags (1.2.25: from the game bank; older analyses: none) */
+  tags?: string[];
+  /** the project's game these texts are about */
+  game?: { id: string; name: string; source: string } | null;
+  facts?: { events: string[]; terms: string[] } | null;
   cover_prompt: string | null;
   cover_text: string | null;
   /** YouTube description: 2-3 sentences + the hashtags at the end */
@@ -582,6 +587,35 @@ export interface BrandState {
   positions: LogoPos[];
 }
 
+/** Brand kit > Channel text: the channel's hashtags (first one always first), tag names, socials block */
+export interface ChannelText {
+  hashtags: string[];
+  names: string[];
+  socials: { enabled: boolean; headings: Record<string, string>; lines: string[] };
+  default_headings: Record<string, string>;
+  preview: string;
+  preview_lang: string;
+}
+
+/** One game's bank (Studio > Games): hashtags, tags, names, key words... as editable JSON */
+export interface GameBank {
+  id: string;
+  name: string;
+  custom: boolean;
+  builtin: boolean;
+  bank: Record<string, unknown>;
+}
+
+export interface MetadataGame {
+  id: string;
+  name: string;
+  known: boolean;
+  why: string;
+  source: "override" | "hud" | "detected" | "unknown";
+  choice: string;
+  choices: { id: string; name: string }[];
+}
+
 export interface WordLists {
   profanity: Record<string, { words: string[]; default: string[]; custom: boolean }>;
   fillers: Record<string, { sure: string[]; maybe: string[]; default: { sure: string[]; maybe: string[] }; custom: boolean }>;
@@ -658,6 +692,7 @@ export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
   jobs: Job[];
   chat: null | { status: "ok" | "none"; source: string; reason: string | null; count: number; authors: number };
   game: null | GameSummary;
+  metadata_game?: null | MetadataGame;
   analysis: null | { language: string; model: string; analyzed_at: string; glossary?: string[] };
   output_language: string;
 }
@@ -1267,6 +1302,7 @@ const HEAVY: [string, RegExp][] = [
   ["POST", /\/(transcribe|highlights|analyze|render|montage|export)$/],
   ["POST", /\/game\/rescan$/],
   ["PUT", /\/game$/],
+  ["PUT", /\/metadata-game$/],
   ["POST", /^\/api\/(llm\/benchmark|queue\/render|update|music\/analyze)$/],
   ["POST", /\/candidates$/],
   ["PUT", /^\/api\/uploads/],
@@ -1447,6 +1483,9 @@ export const api = {
     req<{ jobs: Job[] }>("POST", `${P(id)}/render`, { clip_ids, options, hooks }),
   regeneratePublish: (id: string, cid: string) => req<Job>("POST", `${P(id)}/candidates/${cid}/publish`),
   analyze: (id: string, lang?: string, force = false) => req<Job>("POST", `${P(id)}/analyze`, { lang, force }),
+  analyzeMeta: (id: string) => req<Job>("POST", `${P(id)}/analyze`, { meta_only: true }),
+  setMetadataGame: (id: string, choice: string, rerun = true) =>
+    req<{ metadata_game: MetadataGame; job: Job | null }>("PUT", `${P(id)}/metadata-game`, { choice, rerun }),
   voteTitle: (id: string, cid: string, text: string, vote: -1 | 0 | 1) =>
     req<{ text: string; vote: number }>("POST", `${P(id)}/candidates/${cid}/titles/vote`, { text, vote }),
   llm: () => req<LlmInfo>("GET", "/api/llm"),
@@ -1545,6 +1584,13 @@ export const api = {
     return data as MusicTrack;
   },
   brand: () => req<BrandState>("GET", "/api/brand"),
+  channelText: () => req<ChannelText>("GET", "/api/brand/channel"),
+  saveChannelText: (d: Partial<Pick<ChannelText, "hashtags" | "names">> & { socials?: Partial<ChannelText["socials"]> }) =>
+    req<ChannelText>("PUT", "/api/brand/channel", d),
+  gameBanks: () => req<{ games: GameBank[] }>("GET", "/api/studio/games"),
+  saveGameBank: (gid: string, bank: Record<string, unknown>) =>
+    req<GameBank>("PUT", `/api/studio/games/${encodeURIComponent(gid)}`, { bank }),
+  resetGameBank: (gid: string) => req<{ games: GameBank[] }>("DELETE", `/api/studio/games/${encodeURIComponent(gid)}`),
   saveBrand: (presets: Partial<BrandPreset>[], active: string | null) =>
     req<BrandState>("PUT", "/api/brand", { presets, active }),
   uploadLogo: async (pid: string, file: File) => {

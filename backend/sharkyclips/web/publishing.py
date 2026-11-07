@@ -105,8 +105,12 @@ def prefill(project: Project, cand: dict) -> dict:
     pub = cand.get("publish") or {}
     d = publish_defaults()
     title = (pub.get("titles") or [None])[0] or (cand.get("text") or "")[:90]
+    from ..edit import brand
+
     text, tags_in_desc = P.split_hashtags(pub.get("description") or "")
-    hashtags = tags_in_desc or [h if h.startswith("#") else f"#{h}" for h in (pub.get("hashtags") or [])[:5]]
+    hashtags = tags_in_desc or [h if h.startswith("#") else f"#{h}" for h in (pub.get("hashtags") or [])[:8]]
+    chan = brand.channel_hashtags()  # the channel's own tags always lead (older analyses too)
+    hashtags = chan + [h for h in hashtags if h.casefold() not in {c.casefold() for c in chan}]
     meta = project.load_meta()
     spoken = None
     if project.transcript_path.is_file():
@@ -575,7 +579,8 @@ def upload_body(project: Project, cand: dict, item: dict, source: str, ab: dict 
     if e and (e.get("music") or {}).get("credit"):
         credit = e["music"]["credit"]
     body = {"source": source, "title": meta["title"],
-            "description": P.compose_description(meta.get("description") or "", meta.get("hashtags") or [], credit),
+            "description": P.compose_description(meta.get("description") or "", meta.get("hashtags") or [], credit,
+                                                 lang=meta.get("language") or (cand.get("publish") or {}).get("language")),
             "tags": meta.get("tags") or [], "made_for_kids": bool(meta.get("made_for_kids")),
             "language": meta.get("language"), "category": meta.get("category") or "20",
             "plan_key": P.key_of(project.id, cand["id"]),
@@ -934,7 +939,8 @@ def api_setup_save(project_id: str, cid: str, body: dict) -> dict:
     if live:
         note = (live.get("ai_voice") or {}).get("line") if (live.get("ai_voice") or {}).get("note") else None
         snippet = youtube.build_body(meta["title"],
-                                     youtube.with_note(P.compose_description(meta.get("description") or "", meta.get("hashtags") or []), note),
+                                     youtube.with_note(P.compose_description(meta.get("description") or "", meta.get("hashtags") or [],
+                                                                           lang=meta.get("language")), note),
                                      meta.get("tags") or [], "private", None, meta["made_for_kids"],
                                      meta.get("category") or "20", meta.get("language"))["snippet"]
         youtube.update_video(live["video_id"], snippet=snippet)

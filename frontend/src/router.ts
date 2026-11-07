@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 // Hash routes: works from any server path and survives reloads without server config.
-export type StudioTab = "music" | "brand" | "words";
+export type StudioTab = "music" | "brand" | "words" | "games";
 export type Route =
   | { name: "library" }
   | { name: "project"; id: string }
@@ -24,7 +24,7 @@ function parse(): Route {
   if (a === "p" && b) return { name: "project", id: decodeURIComponent(b) };
   if (a === "settings") return { name: "settings" };
   if (a === "approve") return { name: "approve" };
-  if (a === "studio") return { name: "studio", tab: b === "brand" || b === "words" ? b : "music" };
+  if (a === "studio") return { name: "studio", tab: b === "brand" || b === "words" || b === "games" ? b : "music" };
   if (a === "queue") return { name: "queue" };
   if (a === "stats") return { name: "stats" };
   if (a === "library") return { name: "publish", view: b === "calendar" ? "calendar" : "list" };

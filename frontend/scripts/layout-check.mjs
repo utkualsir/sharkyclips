@@ -49,6 +49,7 @@ const SCREENS = [
   { name: "studio-music", mode: "pro", hash: "#/studio/music", ready: "main" },
   { name: "studio-brand", mode: "pro", hash: "#/studio/brand", ready: "main" },
   { name: "studio-words", mode: "pro", hash: "#/studio/words", ready: "main" },
+  { name: "studio-games", mode: "pro", hash: "#/studio/games", ready: ".games-json" },
   { name: "settings", mode: "pro", hash: "#/settings", ready: "main" },
   { name: "stats", mode: "pro", hash: "#/stats", ready: "main" },
 ];

@@ -1,0 +1,50 @@
+{
+  "id": "delta_force",
+  "name": "Delta Force",
+  "short": "delta force",
+  "aliases": ["delta force", "deltaforce", "delta force hawk ops"],
+  "hashtags": ["#deltaforce", "#deltaforcetr", "#deltaforcegame", "#deltaforceturkiye", "#fps"],
+  "tags": ["delta force", "delta force türkçe", "delta force türkiye", "delta force oynanış", "delta force gameplay",
+           "delta force clips", "delta force highlights", "delta force shorts", "delta force extraction", "delta force operations"],
+  "search": {
+    "tr": ["delta force türkçe", "delta force komik anlar", "delta force {term}", "delta force {event}", "delta force tahliye"],
+    "en": ["delta force gameplay", "delta force {term}", "delta force {event}", "{term} loadout", "delta force best moments"]
+  },
+  "terms": {
+    "maps": ["Zero Dam", "Layali Grove", "Space City", "Brakkesh", "Tide Prison", "Ascension", "Cracked", "Knife Edge",
+             "Threshold", "Trench Lines", "Shafted"],
+    "modes": ["Operations", "Warfare", "Havoc Warfare", "Black Hawk Down"],
+    "operators": ["D-Wolf", "Vyron", "Stinger", "Shepherd", "Uluru", "Luna", "Hackclaw", "Toxik", "Sineva", "Nox", "Silver Wing", "Raptor"],
+    "weapons": ["M4A1", "AKM", "AK-12", "SCAR-H", "QBZ95-1", "ASh-12", "Vector", "P90", "MP5", "SR-25", "M14", "M250", "PKM",
+                "AUG", "G3", "M7", "K416", "AWM", "Mk47", "SG552", "Tenglong"],
+    "items": ["Red Card", "kırmızı kart", "kasa", "altın", "zırh", "dron"]
+  },
+  "hashtag_kinds": ["maps", "operators", "weapons"],
+  "ambiguous": ["Operations", "Warfare", "Cracked", "Threshold", "Luna", "Stinger", "Shepherd", "Raptor", "Vector", "kasa",
+                "altın", "zırh", "dron", "Ascension", "Shafted", "Nox", "Red Card", "kırmızı kart", "M7"],
+  "hints": ["operator", "operasyon", "tahliye", "extract", "warfare", "havoc", "zero dam", "layali", "space city",
+            "brakkesh", "revive", "kurtar", "zirh", "armor", "dron"],
+  "events": {
+    "df_multikill": {"word": "{n} KILL", "label": "{n} kills in a row", "search": "multikill", "hashtags": ["#multikill"], "tags": ["delta force multikill"]},
+    "df_extracted": {"word": "TAHLİYE", "label": "Extracted", "hashtags": ["#extraction"], "tags": ["delta force tahliye", "delta force extraction"], "say": ["tahliye", "extract"]},
+    "df_extract_failed": {"word": "FAIL", "label": "Extraction failed", "hashtags": [], "tags": ["delta force fail"]},
+    "df_revive": {"word": "REVIVE", "label": "Revive", "hashtags": ["#revive"], "tags": ["delta force revive"]},
+    "df_revenge": {"word": "REVENGE", "label": "Revenge kill", "hashtags": [], "tags": ["delta force revenge"]},
+    "df_knock": {"word": "KNOCK", "label": "Knock", "hashtags": [], "tags": []},
+    "red_card": {"word": "RED CARD", "label": "Red Card", "hashtags": ["#redcard"], "tags": ["delta force red card", "delta force kırmızı kart"], "say": ["red card", "kirmizi kart"]},
+    "loot": {"word": "LOOT", "label": "Loot", "hashtags": ["#loot"], "tags": ["delta force loot"], "say": ["loot", "ganimet"]}
+  },
+  "keywords": ["CLUTCH", "1v2", "1v3", "1v4", "1v5", "TAHLİYE", "EXTRACTION", "RED CARD", "SQUAD WIPE", "HEADSHOT", "LOOT",
+               "İNANILMAZ", "EFSANE", "REZALET", "BAĞIMLILIK"],
+  "vocab": {
+    "tr": ["tahliye", "takım", "loot", "kasa", "zırh", "operasyon", "son mermi", "kurtarma", "squad", "baskın"],
+    "en": ["extraction", "squad", "loot", "armor", "operation", "last bullet", "revive", "squad wipe", "raid"]
+  },
+  "moments": {
+    "funny": {"hashtags": {"tr": ["#komikanlar"], "en": ["#funnymoments"]}, "tags": {"tr": ["delta force komik anlar"], "en": ["delta force funny moments"]}},
+    "fail": {"hashtags": {"tr": ["#komikanlar"], "en": ["#fail"]}, "tags": {"tr": ["delta force komik anlar"], "en": ["delta force fails"]}},
+    "skill": {"hashtags": {"tr": ["#clutch"], "en": ["#clutch"]}, "tags": {"tr": ["delta force clutch"], "en": ["delta force clutch"]}},
+    "exciting": {"hashtags": {"tr": ["#fpsgames"], "en": ["#fpsgames"]}, "tags": {"tr": ["delta force en iyi anlar"], "en": ["delta force best moments"]}},
+    "emotional": {"hashtags": {"tr": ["#deltaforceclips"], "en": ["#deltaforceclips"]}, "tags": {"tr": ["delta force yayın anları"], "en": ["delta force stream moments"]}}
+  }
+}

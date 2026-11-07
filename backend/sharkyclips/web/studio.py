@@ -237,6 +237,71 @@ def api_brand_put(body: dict) -> dict:
     return _brand_view()
 
 
+@router.get("/api/brand/channel")
+def api_brand_channel() -> dict:
+    """Brand kit > Channel text: channel hashtags, tag names and the socials block."""
+    return _channel_view()
+
+
+@router.put("/api/brand/channel")
+def api_brand_channel_put(body: dict) -> dict:
+    brand.save_channel_text(body or {})
+    return _channel_view()
+
+
+def _channel_view() -> dict:
+    from .. import config
+
+    lang = config.get("output_language") or "tr"
+    return {**brand.channel_text(), "default_headings": brand.SOCIAL_HEADINGS,
+            "preview": brand.socials_block(lang), "preview_lang": lang}
+
+
+# ------------------------------------------------------------------ game banks (titles / hashtags / tags)
+
+
+@router.get("/api/studio/games")
+def api_games() -> dict:
+    from ..titles import banks
+
+    return {"games": [_game_view(g) for g in banks.ids()]}
+
+
+def _game_view(gid: str) -> dict:
+    from ..titles import banks
+
+    bank = banks.get(gid)
+    if gid != banks.GENERIC:  # show the game's own events / moments, not the generic fallback ones
+        own = banks.merge(banks._builtin(gid), banks._user_all().get(gid) or {})
+        bank = {**bank, "events": own.get("events", {}), "moments": own.get("moments", {})}
+    return {"id": gid, "name": bank.get("name") or "", "custom": banks.is_custom(gid),
+            "builtin": gid in banks.BUILTIN, "bank": {k: v for k, v in bank.items() if not k.startswith("_")}}
+
+
+@router.put("/api/studio/games/{gid}")
+def api_game_put(gid: str, body: dict) -> dict:
+    from ..titles import banks
+
+    data = body.get("bank") if isinstance(body, dict) else None
+    errs = banks.validate(data)
+    if errs:
+        raise SharkyClipsError("This game bank can't be saved.", " ".join(errs[:4]))
+    try:
+        banks.save_user(gid, data)
+    except ValueError as exc:
+        raise SharkyClipsError("Use a short id: lowercase letters, numbers and _.") from exc
+    return _game_view(gid)
+
+
+@router.delete("/api/studio/games/{gid}")
+def api_game_reset(gid: str) -> dict:
+    """Back to the built-in bank (a game the user added is removed)."""
+    from ..titles import banks
+
+    banks.save_user(gid, None)
+    return {"games": [_game_view(g) for g in banks.ids()]}
+
+
 @router.put("/api/brand/{pid}/logo")
 async def api_brand_logo(pid: str, request: Request, filename: str = "logo.png") -> dict:
     data = await request.body()

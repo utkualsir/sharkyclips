@@ -44,7 +44,7 @@ INTRO_S = 3.2
 OUTRO_S = 3.4
 TARGET_LUFS, TARGET_TP, TARGET_LRA = -14.0, -1.5, 11.0
 MAX_CLIPS = 30
-PACKAGE_VERSION = 3
+PACKAGE_VERSION = 4  # 1.2.25: the project's one game, no other games
 
 NAVY_HEX = "0x0E1A33"
 GOLD = "&H006AB5D9"  # #D9B56A (ASS is &HAABBGGRR)
@@ -264,7 +264,7 @@ def _package_schema(n: int) -> dict:
     }
 
 
-def _package_prompt(meta: dict, items: list[dict], lang: str) -> str:
+def _package_prompt(meta: dict, items: list[dict], lang: str, game: dict | None = None) -> str:
     from .analyze import lang_name
 
     lines = []
@@ -277,6 +277,9 @@ def _package_prompt(meta: dict, items: list[dict], lang: str) -> str:
                      + (f" | short title: {title}" if title else ""))
     topic = next(((it["cand"].get("llm") or {}).get("game_or_topic") for it in items
                   if (it["cand"].get("llm") or {}).get("game_or_topic")), "")
+    if game is not None:
+        topic = (f"{game['name']} (the whole video; never name any other game)" if game.get("known")
+                 else "a game (unknown: never name or guess a game)")
     return f"""Stream / video title: {meta.get('title', '')}
 Channel: {(meta.get('source') or {}).get('uploader') or 'unknown'}
 Game / topic: {topic or 'unknown'}
@@ -313,12 +316,17 @@ def write_package(project: Project, items: list[dict], lang: str,
     from . import llm
     from .analyze import has_profanity
 
+    from .titles import banks
+
     meta = project.load_meta()
+    gaming = (meta.get("mode") or "gaming") == "gaming"
+    game = banks.project_game(project) if gaming else None
+    gid = game["id"] if game else None
     fallback = _fallback_package(meta, items, lang)
     if config.get("llm_enabled") is False or (llm.ollama_exe() is None and llm.server_version(0.5) is None):
         return fallback
     model_name = llm.choose_model()
-    payload = [PACKAGE_VERSION, model_name, lang, meta.get("title", ""),
+    payload = [PACKAGE_VERSION, model_name, lang, meta.get("title", ""), gid,
                [[it["cand"]["id"], it["cand"]["start"], it["cand"]["end"]] for it in items]]
     key = hashlib.sha1(json.dumps(payload).encode()).hexdigest()[:20]
     cache = project.cache_dir / "llm" / f"montage_{key}.json"
@@ -339,7 +347,7 @@ def write_package(project: Project, items: list[dict], lang: str,
 
     try:
         with llm.session(model_name) as model:
-            d = model.json(SYSTEM, _package_prompt(meta, items, lang), _package_schema(len(items)),
+            d = model.json(SYSTEM, _package_prompt(meta, items, lang, game), _package_schema(len(items)),
                            temperature=0.6, check=check, soft=soft, num_predict=2200)
     except SharkyClipsError as exc:
         console.print(f"[yellow]Best-of texts: the LLM failed ({exc.message}); using plain names.[/]")
@@ -351,14 +359,23 @@ def write_package(project: Project, items: list[dict], lang: str,
     transcript = project.load_transcript() if project.transcript_path.is_file() else {}
     topic = next(((it["cand"].get("llm") or {}).get("game_or_topic") for it in items
                   if (it["cand"].get("llm") or {}).get("game_or_topic")), "")
-    gl = glossary_mod.build(transcript, lang, meta.get("title", ""), topic)
+    if game is not None:
+        topic = game["name"]
+        gl = glossary_mod.build(transcript, lang, meta.get("title", ""), topic, game=game["name"] or None,
+                                game_terms=banks.glossary_terms(banks.get(gid)))
+    else:
+        gl = glossary_mod.build(transcript, lang, meta.get("title", ""), topic)
 
     def fix(text: str) -> str:
         text, _ = lexicon.polish(gl.canonicalize(" ".join(text.split())), lang, keep=gl.keep_case,
                                  protected=gl.allowed)
         return gl.canonicalize(text)
 
-    d["titles"] = [fix(t) for t in d["titles"] if not has_profanity(t)] or fallback["titles"]
+    d["titles"] = [fix(t) for t in d["titles"]
+                   if not has_profanity(t) and not (gid and banks.other_game(t, gid))] or fallback["titles"]
+    if gid and banks.other_game(d.get("description") or "", gid):
+        d["description"] = " ".join(p for p in (d.get("description") or "").split("\n")
+                                    if not banks.other_game(p, gid)).strip()
     d["chapters"] = [{"i": c["i"], "label": fix(c["label"]).rstrip(".")} for c in d["chapters"]]
     d["outro_text"] = fix(d.get("outro_text") or "") or fallback["outro_text"]
     d["model"] = model_name
@@ -578,11 +595,18 @@ def render_montage(project: Project, clip_ids: list[str], *, lang: str | None = 
                    "viral_score": (it["cand"].get("publish") or {}).get("viral_score"),
                    "normalized": measured[i] is not None}
                   for i, it in enumerate(items)],
-        "titles": pkg.get("titles") or [], "description": pkg.get("description") or "",
+        "titles": pkg.get("titles") or [], "description": _with_socials(pkg.get("description") or "", lang),
         "chapters": chapters, "chapters_text": chapters_text,
     }
     write_json_atomic(out_dir / f"{dest.stem}.json", info)
     return info
+
+
+def _with_socials(text: str, lang: str) -> str:
+    """The best-of description ends with the channel's socials block (Brand kit)."""
+    from .edit import brand
+
+    return brand.with_socials(text, lang, limit=4800) if text else text
 
 
 def delete_export(project: Project, name: str) -> bool:

@@ -45,6 +45,7 @@ DEFAULTS: dict[str, Any] = {
     # Names and words AI titles must spell exactly like this (game maps, operators, nicknames,
     # your own words). A list, or per output language: {"all": [...], "tr": [...]}.
     "glossary": [],
+    "channel_text": None,  # Brand kit > Channel text: channel hashtags, tag names, socials block
     "ollama_url": "http://127.0.0.1:11434",
     # Chat reacts a few seconds after the moment; the chat curve is shifted back by this much.
     "chat_delay": 5,

@@ -49,7 +49,10 @@ class Glossary:
                 continue  # "Cracked" (a map) must not capitalize "cracked" in a sentence
             parts = term.split()
             pat = r"[\s-]*".join(re.escape(p) for p in parts) if len(parts) > 1 else re.escape(term)
-            text = re.sub(rf"(?<![\w]){pat}(?![\w])", term, text, flags=re.I)
+            # a key word in CAPITALS ("PENTAKILL") keeps its style
+            text = re.sub(rf"(?<![\w]){pat}(?![\w])",
+                          lambda m, term=term: m.group(0) if m.group(0).isupper() and len(m.group(0)) > 3 else term,
+                          text, flags=re.I)
             if len(term) >= 6:  # close misspellings of longer names ("Brakesh" -> "Brakkesh")
                 n = len(parts)
                 toks = list(re.finditer(r"[^\W_]+(?:[-'][^\W_]+)*", text))
@@ -60,7 +63,7 @@ class Glossary:
                     m = re.search(r"'[^\W_]{1,5}$", chunk)
                     if m:
                         chunk, b = chunk[: m.start()], a + m.start()
-                    if chunk != term and _similar(chunk, term):
+                    if chunk != term and not (chunk.isupper() and len(chunk) > 3) and _similar(chunk, term):
                         text = text[:a] + term + text[b:]
                         break
         return text
@@ -125,8 +128,16 @@ def _found_in(term: str, ngrams: dict[int, set[str]], buckets: dict[tuple, list[
     return any(SequenceMatcher(None, g, nt).ratio() >= FUZZY for g in cands)
 
 
+_DETECT = object()
+
+
 def build(transcript: dict, lang: str, video_title: str = "", topic: str = "",
-          extra_terms: list[str] | None = None) -> Glossary:
+          extra_terms: list[str] | None = None, game=_DETECT, game_terms: list[str] | None = None,
+          extra_allowed: list[str] | None = None) -> Glossary:
+    """game: the project's game name ("" = unknown: no game terms at all); left out, it is
+    detected from the title / topic. game_terms: the game bank's names, added to the built-in ones
+    (still only when the streamer says them). extra_allowed: words that always count as real
+    (the bank's CAPS key words like "PENTAKILL")."""
     from ..analyze import has_profanity
 
     spoken = transcript.get("language") or lang
@@ -142,11 +153,12 @@ def build(transcript: dict, lang: str, video_title: str = "", topic: str = "",
                 buckets.setdefault((g[0], len(g)), []).append(g)
     title_norm = _norm(video_title)
 
-    game = detect_game(video_title, topic)
+    game = detect_game(video_title, topic) if game is _DETECT else (game or None)
     terms: list[str] = []
     if game:
         terms.append(game)
-        for term in _games()[game].get("terms", []):
+        known = list((_games().get(game) or {}).get("terms", [])) + list(game_terms or [])
+        for term in dict.fromkeys(known):
             if _norm(term) in title_norm or _found_in(term, ngrams, buckets):
                 terms.append(term)
     for t in user_terms(lang) + list(extra_terms or []):
@@ -182,6 +194,9 @@ def build(transcript: dict, lang: str, video_title: str = "", topic: str = "",
     streamer_words = [w for _s, w in sorted(streamer, reverse=True)[:15]]
 
     allowed = set(lower)
+    for w in extra_allowed or []:
+        for p in lexicon.words(w):
+            allowed.add(lexicon.lower(p, lang))
     keep_case = set(proper)
     for t in terms:
         for p in lexicon.words(t):

@@ -1,0 +1,37 @@
+{
+  "id": "generic",
+  "name": "",
+  "short": "",
+  "_note": "Used when the game is unknown (only generic gaming words, never a game name), and as the fallback for events and moments of every game.",
+  "aliases": [],
+  "hashtags": ["#gaming", "#oyun", "#gamingclips", "#twitchtr", "#kicktr"],
+  "tags": ["gaming", "oyun", "oyun videoları", "türkçe oyun", "gaming clips", "stream highlights", "yayın anları",
+           "kick türkiye", "twitch türkiye", "komik anlar", "funny moments", "gamer", "oyuncu"],
+  "search": {
+    "tr": ["türkçe oyun videoları", "yayıncı komik anlar", "oyun komik anlar", "yayın anları"],
+    "en": ["gaming funny moments", "streamer highlights", "best gaming moments", "gaming shorts"]
+  },
+  "terms": {},
+  "hashtag_kinds": [],
+  "ambiguous": [],
+  "hints": [],
+  "events": {
+    "clutch": {"word": "CLUTCH", "label": "Clutch", "hashtags": ["#clutch"], "tags": ["clutch"], "say": ["clutch", "klac", "klaç"]},
+    "ace": {"word": "ACE", "label": "Ace", "hashtags": ["#ace"], "tags": [], "say": []},
+    "headshot": {"word": "HEADSHOT", "label": "Headshot", "hashtags": ["#headshot"], "tags": ["headshot"], "say": ["headshot"]},
+    "comeback": {"word": "COMEBACK", "label": "Comeback", "hashtags": ["#comeback"], "tags": ["comeback"], "say": ["comeback", "geri donus"]}
+  },
+  "keywords": ["CLUTCH", "1v2", "1v3", "1v4", "1v5", "HEADSHOT", "COMEBACK", "İNANILMAZ", "EFSANE", "REZALET", "ŞOK", "OLAMAZ"],
+  "vocab": {
+    "tr": ["takım", "son saniye", "chat", "yayın", "maç", "kanka"],
+    "en": ["team", "last second", "chat", "stream", "match"]
+  },
+  "moments": {
+    "funny": {"hashtags": {"tr": ["#komikanlar"], "en": ["#funnymoments"]}, "tags": {"tr": ["komik anlar"], "en": ["funny moments"]}},
+    "fail": {"hashtags": {"tr": ["#komikanlar"], "en": ["#gamingfails"]}, "tags": {"tr": ["oyun fail anları"], "en": ["gaming fails"]}},
+    "skill": {"hashtags": {"tr": ["#clutch"], "en": ["#clutch"]}, "tags": {"tr": ["clutch anları"], "en": ["clutch moments"]}},
+    "exciting": {"hashtags": {"tr": ["#gamingclips"], "en": ["#gamingclips"]}, "tags": {"tr": ["en iyi anlar"], "en": ["best moments"]}},
+    "emotional": {"hashtags": {"tr": ["#yayınanları"], "en": ["#streamhighlights"]}, "tags": {"tr": ["yayın anları"], "en": ["stream highlights"]}},
+    "other": {"hashtags": {"tr": ["#gamingclips"], "en": ["#gamingclips"]}, "tags": {"tr": ["oyun anları"], "en": ["gaming clips"]}}
+  }
+}

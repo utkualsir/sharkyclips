@@ -161,9 +161,11 @@ def set_audited(name: str, audited: bool) -> dict:
 # ===================================================================== captions
 
 
-def caption(platform: str, title: str, description: str, hashtags: list[str], note: str | None = None) -> str:
-    """Title + the first line of the description (+ `note`, e.g. the AI-voice line) + hashtags,
-    within the platform's limits. The note is never cut off."""
+def caption(platform: str, title: str, description: str, hashtags: list[str], note: str | None = None,
+            socials: str = "") -> str:
+    """Title + the first line of the description (+ `note`, e.g. the AI-voice line) + hashtags
+    + the channel's socials block, within the platform's limits. The note is never cut off; a
+    tight caption drops socials lines from the bottom (a link is never cut), then shortens the body."""
     tags = []
     for h in hashtags:
         h = "#" + str(h).lstrip("#").strip()
@@ -177,8 +179,13 @@ def caption(platform: str, title: str, description: str, hashtags: list[str], no
         body += "\n\n" + first
     extra = f"\n\n{note.strip()}" if note and note.strip() else ""
     tail = ("\n\n" + " ".join(tags)) if tags else ""
-    text = (body + extra + tail).strip()
     limit = CAPTION_MAX.get(platform, 2200)
+    block = ""
+    if socials and socials.strip():
+        from .edit import brand
+
+        block = brand.fit_block(socials.strip(), limit - len((body + extra + tail).strip()) - 2)
+    text = (body + extra + tail + (f"\n\n{block}" if block else "")).strip()
     if len(text) > limit:
         text = body[: max(0, limit - len(extra) - len(tail) - 1)].rstrip() + "…" + extra + tail
     return text

@@ -1,45 +1,130 @@
 {
   "language": "de",
-  "_note": "Style references for the title prompt: casual, natural Shorts titles. Most titles have no '!'. Edit freely; the LLM copies the tone, not the content.",
+  "_note": "Style references for the title prompt. \"gaming\" is game-neutral (1.2.25 punchy style: 1-2 CAPS key words, one emoji at the end, formulas shock / question / nobody_expected / number / story / punchy); \"gaming.<game id>\" examples are shown only for that game. Edit freely; the LLM copies the tone, not the content.",
   "gaming": [
-    {"text": "Wo kam der denn bitte her?", "style": "question"},
-    {"text": "Letzte Kugel, 1 gegen 3", "style": "story"},
-    {"text": "Mein Teammate hat mich schon wieder verkauft", "style": "funny"},
-    {"text": "Mein Lieblingsmoment aus dem Stream", "style": "calm"},
-    {"text": "So hart haben wir noch nie gelacht", "style": "funny"},
-    {"text": "10 Sekunden vor dem Extract passiert das", "style": "curiosity"},
-    {"text": "Warum passiert das immer mir?", "style": "question"},
-    {"text": "Leise von hinten angeschlichen und...", "style": "curiosity"},
-    {"text": "Eine kleine Lektion für Camper", "style": "punchy"},
-    {"text": "Keiner spielt diese Waffe, aber warum eigentlich?", "style": "question"},
-    {"text": "Ein Leben übrig, die Runde hängt an mir", "style": "story"},
-    {"text": "Erste Runde auf dieser Map, so lief es", "style": "story"},
-    {"text": "Was man mit offenem Mikro lieber lässt", "style": "funny"},
-    {"text": "Ich belebe meinen Kumpel und drei Leute pushen", "style": "story"},
-    {"text": "Das war so nicht geplant!", "style": "hype"}
+    {
+      "text": "Letzte Sekunde 1v4 CLUTCH, der Chat ist ausgerastet 😱",
+      "style": "shock"
+    },
+    {
+      "text": "Mit diesem ACE hat wirklich niemand gerechnet 💀",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "Wie konnte diese Runde mit einer Kugel KIPPEN?",
+      "style": "question"
+    },
+    {
+      "text": "3 Kills in 3 Sekunden und mein Team war sprachlos",
+      "style": "number"
+    },
+    {
+      "text": "Alle sind geflohen, ich bin geblieben, und dann das 👀",
+      "style": "story"
+    },
+    {
+      "text": "Für diesen CLUTCH lebe ich 🔥",
+      "style": "punchy"
+    },
+    {
+      "text": "War diese Runde wirklich meine Schuld?",
+      "style": "question"
+    },
+    {
+      "text": "In den letzten 10 Sekunden das ganze Match gedreht",
+      "style": "number"
+    },
+    {
+      "text": "Ein kleiner Fehler und alles hat sich verändert",
+      "style": "story"
+    },
+    {
+      "text": "Der Chat glaubt es immer noch nicht 🤯",
+      "style": "punchy"
+    }
   ],
   "study": [
-    {"text": "Ableitungen sind eigentlich ganz einfach", "style": "calm"},
-    {"text": "Warum erklärt das die Schule nicht so?", "style": "question"},
-    {"text": "Primzahlen in einer Minute", "style": "punchy"},
-    {"text": "Die eine Formel, die du vor der Prüfung kennen musst", "style": "curiosity"},
-    {"text": "So lernst du es ohne Auswendiglernen", "style": "calm"},
-    {"text": "Die meisten lösen diese Aufgabe falsch", "style": "curiosity"},
-    {"text": "Der beste Trick, den mir mein Lehrer gezeigt hat", "style": "story"},
-    {"text": "Warum der Himmel blau ist, kurz erklärt", "style": "calm"},
-    {"text": "Probleme mit Brüchen? Schau dir das an", "style": "punchy"},
-    {"text": "Was ist der größte Fehler beim Mitschreiben?", "style": "question"}
+    {
+      "text": "Ableitungen sind eigentlich ganz einfach",
+      "style": "calm"
+    },
+    {
+      "text": "Warum erklärt das die Schule nicht so?",
+      "style": "question"
+    },
+    {
+      "text": "Primzahlen in einer Minute",
+      "style": "punchy"
+    },
+    {
+      "text": "Die eine Formel, die du vor der Prüfung kennen musst",
+      "style": "curiosity"
+    },
+    {
+      "text": "So lernst du es ohne Auswendiglernen",
+      "style": "calm"
+    },
+    {
+      "text": "Die meisten lösen diese Aufgabe falsch",
+      "style": "curiosity"
+    },
+    {
+      "text": "Der beste Trick, den mir mein Lehrer gezeigt hat",
+      "style": "story"
+    },
+    {
+      "text": "Warum der Himmel blau ist, kurz erklärt",
+      "style": "calm"
+    },
+    {
+      "text": "Probleme mit Brüchen? Schau dir das an",
+      "style": "punchy"
+    },
+    {
+      "text": "Was ist der größte Fehler beim Mitschreiben?",
+      "style": "question"
+    }
   ],
   "music": [
-    {"text": "Der Refrain kam und ich hatte Gänsehaut", "style": "story"},
-    {"text": "Diesen Teil live zu singen ist nicht leicht", "style": "calm"},
-    {"text": "Das Publikum hat es vor mir gesungen", "style": "story"},
-    {"text": "Eine Melodie um 3 Uhr nachts im Studio", "style": "curiosity"},
-    {"text": "Mit diesem Drop hast du nicht gerechnet", "style": "punchy"},
-    {"text": "Schafft meine Stimme diesen Ton?", "style": "question"},
-    {"text": "Zum ersten Mal spiele ich den Song akustisch", "style": "calm"},
-    {"text": "Das Gitarrensolo begann und alle wurden still", "style": "story"},
-    {"text": "Diesen Beat habe ich in 10 Minuten gebaut", "style": "punchy"},
-    {"text": "Kennst du die Geschichte hinter diesem Song?", "style": "question"}
+    {
+      "text": "Der Refrain kam und ich hatte Gänsehaut",
+      "style": "story"
+    },
+    {
+      "text": "Diesen Teil live zu singen ist nicht leicht",
+      "style": "calm"
+    },
+    {
+      "text": "Das Publikum hat es vor mir gesungen",
+      "style": "story"
+    },
+    {
+      "text": "Eine Melodie um 3 Uhr nachts im Studio",
+      "style": "curiosity"
+    },
+    {
+      "text": "Mit diesem Drop hast du nicht gerechnet",
+      "style": "punchy"
+    },
+    {
+      "text": "Schafft meine Stimme diesen Ton?",
+      "style": "question"
+    },
+    {
+      "text": "Zum ersten Mal spiele ich den Song akustisch",
+      "style": "calm"
+    },
+    {
+      "text": "Das Gitarrensolo begann und alle wurden still",
+      "style": "story"
+    },
+    {
+      "text": "Diesen Beat habe ich in 10 Minuten gebaut",
+      "style": "punchy"
+    },
+    {
+      "text": "Kennst du die Geschichte hinter diesem Song?",
+      "style": "question"
+    }
   ]
 }

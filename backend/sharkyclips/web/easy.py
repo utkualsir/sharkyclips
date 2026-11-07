@@ -272,7 +272,10 @@ def download(project: Project, cid: str, folder: Path | None = None) -> dict:
     shutil.copyfile(src, mp4)
     files.append(mp4.name)
     txt = folder / f"{stem}.txt"
-    txt.write_text(E.post_text(title, meta.get("description") or "", meta.get("hashtags") or []), encoding="utf-8")
+    from ..edit import brand
+
+    socials = brand.socials_block(meta.get("language") or (cand.get("publish") or {}).get("language"))
+    txt.write_text(E.post_text(title, meta.get("description") or "", meta.get("hashtags") or [], socials), encoding="utf-8")
     files.append(txt.name)
     note = None
     try:

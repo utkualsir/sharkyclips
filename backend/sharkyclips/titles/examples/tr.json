@@ -1,45 +1,166 @@
 {
   "language": "tr",
-  "_note": "Style references for the title prompt: casual, natural, how Turkish creators write Shorts titles. Most titles have no '!'. Edit freely; the LLM copies the tone, not the content.",
+  "_note": "Style references for the title prompt. \"gaming\" is game-neutral (1.2.25 punchy style: 1-2 CAPS key words, one emoji at the end, formulas shock / question / nobody_expected / number / story / punchy); \"gaming.<game id>\" examples are shown only for that game. Edit freely; the LLM copies the tone, not the content.",
   "gaming": [
-    {"text": "Kanka bu adam nereden çıktı?", "style": "question"},
-    {"text": "Son mermiyle 1v3, kalbim duracaktı", "style": "story"},
-    {"text": "Takım arkadaşım beni yine sattı", "style": "funny"},
-    {"text": "Bu maçın en sevdiğim anı buydu", "style": "calm"},
-    {"text": "Ekipçe hiç bu kadar gülmemiştik", "style": "funny"},
-    {"text": "Çıkışa 10 saniye kala gelen sürpriz", "style": "curiosity"},
-    {"text": "Neden hep bana denk geliyor?", "style": "question"},
-    {"text": "Sessizce arkasına dolandım ve...", "style": "curiosity"},
-    {"text": "Kamp atanlara küçük bir ders", "style": "punchy"},
-    {"text": "Bu silahı kimse kullanmıyor, peki neden?", "style": "question"},
-    {"text": "Tek canım kaldı, maç resmen bende", "style": "story"},
-    {"text": "Bu haritada ilk maçım, sonu böyle bitti", "style": "story"},
-    {"text": "Mikrofon açıkken yapılmayacak şeyler", "style": "funny"},
-    {"text": "Revive atarken üstüme 3 kişi geldi", "style": "story"},
-    {"text": "Bunu hiç planlamamıştık!", "style": "hype"}
+    {
+      "text": "Son saniyede 1v4 CLUTCH, chat çıldırdı 😱",
+      "style": "shock"
+    },
+    {
+      "text": "Bu ACE'i maçta kimse beklemiyordu 💀",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "Tek mermiyle bu nasıl DÖNDÜ, siz anlayabildiniz mi?",
+      "style": "question"
+    },
+    {
+      "text": "3 saniyede 3 kill, takım arkadaşlarım donup kaldı",
+      "style": "number"
+    },
+    {
+      "text": "Herkes kaçtı, ben kaldım ve sonra olanlar 👀",
+      "style": "story"
+    },
+    {
+      "text": "Bu CLUTCH için yaşıyorum 🔥",
+      "style": "punchy"
+    },
+    {
+      "text": "Takımım bıraktı, tek başıma COMEBACK yaptım",
+      "style": "shock"
+    },
+    {
+      "text": "Sizce bu maçta suçlu ben miydim?",
+      "style": "question"
+    },
+    {
+      "text": "Kimse bu kadar KÖTÜ bir oyun görmemişti 😂",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "Son 10 saniyede maçı tek başıma çevirdim",
+      "style": "number"
+    },
+    {
+      "text": "Bir hata yaptım ve bütün oyun bir anda değişti",
+      "style": "story"
+    },
+    {
+      "text": "Chat hâlâ inanmıyor 🤯",
+      "style": "punchy"
+    }
   ],
   "study": [
-    {"text": "Türev aslında bu kadar basit", "style": "calm"},
-    {"text": "Bunu okulda neden böyle anlatmıyorlar?", "style": "question"},
-    {"text": "Bir dakikada asal sayılar", "style": "punchy"},
-    {"text": "Sınavdan önce bilmen gereken tek formül", "style": "curiosity"},
-    {"text": "Ezberlemeden öğrenmenin yolu", "style": "calm"},
-    {"text": "Bu soruyu çoğu kişi yanlış çözüyor", "style": "curiosity"},
-    {"text": "Hocamın bana öğrettiği en iyi taktik", "style": "story"},
-    {"text": "Gökyüzü neden mavi, kısaca anlatıyorum", "style": "calm"},
-    {"text": "Kesirlerle aran kötüyse bunu izle", "style": "punchy"},
-    {"text": "Not alırken yaptığın en büyük hata ne?", "style": "question"}
+    {
+      "text": "Türev aslında bu kadar basit",
+      "style": "calm"
+    },
+    {
+      "text": "Bunu okulda neden böyle anlatmıyorlar?",
+      "style": "question"
+    },
+    {
+      "text": "Bir dakikada asal sayılar",
+      "style": "punchy"
+    },
+    {
+      "text": "Sınavdan önce bilmen gereken tek formül",
+      "style": "curiosity"
+    },
+    {
+      "text": "Ezberlemeden öğrenmenin yolu",
+      "style": "calm"
+    },
+    {
+      "text": "Bu soruyu çoğu kişi yanlış çözüyor",
+      "style": "curiosity"
+    },
+    {
+      "text": "Hocamın bana öğrettiği en iyi taktik",
+      "style": "story"
+    },
+    {
+      "text": "Gökyüzü neden mavi, kısaca anlatıyorum",
+      "style": "calm"
+    },
+    {
+      "text": "Kesirlerle aran kötüyse bunu izle",
+      "style": "punchy"
+    },
+    {
+      "text": "Not alırken yaptığın en büyük hata ne?",
+      "style": "question"
+    }
   ],
   "music": [
-    {"text": "Nakarat gelince tüylerim diken diken oldu", "style": "story"},
-    {"text": "Bu kısmı canlı söylemek hiç kolay değil", "style": "calm"},
-    {"text": "Seyirci sözleri benden önce söyledi", "style": "story"},
-    {"text": "Gece 3'te stüdyoda çıkan melodi", "style": "curiosity"},
-    {"text": "Bu drop'u beklemiyordun", "style": "punchy"},
-    {"text": "Sesim bu notaya çıkar mı?", "style": "question"},
-    {"text": "Bu şarkıyı ilk kez akustik çalıyorum", "style": "calm"},
-    {"text": "Gitar solosu başlayınca herkes sustu", "style": "story"},
-    {"text": "Bu beat'i 10 dakikada yaptım", "style": "punchy"},
-    {"text": "Bu şarkının hikayesini biliyor musun?", "style": "question"}
+    {
+      "text": "Nakarat gelince tüylerim diken diken oldu",
+      "style": "story"
+    },
+    {
+      "text": "Bu kısmı canlı söylemek hiç kolay değil",
+      "style": "calm"
+    },
+    {
+      "text": "Seyirci sözleri benden önce söyledi",
+      "style": "story"
+    },
+    {
+      "text": "Gece 3'te stüdyoda çıkan melodi",
+      "style": "curiosity"
+    },
+    {
+      "text": "Bu drop'u beklemiyordun",
+      "style": "punchy"
+    },
+    {
+      "text": "Sesim bu notaya çıkar mı?",
+      "style": "question"
+    },
+    {
+      "text": "Bu şarkıyı ilk kez akustik çalıyorum",
+      "style": "calm"
+    },
+    {
+      "text": "Gitar solosu başlayınca herkes sustu",
+      "style": "story"
+    },
+    {
+      "text": "Bu beat'i 10 dakikada yaptım",
+      "style": "punchy"
+    },
+    {
+      "text": "Bu şarkının hikayesini biliyor musun?",
+      "style": "question"
+    }
+  ],
+  "gaming.lol": [
+    {
+      "text": "Bu PENTAKILL'i kimse beklemiyordu 💀",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "Kule altında 1v3 OUTPLAY, rakip şokta 😱",
+      "style": "shock"
+    },
+    {
+      "text": "Baron'u bu açıdan kim ÇALAR ki?",
+      "style": "question"
+    }
+  ],
+  "gaming.delta_force": [
+    {
+      "text": "Çantam dolu, son saniyede TAHLİYE 😅",
+      "style": "story"
+    },
+    {
+      "text": "Tek başıma SQUAD WIPE, kaçacak yer kalmadı 🔥",
+      "style": "shock"
+    },
+    {
+      "text": "Red Card'ı bırakıp kaçmak mı, savaşmak mı?",
+      "style": "question"
+    }
   ]
 }

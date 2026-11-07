@@ -1,45 +1,130 @@
 {
   "language": "ar",
-  "_note": "Style references for the title prompt: casual, natural Shorts titles (light Gulf/colloquial tone like Arabic gaming creators). Most titles have no '!'. Edit freely; the LLM copies the tone, not the content.",
+  "_note": "Style references for the title prompt. \"gaming\" is game-neutral (1.2.25 punchy style: 1-2 CAPS key words, one emoji at the end, formulas shock / question / nobody_expected / number / story / punchy); \"gaming.<game id>\" examples are shown only for that game. Edit freely; the LLM copies the tone, not the content.",
   "gaming": [
-    {"text": "من وين طلع هذا اللاعب؟", "style": "question"},
-    {"text": "آخر طلقة وواحد ضد ثلاثة", "style": "story"},
-    {"text": "زميلي باعني مرة ثانية", "style": "funny"},
-    {"text": "أحلى لحظة في البث كله", "style": "calm"},
-    {"text": "عمرنا ما ضحكنا كذا", "style": "funny"},
-    {"text": "قبل الانسحاب بعشر ثواني صار هذا", "style": "curiosity"},
-    {"text": "ليش دايماً يصير معي كذا؟", "style": "question"},
-    {"text": "لفيت من وراه بهدوء و...", "style": "curiosity"},
-    {"text": "درس صغير للي يخيّمون", "style": "punchy"},
-    {"text": "محد يستخدم هالسلاح، بس ليش؟", "style": "question"},
-    {"text": "باقي لي روح وحدة والجولة علي", "style": "story"},
-    {"text": "أول قيم لي على هالخريطة وهذي النتيجة", "style": "story"},
-    {"text": "أشياء لا تسويها والمايك مفتوح", "style": "funny"},
-    {"text": "أنعش صاحبي وثلاثة جايين علي", "style": "story"},
-    {"text": "هذا ما كان في الخطة أبداً!", "style": "hype"}
+    {
+      "text": "كلاتش 1v4 في آخر ثانية والشات انفجر 😱",
+      "style": "shock"
+    },
+    {
+      "text": "لا أحد توقع هذا الإيس أبدا 💀",
+      "style": "nobody_expected"
+    },
+    {
+      "text": "كيف انقلبت الجولة برصاصة واحدة فقط؟",
+      "style": "question"
+    },
+    {
+      "text": "3 قتلات في 3 ثوان والفريق في صدمة",
+      "style": "number"
+    },
+    {
+      "text": "الكل هرب وأنا بقيت، وبعدها حدث هذا 👀",
+      "style": "story"
+    },
+    {
+      "text": "أعيش من أجل هذا الكلاتش 🔥",
+      "style": "punchy"
+    },
+    {
+      "text": "هل كنت أنا السبب في خسارة الجولة؟",
+      "style": "question"
+    },
+    {
+      "text": "قلبت المباراة في آخر 10 ثوان",
+      "style": "number"
+    },
+    {
+      "text": "خطأ صغير واحد وتغيرت اللعبة كلها",
+      "style": "story"
+    },
+    {
+      "text": "الشات لا يصدق حتى الآن 🤯",
+      "style": "punchy"
+    }
   ],
   "study": [
-    {"text": "الاشتقاق أسهل مما تتوقع", "style": "calm"},
-    {"text": "ليش ما يشرحونها كذا في المدرسة؟", "style": "question"},
-    {"text": "الأعداد الأولية في دقيقة", "style": "punchy"},
-    {"text": "القانون الوحيد اللي لازم تعرفه قبل الاختبار", "style": "curiosity"},
-    {"text": "كيف تتعلمها بدون حفظ", "style": "calm"},
-    {"text": "أغلب الناس يحلون هذا السؤال غلط", "style": "curiosity"},
-    {"text": "أفضل حيلة علمني إياها أستاذي", "style": "story"},
-    {"text": "ليش السماء زرقاء، باختصار", "style": "calm"},
-    {"text": "تعبان مع الكسور؟ شوف هذا", "style": "punchy"},
-    {"text": "وش أكبر غلط تسويه وأنت تكتب ملاحظاتك؟", "style": "question"}
+    {
+      "text": "الاشتقاق أسهل مما تتوقع",
+      "style": "calm"
+    },
+    {
+      "text": "ليش ما يشرحونها كذا في المدرسة؟",
+      "style": "question"
+    },
+    {
+      "text": "الأعداد الأولية في دقيقة",
+      "style": "punchy"
+    },
+    {
+      "text": "القانون الوحيد اللي لازم تعرفه قبل الاختبار",
+      "style": "curiosity"
+    },
+    {
+      "text": "كيف تتعلمها بدون حفظ",
+      "style": "calm"
+    },
+    {
+      "text": "أغلب الناس يحلون هذا السؤال غلط",
+      "style": "curiosity"
+    },
+    {
+      "text": "أفضل حيلة علمني إياها أستاذي",
+      "style": "story"
+    },
+    {
+      "text": "ليش السماء زرقاء، باختصار",
+      "style": "calm"
+    },
+    {
+      "text": "تعبان مع الكسور؟ شوف هذا",
+      "style": "punchy"
+    },
+    {
+      "text": "وش أكبر غلط تسويه وأنت تكتب ملاحظاتك؟",
+      "style": "question"
+    }
   ],
   "music": [
-    {"text": "جا الكورس وقشعر بدني", "style": "story"},
-    {"text": "هذا الجزء صعب ينغنى لايف", "style": "calm"},
-    {"text": "الجمهور غنّاها قبلي", "style": "story"},
-    {"text": "لحن طلع في الاستوديو الساعة 3 الفجر", "style": "curiosity"},
-    {"text": "ما توقعت هالدروب", "style": "punchy"},
-    {"text": "صوتي بيوصل لهالنوتة؟", "style": "question"},
-    {"text": "أول مرة أعزف هالأغنية أكوستيك", "style": "calm"},
-    {"text": "بدأ سولو الجيتار وسكت الكل", "style": "story"},
-    {"text": "سويت هالبيت في 10 دقايق", "style": "punchy"},
-    {"text": "تعرف قصة هالأغنية؟", "style": "question"}
+    {
+      "text": "جا الكورس وقشعر بدني",
+      "style": "story"
+    },
+    {
+      "text": "هذا الجزء صعب ينغنى لايف",
+      "style": "calm"
+    },
+    {
+      "text": "الجمهور غنّاها قبلي",
+      "style": "story"
+    },
+    {
+      "text": "لحن طلع في الاستوديو الساعة 3 الفجر",
+      "style": "curiosity"
+    },
+    {
+      "text": "ما توقعت هالدروب",
+      "style": "punchy"
+    },
+    {
+      "text": "صوتي بيوصل لهالنوتة؟",
+      "style": "question"
+    },
+    {
+      "text": "أول مرة أعزف هالأغنية أكوستيك",
+      "style": "calm"
+    },
+    {
+      "text": "بدأ سولو الجيتار وسكت الكل",
+      "style": "story"
+    },
+    {
+      "text": "سويت هالبيت في 10 دقايق",
+      "style": "punchy"
+    },
+    {
+      "text": "تعرف قصة هالأغنية؟",
+      "style": "question"
+    }
   ]
 }

@@ -195,3 +195,123 @@ def outro_text(preset: dict) -> str:
     if t:
         return t
     return f"@{preset['handle']}" if preset.get("handle") else (preset.get("channel") or "")
+
+
+# ------------------------------------------------------------------ channel text (descriptions)
+# Brand kit > Channel text: the channel's own hashtags (first one always first, never dropped)
+# and the socials block at the end of every description / caption. Config "channel_text".
+
+SOCIAL_HEADINGS = {
+    "tr": "🎮 Canlı Yayınlar & Sosyal Medya:",
+    "en": "🎮 Live Streams & Social Media:",
+    "de": "🎮 Livestreams & Social Media:",
+    "hu": "🎮 Élő adások és közösségi média:",
+    "ru": "🎮 Стримы и соцсети:",
+    "ar": "🎮 البث المباشر ووسائل التواصل:",
+    "zh": "🎮 直播与社交媒体：",
+}
+URL_RE = re.compile(r"https?://\S+")
+
+
+def _hashtag(h) -> str:
+    w = re.sub(r"[^\w]", "", str(h or "").replace("#", ""), flags=re.UNICODE)[:40]
+    return f"#{w}" if w else ""
+
+
+def channel_text() -> dict:
+    raw = config.get("channel_text") or {}
+    raw = raw if isinstance(raw, dict) else {}
+    tags: list[str] = []
+    for h in raw.get("hashtags") or []:
+        t = _hashtag(h)
+        if t and t.casefold() not in (x.casefold() for x in tags):
+            tags.append(t)
+    names = []
+    for n in raw.get("names") or []:
+        n = " ".join(str(n or "").replace("#", "").split())[:60]
+        if n and n.casefold() not in (x.casefold() for x in names):
+            names.append(n)
+    s = raw.get("socials") if isinstance(raw.get("socials"), dict) else {}
+    lines = [" ".join(str(x).split()) for x in (s.get("lines") or []) if str(x).strip()][:12]
+    heads = {k: " ".join(str(v).split())[:120] for k, v in (s.get("headings") or {}).items()
+             if k in SOCIAL_HEADINGS and str(v or "").strip()}
+    return {"hashtags": tags[:6], "names": names[:6],
+            "socials": {"enabled": s.get("enabled") is not False, "headings": heads, "lines": lines}}
+
+
+def save_channel_text(data: dict) -> dict:
+    data = data if isinstance(data, dict) else {}
+    cur = channel_text()
+    merged = {**cur, **{k: v for k, v in data.items() if k in ("hashtags", "names", "socials")}}
+    if isinstance(data.get("socials"), dict):
+        merged["socials"] = {**cur["socials"], **data["socials"]}
+    config.update(channel_text=merged)
+    return channel_text()
+
+
+def channel_hashtags() -> list[str]:
+    return channel_text()["hashtags"]
+
+
+def channel_names() -> list[str]:
+    """Channel words for YouTube tags: the names, then the hashtags without "#"."""
+    ct = channel_text()
+    out = list(ct["names"])
+    for h in ct["hashtags"]:
+        if h[1:].casefold() not in (x.casefold().replace(" ", "") for x in out):
+            out.append(h[1:])
+    return out
+
+
+def socials_heading(lang: str | None) -> str:
+    heads = channel_text()["socials"]["headings"]
+    lang = lang if lang in SOCIAL_HEADINGS else "en"
+    return heads.get(lang) or SOCIAL_HEADINGS[lang]
+
+
+def socials_block(lang: str | None) -> str:
+    """'🎮 Canlı Yayınlar & Sosyal Medya:\n🟩 Kick: https://...' ("" when off or empty)."""
+    s = channel_text()["socials"]
+    if not s["enabled"] or not s["lines"]:
+        return ""
+    return "\n".join([socials_heading(lang), *s["lines"]])
+
+
+def fit_block(block: str, room: int) -> str:
+    """The block within `room` characters: lines are dropped from the bottom, a link is never cut."""
+    lines = [ln for ln in (block or "").split("\n") if ln.strip()]
+    while lines and len("\n".join(lines)) > room:
+        lines.pop()
+    return "\n".join(lines) if len(lines) > 1 else ""  # a heading alone says nothing
+
+
+def split_socials(text: str) -> tuple[str, str]:
+    """(text before the socials block, the block) - the block is found by its heading."""
+    text = text or ""
+    heads = set(SOCIAL_HEADINGS.values()) | set(channel_text()["socials"]["headings"].values())
+    for h in sorted(heads, key=len, reverse=True):
+        i = text.rfind(h)
+        if i >= 0:
+            return text[:i].rstrip(), text[i:].strip()
+    return text, ""
+
+
+def has_socials(text: str) -> bool:
+    s = channel_text()["socials"]
+    links = [m.group(0) for ln in s["lines"] for m in URL_RE.finditer(ln)]
+    return bool(split_socials(text)[1]) or bool(links and all(u in (text or "") for u in links))
+
+
+def with_socials(text: str, lang: str | None, limit: int | None = None) -> str:
+    """`text` + the socials block (once). With a limit, the block shrinks first, never the links."""
+    text = (text or "").rstrip()
+    if has_socials(text):
+        return text
+    block = socials_block(lang)
+    if not block:
+        return text
+    if limit is not None:
+        block = fit_block(block, max(0, limit - len(text) - 2))
+        if not block:
+            return text
+    return f"{text}\n\n{block}".strip()

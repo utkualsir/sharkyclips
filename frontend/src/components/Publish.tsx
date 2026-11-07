@@ -471,7 +471,7 @@ export function UploadDialog({
   );
   const [title, setTitle] = useState(pub.titles[0] ?? cand.text.slice(0, 90));
   const [description, setDescription] = useState(pub.description ?? "");
-  const [tags, setTags] = useState((pub.hashtags ?? []).map((h) => h.replace(/^#/, "")).join(", "));
+  const [tags, setTags] = useState((pub.tags?.length ? pub.tags : (pub.hashtags ?? []).map((h) => h.replace(/^#/, ""))).join(", "));
   const [privacy, setPrivacy] = useState<Privacy>("private");
   const [schedule, setSchedule] = useState(false);
   const [when, setWhen] = useState(() => localInput(new Date(Date.now() + 24 * 3600 * 1000)));
@@ -502,10 +502,11 @@ export function UploadDialog({
     aboutApi.aiVoice(projectId, cand.id, source).then(setAiVoice).catch(() => {});
   }, [projectId, cand.id, source]);
 
+  // the first 3 hashtags (YouTube shows them above the title) must be in the description
   const hashtagsInDesc = useMemo(() => {
-    const tagList = tags.split(",").map((x) => x.trim()).filter(Boolean);
-    return tagList.slice(0, 3).map((x) => `#${x.replace(/\s+/g, "")}`);
-  }, [tags]);
+    const tagList = pub.tags?.length ? pub.hashtags ?? [] : tags.split(",").map((x) => x.trim()).filter(Boolean);
+    return tagList.slice(0, 3).map((x) => `#${x.replace(/^#/, "").replace(/\s+/g, "")}`);
+  }, [tags, pub.tags, pub.hashtags]);
 
   const pickThumb = async (file: File | undefined) => {
     if (!file) return;

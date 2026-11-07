@@ -162,7 +162,9 @@ def llm_available() -> bool:
 
 
 def submit_analyze(project_id: str, lang: str | None = None, force: bool = False,
-                   job_id: str | None = None, attempt: int = 1, ranks: list[int] | None = None) -> Job:
+                   job_id: str | None = None, attempt: int = 1, ranks: list[int] | None = None,
+                   meta_only: bool = False) -> Job:
+    """meta_only: titles / description / hashtags / tags again (cuts, scores and rendered clips stay)."""
     def run(job: Job):
         from ..analyze import analyze_project
 
@@ -172,13 +174,14 @@ def submit_analyze(project_id: str, lang: str | None = None, force: bool = False
             jobs.update(job, stage="llm_analyzing", progress=i / n, detail={"index": i, "count": n})
 
         res = analyze_project(get_project(project_id), out_lang=lang, force=force, on_progress=progress,
-                              ranks=ranks)
+                              ranks=ranks, meta_only=meta_only)
         return {"language": res["language"], "model": res["model"], "seconds": res["total_seconds"],
-                "count": len(res["candidates"]), "failed": res["failed"]}
+                "count": len(res["candidates"]), "failed": res["failed"], "meta_only": meta_only}
 
     # persistent: a pause, restart or crash must not silently lose the publish packages
-    key = f"analyze:{project_id}" + (f":{','.join(map(str, ranks))}" if ranks else "")
-    return jobs.submit("analyze", "gpu", project_id, {"lang": lang, "force": force, "ranks": ranks}, run,
+    key = f"analyze:{project_id}" + (f":{','.join(map(str, ranks))}" if ranks else "") + (":meta" if meta_only else "")
+    return jobs.submit("analyze", "gpu", project_id,
+                       {"lang": lang, "force": force, "ranks": ranks, "meta_only": meta_only}, run,
                        key=key, persist=True, job_id=job_id, attempt=attempt)
 
 
@@ -526,8 +529,12 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
         text = (o.get("hook_text") if clip else None) or review["hooks"].get(cid) or (cand.get("publish") or {}).get("hook_text") or ""
         hook = {"hook_style": abtest.style_of(o, text), "hook_variant": None, "hook_chosen_by": "clip"}
     ai_voice = ai_voice_disclosure(project, cid, source, body)
+    from ..edit import brand
+
+    lang = body.get("language") or (cand.get("publish") or {}).get("language")
+    desc = brand.with_socials(str(body.get("description") or ""), lang, limit=4800)  # Brand kit socials, once
     yt = youtube.build_body(str(body.get("title") or ""),
-                            youtube.with_note(str(body.get("description") or ""), ai_voice["line"] if ai_voice["note"] else None),
+                            youtube.with_note(desc, ai_voice["line"] if ai_voice["note"] else None),
                             [str(t) for t in body.get("tags") or []], str(body.get("privacy") or "private"),
                             body.get("publish_at") or None, bool(body.get("made_for_kids")),
                             str(body.get("category")) if str(body.get("category") or "") in youtube.CATEGORIES
@@ -819,7 +826,7 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
         return submit_highlights(pid, p.get("mode"), bool(p.get("force")))
     if kind == "analyze":
         return submit_analyze(pid, p.get("lang"), bool(p.get("force")), job_id=keep_id, attempt=attempt,
-                              ranks=p.get("ranks") or None)
+                              ranks=p.get("ranks") or None, meta_only=bool(p.get("meta_only")))
     if kind == "titles":
         return submit_titles(pid, p["clip_id"])
     if kind in ("platform_export", "platform_upload"):
@@ -1589,6 +1596,7 @@ def api_project(project_id: str) -> dict:
         "exports": len(list_exports(project)),
         "chat": _chat_summary(project),
         "game": _game_summary(project),
+        "metadata_game": _metadata_game_summary(project),
         "analysis": (hl or {}).get("analysis"),
         "output_language": ((hl or {}).get("analysis") or {}).get("language")
                            or config.get("output_language") or languages.DEFAULT_OUTPUT_LANGUAGE,
@@ -1805,7 +1813,29 @@ def api_analyze(project_id: str, body: dict | None = None) -> dict:
         raise SharkyClipsError("Find highlights first.")
     if not llm_available():
         raise SharkyClipsError("The local LLM isn't installed.", "Run: python cli.py doctor")
-    return submit_analyze(project.id, lang, bool(body.get("force"))).to_dict()
+    return submit_analyze(project.id, lang, bool(body.get("force")), meta_only=bool(body.get("meta_only"))).to_dict()
+
+
+@app.put("/api/projects/{project_id}/metadata-game")
+def api_metadata_game(project_id: str, body: dict) -> dict:
+    """The game every title, description, hashtag and tag of this project is about (auto = the
+    detected one). rerun=True writes the metadata again (no new cuts, no re-render)."""
+    from ..titles import banks
+
+    project = _project(project_id)
+    choice = str(body.get("choice") or "auto")
+    if choice not in banks.CHOICES and choice not in banks.ids():
+        raise SharkyClipsError(f"Unknown game '{choice}'.", f"Use one of: {', '.join(banks.ids())}")
+    meta = project.load_meta()
+    meta["metadata_game"] = choice
+    project.save_meta(meta)
+    job = None
+    hl = state.load_highlights(project) or {}
+    if body.get("rerun", True) and any((c.get("publish") or {}).get("available") for c in hl.get("candidates", [])):
+        if not llm_available():
+            raise SharkyClipsError("The local LLM isn't installed.", "Run: python cli.py doctor")
+        job = submit_analyze(project.id, None, False, meta_only=True).to_dict()
+    return {"metadata_game": _metadata_game_summary(project), "job": job}
 
 
 # ------------------------------------------------------------------ best-of video
@@ -2211,6 +2241,16 @@ def _chat_summary(project: Project) -> dict | None:
 
     c = load_chat(project)
     return None if c is None else {k: c.get(k) for k in ("status", "source", "reason", "count", "authors")}
+
+
+def _metadata_game_summary(project: Project) -> dict | None:
+    from ..titles import banks
+
+    try:
+        g = banks.project_game(project)
+    except Exception:  # noqa: BLE001
+        return None
+    return {**g, "choices": [{"id": i, "name": banks.get(i).get("name") or ""} for i in banks.ids()]}
 
 
 def _game_summary(project: Project) -> dict | None:

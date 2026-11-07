@@ -73,7 +73,11 @@ def caption_for(project, cand: dict, platform: str, note: str | None = None) -> 
     meta = pub.prefill(project, cand)
     prefs = E.clip_prefs(E.load(project), cand["id"])
     title = prefs.get("title") or meta["title"]
-    return PF.caption(platform, title, meta.get("description") or "", meta.get("hashtags") or [], note)
+    from ..edit import brand
+
+    lang = meta.get("language") or (cand.get("publish") or {}).get("language")
+    return PF.caption(platform, title, meta.get("description") or "", meta.get("hashtags") or [], note,
+                      socials=brand.socials_block(lang))
 
 
 def active_job(project_id: str, cid: str, platform: str):

@@ -702,12 +702,17 @@ def clean_tags(tags: list[str]) -> list[str]:
 
 
 def with_note(description: str, note: str | None, limit: int = 4900) -> str:
-    """The description with `note` as its last paragraph (once; never cut off by the length limit)."""
+    """The description with `note` as its last paragraph (once; never cut off by the length limit),
+    or just before the channel's socials block when the description ends with one."""
+    from .edit import brand
+
     description = (description or "").strip()
     if not note or note in description:
         return description
-    room = limit - len(note) - 2
-    return f"{description[:max(0, room)].rstrip()}\n\n{note}".strip()
+    body, block = brand.split_socials(description)
+    tail = f"\n\n{block}" if block else ""
+    room = limit - len(note) - 2 - len(tail)
+    return f"{body[:max(0, room)].rstrip()}\n\n{note}{tail}".strip()
 
 
 def build_body(title: str, description: str, tags: list[str], privacy: str, publish_at: str | None,

@@ -7,6 +7,131 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.25] - 2026-11-07
+
+### Fixed
+- **No more hashtags from other games.** A League of Legends clip could get hashtags like
+  #Warzone or #CallofDuty. The AI guessed the game again for every single clip, and on a stream
+  without a clear title it sometimes guessed wrong (Valorant, Call of Duty, Overwatch...). Now the
+  game is decided once for the whole video (the game you picked, the game screen, the title and
+  what you say) and every title, description, hashtag and tag is about that game only. Anything
+  that names a different game is thrown out. When the game is unknown, only general gaming
+  hashtags are used, never a guess.
+
+### New
+- **Hashtags in the right order:** your channel hashtag first (#yourchannel), then #shorts, then
+  the game (#leagueoflegends, #deltaforce...), then 2-4 about the clip itself (#pentakill,
+  #yasuo, #extraction...), Turkish and English mixed. YouTube shows the first three above the
+  title. 5-8 hashtags in total.
+- **Real YouTube tags:** 10-20 tags people actually search for ("lol pentakill", "yasuo montage",
+  "delta force türkçe"...), with your channel name, and never another game.
+- **Livelier descriptions:** 2-3 sentences about what happens in this clip, in a streamer's tone,
+  ending with a question for the comments ("What would you have done?").
+- **Socials block:** set your links once in **Studio > Brand kit > Channel text**; they go at the
+  end of every YouTube description, best-of, TikTok and Reels caption (heading in the video's
+  language). Short captions drop whole lines from the bottom, a link is never cut.
+- **Stronger titles:** 1-2 KEY WORDS IN CAPITALS (CLUTCH, PENTAKILL, 1v4, ACE), curiosity or
+  emotion, at most one "!", sometimes one emoji at the end, 40-60 characters. Six different kinds
+  per clip (shock, question, "nobody expected", number, story, short and punchy). Hook and cover
+  texts follow the same style. Your 👍 / 👎 still teach it your taste.
+- **Studio > Games:** the words for League of Legends, Delta Force, CS2, Valorant and unknown games
+  (hashtags, tags, champions, operators, maps, weapons, key words) as editable lists.
+- **Project page:** a "Texts" picker sets the game for a project's titles and hashtags; changing it
+  writes them again without rendering the clips again.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Artık başka oyunların hashtag'leri yok.** Bir League of Legends klibine #Warzone ya da
+  #CallofDuty gibi hashtag'ler gelebiliyordu. Yapay zeka oyunu her klip için yeniden tahmin
+  ediyordu ve başlığı belli olmayan bir yayında bazen yanlış tahmin ediyordu (Valorant, Call of
+  Duty, Overwatch...). Artık oyun tüm video için bir kez belirleniyor (senin seçtiğin oyun, oyun
+  ekranı, başlık ve söylediklerin) ve her başlık, açıklama, hashtag ve etiket sadece o oyunla
+  ilgili. Başka bir oyunun adını geçiren her şey atılıyor. Oyun bilinmiyorsa sadece genel oyun
+  hashtag'leri kullanılıyor, asla tahmin yok.
+
+### Yeni
+- **Doğru sırada hashtag'ler:** önce kanal hashtag'in (#kanalın), sonra #shorts, sonra oyun
+  (#leagueoflegends, #deltaforce...), sonra klibin kendisiyle ilgili 2-4 tane (#pentakill,
+  #yasuo, #extraction...), Türkçe ve İngilizce karışık. YouTube ilk üçünü başlığın üstünde
+  gösterir. Toplam 5-8 hashtag.
+- **Gerçek YouTube etiketleri:** insanların gerçekten aradığı 10-20 etiket ("lol pentakill",
+  "yasuo montage", "delta force türkçe"...), kanal adınla birlikte, asla başka bir oyun yok.
+- **Daha canlı açıklamalar:** bu klipte ne olduğunu anlatan, yayıncı ağzıyla 2-3 cümle; sonunda
+  yorumlar için bir soru ("Sen olsan ne yapardın?").
+- **Sosyal medya bloğu:** bağlantılarını bir kez **Stüdyo > Marka kiti > Kanal metni** içinde
+  gir; her YouTube açıklamasının, best-of videonun, TikTok ve Reels metninin sonuna eklenir
+  (başlığı videonun dilinde). Kısa metinlerde alttan bütün satırlar düşülür, bağlantı asla kesilmez.
+- **Daha güçlü başlıklar:** 1-2 BÜYÜK HARF ANAHTAR KELİME (CLUTCH, PENTAKILL, 1v4, ACE), merak
+  ya da duygu, en fazla bir "!", bazen sonda bir emoji, 40-60 karakter. Her klip için altı farklı
+  tür (şok, soru, "kimse beklemiyordu", sayı, hikâye, kısa ve vurucu). Hook ve kapak yazıları da
+  aynı tarzda. 👍 / 👎 oyların hâlâ zevkini öğretiyor.
+- **Stüdyo > Oyunlar:** League of Legends, Delta Force, CS2, Valorant ve bilinmeyen oyunlar için
+  kelimeler (hashtag'ler, etiketler, şampiyonlar, operatörler, haritalar, silahlar, anahtar
+  kelimeler) düzenlenebilir listeler olarak.
+- **Proje sayfası:** "Metinler" seçicisi projenin başlık ve hashtag'lerinin hangi oyun için
+  olduğunu belirler; değiştirince klipler yeniden render edilmeden hepsi yeniden yazılır.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Keine Hashtags anderer Spiele mehr:** das Spiel wird einmal für das ganze Video bestimmt;
+  Titel, Beschreibungen, Hashtags und Tags handeln nur von diesem Spiel (unbekanntes Spiel: nur
+  allgemeine Gaming-Hashtags).
+- **Neu:** Hashtags in fester Reihenfolge (Kanal, #shorts, Spiel, 2-4 zum Clip), 10-20 echte
+  YouTube-Tags, lebendigere Beschreibungen mit einer Frage am Ende, Social-Media-Block aus dem
+  Brand-Kit, stärkere Titel mit 1-2 Schlüsselwörtern in GROSSBUCHSTABEN, Studio > Spiele.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Nincs több más játékból származó hashtag:** a játékot egyszer, az egész videóra határozzuk
+  meg; a címek, leírások, hashtagek és címkék csak erről a játékról szólnak (ismeretlen játéknál
+  csak általános gamer hashtagek).
+- **Új:** hashtagek fix sorrendben (csatorna, #shorts, játék, 2-4 a klipről), 10-20 valódi
+  YouTube-címke, élénkebb leírások kérdéssel a végén, közösségi blokk a Márkacsomagból, erősebb
+  címek 1-2 NAGYBETŰS kulcsszóval, Stúdió > Játékok.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Больше никаких хештегов других игр:** игра определяется один раз для всего видео; названия,
+  описания, хештеги и теги — только про эту игру (если игра неизвестна — только общие игровые
+  хештеги).
+- **Новое:** хештеги в чётком порядке (канал, #shorts, игра, 2-4 про клип), 10-20 настоящих тегов
+  YouTube, живые описания с вопросом в конце, блок соцсетей из «Брендинга», сильные названия с
+  1-2 КЛЮЧЕВЫМИ словами капсом, Студия > Игры.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **لا وسوم من ألعاب أخرى بعد الآن:** تُحدَّد اللعبة مرة واحدة للفيديو كله، والعناوين والأوصاف
+  والوسوم والعلامات كلها عن هذه اللعبة فقط (لعبة غير معروفة: وسوم ألعاب عامة فقط).
+- **جديد:** وسوم بترتيب ثابت (القناة، #shorts، اللعبة، 2-4 عن المقطع)، 10-20 علامة يوتيوب حقيقية،
+  أوصاف أكثر حيوية تنتهي بسؤال، كتلة التواصل من الهوية البصرية، عناوين أقوى بكلمة أو كلمتين
+  مفتاحيتين بالأحرف الكبيرة، الاستوديو > الألعاب.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **不再出现其他游戏的话题标签：** 整个视频只确定一次游戏；标题、简介、话题标签和标签都只围绕
+  这个游戏（游戏未知时只用通用游戏标签）。
+- **新增：** 固定顺序的话题标签（频道、#shorts、游戏、2-4 个关于片段的）、10-20 个真实的 YouTube
+  标签、结尾带问题的更生动简介、来自品牌套件的社交媒体区块、带 1-2 个大写关键词的更有力标题、
+  工作室 > 游戏。
+
+</details>
+
+
 ## [1.2.24] - 2026-11-07
 
 ### Fixed
