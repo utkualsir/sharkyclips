@@ -82,6 +82,7 @@ class ClipOptions:
     speedup: str = "off"  # off | auto
     banner: str = ""  # "" = none, else the headline text shown at the top for the whole clip
     safe_zone: str = ""  # "" = none | "shorts": captions / hook / banner stay clear of the Shorts buttons
+    track: str = "off"  # off | auto: the full-height crop follows the action (edit/track.py)
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
@@ -89,7 +90,7 @@ class ClipOptions:
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
                 "profanity_captions", "bleep_sound", "swear_strict", "bleep_visual", "bleep_icon", "speaker_colors", "speaker_names", "cuts", "zoom",
                 "music", "brand", "loop", "replay", "chat_bubbles", "memes", "dub", "study_cards", "visualizer",
-                "speedup", "banner", "safe_zone")
+                "speedup", "banner", "safe_zone", "track")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.chat_bubbles = bool(opts.chat_bubbles)
         opts.hook_flash = bool(opts.hook_flash)
@@ -101,7 +102,7 @@ class ClipOptions:
                               ("zoom", ("off", "subtle", "strong")), ("replay", ("off", "auto")),
                               ("memes", ("off", "light", "strong")),
                               ("study_cards", ("off", "auto")), ("visualizer", ("off", "auto")),
-                              ("speedup", ("off", "auto")), ("safe_zone", ("", "shorts")),
+                              ("speedup", ("off", "auto")), ("safe_zone", ("", "shorts")), ("track", ("off", "auto")),
                               ("bleep_sound", ("classic", "boop", "custom")),
                               ("swear_strict", ("auto", "normal", "strict", "paranoid"))):
             if getattr(opts, name) not in allowed:
@@ -678,6 +679,8 @@ def picture_at(plan, layout: str, t: float) -> dict:
 
 # The pixel-squaring prefix of the source being rendered (source_size); set per render.
 _SQUARE: contextvars.ContextVar[str] = contextvars.ContextVar("sc_square", default="")
+# 1.2.34 action tracking: {output pad: crop-centre expression, "*": the rest (inserts, flash)}
+_TRACK: contextvars.ContextVar[dict | None] = contextvars.ContextVar("sc_track", default=None)
 
 
 def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
@@ -699,6 +702,11 @@ def _filter_graph(layout: str, src_w: int, src_h: int, facecam: Facecam | None,
     cover = f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=bicubic,crop={W}:{H}"
     a, b, bg_, fg_, cam_, game_ = (f"{out}_{x}" for x in ("a", "b", "bg", "fg", "cam", "game"))
     if layout == "crop":
+        tr = _TRACK.get()
+        if tr is not None and (W, H) == (OUT_W, OUT_H):  # 1.2.34 action tracking: a moving window
+            cx = tr.get(out) or tr.get("*") or "0.5"
+            return (f"[{inp}]scale=-2:{H}:flags=bicubic,crop={W}:{H}:x='clip(({cx})*iw-ow/2,0,iw-ow)':y=0,"
+                    f"setsar=1{add('full')}[{out}]")
         return f"[{inp}]{cover},setsar=1{add('full')}[{out}]"
     if layout == "fit" and abs(src_w / max(src_h, 1) - W / H) < 0.02:  # same shape: just scale
         return f"[{inp}]scale={W}:{H}:flags=bicubic,setsar=1{add('full')}[{out}]"
@@ -908,6 +916,17 @@ def _render_core(project: Project, cand: dict, opts: ClipOptions, facecam: Facec
     # 16:9: the whole picture (fit), or filled (crop) - never the facecam split.
     layout = ("crop" if opts.layout == "crop" else "fit") if wide else resolve_layout(opts.layout, facecam)
     geo = Geometry.for_spec(spec, layout)
+    _TRACK.set(None)
+    track_keys: list = []
+    if layout == "crop" and opts.track == "auto" and not wide:
+        from .edit import track as track_mod
+
+        track_keys = track_mod.compute(project, start, end, src_w, src_h)
+        if track_keys:
+            main_e = track_mod.expr([(t - start, x) for t, x in track_keys])
+            from statistics import median
+
+            _TRACK.set({"base": main_e, "main": main_e, "*": f"{median(x for _t, x in track_keys):.4f}"})
     has_audio = (bool(meta.get("audio_codec")) or meta.get("audio_codec") is None) and spec.audio != "none"
 
     # Hook flash: ~1 s around the peak, shown first (never in a seamless loop: it would repeat).
@@ -1190,6 +1209,13 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
     W, H = spec.canvas
     fxp = plan.fx  # instant replay / meme effects / chat bubbles (edit/fx.py)
     main = plan.out_duration + (fxp.extra if fxp is not None else 0.0)
+    if _TRACK.get() is not None:  # 1.2.34: the tracked crop on the main stream's clock (after the cuts)
+        from .edit import track as track_mod
+
+        keys = track_mod.compute(project, start, end, src_w, src_h)
+        mapped = [(o, x) for t, x in keys if (o := plan.to_out(t)) is not None]
+        if mapped:
+            _TRACK.set({**(_TRACK.get() or {}), "base": track_mod.expr(mapped)})
     intro, outro = plan.intro_s, plan.outro_s
     lead = intro + flash
     total = lead + main + outro

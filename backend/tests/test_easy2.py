@@ -368,3 +368,63 @@ def test_health_is_red_when_signed_out_and_amber_offline(monkeypatch):
     monkeypatch.setattr(youtube, "access_token", lambda: "tok")
     assert autopilot.health(probe=True)["state"] == "ok"
     autopilot.path().unlink(missing_ok=True)
+
+
+# ===================================================================== action tracking
+
+
+def _moving_box(path, seconds=6.0):
+    import shutil
+    import subprocess
+
+    ff = shutil.which("ffmpeg")
+    # a bright box moving from the left edge (x=40) to the right edge (x=560) on a static grey picture
+    subprocess.run([ff, "-y", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
+                    f"color=c=0x404040:s=640x360:r=30:d={seconds}", "-f", "lavfi", "-i",
+                    f"color=c=white:s=40x40:r=30:d={seconds}", "-f", "lavfi", "-i",
+                    f"sine=frequency=300:sample_rate=48000:duration={seconds}",
+                    "-filter_complex", f"[0:v][1:v]overlay=x='40+t/{seconds}*520':y=160,format=yuv420p[v]",
+                    "-map", "[v]", "-map", "2:a", "-c:v", "libx264", "-preset", "ultrafast", "-c:a", "aac",
+                    "-shortest", str(path)], check=True, capture_output=True)
+
+
+@pytest.mark.requires_ffmpeg
+def test_tracking_follows_the_action_smoothly(tmp_path):
+    import shutil
+    import subprocess
+
+    from sharkyclips.clips import ClipOptions, OutputSpec, render_clip
+    from sharkyclips.edit import track
+    from test_fx import _probe
+
+    proj = _talk_project("easy2-track", 6.0)
+    try:
+        _moving_box(proj.dir / "source.mp4")
+        subprocess.run([shutil.which("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error", "-i",
+                        str(proj.dir / "source.mp4"), "-ac", "1", "-ar", "16000", str(proj.dir / "audio.wav")],
+                       check=True, capture_output=True)
+        keys = track.compute(proj, 0.0, 6.0, 640, 360)
+        assert keys, "the box moves: the window follows it"
+        cw = track.crop_width(640, 360)
+        assert track.at(keys, 1.0) < 0.42 and track.at(keys, 5.5) > 0.6  # left early, right late
+        xs = [x for _t, x in keys]
+        assert all(cw / 2 - 1e-6 <= x <= 1 - cw / 2 + 1e-6 for x in xs)
+        steps = [abs(b - a) / max(1e-3, tb - ta) for (ta, a), (tb, b) in zip(keys, keys[1:])]
+        assert max(steps) <= track.MAX_SPEED * cw + 0.02  # never a fast pan
+        assert track.compute(proj, 0.0, 6.0, 640, 360) == keys  # cached
+        e = track.expr([(1.0, 0.3), (2.0, 0.7)])
+        assert e.startswith("if(lt(t,1.000),0.3000,") and "\\" not in e
+        dest = tmp_path / "t.mp4"
+        cand = {"id": "c01", "rank": 1, "start": 0.0, "end": 6.0, "duration": 6.0, "peak": 3.0, "reasons": [], "text": ""}
+        res = render_clip(proj, cand, ClipOptions.from_dict({"layout": "crop", "track": "auto", "profanity": "off",
+                                                             "subtitles": "none", "hook": False}), None, dest,
+                          spec=OutputSpec())
+        assert res.path.is_file() and _probe(dest)["video"] == pytest.approx(6.0, abs=0.1)
+        # the box (white) is inside the 1080-wide picture at the start and at the end
+        for at_s in (0.5, 5.5):
+            raw = subprocess.run([shutil.which("ffmpeg"), "-hide_banner", "-loglevel", "error", "-ss", str(at_s),
+                                  "-i", str(dest), "-frames:v", "1", "-vf", "scale=108:192,format=gray", "-f", "rawvideo",
+                                  "pipe:1"], capture_output=True, check=True).stdout
+            assert max(raw) > 200, f"the moving box is in the picture at {at_s} s"
+    finally:
+        shutil.rmtree(proj.dir, ignore_errors=True)

@@ -112,7 +112,7 @@ def wanted(project: Project, cand: dict, data: dict, review: dict, style: str, m
         sh = dict(shape_of(data, cand["id"]) or {})
         if E.v2_settings()["banner"] and prefs.get("banner") is None:  # follows new titles by itself
             sh["banner"] = hooks.banner_text(cand, (cand.get("publish") or {}).get("language") or lang)
-        opts.update(E.v2_options(mode, sh, prefs))
+        opts.update(E.v2_options(mode, sh, prefs, facecam=bool(review.get("facecam"))))
     if hk == "question":
         from .. import abtest
 

@@ -233,11 +233,14 @@ def v2_settings() -> dict:
             "autopilot": config.get("easy_autopilot") is True}
 
 
-def v2_options(mode: str, shape: dict | None, prefs: dict) -> dict:
+def v2_options(mode: str, shape: dict | None, prefs: dict, facecam: bool = True) -> dict:
     """Render options Easy 2.0 adds for one clip: dead air tightened (not for music), slow parts
-    faster (when switched on), the hook check's choice, the headline banner, the Shorts safe zone."""
+    faster (when switched on), the hook check's choice, the headline banner, the Shorts safe zone,
+    and for gaming without a facecam the full-height crop that tracks the action."""
     s = v2_settings()
     out: dict = {"safe_zone": "shorts"}
+    if mode == "gaming" and not facecam:  # no facecam: a full-height crop that follows the action
+        out.update(layout="crop", track="auto")
     if mode != "music":
         out["cuts"] = "light"
         if s["speedup"]:
