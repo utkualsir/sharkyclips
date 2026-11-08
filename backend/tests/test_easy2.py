@@ -226,7 +226,12 @@ def test_easy2_project_is_shaped_then_rendered_and_nudged():
     with _client() as c:
         v = c.post(f"/api/easy/projects/{project.id}/prepare").json()
         assert v["smart"] is True
-        _wait(_idle, 300)
+
+        def ready() -> bool:  # the renders are queued when the shape job ends (not idle in between)
+            got = c.get(f"/api/easy/projects/{project.id}").json()
+            return _idle() and all(x["render"]["status"] == "ready" for x in got["clips"])
+
+        _wait(ready, 300)
         v = c.get(f"/api/easy/projects/{project.id}").json()
         assert all(x["render"]["status"] == "ready" for x in v["clips"])
         sh = v["clips"][0]["shape"]
