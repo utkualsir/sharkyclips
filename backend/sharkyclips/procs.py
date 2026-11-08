@@ -299,7 +299,7 @@ def track(proc: subprocess.Popen) -> subprocess.Popen:
             _owner[proc.pid] = str(job.id)
         paused = _paused
     if job is not None and getattr(job, "cancel_requested", False):
-        _kill_tree(proc.pid)  # started after its job was cancelled
+        _kill_tree(proc)  # started after its job was cancelled
         return proc
     if paused:
         _suspend(proc)
@@ -315,10 +315,13 @@ def _current_job():
         return None
 
 
-def _kill_tree(pid: int) -> None:
-    """Kill a process and everything it started (resumed first: a suspended one can't die)."""
+def _kill_tree(proc: subprocess.Popen) -> None:
+    """Kill a process and everything it started (resumed first: a suspended one can't die).
+
+    Our own child is reaped by its Popen, never by psutil: on Linux psutil's wait takes the exit
+    status first and Popen.wait() then reports 0, so a killed ffmpeg would look like a success."""
     try:
-        root = psutil.Process(pid)
+        root = psutil.Process(proc.pid)
         procs = [root, *root.children(recursive=True)]
     except psutil.Error:
         return
@@ -332,16 +335,20 @@ def _kill_tree(pid: int) -> None:
             k.kill()
         except (psutil.Error, OSError):
             pass
-    psutil.wait_procs(procs, timeout=3)
+    psutil.wait_procs(procs[1:], timeout=3)
+    try:
+        proc.wait(3)
+    except subprocess.TimeoutExpired:
+        pass
 
 
 def kill_owned(job_id: str) -> int:
     """Cancel: kill the child processes (ffmpeg, image / voice tools ...) of this job now."""
     with _lock:
-        pids = [p.pid for p in list(_tracked) if _owner.get(p.pid) == str(job_id) and p.poll() is None]
-    for pid in pids:
-        _kill_tree(pid)
-    return len(pids)
+        owned = [p for p in list(_tracked) if _owner.get(p.pid) == str(job_id) and p.poll() is None]
+    for p in owned:
+        _kill_tree(p)
+    return len(owned)
 
 
 def untrack(proc: subprocess.Popen) -> None:

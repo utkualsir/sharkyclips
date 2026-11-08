@@ -229,6 +229,14 @@ def test_track_kills_a_process_started_after_cancel(jm):
     assert "code" in out and out["code"] != 0
 
 
+def test_killed_child_never_reports_success():
+    """Linux: psutil reaped the killed child first, so Popen.wait() said 0 (a "successful" ffmpeg)."""
+    p = subprocess.Popen(SLEEPER, stdout=subprocess.DEVNULL, **procs.no_window())
+    procs._kill_tree(p)
+    assert p.returncode is not None and p.returncode != 0
+    assert p.wait(5) != 0
+
+
 def test_automatic_block_overrides_explicit():
     from sharkyclips.web import jobs as J
 

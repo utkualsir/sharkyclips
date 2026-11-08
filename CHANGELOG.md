@@ -7,6 +7,81 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.27] - 2026-11-08
+
+### Fixed
+- **Every clip gets a description.** When the AI's notes about a clip named a player whose name
+  has a swear word in it, every description it wrote was rejected and the clip ended up with
+  none. Such names are now left out before the description is written.
+- **Enough titles, even after several rewrites.** SharkyClips now remembers a clip's original
+  titles. If a later rewrite throws out most of the new ideas, the clip falls back on those
+  instead of keeping only one or two titles.
+- **Cancel on Linux.** A process stopped by Cancel could be reported as finished successfully on
+  Linux. It is now always reported as stopped.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Her klibin bir açıklaması var.** Yapay zekânın klip notlarında adında küfür geçen bir oyuncu
+  olduğunda yazdığı her açıklama reddediliyor, klip açıklamasız kalıyordu. Artık bu isimler
+  açıklama yazılmadan önce çıkarılıyor.
+- **Birkaç kez yeniden yazılsa da yeterli başlık.** SharkyClips artık bir klibin ilk başlıklarını
+  hatırlıyor. Sonraki bir yeniden yazımda yeni fikirlerin çoğu elenirse klip bir iki başlıkla
+  kalmıyor, bu başlıklara geri dönüyor.
+- **Linux'ta İptal.** İptal ile durdurulan bir işlem Linux'ta başarıyla bitmiş gibi
+  görünebiliyordu. Artık her zaman durduruldu olarak gösteriliyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Jeder Clip bekommt wieder eine Beschreibung, auch wenn ein Spielername ein Schimpfwort enthält.
+- Clips behalten auch nach mehrmaligem Neuschreiben genug Titel: SharkyClips merkt sich die
+  ursprünglichen Titel.
+- Linux: Ein mit „Abbrechen“ gestoppter Prozess wird nicht mehr als erfolgreich gemeldet.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Minden klip újra kap leírást, akkor is, ha egy játékos nevében káromkodás van.
+- A klipeknek többszöri újraírás után is marad elég címük: a SharkyClips megjegyzi az eredeti
+  címeket.
+- Linux: a Mégse gombbal leállított folyamat már nem jelenik meg sikeresen befejezettként.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- У каждого клипа снова есть описание, даже если в имени игрока есть ругательство.
+- После нескольких переписываний у клипа остаётся достаточно названий: SharkyClips запоминает
+  исходные названия.
+- Linux: процесс, остановленный кнопкой «Отмена», больше не считается успешно завершённым.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- يحصل كل مقطع على وصف من جديد، حتى عندما يحتوي اسم أحد اللاعبين على كلمة نابية.
+- يحتفظ كل مقطع بعناوين كافية حتى بعد إعادة الكتابة عدة مرات، إذ يتذكر SharkyClips العناوين
+  الأصلية.
+- لينكس: العملية التي توقفت بزر الإلغاء لم تعد تظهر كأنها انتهت بنجاح.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 每个片段都会重新获得简介，即使某位玩家的名字里含有脏话也不例外，不会再出现没有简介的片段。
+- 多次重新撰写之后，片段仍然保留足够的标题：SharkyClips 会记住最初的标题，新标题被淘汰太多时会用它们补足。
+- Linux：用"取消"停止的进程不再被错误地显示为成功完成，现在始终显示为已停止。
+
+</details>
+
+
 ## [1.2.26] - 2026-11-07
 
 ### Fixed
