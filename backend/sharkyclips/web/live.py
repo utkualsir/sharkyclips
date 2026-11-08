@@ -84,14 +84,13 @@ def on_clips_ready(project: Project, top: list[dict]) -> None:
     if data.get("auto"):
         s = watch.settings()
         if s["publish"] in ("plan", "now"):
-            from .. import youtube
+            # 1.2.34: every outcome is logged and a failed / blocked upload becomes a notice
+            # (it used to be skipped silently when YouTube wasn't connected)
+            from .. import autopilot
 
-            if youtube.connected():
-                for c in ready[: s["publish_top"]]:
-                    try:
-                        _ez().upload(project, c["id"], "now" if s["publish"] == "now" else "auto")
-                    except SharkyClipsError:
-                        pass
+            autopilot.on_clips_ready(project, ready[: s["publish_top"]],
+                                     lambda cid, when: _ez().upload(project, cid, when),
+                                     "now" if s["publish"] == "now" else "auto")
 
 
 # ===================================================================== background service

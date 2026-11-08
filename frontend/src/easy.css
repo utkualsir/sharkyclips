@@ -631,3 +631,41 @@
 .ez-thumb.on { color: var(--success); background: var(--success-soft); }
 .ez-thumb.on.bad { color: var(--danger); background: var(--danger-soft, var(--surface-2)); }
 .ez-chip-taste { gap: 4px; color: var(--success); background: var(--success-soft); border-color: transparent; }
+
+/* ---- Easy 2.0: connection pill, Autopilot */
+.ez-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  max-width: 100%;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.ez-pill:focus-visible { outline: none; box-shadow: var(--focus); }
+.ez-pill-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ez-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
+.ez-pill-warn .ez-dot { background: var(--gold); box-shadow: 0 0 0 3px var(--gold-soft); }
+.ez-pill-error { border-color: var(--danger); color: var(--danger); }
+.ez-pill-error .ez-dot { background: var(--danger); box-shadow: 0 0 0 3px var(--danger-soft); }
+.ez-hero .ez-pill { margin-bottom: 12px; }
+.ez-ap h2 { display: flex; align-items: center; gap: 8px; }
+.ez-ap-chain { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; counter-reset: ap; }
+.ez-ap-chain li {
+  counter-increment: ap;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 13px;
+}
+.ez-ap-chain li::before { content: counter(ap) ". "; }
+.ez-ap-chain li.on { color: var(--strong); border-color: var(--gold-line); }
+.ez-ap-state { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; font-size: 14px; }

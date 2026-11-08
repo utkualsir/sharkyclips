@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ConnectionPill } from "../components/EasyAuto";
 import { ApiError, easyApi, uploadEasyFile, urls, type EasyProjectRow, type Mode } from "../api";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { Icon } from "../components/Icons";
@@ -134,6 +135,7 @@ export default function EasyHome() {
   return (
     <main className="page ez-page">
       <div className="ez-hero">
+        <ConnectionPill />
         <h1 className="display">{t("easy.create_title")}</h1>
         <p className="lede">{t("easy.create_lede")}</p>
       </div>

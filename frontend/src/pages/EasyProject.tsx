@@ -12,6 +12,7 @@ import {
 import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { CutRow, ReasonChips, SmartBanner, TasteButtons } from "../components/EasyCut";
+import { ConnectionPill } from "../components/EasyAuto";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
 import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
@@ -253,6 +254,7 @@ export default function EasyProject({ id }: { id: string }) {
           <div className="ez-head-meta">
             <ModeChip value={view.mode} onChange={changeMode} auto={view.mode_auto} disabled={working} />
             {view.duration > 0 && <span className="muted">{fmtTime(view.duration)}</span>}
+            <ConnectionPill />
           </div>
         </div>
         {ready.length > 1 && (

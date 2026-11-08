@@ -696,7 +696,26 @@ def api_settings_put(body: dict) -> dict:
         from .live import enable_auto
 
         enable_auto(bool(body["auto_clip"]))
+    if "autopilot" in body:
+        from .. import autopilot
+
+        autopilot.enable(bool(body["autopilot"]))
     return E.save_settings(body)
+
+
+@router.get("/api/easy/autopilot")
+def api_autopilot() -> dict:
+    from .. import autopilot
+
+    return autopilot.view()
+
+
+@router.get("/api/easy/health")
+def api_health(probe: bool = False) -> dict:
+    """The YouTube connection pill: green / amber / red, a plain message and a one-tap fix."""
+    from .. import autopilot
+
+    return autopilot.health(probe=probe)
 
 
 @router.get("/api/notices")

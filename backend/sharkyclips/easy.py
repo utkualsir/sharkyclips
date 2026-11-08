@@ -101,7 +101,7 @@ def save_settings(body: dict) -> dict:
         changes["easy_study_cards"] = body["study_cards"]
     if body.get("visualizer") in ("off", "auto"):
         changes["easy_visualizer"] = body["visualizer"]
-    for key in ("speedup", "banner", "autopilot"):  # 1.2.34 Easy 2.0 switches
+    for key in ("speedup", "banner"):  # 1.2.34 Easy 2.0 switches (Autopilot: autopilot.enable)
         if key in body:
             changes[f"easy_{key}"] = bool(body[key])
     if body.get("swear_strict") in ("auto", "normal"):

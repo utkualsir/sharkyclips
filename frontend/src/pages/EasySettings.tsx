@@ -5,6 +5,7 @@ import { AboutCard } from "../components/Licenses";
 import { Icon } from "../components/Icons";
 import { useToast } from "../toast";
 import { Toggle } from "../components/ui";
+import { AutopilotCard } from "../components/EasyAuto";
 import { ConnectYoutube, YoutubeAccount } from "../components/YoutubeConnect";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { chooseLanguage, useMeta } from "../meta";
@@ -90,6 +91,8 @@ export default function EasySettings() {
           </div>
         )}
       </section>
+
+      <AutopilotCard />
 
       <section className="card ez-set-card" aria-labelledby="ez-set-auto">
         <h2 id="ez-set-auto">{t("easy.set_auto")}</h2>

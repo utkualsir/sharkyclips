@@ -2073,6 +2073,25 @@ export interface EasyView {
   taste?: { votes: number; views: number; active: boolean; need: number };
 }
 
+export interface EasyHealth {
+  state: "ok" | "warn" | "error";
+  code: "connected" | "not_connected" | "signed_out" | "offline" | "attention" | "locked";
+  fix: "connect" | "reconnect" | "library" | null;
+  channel: string | null;
+  count?: number;
+  message?: string | null;
+  checked_at: number | null;
+}
+
+export interface AutopilotView {
+  enabled: boolean;
+  summary: { ready: number; planned: number; waiting: number; text: string };
+  events: { at: number; kind: string; project_id: string | null; clip_id: string | null; title: string; message: string }[];
+  health: EasyHealth;
+  summary_hour: number;
+  next_summary: string;
+}
+
 export interface EasyProjectRow {
   id: string;
   title: string;
@@ -2148,6 +2167,8 @@ export const easyApi = {
   nudge: (pid: string, cid: string, action: NudgeAction) => req<EasyView>("POST", `${EZ(pid, cid)}/nudge`, { action }),
   smart: (pid: string, on: boolean) => req<EasyView>("POST", `${EP(pid)}/smart`, { on }),
   vote: (pid: string, cid: string, value: number) => req<EasyView>("POST", `${EZ(pid, cid)}/vote`, { value }),
+  health: (probe = false) => req<EasyHealth>("GET", `/api/easy/health${probe ? "?probe=true" : ""}`),
+  autopilot: () => req<AutopilotView>("GET", "/api/easy/autopilot"),
   upload: (pid: string, cid: string, when: UploadWhen) => req<EasyUploadResult>("POST", `${EZ(pid, cid)}/upload`, { when }),
   uploadMany: (clips: { project_id: string; clip_id: string }[], when: UploadWhen) =>
     req<{ results: (EasyUploadResult & { project_id: string; clip_id: string })[] }>("POST", "/api/easy/upload", { clips, when }),

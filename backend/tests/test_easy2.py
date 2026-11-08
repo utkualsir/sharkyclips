@@ -289,3 +289,82 @@ def test_taste_learns_from_votes_and_moves_the_grid():
     taste.path().unlink(missing_ok=True)
     taste._model_cache.clear()
     config.update(easy_banner=None)
+
+
+# ===================================================================== Autopilot + connection health
+
+
+def test_autopilot_logs_everything_and_never_fails_silently(monkeypatch):
+    from datetime import datetime
+
+    from sharkyclips import autopilot, config, easy as E, youtube
+    from sharkyclips.errors import SharkyClipsError
+    from test_publishing import _project
+
+    autopilot.path().unlink(missing_ok=True)
+    project = _project("easy2-ap", 3)
+    hl = __import__("json").loads((project.dir / "highlights.json").read_text())
+    cands = hl["candidates"]
+    before = E.notices()["last"]
+    # not connected: blocked + a notice (it used to be skipped silently)
+    monkeypatch.setattr(youtube, "connected", lambda: False)
+    got = autopilot.on_clips_ready(project, cands, lambda cid, when: {"status": "scheduled"})
+    assert got["blocked"] == 3
+    notes = E.notices(before)["items"]
+    assert notes and notes[-1]["kind"] == "autopilot"
+    # connected: planned, and a failure says why
+    monkeypatch.setattr(youtube, "connected", lambda: True)
+
+    def upload(cid, when):
+        if cid == "c03":
+            raise SharkyClipsError("Daily limit reached.", "It goes out tomorrow.")
+        return {"status": "scheduled", "publish_at": "2026-11-09T12:00:00Z"}
+
+    got = autopilot.on_clips_ready(project, cands, upload)
+    assert got == {"ready": 3, "planned": 2, "failed": 1, "blocked": 0}
+    s = autopilot.summary()
+    assert s["ready"] == 3 and s["planned"] == 2 and s["waiting"] == 1
+    config.update(ui_language="tr")
+    try:
+        assert autopilot.summary()["text"].startswith("3 klip hazır, 2 tanesi planlandı.")
+    finally:
+        config.update(ui_language=None)
+    # the morning summary: once a day, only with Autopilot on
+    assert autopilot.tick(datetime(2026, 11, 9, 10, 0)) == []
+    config.update(easy_autopilot=True)
+    try:
+        monkeypatch.setattr(autopilot, "health", lambda probe=False: {"state": "ok", "code": "connected"})
+        acts = autopilot.tick(datetime(2026, 11, 9, 10, 0))
+        assert "summary" in acts
+        assert "summary" not in autopilot.tick(datetime(2026, 11, 9, 11, 0))
+        assert E.notices(before)["items"][-1]["kind"] == "autopilot_summary"
+    finally:
+        config.update(easy_autopilot=None)
+        autopilot.path().unlink(missing_ok=True)
+
+
+def test_health_is_red_when_signed_out_and_amber_offline(monkeypatch):
+    from sharkyclips import autopilot, youtube
+    from sharkyclips.errors import SharkyClipsError
+
+    monkeypatch.setattr(youtube, "connected", lambda: False)
+    monkeypatch.setattr(youtube, "signed_out", lambda: {"reason": "invalid_grant"})
+    h = autopilot.health()
+    assert h["state"] == "error" and h["code"] == "signed_out" and h["fix"] == "reconnect"
+    monkeypatch.setattr(youtube, "signed_out", lambda: None)
+    assert autopilot.health()["fix"] == "connect"
+    monkeypatch.setattr(youtube, "connected", lambda: True)
+    monkeypatch.setattr(youtube, "status", lambda: {"channel": {"title": "utku"}, "lock": {"state": "unlocked"}})
+    monkeypatch.setattr(youtube, "_expire_access", lambda: None)
+
+    def offline():
+        e = SharkyClipsError("Could not refresh the YouTube sign-in (503).")
+        e.reason = "refresh_failed"
+        raise e
+
+    monkeypatch.setattr(youtube, "access_token", offline)
+    h = autopilot.health(probe=True)
+    assert h["state"] == "warn" and h["code"] == "offline" and h["channel"] == "utku"
+    monkeypatch.setattr(youtube, "access_token", lambda: "tok")
+    assert autopilot.health(probe=True)["state"] == "ok"
+    autopilot.path().unlink(missing_ok=True)

@@ -735,6 +735,12 @@ class Scheduler:
     def tick(self, now: datetime | None = None) -> list[str]:
         with self._lock, automatic():  # background logic: never restarts what the user cancelled
             acts = self._tick(now or P.now_utc())
+            try:  # 1.2.34 Autopilot: sign-in health check + the morning summary
+                from .. import autopilot
+
+                acts += autopilot.tick()
+            except Exception:  # noqa: BLE001 - never stops the publish loop
+                pass
             self.last_tick = time.time()
             self.last_actions = acts
             return acts
