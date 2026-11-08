@@ -112,6 +112,18 @@ def has_profanity(text: str) -> bool:
     return bool(PROFANITY.search(t) or EMBEDDED_PROFANITY.search(t))
 
 
+def scrub_profanity(text: str) -> str:
+    """The AI's own notes ("a teammate named Deepfuck") go into the title and description
+    prompts: a swear word there makes the model repeat it until every answer fails."""
+    def fix(m: re.Match) -> str:
+        if not has_profanity(m.group(2)):
+            return m.group(0)
+        return "" if m.group(1) else "someone"  # "a teammate named X" -> "a teammate"
+
+    out = re.sub(r"(\s+(?:named|called)\s+)?([#@]?[\w'’-]+)", fix, text or "")
+    return re.sub(r"\s{2,}", " ", out).strip()
+
+
 def has_timestamp(text: str) -> bool:
     return bool(TIMESTAMP_RE.search(text or ""))
 STOPWORDS = {"the", "and", "this", "that", "with", "for", "bir", "bu", "ve", "ile", "için", "çok",
@@ -736,6 +748,7 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 if mode == "gaming":  # the project's game, never the model's per-clip guess
                     j["game_or_topic"] = game["name"] or "Gaming"
                     j["what_happens"] = banks.scrub(j["what_happens"], gid)
+                j["what_happens"] = scrub_profanity(j["what_happens"])
                 gl = glossary_for(j["game_or_topic"])
                 gdig = hashlib.sha1(gl.digest().encode()).hexdigest()[:10]
                 tkey = _cache_key(model.model, out_lang, w, mode, transcript,
@@ -784,8 +797,11 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
             cover_text = tw["cover_text"] or (j.get("cover_text") or "").strip()
             if meta_only:
                 pub = c["publish"]
+                # the titles from before the first rewrite: a later top-up can still use them
+                pub.setdefault("titles_original", list(pub.get("titles") or []))
                 if len(tw["titles"]) < 4:
-                    tw = {**tw, "titles": _top_up(tw["titles"], pub.get("titles") or [], out_lang, _forbidden(gid))}
+                    old = list(dict.fromkeys((pub.get("titles") or []) + pub["titles_original"]))
+                    tw = {**tw, "titles": _top_up(tw["titles"], old, out_lang, _forbidden(gid))}
                 old_cover = pub.get("cover_text") or ""
                 pub.update({"titles": [t["text"] for t in tw["titles"]], "title_styles": [t["style"] for t in tw["titles"]],
                             "title_checks": tw.get("checks"), "hashtags": hashtags, "tags": tags,
@@ -988,6 +1004,7 @@ def regenerate_titles(project: Project, cid: str) -> dict:
         game_terms=banks.glossary_terms(bank) if gaming else None,
         extra_allowed=banks.caps_words(bank) if gaming else None)
     what = banks.scrub(c["llm"]["what_happens"], game["id"]) if gaming else c["llm"]["what_happens"]
+    what = scrub_profanity(what)
     j = {"what_happens": what, "game_or_topic": topic,
          "hook_text": pub.get("hook_text") or "", "cover_text": pub.get("cover_text") or ""}
     facts = banks.clip_facts(bank, c, transcript) if gaming else {}

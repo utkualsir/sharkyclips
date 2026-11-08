@@ -372,6 +372,9 @@ def test_lol_project_analysis_names_only_lol(monkeypatch):
     c2 = read_json(p.dir / "highlights.json")["candidates"][0]
     assert (c2["start"], c2["end"]) == (11.0, 29.0) and c2["publish"]["hook_text"] == "ESKI HOOK"
     assert c2["publish"]["viral_score"] == score and c2["publish"]["tags"]
+    assert c2["publish"]["titles_original"] == pub["titles"]  # kept for later top-ups (1.2.27)
+    analyze.analyze_project(p, meta_only=True)
+    assert read_json(p.dir / "highlights.json")["candidates"][0]["publish"]["titles_original"] == pub["titles"]
     # the Library's publish setup + the YouTube description
     from sharkyclips.web import publishing as webpub
 
@@ -400,3 +403,12 @@ def test_metadata_only_tops_up_too_few_titles_with_clean_old_ones():
     old = ["Deepfuck ile yayına girdik", "Warzone'da 1v4", "Kule altında üç kişiyi indirdim", "Takım beni yine sattı"]
     out = analyze._top_up(new, old, "tr", analyze._forbidden("lol"))
     assert [t["text"] for t in out] == [new[0]["text"], "Kule altında üç kişiyi indirdim", "Takım beni yine sattı"]
+
+
+def test_swear_names_are_taken_out_of_the_ai_notes():
+    """1.2.27: "a teammate named Deepfuck" in what_happens made every description fail the swear check."""
+    s = analyze.scrub_profanity
+    assert s("The streamer reacts to a teammate named Deepfuck and welcomes another player.") == \
+        "The streamer reacts to a teammate and welcomes another player."
+    assert not analyze.has_profanity(s("Deepfuck joins, #ShitShow time"))
+    assert s("He got stuck (sıkıştı) at the base.") == "He got stuck (sıkıştı) at the base."
