@@ -381,3 +381,30 @@ def test_the_same_bracket_on_every_title_is_not_a_repeat():
                              too_similar=analyze.too_similar)
     assert S.check_title('"NE OLDU KANKA?" KARDEŞİMİ KAYBETTİM! 😂😱', lang="tr", fmt="short",
                          clip_text="ne oldu kanka", used=used, too_similar=analyze.too_similar)
+
+
+def test_a_clip_like_an_example_still_gets_a_description():
+    """1.2.31: Delta Force #5 / #15 are the very moment of one of the creator's examples. The
+    model copied it on every try, so those clips got no description at all. Now the copied
+    example leaves the prompt, and the clip's own sentences are kept when only some are copied."""
+    p = S.load()
+    copied_line = "Delta Force'ta \"bu adam beni nereden vurdu?\" çaresizliği... 💀"
+
+    class Copier:
+        def __init__(self):
+            self.prompts: list[str] = []
+
+        def json(self, system, prompt, schema, **kw):
+            self.prompts.append(prompt)
+            return {"lines": [copied_line, "Stinger ile koridora daldım, iki kişiyi indirip arkadaşımı kaldırdım! 😂 "
+                              "Ama bir saniye sonra köşeden gelen adam ikimizi de indirdi."],
+                    "question": "Siz de arkadaşınızı kurtarmaya giderken böyle oluyor musunuz?",
+                    "mood_hashtags": ["#MedicFail"], "search_tags": ["delta force medic"]}
+
+    m = Copier()
+    d = S.write_description(m, p, system="s", context="c", lang="tr", lang_label="Turkish", fmt="short",
+                            gid="delta_force", game_name="Delta Force", what_happens="x", facts="", clip_text=DF_TALK,
+                            title="T", glossary=None, forbidden=None)
+    assert d["text"] and "nereden vurdu" not in d["text"] and "Stinger" in d["text"]
+    assert not S.copied_sentences(d["text"], p)
+    assert len(m.prompts) == 5 and "Merdivenden inerken" in m.prompts[0] and "Merdivenden inerken" not in m.prompts[-1]

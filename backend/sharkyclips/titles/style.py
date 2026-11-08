@@ -1332,11 +1332,15 @@ def write_description(model, p: dict, *, system: str, context: str, lang: str, l
     schema = SHORT_DESC_SCHEMA if fmt == "short" else LONG_DESC_SCHEMA
     problems: list[str] = []
     best: dict | None = None
-    for _r in range(3):
+    shown = p  # 1.2.31: an example the model keeps copying is left out of the prompt
+    for _r in range(5):
+        if _r >= 3 and not (best and any("copies the creator" in e for e in best["problems"])):
+            break  # tries 4 and 5 only when it keeps copying an example
         prompt = context + "\n\n" + description_task(
-            p, fmt=fmt, gid=gid, game_name=game_name, what_happens=what_happens, facts=facts, clip_text=clip_text,
+            shown, fmt=fmt, gid=gid, game_name=game_name, what_happens=what_happens, facts=facts, clip_text=clip_text,
             title=title, lang_label=lang_label, terms=terms, problems=problems)
-        d = model.json(system, prompt, schema, temperature=0.65 + 0.1 * _r, num_predict=1600 if fmt == "long" else 900)
+        d = model.json(system, prompt, schema, temperature=0.65 + 0.1 * min(_r, 3),
+                       num_predict=1600 if fmt == "long" else 900)
         d.pop("_soft_errors", None)
         text = assemble_short(d, p, lang, glossary) if fmt == "short" else assemble_long(d, p, lang, glossary)
         errs = (check_short_description(text, lang=lang, forbidden=forbidden) if fmt == "short"
@@ -1344,6 +1348,9 @@ def write_description(model, p: dict, *, system: str, context: str, lang: str, l
         copied = copied_sentences(text, p)
         if copied:
             errs.append(f"copies the creator's example (\"{copied[0][:80]}\"): write new sentences about THIS clip")
+            rest = [e for e in shown["examples"] if not _shares(e, copied, p)]
+            if rest:
+                shown = {**shown, "examples": rest}
         cand = {"text": text, "mood_hashtags": list(d.get("mood_hashtags") or []),
                 "search_tags": list(d.get("search_tags") or []), "problems": errs}
         if best is None or len(errs) < len(best["problems"]):
@@ -1352,9 +1359,38 @@ def write_description(model, p: dict, *, system: str, context: str, lang: str, l
             break
         problems = errs
     assert best is not None
+    if fmt == "short" and any("copies the creator" in e for e in best["problems"]):
+        rescued = _without_copies(best["text"], p, lang, forbidden)  # keep the clip's own sentences
+        if rescued:
+            best = {**best, "text": rescued,
+                    "problems": [e for e in best["problems"] if "copies the creator" not in e]}
     if any("swear" in e or "never mention" in e or "copies the creator" in e for e in best["problems"]):
         best["text"] = ""  # never publish a description that breaks the hard rules
     return best
+
+
+def _shares(example: dict, copied: list[str], p: dict) -> bool:
+    """Did these copied sentences come from this example?"""
+    return bool(copied_sentences(" ".join(copied), {**p, "examples": [example]}))
+
+
+def _without_copies(text: str, p: dict, lang: str, forbidden) -> str:
+    """The description without the copied sentences, when enough of the clip's own text is left
+    and it passes every other check ("" otherwise)."""
+    out = text
+    for s in copied_sentences(text, p):
+        out = out.replace(s, " ")
+    paras = []
+    for para in out.split("\n\n"):
+        para = re.sub(r"[ \t]{2,}", " ", para).strip()
+        if re.search(r"[^\W\d_]{3,}", para):  # a paragraph left with only emojis / dots goes
+            paras.append(para)
+    out = "\n\n".join(paras)
+    own = [x for para in paras for x in _sentences(para)]
+    if len(own) < 2 or len(paras) < 2 or copied_sentences(out, p) or \
+            check_short_description(out, lang=lang, forbidden=forbidden):
+        return ""
+    return out
 
 
 def compose(body: str, hashtags: list[str]) -> str:

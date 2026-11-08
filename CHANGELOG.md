@@ -7,6 +7,59 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.32] - 2026-11-08
+
+### Fixed
+- **A clip that looks like one of your examples still gets a description.** When a clip shows the
+  same moment as one of the examples in My style, the AI kept writing almost the same sentences,
+  every try was rejected and the clip ended up with no description. Now that example is left out
+  of the next tries, and if only one sentence is copied, the rest of the description is kept.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Örneklerinden birine benzeyen klip de açıklama alıyor.** Bir klip, Benim tarzımdaki
+  örneklerden biriyle aynı anı gösterince yapay zekâ neredeyse aynı cümleleri yazıyor, her deneme
+  reddediliyor ve klip açıklamasız kalıyordu. Artık o örnek sonraki denemelerde gösterilmiyor;
+  sadece bir cümle kopyaysa açıklamanın geri kalanı korunuyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Ein Clip, der einem deiner Beispiele gleicht, bekommt trotzdem eine Beschreibung.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Az egyik példádhoz hasonló klip is kap leírást.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Клип, похожий на один из ваших примеров, тоже получает описание.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- المقطع الذي يشبه أحد أمثلتك يحصل على وصف أيضًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 与你的某个示例相似的片段也会有简介。
+
+</details>
+
+
 ## [1.2.31] - 2026-11-08
 
 ### Fixed

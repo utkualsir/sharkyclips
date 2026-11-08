@@ -1824,7 +1824,9 @@ def api_analyze(project_id: str, body: dict | None = None) -> dict:
         raise SharkyClipsError("Find highlights first.")
     if not llm_available():
         raise SharkyClipsError("The local LLM isn't installed.", "Run: python cli.py doctor")
-    return submit_analyze(project.id, lang, bool(body.get("force")), meta_only=bool(body.get("meta_only"))).to_dict()
+    ranks = [int(r) for r in body.get("ranks") or [] if str(r).isdigit()] or None  # only these clips
+    return submit_analyze(project.id, lang, bool(body.get("force")), ranks=ranks,
+                          meta_only=bool(body.get("meta_only"))).to_dict()
 
 
 @app.put("/api/projects/{project_id}/metadata-game")
