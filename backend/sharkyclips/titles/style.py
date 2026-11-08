@@ -88,6 +88,7 @@ MILD_OK = {"lan", "ulan", "len"}  # the creator's own titles use these ("NASIL �
 EMOJI_CLUSTER = re.compile(
     "(?:[\U0001F000-\U0001FAFF☀-➿⬀-⯿⌀-⏿]️?"
     "(?:‍[\U0001F000-\U0001FAFF☀-➿⬀-⯿]️?)*)")
+LABEL_RE = re.compile(r"^\s*\[[^\]]{2,40}\]\s*")
 QUOTE_RE = re.compile(r'^\s*"([^"]{2,90})"')
 PAREN_RE = re.compile(r"\s*\(([^()]{2,48})\)\s*$")
 VS_TOKEN = re.compile(r"(?<!\w)\d+v\d+(?!\w)", re.I)
@@ -517,7 +518,12 @@ def lower_title(text: str, lang: str) -> str:
 
     def sub(m: re.Match) -> str:
         w = m.group(0)
-        return w.lower() if w.isascii() and w.lower() in words else lexicon.lower(w, lang)
+        if w.isascii() and w.lower() in words:
+            return w.lower()
+        tr = lexicon.lower(w, lang)
+        if w.isascii() and lexicon.zipf(tr, lang) == 0 and lexicon.zipf(w.lower(), "en") >= 3:
+            return w.lower()  # an English word in capitals ("FULL CLIP"), not Turkish "clıp"
+        return tr
 
     return re.sub(r"[^\W\d_]+", sub, text)
 
@@ -581,6 +587,7 @@ def split_title(text: str) -> tuple[str, str, list[str]]:
     em = emojis(text)
     body = strip_emojis(_norm_quotes(text))
     body = HASHTAG_RE.sub("", body).strip()
+    body = LABEL_RE.sub("", body)  # "[LONG VİDEO] ..." echoed from the prompt's example labels
     paren = ""
     m = PAREN_RE.search(body)
     if m and m.start() > 8:
@@ -806,7 +813,7 @@ def _quotable(clip_text: str, lang: str, allowed: set[str] | frozenset[str] = fr
 
 def _ex_line(e: dict, game_name: str | None) -> str:
     fmt = "Shorts" if e["format"] == "short" else "long video"
-    return f"[{fmt}{', ' + game_name if game_name else ''}] {e['title']}"
+    return f"{e['title']}   <- {fmt}{', ' + game_name if game_name else ''}"
 
 
 def examples_block(p: dict, gid: str | None, fmt: str, game_names: dict[str, str], liked: list[str]) -> str:
@@ -1248,9 +1255,15 @@ def pick(pool: list[dict], fmt: str, n: int = 6) -> list[dict]:
         if t not in out:
             out.append(t)
     order = {id(t): i for i, t in enumerate(pool)}
-    lead = [t for t in out if t["style"] == "quote"] if fmt == "short" else []
+    lead = [t for t in out if t["style"] == "quote" and not has_censored(t["text"])] if fmt == "short" else []
     rest = sorted([t for t in out if t not in lead], key=lambda t: order[id(t)])
-    return [dict(t) for t in (lead + rest)[:n]]
+    return [dict(t) for t in order_titles(lead + rest)[:n]]
+
+
+def order_titles(titles: list) -> list:
+    """A title with a (censored) swear never comes first: the first title is the one uploaded."""
+    text = lambda t: t["text"] if isinstance(t, dict) else t  # noqa: E731
+    return [t for t in titles if not has_censored(text(t))] + [t for t in titles if has_censored(text(t))]
 
 
 # ------------------------------------------------------------------ main: descriptions

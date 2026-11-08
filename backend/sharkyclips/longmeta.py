@@ -104,7 +104,7 @@ def write(project: Project, items: list[dict] | None = None, *, kind: str = "ful
         on_stage("long_writing")
     gl = glossary_mod.build(transcript, lang, meta.get("title", ""), game["name"], game=game["name"] or None,
                             game_terms=banks.glossary_terms(bank), extra_allowed=banks.caps_words(bank))
-    used = [t for c in hl["candidates"] for t in (c.get("publish") or {}).get("titles") or []]
+    used: list[str] = []  # a full-match title names the same champions as its clips: that's fine
     ctx = context(meta, game, items, facts, kind)
     moment = _moment(items)
     what = "; ".join(((c.get("llm") or {}).get("what_happens") or "")[:160] for c in items[:6])

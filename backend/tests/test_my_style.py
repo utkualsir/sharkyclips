@@ -351,3 +351,11 @@ def test_long_video_metadata(monkeypatch):
     assert read_json(p.dir / "highlights.json")["long_metadata"]["titles"] == out["titles"]
     full = brand.with_socials(out["description"], "tr", limit=4800)
     assert full.index("kick.com") < full.index("Hashtag'ler:")
+
+
+def test_prompt_labels_are_stripped_and_swear_titles_never_lead():
+    assert S.fix_title("[LONG VİDEO] DÜŞMANLARIN ÜÇÜNÜ GÖRDÜM! 🚀🔥", "tr") == "DÜŞMANLARIN ÜÇÜNÜ GÖRDÜM! 🚀🔥"
+    pool = [{"style": "quote", "text": '"S*KTİR GİT!" DEDİM! 😂💀'}, {"style": "fact", "text": "TEMİZ BAŞLIK! 😂💀"},
+            {"style": "story", "text": "BAŞKA BAŞLIK! 🔥😱"}]
+    out = S.pick(pool, "short")
+    assert out[0]["text"] == "TEMİZ BAŞLIK! 😂💀" and S.has_censored(out[-1]["text"])

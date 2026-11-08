@@ -7,6 +7,83 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.29] - 2026-11-08
+
+### Fixed
+- **Full video texts always get titles.** Titles for the whole match were thrown out for naming
+  the same champions as the clips' titles, so a project could end up with none. Now they only
+  have to differ from each other.
+- **No "[LONG VIDEO]" in titles.** The AI sometimes copied a label from its instructions to the
+  front of a title. It is now removed.
+- **A title with a swear never comes first.** The first title is the one that gets uploaded, so
+  titles with a censored swear now always go to the end of the list.
+- **English gaming words in capitals** are read correctly ("FULL CLIP", "REVIVE"), so good
+  titles are no longer rejected as misspelled.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Tam video metinleri her zaman başlık alıyor.** Maçın tamamı için yazılan başlıklar, kliplerin
+  başlıklarıyla aynı şampiyonları andığı için eleniyor, proje başlıksız kalabiliyordu. Artık
+  sadece birbirinden farklı olmaları gerekiyor.
+- **Başlıklarda "[LONG VİDEO]" yok.** Yapay zekâ bazen talimatlarındaki bir etiketi başlığın
+  başına kopyalıyordu. Artık siliniyor.
+- **Küfürlü başlık asla ilk sırada değil.** Yüklenen başlık ilk başlık olduğu için sansürlü küfür
+  içeren başlıklar artık hep listenin sonuna gidiyor.
+- **Büyük harfle yazılmış İngilizce oyun kelimeleri** ("FULL CLIP", "REVIVE") doğru okunuyor;
+  iyi başlıklar artık yanlış yazılmış sanılıp elenmiyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Texte fürs ganze Video bekommen immer Titel: sie werden nicht mehr verworfen, nur weil sie
+  dieselben Champions nennen wie die Clips.
+- Kein „[LONG VIDEO]“ mehr am Titelanfang; ein Titel mit (zensiertem) Fluch steht nie an erster Stelle.
+- Englische Gaming-Wörter in Großbuchstaben werden richtig erkannt.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- A teljes videó szövegei mindig kapnak címet: már nem dobja el őket, csak mert ugyanazokat a
+  hősöket említik, mint a klipek.
+- Nincs több „[LONG VIDEO]” a cím elején; káromkodást tartalmazó cím soha nem kerül az első helyre.
+- A nagybetűs angol játékos szavakat helyesen ismeri fel.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Тексты для всего видео всегда получают названия: их больше не отбрасывают за то, что они
+  называют тех же чемпионов, что и клипы.
+- Больше никакого «[LONG VIDEO]» в начале названия; название с (скрытым) матом никогда не идёт первым.
+- Английские игровые слова заглавными буквами распознаются правильно.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- تحصل نصوص الفيديو الكامل دائمًا على عناوين: لم تعد تُستبعد لأنها تذكر نفس الأبطال المذكورين
+  في عناوين المقاطع.
+- لا مزيد من "[LONG VIDEO]" في بداية العنوان؛ والعنوان الذي فيه شتيمة مخفية لا يأتي أولًا أبدًا.
+- تُقرأ كلمات الألعاب الإنجليزية المكتوبة بأحرف كبيرة بشكل صحيح.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 完整视频文案总能得到标题：不会再因为和片段标题提到同样的英雄而被全部淘汰，导致没有标题。
+- 标题开头不再出现"[LONG VIDEO]"；带有（已打码）脏话的标题永远不会排在第一个，因为第一个标题就是上传用的标题。
+- 大写的英文游戏词（如 FULL CLIP、REVIVE）现在能被正确识别，好标题不再被误判为拼写错误。
+
+</details>
+
+
 ## [1.2.28] - 2026-11-08
 
 ### New
