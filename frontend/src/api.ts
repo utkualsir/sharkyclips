@@ -2001,6 +2001,31 @@ export interface EasyClip {
   };
   /** 1.2.18: TikTok / Reels posts of this clip */
   platforms?: Record<"tiktok" | "reels", PlatformClipState>;
+  /** 1.2.34 Easy 2.0: the smart cut (context guard, length target, hook check) */
+  shape?: EasyShape;
+}
+
+export type ShapeWhy =
+  | "setup_sentence" | "setup_lead" | "ai_setup" | "payoff_event" | "payoff_reaction" | "payoff_sentence" | "ai_payoff";
+export type NudgeAction = "earlier" | "later" | "short" | "long" | "auto";
+
+export interface EasyHook {
+  score: number;
+  /** the score of the found start, before the hook check moved it */
+  before: number;
+  choice: "start" | "later" | "flash";
+  moved: number;
+  reasons: { code: string; points: number }[];
+}
+
+export interface EasyShape {
+  why: ShapeWhy[];
+  auto: boolean;
+  shaped: boolean;
+  target: { kind: "funny" | "action" | "study" | "music"; min: number; max: number };
+  length: "long" | "very_long" | null;
+  hook?: EasyHook;
+  banner?: string | null;
 }
 
 export interface PlatformClipState {
@@ -2034,6 +2059,8 @@ export interface EasyView {
   youtube: { connected: boolean; lock: "locked" | "unlocked" | "unknown"; channel: { title: string } | null };
   settings: EasySettings;
   daily_limit: number;
+  /** 1.2.34: Easy 2.0 smart cuts are on for this project (new projects: always) */
+  smart?: boolean;
 }
 
 export interface EasyProjectRow {
@@ -2108,6 +2135,8 @@ export const easyApi = {
   edit: (pid: string, cid: string, body: { title?: string; subtitles?: boolean; music?: boolean; start?: number; end?: number }) =>
     req<EasyView>("POST", `${EZ(pid, cid)}/edit`, body),
   discard: (pid: string, cid: string) => req<EasyView>("POST", `${EZ(pid, cid)}/discard`),
+  nudge: (pid: string, cid: string, action: NudgeAction) => req<EasyView>("POST", `${EZ(pid, cid)}/nudge`, { action }),
+  smart: (pid: string, on: boolean) => req<EasyView>("POST", `${EP(pid)}/smart`, { on }),
   upload: (pid: string, cid: string, when: UploadWhen) => req<EasyUploadResult>("POST", `${EZ(pid, cid)}/upload`, { when }),
   uploadMany: (clips: { project_id: string; clip_id: string }[], when: UploadWhen) =>
     req<{ results: (EasyUploadResult & { project_id: string; clip_id: string })[] }>("POST", "/api/easy/upload", { clips, when }),

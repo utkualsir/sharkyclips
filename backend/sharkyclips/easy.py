@@ -129,7 +129,9 @@ def load(project: Project) -> dict:
                 "shown": max(1, int(data.get("shown") or SHOWN)), "clips": dict(data.get("clips") or {}),
                 "notified_for": data.get("notified_for"), "created_at": data.get("created_at"),
                 # 1.2.17: made by "auto clips after a stream"; made with the fun effects' defaults
-                "auto": bool(data.get("auto")), "fx": bool(data.get("fx"))}
+                "auto": bool(data.get("auto")), "fx": bool(data.get("fx")),
+                # 1.2.34 Easy 2.0: clips are shaped (context guard, length, hook) before rendering
+                "v2": bool(data.get("v2"))}
 
 
 def save(project: Project, **changes) -> dict:

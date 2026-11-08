@@ -574,3 +574,30 @@
 .bleep-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
 .bleep-list li.bad .bleep-word { color: var(--danger); font-weight: 600; }
 .bleep-word { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12em; }
+
+/* ---- Easy 2.0 (1.2.34): smart cut row, nudges */
+.ez-cut { display: grid; gap: 8px; }
+.ez-cut-why, .ez-cut-len { display: flex; align-items: flex-start; gap: 6px; margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.ez-cut-why svg, .ez-cut-len svg { flex: none; margin-top: 2px; }
+.ez-cut-len { color: var(--gold-text); }
+.ez-cut-len.warn { color: var(--danger); }
+.ez-nudges { display: flex; flex-wrap: wrap; gap: 6px; }
+.ez-nudge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.ez-nudge:hover:not(:disabled) { border-color: var(--gold-line); color: var(--strong); }
+.ez-nudge:focus-visible { outline: none; box-shadow: var(--focus); }
+.ez-nudge:disabled { opacity: 0.55; cursor: default; }
+.ez-nudge .spinner { width: 13px; height: 13px; }
+.ez-smart { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }

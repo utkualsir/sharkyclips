@@ -14,7 +14,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, Request
 
-from .. import config, easy as E, publishing as P
+from .. import config, easy as E, publishing as P, shaping
 from ..errors import SharkyClipsError
 from ..project import MODES, Project
 from . import state
@@ -22,7 +22,8 @@ from .jobs import ACTIVE, Job, automatic
 
 router = APIRouter()
 # Jobs that belong to "finding the clips" (the grid renders once they are all done)
-PIPE = {"import", "transcribe", "highlights", "facecam", "voices", "proofread", "analyze", "proxy", "swearscan"}
+PIPE = {"import", "transcribe", "highlights", "facecam", "voices", "proofread", "analyze", "proxy", "swearscan",
+        "shape"}
 
 
 def _app():
@@ -106,6 +107,74 @@ def pipeline_busy(project_id: str) -> bool:
     return any(j.kind in PIPE and j.status in ACTIVE for j in _app().jobs.for_project(project_id))
 
 
+# ===================================================================== Easy 2.0: shaping
+
+
+def shape_of(data: dict, cid: str) -> dict | None:
+    return (data["clips"].get(cid) or {}).get("shape")
+
+
+def apply_shapes(project: Project, clip_ids: list[str], on_progress=None) -> dict:
+    """Context guard + length target (+ the hook check) for these clips: the trim goes into
+    review.json (unless the user trimmed the clip), the reasons into easy.json."""
+    hl = _hl(project)
+    by = {c["id"]: c for c in hl.get("candidates") or []}
+    mode = hl.get("mode") or project.load_meta().get("mode") or "gaming"
+    data = E.load(project)
+    review = state.load_review(project, hl)
+    edits = dict(review["edits"])
+    changed, shapes = 0, {}
+    for k, cid in enumerate(clip_ids):
+        cand = by.get(cid)
+        if cand is None:
+            continue
+        old = shape_of(data, cid)
+        auto = shaping.is_auto_trim(edits.get(cid), old, cand)
+        try:
+            info = shaping.shape_clip(project, cand, hl, mode)
+        except Exception as exc:  # noqa: BLE001 - a clip that can't be shaped keeps its found cut
+            info = {"v": shaping.SHAPE_VERSION, "base": shaping.base_of(cand), "start": cand["start"],
+                    "end": cand["end"], "why": [], "target": shaping.target(mode, cand), "error": str(exc)[:200]}
+        try:
+            from .. import hooks as hookmod
+
+            s, e = (info["start"], info["end"]) if auto else (state.effective_cand(cand, review)["start"],
+                                                               state.effective_cand(cand, review)["end"])
+            info.update(hookmod.check(project, cand, s, e, review, info, move=auto))
+        except ImportError:
+            pass
+        except Exception as exc:  # noqa: BLE001 - the hook check is a bonus
+            info["hook_error"] = str(exc)[:200]
+        if auto:
+            ne = shaping.edit_for(cand, info["start"], info["end"], edits.get(cid))
+            if state.clean_edit(ne) != state.clean_edit(edits.get(cid)):
+                changed += 1
+            edits[cid] = ne
+        shapes[cid] = info
+        if on_progress:
+            on_progress((k + 1) / max(1, len(clip_ids)))
+    if changed:
+        state.save_review(project, {"edits": edits})
+    with E._lock:
+        data = E.load(project)
+        for cid, info in shapes.items():
+            data["clips"][cid] = {**(data["clips"].get(cid) or {}), "shape": info}
+        E.save(project, clips=data["clips"])
+    return {"shaped": len(shapes), "trimmed": changed}
+
+
+def submit_shape(project_id: str, clip_ids: list[str]) -> Job:
+    A = _app()
+
+    def run(job: Job):
+        project = A.get_project(project_id)
+        A.jobs.update(job, stage="shaping", progress=0.0)
+        return apply_shapes(project, clip_ids, lambda f: A.jobs.update(job, progress=f))
+
+    with automatic():
+        return A.jobs.submit("shape", "io", project_id, {"clip_ids": clip_ids}, run, key=f"shape:{project_id}")
+
+
 def ensure_renders(project: Project, auto: bool = True, only: str | None = None,
                    explicit: bool = False) -> list[str]:
     """Queue a 9:16 render for every clip on the grid that isn't rendered with the Easy settings.
@@ -125,11 +194,17 @@ def _ensure_renders(project: Project, auto: bool, only: str | None, explicit: bo
         return []
     review = state.load_review(project, hl)
     data = E.load(project)
+    top = _top(project, data, hl, review)
+    if data["v2"]:  # Easy 2.0: shape the clips first (the renders follow when that job ends)
+        todo = [c["id"] for c in top if (not only or c["id"] == only) and shaping.needs_shape(shape_of(data, c["id"]), c)]
+        if todo:
+            submit_shape(project.id, todo)
+            return []
     clips = state.load_clips(project)
     rj = _render_jobs(project.id)
     style, music_ok, lang = _hook_style(), _music_ok(), _lang(project)
     out = []
-    for c in _top(project, data, hl, review):
+    for c in top:
         if only and c["id"] != only:
             continue
         opts, hook = wanted(project, c, data, review, style, music_ok, lang)
@@ -332,7 +407,7 @@ def _mark_import(job: Job) -> None:
         if mode != meta.get("mode"):
             meta["mode"] = mode
             project.save_meta(meta)
-    E.save(project, easy=True, mode_auto=auto, created_at=state.now_iso(), fx=True)
+    E.save(project, easy=True, mode_auto=auto, created_at=state.now_iso(), fx=True, v2=True)
     from .live import on_imported
 
     on_imported(job, project)
@@ -524,7 +599,7 @@ def view(project: Project) -> dict:
             "start": eff["start"], "end": eff["end"], "duration": eff["duration"],
             "found": {"start": c["start"], "end": c["end"]},
             "bounds": {"start": max(0.0, c["start"] - 15), "end": min(dur or c["end"] + 15, c["end"] + 15)},
-            "prefs": prefs, "render": rs,
+            "prefs": prefs, "render": rs, "shape": shape_card(data, c, eff, review, hl.get("mode") or meta.get("mode") or "gaming"),
             "upload": _upload_state(project, c["id"], items.get(key), pj, lock, now),
             "platforms": _platform_state(project, c["id"], precs.get(c["id"]) or {}),
         })
@@ -543,8 +618,22 @@ def view(project: Project) -> dict:
         "steps": steps, "eta_seconds": eta, "error": err,
         "clips": cards, "total": len(allc), "shown": data["shown"], "music_available": music_ok,
         "youtube": {"connected": st["connected"], "lock": st["lock"]["state"], "channel": st["channel"]},
-        "settings": E.settings(), "daily_limit": P.effective_limit(),
+        "settings": E.settings(), "daily_limit": P.effective_limit(), "smart": data["v2"],
     }
+
+
+def shape_card(data: dict, cand: dict, eff: dict, review: dict, mode: str) -> dict:
+    """What the card says about the cut: why it moved, the length target, the hook check."""
+    sh = shape_of(data, cand["id"]) or {}
+    tgt = sh.get("target") or shaping.target(mode, cand)
+    auto = shaping.is_auto_trim((review.get("edits") or {}).get(cand["id"]), sh or None, cand)
+    out = {"why": list(sh.get("why") or []) if auto else [], "auto": auto, "target": tgt,
+           "length": shaping.length_note(float(eff["duration"]), tgt), "shaped": bool(sh)}
+    if sh.get("hook"):
+        out["hook"] = sh["hook"]
+    if sh.get("banner") is not None:
+        out["banner"] = sh["banner"]
+    return out
 
 
 def _project(pid: str) -> Project:
@@ -706,6 +795,48 @@ def api_edit(project_id: str, cid: str, body: dict) -> dict:
         cur["end"] = None if abs(end - cand["end"]) < 0.05 else round(end, 2)
         state.save_review(project, {"edits": {**review["edits"], cid: cur}})
     ensure_renders(project, auto=False, only=cid, explicit=True)  # the user changed this clip
+    return view(project)
+
+
+@router.post("/api/easy/clips/{project_id}/{cid}/nudge")
+def api_nudge(project_id: str, cid: str, body: dict) -> dict:
+    """One tap: start 3 s earlier / end 3 s later / short / long version / back to the smart cut."""
+    A = _app()
+    project = _project(project_id)
+    cand = A._cand(project, cid)
+    action = str((body or {}).get("action") or "")
+    if action not in (*shaping.NUDGES, "auto"):
+        raise SharkyClipsError(f"Unknown change '{action}'.")
+    hl = _hl(project)
+    mode = hl.get("mode") or project.load_meta().get("mode") or "gaming"
+    review = state.load_review(project, hl)
+    data = E.load(project)
+    sh = shape_of(data, cid)
+    eff = state.effective_cand(cand, review)
+    if action == "auto":
+        s, e = (sh["start"], sh["end"]) if sh else (cand["start"], cand["end"])
+    else:
+        duration = float(project.load_meta().get("duration") or eff["end"])
+        lo, hi = shaping.limits(project, cand, hl, duration)
+        ar = shaping.around(project, cand, eff["start"], eff["end"], mode)
+        tgt = (sh or {}).get("target") or shaping.target(mode, cand)
+        s, e = shaping.nudge(ar, cand, eff["start"], eff["end"], action, tgt, lo, hi)
+        if abs(s - eff["start"]) < 0.05 and abs(e - eff["end"]) < 0.05:
+            raise SharkyClipsError("This clip can't move further that way.",
+                                   "It already touches the next clip or the end of the video.")
+    edits = {**review["edits"], cid: shaping.edit_for(cand, s, e, review["edits"].get(cid))}
+    state.save_review(project, {"edits": edits})
+    ensure_renders(project, auto=False, only=cid, explicit=True)
+    return view(project)
+
+
+@router.post("/api/easy/projects/{project_id}/smart")
+def api_smart(project_id: str, body: dict | None = None) -> dict:
+    """Older projects: switch Easy 2.0's smart cuts on (or off) for this project."""
+    project = _project(project_id)
+    E.save(project, v2=(body or {}).get("on") is not False, easy=True)
+    if not pipeline_busy(project.id):
+        ensure_renders(project, auto=False, explicit=True)
     return view(project)
 
 

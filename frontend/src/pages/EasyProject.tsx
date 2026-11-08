@@ -11,6 +11,7 @@ import {
 } from "../api";
 import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
+import { CutRow, SmartBanner } from "../components/EasyCut";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
 import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
@@ -285,6 +286,8 @@ export default function EasyProject({ id }: { id: string }) {
         </div>
       )}
 
+      {view.smart === false && view.clips.length > 0 && !working && <SmartBanner pid={id} onView={setView} />}
+
       {view.clips.length > 0 && (
         <>
           <h2 className="ez-section-title">{t("easy.best_clips")}</h2>
@@ -306,6 +309,7 @@ export default function EasyProject({ id }: { id: string }) {
                 onDownload={() => download(c)}
                 onEdit={() => setEditing(c)}
                 onDiscard={() => discard(c)}
+                onView={setView}
               />
             ))}
           </ul>
@@ -392,6 +396,7 @@ function ClipCard({
   onDownload,
   onEdit,
   onDiscard,
+  onView,
 }: {
   pid: string;
   c: EasyClip;
@@ -407,6 +412,7 @@ function ClipCard({
   onDownload: () => void;
   onEdit: () => void;
   onDiscard: () => void;
+  onView: (v: EasyView) => void;
 }) {
   const { t, num, lang } = useI18n();
   const [menu, setMenu] = useState(false);
@@ -531,6 +537,7 @@ function ClipCard({
         <h3 className="ez-card-title" id={titleId} dir="auto">
           {c.title}
         </h3>
+        <CutRow pid={pid} c={c} onView={onView} disabled={up.status === "published" || up.status === "scheduled" || uploading} />
         <div className="ez-actions">
           <PlatformPicker value={platform} onChange={onPlatform} />
           {upPart}
