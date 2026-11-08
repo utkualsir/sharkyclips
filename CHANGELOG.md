@@ -7,6 +7,129 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.34] - 2026-11-08
+
+### Added: Easy mode 2.0
+- **Clips keep their setup and their punchline.** Every clip now starts at the beginning of the
+  sentence, keeps the build-up before the big moment and waits until the laugh or the reaction
+  calms down before it ends. The AI's "needs more setup" judgement counts too. Each card says in
+  plain words what was fixed, and has one-tap buttons: **Start earlier**, **End later** (3 s),
+  **Short version**, **Long version** and back to the **Smart cut**.
+- **The right length.** Every clip has a target for its kind (funny gaming 18-28 s, clutch /
+  action 20-35 s, study 30-45 s, music 15-30 s) and the card warns in plain words when a clip is
+  longer. Dead air is tightened by itself, and you can switch on **Speed up slow parts (1.2×)**:
+  walking and looting with nobody talking play a little faster, never speech or the big moment.
+- **A strong first 3 seconds.** Each clip gets a hook score (motion, loudness, your face, text).
+  When the opening is weak, SharkyClips tries a later start and the "best moment first" flash and
+  keeps the stronger one. A **headline banner** (on by default) shows a short punchy line from
+  your title on top, in capitals with your emojis and your brand colours.
+- **Why this clip?** Cards show 1-3 plain reasons ("Pentakill", "Laughter", "Chat exploded",
+  "7 bleeps"). Once a clip is live, its real views replace the prediction.
+- **Learn my taste.** 👍 / 👎 on whole clips: after 3 votes, new picks follow what you like and
+  what really performs on your channel.
+- **Autopilot.** One switch: new recording → clips → bleeps → titles in your style → covers →
+  planned at your daily limit. Every morning one line: "4 clips ready, 3 planned". A failed or
+  blocked upload is always announced, never skipped quietly.
+- **YouTube connection at a glance.** A green / amber / red pill on every Easy screen with a
+  one-tap fix (reconnect, open the Library). The sign-in is checked every 30 minutes, so a
+  sign-out shows up before an upload fails.
+- **See it like on a phone.** The phone button on a clip draws the Shorts buttons, title area
+  and progress bar over it. Captions and the banner now always stay clear of them.
+- **Action tracking.** Gaming clips without a facecam fill the whole phone screen and the picture
+  follows the action smoothly, instead of a small picture with a blurred background.
+- **Fix a caption word in one tap.** In the Edit sheet, tap a wrong word and type it right. The
+  clip is made again and the same mistake is fixed in every later clip; new names go into your
+  glossary.
+- **Weekly digest** at the top of the Library: shorts published, views, the best one, what worked
+  (length, hook, game) and one suggestion.
+
+Older projects keep their look: open one and tap **Turn on** under "New: smart cuts".
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Eklendi: Kolay mod 2.0
+- **Klipler girişini ve esprisini koruyor.** Her klip artık cümlenin başından başlıyor, büyük
+  andan önceki hazırlığı tutuyor ve kahkaha ya da tepki sakinleşmeden bitmiyor. Yapay zekânın
+  "girişe ihtiyacı var" yorumu da hesaba katılıyor. Her kart neyin düzeltildiğini sade bir dille
+  söylüyor ve tek dokunuşluk butonları var: **Daha erken başlat**, **Daha geç bitir** (3 sn),
+  **Kısa versiyon**, **Uzun versiyon** ve **Akıllı kesim**e geri dönüş.
+- **Doğru uzunluk.** Her türün bir hedefi var (komik oyun 18-28 sn, clutch / aksiyon 20-35 sn,
+  ders 30-45 sn, müzik 15-30 sn); klip daha uzunsa kart sade bir dille uyarıyor. Boşluklar
+  kendiliğinden kısalıyor; istersen **Yavaş kısımları hızlandır (1.2×)** seçeneğini aç: kimsenin
+  konuşmadığı yürüme ve loot kısımları biraz hızlı oynar, konuşma ve asıl an asla.
+- **Güçlü ilk 3 saniye.** Her klibin bir kanca puanı var (hareket, ses, yüzün, yazı). Açılış
+  zayıfsa SharkyClips daha geç bir başlangıcı ve "en iyi an önce" flaşını deniyor, güçlü olanı
+  seçiyor. **Başlık bandı** (varsayılan açık) başlığından kısa ve vurucu bir satırı büyük harfle,
+  emojilerinle ve marka renklerinle üstte gösteriyor.
+- **Neden bu klip?** Kartlarda 1-3 sade sebep var ("Pentakill", "Kahkaha", "Sohbet patladı",
+  "7 bip"). Klip yayına girince tahminin yerini gerçek izlenmeler alıyor.
+- **Zevkimi öğren.** Klibin tamamına 👍 / 👎: 3 oydan sonra yeni seçimler senin sevdiklerine ve
+  kanalında gerçekten iyi gidenlere göre yapılıyor.
+- **Otopilot.** Tek anahtar: yeni kayıt → klipler → bipler → senin tarzında başlıklar → kapaklar
+  → günlük limitine göre planlama. Her sabah tek satır: "4 klip hazır, 3 tanesi planlandı".
+  Başarısız ya da bekleyen bir yükleme her zaman bildiriliyor, sessizce atlanmıyor.
+- **YouTube bağlantısı bir bakışta.** Her Kolay ekranda yeşil / sarı / kırmızı bir gösterge ve
+  tek dokunuşla çözüm (yeniden bağlan, Kütüphaneyi aç). Oturum her 30 dakikada kontrol ediliyor;
+  oturum kapanırsa yükleme başarısız olmadan önce görüyorsun.
+- **Telefondaki gibi gör.** Klipteki telefon butonu Shorts butonlarını, başlık alanını ve
+  ilerleme çubuğunu üstüne çiziyor. Altyazılar ve bant artık hep bunların dışında kalıyor.
+- **Aksiyon takibi.** Facecam'siz oyun klipleri telefon ekranını tamamen dolduruyor ve görüntü
+  aksiyonu yumuşakça takip ediyor; bulanık arka planlı küçük görüntü yok.
+- **Altyazı kelimesini tek dokunuşla düzelt.** Düzenle penceresinde yanlış kelimeye dokun ve
+  doğrusunu yaz. Klip yeniden hazırlanıyor, aynı hata sonraki tüm kliplerde düzeliyor; yeni
+  isimler sözlüğüne giriyor.
+- **Haftalık özet** Kütüphanenin en üstünde: yayınlanan short'lar, izlenmeler, en iyisi, işe
+  yarayanlar (uzunluk, kanca, oyun) ve bir öneri.
+
+Eski projeler görünüşlerini koruyor: birini aç ve "Yeni: akıllı kesimler" altındaki **Aç**'a dokun.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Einfacher Modus 2.0:** Clips behalten Aufbau und Pointe (Satzanfang, Aufbau vor dem Moment, Ende erst wenn das Lachen abklingt) mit Tasten für früher / später / kurz / lang; Ziellängen je Inhalt und optionales 1,2× für langsame Stellen; Hook-Bewertung mit Test einer späteren Startstelle und Titelbanner im eigenen Stil.
+- Klare Gründe auf jeder Karte und echte Aufrufe statt Prognose; 👍 / 👎 lernt deinen Geschmack; Autopilot von der Aufnahme bis zum geplanten Short mit Morgen-Zusammenfassung; YouTube-Status in Grün / Gelb / Rot mit Lösung per Tipp.
+- Handy-Vorschau mit Shorts-Buttons, Action-Tracking ohne Facecam, Untertitelwort per Tipp korrigieren (wird gelernt) und ein Wochenrückblick in der Bibliothek.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Egyszerű mód 2.0:** a klipek megtartják a felvezetést és a csattanót (mondat eleje, felvezetés a pillanat előtt, vége csak ha a nevetés lecsengett), korábban / később / rövid / hosszú gombokkal; tartalomtól függő célhossz és opcionális 1,2× a lassú részekre; horog-pontszám későbbi kezdés tesztjével, címsáv a saját stílusodban.
+- Érthető okok minden kártyán, élesítés után valós megtekintések; a 👍 / 👎 megtanulja az ízlésed; Robotpilóta a felvételtől az ütemezett Shortsig reggeli összefoglalóval; YouTube-állapot zöld / sárga / piros jelzéssel és egy koppintásos javítással.
+- Telefonos előnézet a Shorts gombjaival, akciókövetés facecam nélkül, feliratszó javítása egy koppintással (megtanulja) és heti összefoglaló a Könyvtárban.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Простой режим 2.0:** клипы сохраняют завязку и развязку (начало фразы, подводка к моменту, конец только когда смех утих), кнопки «раньше / позже / короче / длиннее»; целевая длина по типу контента и опциональное ускорение 1,2× скучных моментов; оценка хука с проверкой более позднего старта и заголовок-баннер в твоём стиле.
+- Понятные причины на каждой карточке и реальные просмотры вместо прогноза; 👍 / 👎 учат твоему вкусу; автопилот от записи до запланированного Shorts с утренней сводкой; статус YouTube зелёный / жёлтый / красный с исправлением в одно касание.
+- Предпросмотр как на телефоне с кнопками Shorts, слежение за экшеном без вебки, исправление слова в субтитрах одним касанием (запоминается) и недельная сводка в Библиотеке.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **الوضع السهل 2.0:** تحتفظ المقاطع بالتمهيد والنهاية (بداية الجملة، التمهيد قبل اللحظة، والنهاية بعد أن تهدأ الضحكة) مع أزرار أبكر / لاحقًا / قصير / طويل؛ طول مستهدف حسب نوع المحتوى وتسريع اختياري 1.2× للأجزاء البطيئة؛ تقييم للجذب مع تجربة بداية لاحقة وشريط عنوان بأسلوبك.
+- أسباب واضحة على كل بطاقة ومشاهدات حقيقية بدل التوقع؛ 👍 / 👎 تتعلم ذوقك؛ طيار آلي من التسجيل إلى Short مجدول مع ملخص صباحي؛ حالة YouTube بالأخضر / الأصفر / الأحمر مع حل بلمسة.
+- معاينة كما على الهاتف مع أزرار Shorts، وتتبع الحدث بدون كاميرا الوجه، وتصحيح كلمة الترجمة بلمسة (يُتعلَّم)، وملخص أسبوعي في المكتبة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **简易模式 2.0：** 片段会保留铺垫和笑点（从句子开头开始、保留高光前的铺垫、等笑声和反应平息后才结束），并提供“提前开始 / 延后结束 / 短版 / 长版”一键按钮；按内容类型设定目标时长，可选把平淡片段加速到 1.2 倍；开头吸引力评分会试验更晚的开头，并在顶部加上你风格的标题横幅。
+- 每张卡片用大白话说明入选原因，发布后显示真实观看量；👍 / 👎 学习你的偏好；自动驾驶从录像一路到排期好的 Shorts，每天早上发一句摘要；YouTube 连接状态用绿 / 黄 / 红显示，一键修复。
+- 手机效果预览（带 Shorts 按钮），没有摄像头画面的游戏片段会平滑跟随动作，点按字幕中的词即可改正并记住，资料库顶部还有每周摘要。
+
+</details>
+
+
 ## [1.2.33] - 2026-11-08
 
 ### Fixed

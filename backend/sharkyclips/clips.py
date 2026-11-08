@@ -916,6 +916,8 @@ def _render_core(project: Project, cand: dict, opts: ClipOptions, facecam: Facec
     # 16:9: the whole picture (fit), or filled (crop) - never the facecam split.
     layout = ("crop" if opts.layout == "crop" else "fit") if wide else resolve_layout(opts.layout, facecam)
     geo = Geometry.for_spec(spec, layout)
+    if opts.banner and layout == "split" and not wide:  # the banner sits on the split line: captions go below it
+        geo.cap_y = SPLIT_TOP + int(round(260 * geo.scale))
     _TRACK.set(None)
     track_keys: list = []
     if layout == "crop" and opts.track == "auto" and not wide:
