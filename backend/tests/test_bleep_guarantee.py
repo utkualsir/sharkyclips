@@ -178,3 +178,36 @@ def test_old_renders_are_never_reused_when_bleep_inputs_change(tmp_path):
 
     clip = {"start": 0, "end": 1, "options": o, "edit_fp": "", "bleep_fp": None}
     assert not A._render_is_current(clip, {"id": "c01", "start": 0, "end": 1}, o, "", None, proj)
+
+
+@pytest.mark.requires_ffmpeg
+def test_a_hint_read_back_is_no_audible_swear(tmp_path):
+    """Whisper with the swear hint recites the hint list over a bleep ("orospu, sikeyim, piç,
+    yarrak..."): that must not flag a fully bleeped swear (1.2.33). An unhinted hearing still does."""
+    proj = _make_project("bleep-echo")
+    opts = ClipOptions.from_dict({**OPTS, "hook_flash": False, "replay": "off"})
+    out = tmp_path / "clip.mp4"
+    clips.render_clip(proj, CAND, opts, None, out, spec=SPEC)
+    plan, flash, fs = clips.bleep_plan(proj, CAND, opts, SPEC)
+    rows = bleepcheck.check_tones(out, plan, bleepcheck.targets(plan, flash, fs), proj.source_path)
+    assert all(r["ok"] for r in rows)
+
+    def echo(x, lang, prompt=None, temperature=0.0, hotwords=None):
+        n = len(x) / 16000
+        if not prompt:
+            return [{"start": 0.0, "end": n, "words": [{"start": 0.2, "end": 0.5, "word": " kanka", "probability": 0.9}]}]
+        hint = ["Orospu", "çocuğu,", "sikeyim,", "piç,", "yarrak,", "göt,", "amk,"]
+        return [{"start": 0.0, "end": n, "words": [{"start": 0.2 + i * n / 8, "end": 0.2 + (i + 0.8) * n / 8, "word": " " + w,
+                                                     "probability": 0.9} for i, w in enumerate(hint)]}]
+
+    bleepcheck.listen(out, plan, rows, asr=echo)
+    assert all(r["ok"] for r in rows), [r for r in rows if not r["ok"]]
+
+    def heard(x, lang, prompt=None, temperature=0.0, hotwords=None):  # the swear itself, no hint needed
+        n = len(x) / 16000
+        return [{"start": 0.0, "end": n, "words": [{"start": 1.4, "end": 1.9, "word": " siktir", "probability": 0.9}]}]
+
+    rows2 = bleepcheck.check_tones(out, plan, bleepcheck.targets(plan, flash, fs), proj.source_path)
+    bleepcheck.listen(out, plan, rows2, asr=heard)
+    assert any(not r["ok"] and r["why"] == "heard" for r in rows2)
+    shutil.rmtree(proj.dir, ignore_errors=True)

@@ -7,6 +7,61 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.33] - 2026-11-08
+
+### Fixed
+- **No more false "could not be bleeped" warnings.** When SharkyClips listens to a finished clip,
+  it also gives the listener the swear words as a hint. On a bleep, the listener sometimes just
+  read that hint list back, so fully bleeped clips were marked "1 swear could not be bleeped" and
+  waited for you before upload. A read-back hint no longer counts, and a word under a full bleep
+  only counts when it is heard without the hint (or at the edge of the bleep).
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Artık yanlış "biplenemedi" uyarısı yok.** SharkyClips bitmiş klibi dinlerken dinleyiciye
+  küfür kelimelerini ipucu olarak da veriyor. Bir bip üzerinde dinleyici bazen bu ipucu listesini
+  aynen geri okuyordu; tamamen bip'lenmiş klipler "1 küfür biplenemedi" diye işaretlenip yükleme
+  için seni bekliyordu. Geri okunan ipucu artık sayılmıyor; tam bip altındaki bir kelime ancak
+  ipucu olmadan duyulursa (ya da bip'in kenarında) sayılıyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Keine falschen Warnungen „nicht überpiept“ mehr bei Clips, die vollständig überpiept sind.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Nincs több téves „nincs kisípolva” figyelmeztetés a teljesen kisípolt klipeknél.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Больше нет ложных предупреждений «не запикано» у полностью запиканных клипов.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- لا مزيد من التحذيرات الخاطئة "لم يُغطَّ عليها" في المقاطع المغطاة بالصفير بالكامل.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 完全消音的片段不再误报"未消音"。
+
+</details>
+
+
 ## [1.2.32] - 2026-11-08
 
 ### Fixed

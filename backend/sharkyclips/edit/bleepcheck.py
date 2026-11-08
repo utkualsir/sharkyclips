@@ -38,6 +38,7 @@ MAX_RERENDERS = 2
 SR = 16000
 COVER_OK = 0.6  # share of a swear's own time the bleep must cover
 TONE_SHARE = 0.3  # share of the energy at the bleep tone in one frame
+FULL_COVER = 0.9  # the tone covers (almost) the whole word
 
 
 # ------------------------------------------------------------------------------ fingerprint
@@ -216,6 +217,7 @@ def listen(path: Path, plan, rows: list[dict], asr=None) -> None:
 
     lang = plan.lang
     prompt = swearscan.prompt_for(lang, swearlearn.hotwords(lang))
+    ptoks = swearscan.prompt_tokens(lang, swearlearn.hotwords(lang))
     own = asr is None
     if own:
         from .. import transcribe
@@ -240,7 +242,13 @@ def listen(path: Path, plan, rows: list[dict], asr=None) -> None:
             for prompted in (False, True):
                 segs = asr(E.level(x), lang, prompt if prompted else None, 0.0, None)
                 ws = swearscan.words_of(segs, s, s, s + len(x) / E.SR)
+                if prompted:  # 1.2.33: Whisper reads the hint list back on a bleep ("orospu, sikeyim, piç...")
+                    ws = swearscan.strip_echo(ws, lang, ptoks)
                 side = swearscan.leak(r["word"], ws, oa, ob, lang) if r["word"] else None
+                # where the tone covers the whole word, the hinted pass alone can only prove an
+                # edge leak ("si-" before the bleep), never the word under the tone itself
+                if side == "both" and prompted and r.get("cover", 0.0) >= FULL_COVER:
+                    side = None
                 if side:
                     break
             if side:
