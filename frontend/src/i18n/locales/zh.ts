@@ -2084,6 +2084,14 @@ const zh: Record<string, string> = {
   "easy2.hook_flash": "用最精彩的瞬间开场",
   "easy2.hook_later": "晚 {s} 秒开始，更靠近高潮",
   "easy2.real_views": "实际：{n} 次观看",
+  "easy2.like": "喜欢这个片段",
+  "easy2.dislike": "不是我想要的",
+  "easy2.taste_group": "你的偏好",
+  "easy2.liked": "明白了：多选这样的片段",
+  "easy2.disliked": "明白了：少选这样的片段",
+  "easy2.taste_need": "再投 {n} 票，挑选就会开始贴合你的偏好。",
+  "easy2.taste_on": "新的挑选会贴合你的偏好和频道里表现好的内容。",
+  "easy2.your_taste": "合你口味",
 };
 
 export default zh;

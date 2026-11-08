@@ -11,7 +11,7 @@ import {
 } from "../api";
 import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
-import { CutRow, ReasonChips, SmartBanner } from "../components/EasyCut";
+import { CutRow, ReasonChips, SmartBanner, TasteButtons } from "../components/EasyCut";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
 import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
@@ -310,6 +310,7 @@ export default function EasyProject({ id }: { id: string }) {
                 onEdit={() => setEditing(c)}
                 onDiscard={() => discard(c)}
                 onView={setView}
+                tasteNeed={view.taste?.need ?? 0}
               />
             ))}
           </ul>
@@ -397,6 +398,7 @@ function ClipCard({
   onEdit,
   onDiscard,
   onView,
+  tasteNeed,
 }: {
   pid: string;
   c: EasyClip;
@@ -413,6 +415,7 @@ function ClipCard({
   onEdit: () => void;
   onDiscard: () => void;
   onView: (v: EasyView) => void;
+  tasteNeed: number;
 }) {
   const { t, num, lang } = useI18n();
   const [menu, setMenu] = useState(false);
@@ -544,6 +547,7 @@ function ClipCard({
           <button className="link-btn" onClick={onEdit} disabled={up.status === "published" || uploading}>
             <Icon name="wand" size={14} /> {t("easy.edit")}
           </button>
+          <TasteButtons pid={pid} c={c} need={tasteNeed} onView={onView} onDiscard={onDiscard} />
           <div className="ez-menu" ref={menuRef}>
             <button
               className="btn btn-ghost icon-btn"

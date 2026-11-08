@@ -136,12 +136,56 @@ export function ReasonChips({ c, children }: { c: EasyClip; children?: React.Rea
           </span>
         )
       )}
+      {(c.taste ?? 0) >= 0.35 && (
+        <span className="ez-chip ez-chip-taste">
+          <Icon name="thumb-up" size={12} /> {t("easy2.your_taste")}
+        </span>
+      )}
       {(c.chips ?? []).map((ch) => (
         <span key={ch.code} className="ez-chip" dir="auto">
           {label(ch)}
         </span>
       ))}
       {children}
+    </div>
+  );
+}
+
+/** 👍 / 👎 on the whole clip: future picks learn what the creator likes. */
+export function TasteButtons({ pid, c, need, onView, onDiscard }: { pid: string; c: EasyClip; need: number; onView: (v: EasyView) => void; onDiscard: () => void }) {
+  const { t, num } = useI18n();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const cur = c.vote ?? 0;
+  const send = async (v: number) => {
+    const value = cur === v ? 0 : v;
+    setBusy(true);
+    try {
+      const nv = await easyApi.vote(pid, c.id, value);
+      onView(nv);
+      if (value !== 0) {
+        const left = nv.taste?.need ?? 0;
+        toast({
+          kind: "ok",
+          text: value > 0 ? t("easy2.liked") : t("easy2.disliked"),
+          hint: left > 0 ? t("easy2.taste_need", { n: num(left) }) : t("easy2.taste_on"),
+          action: value < 0 ? { label: t("easy.discard"), run: onDiscard } : undefined,
+        });
+      }
+    } catch (e) {
+      if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="ez-taste" role="group" aria-label={t("easy2.taste_group")} title={need > 0 ? t("easy2.taste_need", { n: num(need) }) : undefined}>
+      <button type="button" className={`btn btn-ghost icon-btn ez-thumb${cur > 0 ? " on" : ""}`} aria-pressed={cur > 0} aria-label={t("easy2.like")} disabled={busy} onClick={() => send(1)}>
+        <Icon name="thumb-up" size={16} />
+      </button>
+      <button type="button" className={`btn btn-ghost icon-btn ez-thumb${cur < 0 ? " on bad" : ""}`} aria-pressed={cur < 0} aria-label={t("easy2.dislike")} disabled={busy} onClick={() => send(-1)}>
+        <Icon name="thumb-down" size={16} />
+      </button>
     </div>
   );
 }

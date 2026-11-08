@@ -2141,6 +2141,14 @@ const en: Record<string, string> = {
   "easy2.hook_flash": "opens with the best moment",
   "easy2.hook_later": "starts {s} s later, closer to the action",
   "easy2.real_views": "Real: {n} views",
+  "easy2.like": "I like this clip",
+  "easy2.dislike": "Not my kind of clip",
+  "easy2.taste_group": "Your taste",
+  "easy2.liked": "Got it: more clips like this",
+  "easy2.disliked": "Got it: fewer clips like this",
+  "easy2.taste_need": "{n} more votes and the picks start to follow your taste.",
+  "easy2.taste_on": "New picks follow your taste and what works on your channel.",
+  "easy2.your_taste": "Your taste",
 };
 
 export default en;

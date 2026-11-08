@@ -45,9 +45,26 @@ def ranked(project: Project, hl: dict | None = None, review: dict | None = None)
     review = review if review is not None else state.load_review(project, hl)
     rejected = set(review.get("rejected") or [])
     out = [c for c in hl.get("candidates", []) if c["id"] not in rejected]
+    # 1.2.34 Easy 2.0: the creator's taste (👍 / 👎 + real views) moves clips that aren't
+    # rendered or voted yet (a clip already on the grid never jumps away)
+    fixed: set[str] = set()
+    tm = None
+    if E.load(project)["v2"]:
+        from .. import taste
+
+        tm = taste.model()
+        if tm["votes"] >= taste.MIN_VOTES:
+            fixed = set(state.load_clips(project)) | set(taste.votes_for(project.id))
+        else:
+            tm = None
+    mode = hl.get("mode") or "gaming"
 
     def key(c):  # the clips you marked live come first
         s = (c.get("publish") or {}).get("viral_score")
+        if tm is not None and c["id"] not in fixed:
+            from .. import taste
+
+            s = taste.adjust(s, taste.taste(c, mode, tm))
         return (not c.get("marked"), -(s if s is not None else -1), c["rank"])
 
     return sorted(out, key=key)
@@ -590,6 +607,11 @@ def view(project: Project) -> dict:
     from .. import platforms as PF
 
     precs = PF.records(project)
+    from .. import taste as taste_mod
+
+    votes = taste_mod.votes_for(project.id)
+    tm = taste_mod.model()
+    mode_name = hl.get("mode") or meta.get("mode") or "gaming"
     cards = []
     rstates = []
     for c in top:
@@ -608,6 +630,7 @@ def view(project: Project) -> dict:
             "start": eff["start"], "end": eff["end"], "duration": eff["duration"],
             "found": {"start": c["start"], "end": c["end"]},
             "bounds": {"start": max(0.0, c["start"] - 15), "end": min(dur or c["end"] + 15, c["end"] + 15)},
+            "vote": votes.get(c["id"], 0), "taste": taste_mod.taste(c, mode_name, tm) if tm else None,
             "chips": shaping.reason_chips(c, 2 if (rs.get("bleeps") or {}).get("bleeped") else 3),
             "prefs": prefs, "render": rs, "shape": shape_card(data, c, eff, review, hl.get("mode") or meta.get("mode") or "gaming"),
             "upload": _upload_state(project, c["id"], items.get(key), pj, lock, now),
@@ -629,6 +652,7 @@ def view(project: Project) -> dict:
         "clips": cards, "total": len(allc), "shown": data["shown"], "music_available": music_ok,
         "youtube": {"connected": st["connected"], "lock": st["lock"]["state"], "channel": st["channel"]},
         "settings": E.settings(), "daily_limit": P.effective_limit(), "smart": data["v2"],
+        "taste": taste_mod.status(),
     }
 
 
@@ -847,6 +871,23 @@ def api_nudge(project_id: str, cid: str, body: dict) -> dict:
     edits = {**review["edits"], cid: shaping.edit_for(cand, s, e, review["edits"].get(cid))}
     state.save_review(project, {"edits": edits})
     ensure_renders(project, auto=False, only=cid, explicit=True)
+    return view(project)
+
+
+@router.post("/api/easy/clips/{project_id}/{cid}/vote")
+def api_vote(project_id: str, cid: str, body: dict) -> dict:
+    """👍 / 👎 on a whole clip (0 = take it back): future picks learn the creator's taste."""
+    from .. import taste
+
+    A = _app()
+    project = _project(project_id)
+    cand = A._cand(project, cid)
+    try:
+        value = int((body or {}).get("value") or 0)
+    except (TypeError, ValueError):
+        raise SharkyClipsError("A vote is 1, -1 or 0.") from None
+    hl = _hl(project)
+    taste.vote(project.id, cand, hl.get("mode") or project.load_meta().get("mode") or "gaming", value)
     return view(project)
 
 

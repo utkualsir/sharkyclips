@@ -2108,6 +2108,14 @@ const tr: Record<string, string> = {
   "easy2.hook_flash": "en iyi anla açılıyor",
   "easy2.hook_later": "{s} sn sonra, aksiyona daha yakın başlıyor",
   "easy2.real_views": "Gerçek: {n} izlenme",
+  "easy2.like": "Bu klibi beğendim",
+  "easy2.dislike": "Bana göre değil",
+  "easy2.taste_group": "Zevkin",
+  "easy2.liked": "Anlaşıldı: bunun gibi daha çok klip",
+  "easy2.disliked": "Anlaşıldı: bunun gibi daha az klip",
+  "easy2.taste_need": "{n} oy daha ve seçimler zevkine göre olmaya başlar.",
+  "easy2.taste_on": "Yeni seçimler zevkine ve kanalında işe yarayana göre yapılır.",
+  "easy2.your_taste": "Senin tarzın",
 };
 
 export default tr;

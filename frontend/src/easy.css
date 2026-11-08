@@ -626,3 +626,8 @@
   overflow-wrap: anywhere;
 }
 .ez-viral-real { background: var(--success-soft); color: var(--success); }
+.ez-card-foot .ez-taste { display: flex; gap: 4px; margin-inline-start: auto; }
+.ez-thumb { width: 40px; height: 40px; border-radius: 12px; color: var(--muted); }
+.ez-thumb.on { color: var(--success); background: var(--success-soft); }
+.ez-thumb.on.bad { color: var(--danger); background: var(--danger-soft, var(--surface-2)); }
+.ez-chip-taste { gap: 4px; color: var(--success); background: var(--success-soft); border-color: transparent; }

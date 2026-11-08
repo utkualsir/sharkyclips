@@ -2114,6 +2114,14 @@ const hu: Record<string, string> = {
   "easy2.hook_flash": "a legjobb pillanattal indul",
   "easy2.hook_later": "{s} mp-cel később, közelebb az akcióhoz indul",
   "easy2.real_views": "Valós: {n} megtekintés",
+  "easy2.like": "Tetszik ez a klip",
+  "easy2.dislike": "Nem az én stílusom",
+  "easy2.taste_group": "Az ízlésed",
+  "easy2.liked": "Értem: több ilyen klip",
+  "easy2.disliked": "Értem: kevesebb ilyen klip",
+  "easy2.taste_need": "Még {n} szavazat, és a válogatás az ízlésedet követi.",
+  "easy2.taste_on": "Az új válogatás az ízlésedet és a csatornádon működő tartalmat követi.",
+  "easy2.your_taste": "A te stílusod",
 };
 
 export default hu;

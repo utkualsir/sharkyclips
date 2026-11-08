@@ -2007,6 +2007,9 @@ export interface EasyClip {
   platforms?: Record<"tiktok" | "reels", PlatformClipState>;
   /** 1.2.34 Easy 2.0: the smart cut (context guard, length target, hook check) */
   shape?: EasyShape;
+  /** 1.2.34: 👍 / 👎 on the whole clip, and how well it fits the learned taste (-1..1, null = not enough votes) */
+  vote?: number;
+  taste?: number | null;
   /** 1.2.34: why it was picked, in plain words (reason codes, see "reason.*") */
   chips?: { code: string; value?: string; count?: number }[];
 }
@@ -2067,6 +2070,7 @@ export interface EasyView {
   daily_limit: number;
   /** 1.2.34: Easy 2.0 smart cuts are on for this project (new projects: always) */
   smart?: boolean;
+  taste?: { votes: number; views: number; active: boolean; need: number };
 }
 
 export interface EasyProjectRow {
@@ -2143,6 +2147,7 @@ export const easyApi = {
   discard: (pid: string, cid: string) => req<EasyView>("POST", `${EZ(pid, cid)}/discard`),
   nudge: (pid: string, cid: string, action: NudgeAction) => req<EasyView>("POST", `${EZ(pid, cid)}/nudge`, { action }),
   smart: (pid: string, on: boolean) => req<EasyView>("POST", `${EP(pid)}/smart`, { on }),
+  vote: (pid: string, cid: string, value: number) => req<EasyView>("POST", `${EZ(pid, cid)}/vote`, { value }),
   upload: (pid: string, cid: string, when: UploadWhen) => req<EasyUploadResult>("POST", `${EZ(pid, cid)}/upload`, { when }),
   uploadMany: (clips: { project_id: string; clip_id: string }[], when: UploadWhen) =>
     req<{ results: (EasyUploadResult & { project_id: string; clip_id: string })[] }>("POST", "/api/easy/upload", { clips, when }),

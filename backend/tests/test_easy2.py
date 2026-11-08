@@ -253,3 +253,39 @@ def test_reason_chips_are_plain_and_strongest_first():
                       {"code": "keyword", "value": "nasıl ya", "t": 3, "strength": 0.5}]}
     assert shaping.reason_chips(df) == [{"code": "df_multikill", "value": "3"}, {"code": "keyword", "value": "nasıl ya"}]
     assert shaping.reason_chips({}) == []
+
+
+# ===================================================================== taste
+
+
+def test_taste_learns_from_votes_and_moves_the_grid():
+    from sharkyclips import config, easy as E, taste
+    from test_publishing import _client, _project
+
+    taste.path().unlink(missing_ok=True)
+    taste._model_cache.clear()
+    funny = {"id": "x1", "duration": 22, "reasons": [{"code": "laughter", "t": 1, "strength": 0.9}],
+             "llm": {"moment_type": "funny", "funny": 8, "exciting": 3}, "signal_scores": {"laughter": 0.9}}
+    action = {"id": "x2", "duration": 30, "reasons": [{"code": "df_kill", "t": 1, "strength": 0.9}],
+              "llm": {"moment_type": "skill", "funny": 2, "exciting": 8}, "signal_scores": {"game": 0.9}}
+    assert taste.taste(funny, "gaming") is None  # not enough votes yet
+    for i in range(3):
+        taste.vote("p1", {**funny, "id": f"f{i}"}, "gaming", 1)
+        taste.vote("p1", {**action, "id": f"a{i}"}, "gaming", -1)
+    assert taste.status()["active"] and taste.status()["votes"] == 6
+    assert taste.taste(funny, "gaming") > 0.3 and taste.taste(action, "gaming") < -0.3
+    assert taste.adjust(60, 1.0) == 72 and taste.adjust(None, 1.0) is None
+    taste.vote("p1", {**funny, "id": "f0"}, "gaming", 0)  # taken back
+    assert taste.status()["votes"] == 5
+
+    # the API: a vote on a card, the grid of an Easy 2.0 project moves unrendered clips
+    project = _project("easy2-taste", 3)
+    E.save(project, easy=True, v2=True)
+    config.update(easy_banner=False)
+    with _client() as c:
+        v = c.post(f"/api/easy/clips/{project.id}/c02/vote", json={"value": 1}).json()
+        assert next(x for x in v["clips"] if x["id"] == "c02")["vote"] == 1 and v["taste"]["votes"] == 6
+        assert c.post(f"/api/easy/clips/{project.id}/c02/vote", json={"value": "x"}).status_code == 400
+    taste.path().unlink(missing_ok=True)
+    taste._model_cache.clear()
+    config.update(easy_banner=None)

@@ -2189,6 +2189,14 @@ const ru: Record<string, string> = {
   "easy2.hook_flash": "открывается лучшим моментом",
   "easy2.hook_later": "начинается на {s} с позже, ближе к экшену",
   "easy2.real_views": "Реально: {n} просмотров",
+  "easy2.like": "Мне нравится этот клип",
+  "easy2.dislike": "Не мой формат",
+  "easy2.taste_group": "Твой вкус",
+  "easy2.liked": "Понял: больше таких клипов",
+  "easy2.disliked": "Понял: меньше таких клипов",
+  "easy2.taste_need": "Ещё {n} оценок — и подбор начнёт учитывать твой вкус.",
+  "easy2.taste_on": "Новый подбор учитывает твой вкус и то, что заходит на канале.",
+  "easy2.your_taste": "Твой стиль",
 };
 
 export default ru;

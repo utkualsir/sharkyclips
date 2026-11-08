@@ -2090,6 +2090,14 @@ const ar: Record<string, string> = {
   "easy2.hook_flash": "يبدأ بأفضل لحظة",
   "easy2.hook_later": "يبدأ بعد {s} ث، أقرب إلى الحدث",
   "easy2.real_views": "فعليًا: {n} مشاهدة",
+  "easy2.like": "أعجبني هذا المقطع",
+  "easy2.dislike": "ليس من نوعي",
+  "easy2.taste_group": "ذوقك",
+  "easy2.liked": "فهمت: مقاطع أكثر مثل هذا",
+  "easy2.disliked": "فهمت: مقاطع أقل مثل هذا",
+  "easy2.taste_need": "{n} تقييمات أخرى وتبدأ الاختيارات باتباع ذوقك.",
+  "easy2.taste_on": "تتبع الاختيارات الجديدة ذوقك وما ينجح في قناتك.",
+  "easy2.your_taste": "ذوقك",
 };
 
 export default ar;
