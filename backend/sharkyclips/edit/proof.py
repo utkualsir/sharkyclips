@@ -55,16 +55,74 @@ def _user_terms(lang: str | None) -> list[str]:
         return []
 
 
+def corrections() -> dict[str, str]:
+    """1.2.34: caption words the user retyped once, fixed everywhere after ({wrong: right},
+    the wrong word lower-cased; config "caption_corrections")."""
+    from .. import config
+
+    got = config.get("caption_corrections") or {}
+    return {str(k): str(v) for k, v in got.items() if str(k).strip() and str(v).strip()} if isinstance(got, dict) else {}
+
+
+def _lower(text: str, lang: str | None) -> str:
+    if lang == "tr":
+        text = text.replace("I", "ı").replace("İ", "i")
+    return text.lower()
+
+
+def learn(old: str, new: str, lang: str | None) -> dict | None:
+    """Remember a retyped caption word: the same mistake is fixed in every later clip; a word
+    the dictionary doesn't know (a name, a game term) also goes into the glossary."""
+    from .. import config
+
+    core_old = re.sub(r"^[\W_]+|[\W_]+$", "", old or "")
+    core_new = re.sub(r"^[\W_]+|[\W_]+$", "", new or "")
+    if not core_old or not core_new or _lower(core_old, lang) == _lower(core_new, lang):
+        return None  # only punctuation / case: nothing to learn
+    if len(core_old) <= 2:
+        return None  # "o", "ya": too short to fix everywhere (this clip keeps its fix)
+    corr = dict(config.get("caption_corrections") or {})
+    corr[_lower(core_old, lang)] = core_new
+    corr = dict(list(corr.items())[-500:])
+    changes: dict = {"caption_corrections": corr}
+    glossary_added = False
+    try:
+        from ..titles import lexicon
+
+        unknown = " " not in core_new and lexicon.zipf(_lower(core_new, lang), lang or "en") == 0
+    except Exception:  # noqa: BLE001
+        unknown = False
+    if unknown:
+        g = config.get("glossary") or []
+        if isinstance(g, dict):
+            allt = list(g.get("all") or [])
+            if core_new not in allt:
+                changes["glossary"] = {**g, "all": allt + [core_new]}
+                glossary_added = True
+        elif core_new not in g:
+            changes["glossary"] = list(g) + [core_new]
+            glossary_added = True
+    config.update(**changes)
+    return {"from": _lower(core_old, lang), "to": core_new, "glossary": glossary_added}
+
+
 def fix_words(words: list[dict], lang: str | None, fixes: dict[str, str] | None = None,
-              terms: list[str] | None = None) -> list[dict]:
+              terms: list[str] | None = None, corr: dict[str, str] | None = None) -> list[dict]:
     """Corrected copies of the words (times untouched; "orig" keeps the old text)."""
     out = [dict(w) for w in words]
     fixes = fixes or {}
+    corr = corr if corr is not None else corrections()
     for w in out:
         new = fixes.get(key(w))
         if new and new != w["word"]:
             w["orig"] = w["word"]
             w["word"] = new
+        elif corr:  # a mistake the user fixed before, in another clip
+            core = re.sub(r"^[\W_]+|[\W_]+$", "", w["word"])
+            right = corr.get(_lower(core, lang))
+            if core and right and right != core:
+                w["orig"] = w["word"]
+                w["word"] = w["word"].replace(core, right)
     terms = terms if terms is not None else _user_terms(lang)
     single = {fold(t, lang): t for t in terms if " " not in t.strip() and len(t) >= 2}
     for w in out:

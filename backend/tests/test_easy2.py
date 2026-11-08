@@ -428,3 +428,40 @@ def test_tracking_follows_the_action_smoothly(tmp_path):
             assert max(raw) > 200, f"the moving box is in the picture at {at_s} s"
     finally:
         shutil.rmtree(proj.dir, ignore_errors=True)
+
+
+# ===================================================================== caption fixes
+
+
+def test_caption_fix_is_kept_rerendered_and_learned():
+    from sharkyclips import config
+    from sharkyclips.edit import proof
+    from sharkyclips.web import state
+    from test_publishing import _client, _idle, _project, _wait
+
+    old_g, old_c = config.get("glossary"), config.get("caption_corrections")
+    project = _project("easy2-caps", 2)
+    try:
+        with _client() as c:
+            words = c.get(f"/api/easy/clips/{project.id}/c01/captions").json()["words"]
+            assert [w["word"] for w in words][:2] == ["Word1", "word2"]  # sentence start capitalised
+            k = words[1]["key"]
+            r = c.post(f"/api/easy/clips/{project.id}/c01/captions", json={"key": k, "word": "Zorbeldan"}).json()
+            assert next(w for w in r["words"] if w["key"] == k) == {**words[1], "word": "Zorbeldan", "mine": True}
+            assert r["learned"] == {"from": "word2", "to": "Zorbeldan", "glossary": True}
+            edit = state.load_review(project)["edits"]["c01"]
+            assert edit["captions"] == {k: "Zorbeldan"}
+            assert "Zorbeldan" in (config.get("glossary") or []) or "Zorbeldan" in (config.get("glossary") or {}).get("all", [])
+            # learned: the same mistake elsewhere is fixed by itself
+            fixed = proof.fix_words([{"start": 99.0, "end": 99.4, "word": "word2,"}], "en", {})
+            assert fixed[0]["word"] == "Zorbeldan,"
+            # the render fingerprint changes (the clip is made again)
+            cand = state.load_highlights(project)["candidates"][0]
+            review = state.load_review(project)
+            fp = state.edit_fingerprint(cand, review, {})
+            assert fp != state.edit_fingerprint(cand, {**review, "edits": {}}, {})
+            assert c.post(f"/api/easy/clips/{project.id}/c01/captions", json={"key": "nope", "word": "x"}).status_code == 400
+            assert c.post(f"/api/easy/clips/{project.id}/c01/captions", json={"key": k, "word": " "}).status_code == 400
+        _wait(_idle, 300)
+    finally:
+        config.update(glossary=old_g, caption_corrections=old_c)

@@ -701,3 +701,24 @@
 .ez-phone-btn.on { background: var(--gold); color: #0e1a33; }
 .ez-phone-btn:focus-visible { outline: none; box-shadow: var(--focus); }
 .ez-video .ez-dur { inset-inline-end: 58px; }
+
+/* ---- Easy 2.0: tap a caption word to fix it */
+.ez-capfix { display: flex; flex-wrap: wrap; gap: 4px; max-height: 220px; overflow-y: auto; padding: 2px; }
+.ez-capfix.busy { opacity: 0.7; }
+.ez-capword {
+  min-height: 32px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.ez-capword:hover:not(:disabled) { border-color: var(--gold-line); }
+.ez-capword:focus-visible { outline: none; box-shadow: var(--focus); }
+.ez-capword.mine { background: var(--success-soft); color: var(--success); }
+.ez-capword.swear { color: var(--muted); cursor: default; }
+.ez-capfix-input { min-height: 32px; height: 32px; padding: 2px 8px; width: auto; max-width: 100%; font-size: 15px; }

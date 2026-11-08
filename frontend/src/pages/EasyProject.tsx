@@ -11,7 +11,7 @@ import {
 } from "../api";
 import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
-import { CutRow, ReasonChips, SmartBanner, TasteButtons } from "../components/EasyCut";
+import { CaptionFixer, CutRow, ReasonChips, SmartBanner, TasteButtons } from "../components/EasyCut";
 import { ConnectionPill, ShortsOverlay, usePhonePreview } from "../components/EasyAuto";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
@@ -349,6 +349,7 @@ export default function EasyProject({ id }: { id: string }) {
             setView(v);
             setEditing(null);
           }}
+          onRefresh={load}
         />
       )}
 
@@ -606,12 +607,14 @@ function EditSheet({
   musicAvailable,
   onClose,
   onSaved,
+  onRefresh,
 }: {
   pid: string;
   clip: EasyClip;
   musicAvailable: boolean;
   onClose: () => void;
   onSaved: (v: EasyView) => void;
+  onRefresh?: () => void;
 }) {
   const { t, num } = useI18n();
   const toast = useToast();
@@ -758,6 +761,16 @@ function EditSheet({
           {t("easy.trim_reset")}
         </button>
       </fieldset>
+
+      {subs && (
+        <fieldset className="ez-field">
+          <legend>{t("easy2.cap_title")}</legend>
+          <p className="muted ez-hint" style={{ marginTop: 0 }}>
+            {t("easy2.cap_hint")}
+          </p>
+          <CaptionFixer pid={pid} cid={clip.id} onChanged={() => onRefresh?.()} />
+        </fieldset>
+      )}
 
       <div className="ez-toggles">
         <div className="toggle-line">

@@ -2151,6 +2151,14 @@ const hu: Record<string, string> = {
   "easy2.phone_view": "Megjelenítés telefonon",
   "easy2.phone_hint": "A Shorts gombjai és címe a klipen: a feliratok és a sáv a szaggatott területen belül maradnak.",
   "easy2.phone_subscribe": "Feliratkozás",
+  "easy2.cap_title": "Feliratszó javítása",
+  "easy2.cap_hint": "Koppints egy hibás szóra, és írd be helyesen. A SharkyClips megjegyzi a következő klipekhez.",
+  "easy2.cap_edit": "„{w}” javítása",
+  "easy2.cap_swear": "Kisípolt szó",
+  "easy2.cap_fixed": "Felirat javítva: a klip újra elkészül",
+  "easy2.cap_learned": "Megtanulva: „{a}” → „{b}” minden későbbi klipben.",
+  "easy2.cap_learned_glossary": "Megtanulva: „{a}” → „{b}”, és „{b}” bekerült a szójegyzékedbe.",
+  "easy2.cap_none": "Ebben a klipben nem hallatszik szó.",
 };
 
 export default hu;

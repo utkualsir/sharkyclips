@@ -2073,6 +2073,14 @@ export interface EasyView {
   taste?: { votes: number; views: number; active: boolean; need: number };
 }
 
+export interface CaptionWord {
+  key: string;
+  word: string;
+  start: number;
+  mine: boolean;
+  swear: boolean;
+}
+
 export interface EasyHealth {
   state: "ok" | "warn" | "error";
   code: "connected" | "not_connected" | "signed_out" | "offline" | "attention" | "locked";
@@ -2167,6 +2175,9 @@ export const easyApi = {
   nudge: (pid: string, cid: string, action: NudgeAction) => req<EasyView>("POST", `${EZ(pid, cid)}/nudge`, { action }),
   smart: (pid: string, on: boolean) => req<EasyView>("POST", `${EP(pid)}/smart`, { on }),
   vote: (pid: string, cid: string, value: number) => req<EasyView>("POST", `${EZ(pid, cid)}/vote`, { value }),
+  captions: (pid: string, cid: string) => req<{ words: CaptionWord[] }>("GET", `${EZ(pid, cid)}/captions`),
+  fixCaption: (pid: string, cid: string, key: string, word: string) =>
+    req<{ words: CaptionWord[]; learned: { from: string; to: string; glossary: boolean } | null }>("POST", `${EZ(pid, cid)}/captions`, { key, word }),
   health: (probe = false) => req<EasyHealth>("GET", `/api/easy/health${probe ? "?probe=true" : ""}`),
   autopilot: () => req<AutopilotView>("GET", "/api/easy/autopilot"),
   upload: (pid: string, cid: string, when: UploadWhen) => req<EasyUploadResult>("POST", `${EZ(pid, cid)}/upload`, { when }),

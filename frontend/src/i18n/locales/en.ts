@@ -2178,6 +2178,14 @@ const en: Record<string, string> = {
   "easy2.phone_view": "Show as on a phone",
   "easy2.phone_hint": "The Shorts buttons and title over the clip: captions and the banner stay inside the dashed area.",
   "easy2.phone_subscribe": "Subscribe",
+  "easy2.cap_title": "Fix a caption word",
+  "easy2.cap_hint": "Tap a wrong word and type it right. SharkyClips remembers it for your next clips.",
+  "easy2.cap_edit": "Fix “{w}”",
+  "easy2.cap_swear": "Bleeped word",
+  "easy2.cap_fixed": "Caption fixed: the clip is being made again",
+  "easy2.cap_learned": "Learned: “{a}” → “{b}” in every later clip.",
+  "easy2.cap_learned_glossary": "Learned: “{a}” → “{b}”, and “{b}” is in your glossary now.",
+  "easy2.cap_none": "No words heard in this clip.",
 };
 
 export default en;

@@ -2121,6 +2121,14 @@ const zh: Record<string, string> = {
   "easy2.phone_view": "按手机效果预览",
   "easy2.phone_hint": "在片段上显示 Shorts 按钮和标题：字幕和横幅都在虚线区域内。",
   "easy2.phone_subscribe": "订阅",
+  "easy2.cap_title": "修改字幕中的词",
+  "easy2.cap_hint": "点按错误的词并改正。SharkyClips 会在之后的片段中记住。",
+  "easy2.cap_edit": "修改“{w}”",
+  "easy2.cap_swear": "已消音的词",
+  "easy2.cap_fixed": "字幕已修正：正在重新制作片段",
+  "easy2.cap_learned": "已记住：之后所有片段中“{a}”→“{b}”。",
+  "easy2.cap_learned_glossary": "已记住：“{a}”→“{b}”，并把“{b}”加入了你的词汇表。",
+  "easy2.cap_none": "这个片段里没有识别到语音。",
 };
 
 export default zh;

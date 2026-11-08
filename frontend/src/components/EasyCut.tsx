@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { ApiError, easyApi, type EasyClip, type EasyHook, type EasyView, type NudgeAction } from "../api";
+import { useEffect, useRef, useState } from "react";
+import { ApiError, easyApi, type CaptionWord, type EasyClip, type EasyHook, type EasyView, type NudgeAction } from "../api";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { Icon, type IconName } from "./Icons";
@@ -186,6 +186,93 @@ export function TasteButtons({ pid, c, need, onView, onDiscard }: { pid: string;
       <button type="button" className={`btn btn-ghost icon-btn ez-thumb${cur < 0 ? " on bad" : ""}`} aria-pressed={cur < 0} aria-label={t("easy2.dislike")} disabled={busy} onClick={() => send(-1)}>
         <Icon name="thumb-down" size={16} />
       </button>
+    </div>
+  );
+}
+
+/** 1.2.34: tap a wrong caption word, type it right. The clip is made again and the mistake is
+ *  remembered for every later clip (new names / game words go into the glossary). */
+export function CaptionFixer({ pid, cid, onChanged }: { pid: string; cid: string; onChanged: () => void }) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const [words, setWords] = useState<CaptionWord[] | null>(null);
+  const [edit, setEdit] = useState<string | null>(null);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    easyApi.captions(pid, cid).then((r) => setWords(r.words)).catch(() => setWords([]));
+  }, [pid, cid]);
+  useEffect(() => {
+    if (edit) input.current?.select();
+  }, [edit]);
+
+  const save = async (w: CaptionWord) => {
+    const v = text.trim();
+    setEdit(null);
+    if (!v || v === w.word) return;
+    setBusy(true);
+    try {
+      const r = await easyApi.fixCaption(pid, cid, w.key, v);
+      setWords(r.words);
+      onChanged();
+      toast({
+        kind: "ok",
+        text: t("easy2.cap_fixed"),
+        hint: r.learned ? t(r.learned.glossary ? "easy2.cap_learned_glossary" : "easy2.cap_learned", { a: r.learned.from, b: r.learned.to }) : null,
+      });
+    } catch (e) {
+      if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (words === null) return <div className="skeleton" style={{ height: 60 }} />;
+  if (!words.length) return <p className="muted">{t("easy2.cap_none")}</p>;
+  return (
+    <div className={`ez-capfix${busy ? " busy" : ""}`} aria-busy={busy}>
+      {words.map((w) =>
+        edit === w.key ? (
+          <input
+            key={w.key}
+            ref={input}
+            className="input ez-capfix-input"
+            dir="auto"
+            value={text}
+            maxLength={40}
+            size={Math.max(4, text.length + 1)}
+            aria-label={t("easy2.cap_edit", { w: w.word })}
+            onChange={(e) => setText(e.target.value)}
+            onBlur={() => save(w)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                save(w);
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                setEdit(null);
+              }
+            }}
+          />
+        ) : (
+          <button
+            key={w.key}
+            type="button"
+            className={`ez-capword${w.mine ? " mine" : ""}${w.swear ? " swear" : ""}`}
+            dir="auto"
+            disabled={w.swear || busy}
+            aria-label={w.swear ? t("easy2.cap_swear") : t("easy2.cap_edit", { w: w.word })}
+            onClick={() => {
+              setText(w.word);
+              setEdit(w.key);
+            }}
+          >
+            {w.word}
+          </button>
+        ),
+      )}
     </div>
   );
 }

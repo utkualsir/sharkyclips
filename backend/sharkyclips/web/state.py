@@ -141,6 +141,12 @@ def clean_edit(e: dict | None) -> dict | None:
                 pass
     if "start" in out and "end" in out and out["end"] - out["start"] < 1.0:
         out.pop("end")
+    # 1.2.34: caption words the user retyped {proof.key(word): new text}
+    caps = e.get("captions")
+    if isinstance(caps, dict):
+        caps = {str(k)[:80]: " ".join(str(v).split())[:40] for k, v in list(caps.items())[:300] if str(v).strip()}
+        if caps:
+            out["captions"] = caps
     # deleted: cut out (transcript editor); bleep / unbleep: the swear review list and
     # manual bleeps (source-time ranges)
     for key in ("deleted", "bleep", "unbleep"):
@@ -167,7 +173,8 @@ def effective_cand(cand: dict, review: dict) -> dict:
         start, end = float(cand["start"]), float(cand["end"])
     music = review.get("music") or {}
     return {**cand, "start": start, "end": end, "duration": round(end - start, 2),
-            "edit": {"deleted": e.get("deleted") or [], "music": music.get(cid) if cid in music else None},
+            "edit": {"deleted": e.get("deleted") or [], "music": music.get(cid) if cid in music else None,
+                     "captions": e.get("captions") or {}},
             "dub": (review.get("dub") or {}).get(cid) or ""}
 
 
@@ -180,6 +187,8 @@ def edit_fingerprint(cand: dict, review: dict, options: dict) -> str:
     parts: dict[str, Any] = {}
     if eff["edit"]["deleted"]:
         parts["d"] = eff["edit"]["deleted"]
+    if eff["edit"].get("captions"):
+        parts["c"] = eff["edit"]["captions"]
     if options.get("music"):
         parts["m"] = eff["edit"]["music"]
     if options.get("brand"):

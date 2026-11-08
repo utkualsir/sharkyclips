@@ -645,7 +645,8 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
     if not given:
         from . import proof
 
-        fixed = proof.fix_words(words, lang, proof.cached_fixes(project, cand.get("id")))
+        fixes = {**proof.cached_fixes(project, cand.get("id")), **dict(edit.get("captions") or {})}  # yours win
+        fixed = proof.fix_words(words, lang, fixes)
         for w, f in zip(words, fixed):
             if f["word"] != w["word"]:
                 w["orig"], w["word"] = w["word"], f["word"]

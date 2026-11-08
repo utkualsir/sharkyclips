@@ -2176,6 +2176,14 @@ const de: Record<string, string> = {
   "easy2.phone_view": "Wie auf dem Handy zeigen",
   "easy2.phone_hint": "Shorts-Buttons und Titel über dem Clip: Untertitel und Banner bleiben im gestrichelten Bereich.",
   "easy2.phone_subscribe": "Abonnieren",
+  "easy2.cap_title": "Untertitelwort korrigieren",
+  "easy2.cap_hint": "Tippe auf ein falsches Wort und schreib es richtig. SharkyClips merkt es sich für die nächsten Clips.",
+  "easy2.cap_edit": "„{w}“ korrigieren",
+  "easy2.cap_swear": "Gepiepstes Wort",
+  "easy2.cap_fixed": "Untertitel korrigiert: der Clip wird neu erstellt",
+  "easy2.cap_learned": "Gelernt: „{a}“ → „{b}“ in allen späteren Clips.",
+  "easy2.cap_learned_glossary": "Gelernt: „{a}“ → „{b}“, und „{b}“ steht jetzt in deinem Glossar.",
+  "easy2.cap_none": "In diesem Clip wurden keine Wörter erkannt.",
 };
 
 export default de;

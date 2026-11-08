@@ -2127,6 +2127,14 @@ const ar: Record<string, string> = {
   "easy2.phone_view": "اعرض كما على الهاتف",
   "easy2.phone_hint": "أزرار Shorts والعنوان فوق المقطع: تبقى الترجمة والشريط داخل المنطقة المتقطعة.",
   "easy2.phone_subscribe": "اشتراك",
+  "easy2.cap_title": "صحّح كلمة في الترجمة",
+  "easy2.cap_hint": "اضغط على الكلمة الخاطئة واكتبها صحيحة. سيتذكرها SharkyClips لمقاطعك القادمة.",
+  "easy2.cap_edit": "صحّح “{w}”",
+  "easy2.cap_swear": "كلمة مُصفَّرة",
+  "easy2.cap_fixed": "صُححت الترجمة: يُعاد صنع المقطع",
+  "easy2.cap_learned": "تم التعلّم: “{a}” ← “{b}” في كل المقاطع القادمة.",
+  "easy2.cap_learned_glossary": "تم التعلّم: “{a}” ← “{b}”، و“{b}” الآن في قاموسك.",
+  "easy2.cap_none": "لا توجد كلمات مسموعة في هذا المقطع.",
 };
 
 export default ar;

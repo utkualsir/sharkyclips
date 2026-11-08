@@ -893,6 +893,69 @@ def api_nudge(project_id: str, cid: str, body: dict) -> dict:
     return view(project)
 
 
+def caption_words(project: Project, cand: dict, review: dict) -> list[dict]:
+    """The clip's caption words as the render shows them (AI + your fixes), swears masked."""
+    from ..edit import profanity, proof
+    from ..edit.plan import transcript_words
+
+    eff = state.effective_cand(cand, review)
+    words, lang = transcript_words(project, eff["start"], eff["end"])
+    mine = dict(eff["edit"].get("captions") or {})
+    fixed = proof.fix_words(words, lang, {**proof.cached_fixes(project, cand["id"]), **mine})
+    swear = set(profanity.find_words(words, lang))
+    out = []
+    for i, (w, f) in enumerate(zip(words, fixed)):
+        k = proof.key(w)
+        out.append({"key": k, "word": profanity.mask(f["word"]) if i in swear else f["word"],
+                    "start": round(w["start"], 2), "mine": k in mine, "swear": i in swear})
+    return out
+
+
+@router.get("/api/easy/clips/{project_id}/{cid}/captions")
+def api_captions(project_id: str, cid: str) -> dict:
+    A = _app()
+    project = _project(project_id)
+    cand = A._cand(project, cid)
+    return {"words": caption_words(project, cand, state.load_review(project))}
+
+
+@router.post("/api/easy/clips/{project_id}/{cid}/captions")
+def api_caption_fix(project_id: str, cid: str, body: dict) -> dict:
+    """Tap a wrong caption word, type it right: this clip is fixed (and made again) and the
+    mistake is learned for every later clip."""
+    from ..edit import proof
+    from ..edit.plan import transcript_words
+
+    A = _app()
+    project = _project(project_id)
+    cand = A._cand(project, cid)
+    key, new = str((body or {}).get("key") or ""), " ".join(str((body or {}).get("word") or "").split())
+    if not new:
+        raise SharkyClipsError("Type the right word.", "To hide a word, cut it in Pro mode's transcript editor.")
+    if len(new) > 40:
+        raise SharkyClipsError("That's too long for one caption word.")
+    review = state.load_review(project)
+    eff = state.effective_cand(cand, review)
+    words, lang = transcript_words(project, eff["start"], eff["end"])
+    orig = next((w for w in words if proof.key(w) == key), None)
+    if orig is None:
+        raise SharkyClipsError("This word isn't in the clip any more.", "Close the sheet and open it again.")
+    if next((x for x in caption_words(project, cand, review) if x["key"] == key), {}).get("swear"):
+        raise SharkyClipsError("Bleeped words can't be retyped here.", "Pro mode's swear list decides what gets bleeped.")
+    cur = dict(review["edits"].get(cid) or {})
+    caps = dict(cur.get("captions") or {})
+    if new == orig["word"]:
+        caps.pop(key, None)
+        learned = None
+    else:
+        caps[key] = new
+        learned = proof.learn(orig["word"], new, lang)
+    cur["captions"] = caps
+    state.save_review(project, {"edits": {**review["edits"], cid: cur}})
+    ensure_renders(project, auto=False, only=cid, explicit=True)
+    return {"words": caption_words(project, cand, state.load_review(project)), "learned": learned}
+
+
 @router.post("/api/easy/clips/{project_id}/{cid}/vote")
 def api_vote(project_id: str, cid: str, body: dict) -> dict:
     """👍 / 👎 on a whole clip (0 = take it back): future picks learn the creator's taste."""

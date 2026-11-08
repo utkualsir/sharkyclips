@@ -2145,6 +2145,14 @@ const tr: Record<string, string> = {
   "easy2.phone_view": "Telefondaki gibi göster",
   "easy2.phone_hint": "Klibin üstünde Shorts butonları ve başlık: altyazılar ve bant kesikli alanın içinde kalır.",
   "easy2.phone_subscribe": "Abone ol",
+  "easy2.cap_title": "Altyazıda kelime düzelt",
+  "easy2.cap_hint": "Yanlış kelimeye dokun ve doğrusunu yaz. SharkyClips sonraki kliplerin için hatırlar.",
+  "easy2.cap_edit": "“{w}” kelimesini düzelt",
+  "easy2.cap_swear": "Biplenen kelime",
+  "easy2.cap_fixed": "Altyazı düzeltildi: klip yeniden hazırlanıyor",
+  "easy2.cap_learned": "Öğrenildi: sonraki tüm kliplerde “{a}” → “{b}”.",
+  "easy2.cap_learned_glossary": "Öğrenildi: “{a}” → “{b}”; “{b}” artık sözlüğünde.",
+  "easy2.cap_none": "Bu klipte kelime duyulmadı.",
 };
 
 export default tr;
