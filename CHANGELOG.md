@@ -29,35 +29,35 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 <details><summary>Deutsch</summary>
 
 <!-- lang:de -->
-- Keine falschen Warnungen „nicht überpiept“ mehr bei Clips, die vollständig überpiept sind.
+- Keine falschen Warnungen „nicht überpiept“ mehr: Beim Nachhören las die Erkennung manchmal nur die Liste der Hinweiswörter vor. Vollständig überpiepte Clips warten nicht mehr auf dich.
 
 </details>
 
 <details><summary>Magyar</summary>
 
 <!-- lang:hu -->
-- Nincs több téves „nincs kisípolva” figyelmeztetés a teljesen kisípolt klipeknél.
+- Nincs több téves „nincs kisípolva” figyelmeztetés: az újrahallgatás néha csak visszaolvasta a súgószavak listáját. A teljesen kisípolt klipek már nem várnak rád a feltöltés előtt.
 
 </details>
 
 <details><summary>Русский</summary>
 
 <!-- lang:ru -->
-- Больше нет ложных предупреждений «не запикано» у полностью запиканных клипов.
+- Больше нет ложных предупреждений «не запикано»: при повторном прослушивании распознавание иногда просто зачитывало список слов-подсказок. Полностью запиканные клипы больше не ждут вас перед загрузкой.
 
 </details>
 
 <details><summary>العربية</summary>
 
 <!-- lang:ar -->
-- لا مزيد من التحذيرات الخاطئة "لم يُغطَّ عليها" في المقاطع المغطاة بالصفير بالكامل.
+- لا مزيد من التحذيرات الخاطئة "لم يُغطَّ عليها": عند إعادة الاستماع كان التعرّف أحيانًا يكرر قائمة الكلمات المساعدة فقط. المقاطع المغطاة بالصفير بالكامل لم تعد تنتظرك قبل الرفع.
 
 </details>
 
 <details><summary>中文</summary>
 
 <!-- lang:zh -->
-- 完全消音的片段不再误报"未消音"。
+- 完全消音的片段不再误报"未消音"：复听时识别有时只是把提示词列表念了一遍，导致片段被误标并等待你确认。现在提示词的回读不再计入，只有不带提示也能听到的脏话（或消音边缘漏出的部分）才算，完全消音的片段上传前不会再卡住等你。
 
 </details>
 
