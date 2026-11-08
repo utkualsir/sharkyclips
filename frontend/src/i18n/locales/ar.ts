@@ -2089,6 +2089,7 @@ const ar: Record<string, string> = {
   "easy2.hook_weak": "بداية بطيئة",
   "easy2.hook_flash": "يبدأ بأفضل لحظة",
   "easy2.hook_later": "يبدأ بعد {s} ث، أقرب إلى الحدث",
+  "easy2.real_views": "فعليًا: {n} مشاهدة",
 };
 
 export default ar;

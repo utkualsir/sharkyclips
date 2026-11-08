@@ -109,3 +109,39 @@ function HookChip({ h }: { h: EasyHook }) {
     </p>
   );
 }
+
+/** Why this clip: the viral label (or, once it's live, the real views) + 1-3 plain reasons. */
+export function ReasonChips({ c, children }: { c: EasyClip; children?: React.ReactNode }) {
+  const { t, lang } = useI18n();
+  const views = c.upload?.views;
+  const live = views != null && (c.upload.status === "published" || c.upload.status === "locked");
+  const compact = (n: number) => new Intl.NumberFormat(`${lang}-u-nu-latn`, { notation: "compact", maximumFractionDigits: 1 }).format(n);
+  const label = (ch: { code: string; value?: string; count?: number }) => {
+    const base = t(`reason.${ch.code}`);
+    if (ch.code === "keyword" && ch.value) return `“${ch.value}”`;
+    if (ch.code === "df_multikill" && ch.value) return `${base} ×${ch.value}`;
+    if (ch.count && ch.count > 1 && !ch.code.startsWith("lol_")) return `${base} ×${ch.count}`;
+    return base;
+  };
+  return (
+    <div className="ez-chips">
+      {live ? (
+        <span className="ez-viral ez-viral-real">
+          <Icon name="eye" size={13} /> {t("easy2.real_views", { n: compact(views!) })}
+        </span>
+      ) : (
+        c.viral_label && (
+          <span className={`ez-viral ez-viral-${c.viral_label}`}>
+            <Icon name="sparkles" size={13} /> {t("easy.viral", { label: t(`publish.label.${c.viral_label}`) })}
+          </span>
+        )
+      )}
+      {(c.chips ?? []).map((ch) => (
+        <span key={ch.code} className="ez-chip" dir="auto">
+          {label(ch)}
+        </span>
+      ))}
+      {children}
+    </div>
+  );
+}

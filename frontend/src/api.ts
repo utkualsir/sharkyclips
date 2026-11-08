@@ -2007,6 +2007,8 @@ export interface EasyClip {
   platforms?: Record<"tiktok" | "reels", PlatformClipState>;
   /** 1.2.34 Easy 2.0: the smart cut (context guard, length target, hook check) */
   shape?: EasyShape;
+  /** 1.2.34: why it was picked, in plain words (reason codes, see "reason.*") */
+  chips?: { code: string; value?: string; count?: number }[];
 }
 
 export type ShapeWhy =

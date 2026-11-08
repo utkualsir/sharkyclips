@@ -608,6 +608,7 @@ def view(project: Project) -> dict:
             "start": eff["start"], "end": eff["end"], "duration": eff["duration"],
             "found": {"start": c["start"], "end": c["end"]},
             "bounds": {"start": max(0.0, c["start"] - 15), "end": min(dur or c["end"] + 15, c["end"] + 15)},
+            "chips": shaping.reason_chips(c, 2 if (rs.get("bleeps") or {}).get("bleeped") else 3),
             "prefs": prefs, "render": rs, "shape": shape_card(data, c, eff, review, hl.get("mode") or meta.get("mode") or "gaming"),
             "upload": _upload_state(project, c["id"], items.get(key), pj, lock, now),
             "platforms": _platform_state(project, c["id"], precs.get(c["id"]) or {}),

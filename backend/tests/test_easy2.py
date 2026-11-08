@@ -237,3 +237,19 @@ def test_easy2_project_is_shaped_then_rendered_and_nudged():
         v = c.get(f"/api/easy/projects/{project.id}").json()
         assert v["clips"][0]["shape"]["banner"] == ""
         _wait(_idle, 300)
+
+
+def test_reason_chips_are_plain_and_strongest_first():
+    cand = {"reasons": [{"code": "loudness_spike", "t": 1, "strength": 1.0, "count": 4},
+                        {"code": "keyword", "value": "oha", "t": 2, "strength": 0.5},
+                        {"code": "laughter", "t": 3, "strength": 0.8},
+                        {"code": "lol_kill", "t": 4, "strength": 0.4},
+                        {"code": "lol_pentakill", "t": 5, "strength": 1.0},
+                        {"code": "chat_spike", "t": 6, "strength": 0.9}]}
+    chips = shaping.reason_chips(cand)
+    assert [c["code"] for c in chips] == ["lol_pentakill", "laughter", "chat_spike"]
+    assert shaping.reason_chips(cand, 2)[1]["code"] == "laughter"
+    df = {"reasons": [{"code": "df_kill", "t": 1, "strength": 0.5}, {"code": "df_multikill", "value": "3", "t": 2, "strength": 0.7},
+                      {"code": "keyword", "value": "nasıl ya", "t": 3, "strength": 0.5}]}
+    assert shaping.reason_chips(df) == [{"code": "df_multikill", "value": "3"}, {"code": "keyword", "value": "nasıl ya"}]
+    assert shaping.reason_chips({}) == []

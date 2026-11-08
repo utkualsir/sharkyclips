@@ -610,3 +610,19 @@
 .ez-banner-field { display: grid; gap: 8px; }
 .ez-banner-row { display: flex; gap: 8px; align-items: center; }
 .ez-banner-row .input { flex: 1; min-width: 0; }
+.ez-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ez-chips .ez-viral { align-self: auto; }
+.ez-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.ez-viral-real { background: var(--success-soft); color: var(--success); }

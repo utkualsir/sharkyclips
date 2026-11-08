@@ -2107,6 +2107,7 @@ const tr: Record<string, string> = {
   "easy2.hook_weak": "yavaş başlıyor",
   "easy2.hook_flash": "en iyi anla açılıyor",
   "easy2.hook_later": "{s} sn sonra, aksiyona daha yakın başlıyor",
+  "easy2.real_views": "Gerçek: {n} izlenme",
 };
 
 export default tr;

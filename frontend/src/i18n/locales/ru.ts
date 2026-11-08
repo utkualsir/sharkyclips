@@ -2188,6 +2188,7 @@ const ru: Record<string, string> = {
   "easy2.hook_weak": "медленное начало",
   "easy2.hook_flash": "открывается лучшим моментом",
   "easy2.hook_later": "начинается на {s} с позже, ближе к экшену",
+  "easy2.real_views": "Реально: {n} просмотров",
 };
 
 export default ru;

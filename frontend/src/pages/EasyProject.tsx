@@ -11,7 +11,7 @@ import {
 } from "../api";
 import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
-import { CutRow, SmartBanner } from "../components/EasyCut";
+import { CutRow, ReasonChips, SmartBanner } from "../components/EasyCut";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
 import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
@@ -528,12 +528,7 @@ function ClipCard({
         <span className="ez-dur mono">{fmtTime(c.duration)}</span>
       </div>
       <div className="ez-card-body">
-        {ok && <BleepBadge s={cleared && r.bleeps ? { ...r.bleeps, checked: "now", hold: 0 } : r.bleeps} />}
-        {c.viral_label && (
-          <span className={`ez-viral ez-viral-${c.viral_label}`}>
-            <Icon name="sparkles" size={13} /> {t("easy.viral", { label: t(`publish.label.${c.viral_label}`) })}
-          </span>
-        )}
+        <ReasonChips c={c}>{ok && <BleepBadge s={cleared && r.bleeps ? { ...r.bleeps, checked: "now", hold: 0 } : r.bleeps} />}</ReasonChips>
         <h3 className="ez-card-title" id={titleId} dir="auto">
           {c.title}
         </h3>

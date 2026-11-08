@@ -2083,6 +2083,7 @@ const zh: Record<string, string> = {
   "easy2.hook_weak": "开头偏慢",
   "easy2.hook_flash": "用最精彩的瞬间开场",
   "easy2.hook_later": "晚 {s} 秒开始，更靠近高潮",
+  "easy2.real_views": "实际：{n} 次观看",
 };
 
 export default zh;

@@ -2140,6 +2140,7 @@ const en: Record<string, string> = {
   "easy2.hook_weak": "slow start",
   "easy2.hook_flash": "opens with the best moment",
   "easy2.hook_later": "starts {s} s later, closer to the action",
+  "easy2.real_views": "Real: {n} views",
 };
 
 export default en;

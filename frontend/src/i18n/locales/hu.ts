@@ -2113,6 +2113,7 @@ const hu: Record<string, string> = {
   "easy2.hook_weak": "lassú kezdés",
   "easy2.hook_flash": "a legjobb pillanattal indul",
   "easy2.hook_later": "{s} mp-cel később, közelebb az akcióhoz indul",
+  "easy2.real_views": "Valós: {n} megtekintés",
 };
 
 export default hu;

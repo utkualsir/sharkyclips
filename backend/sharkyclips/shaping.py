@@ -436,3 +436,41 @@ def edit_for(cand: dict, start: float, end: float, old: dict | None) -> dict:
     cur["start"] = None if _close(start, cand["start"]) else round(float(start), 2)
     cur["end"] = None if _close(end, cand["end"]) else round(float(end), 2)
     return cur
+
+
+# ===================================================================== explainable picks
+
+
+CHIP_ORDER = ("marker", "lol_pentakill", "lol_quadrakill", "lol_baron_steal", "df_extracted", "lol_triplekill",
+              "lol_dragon_steal", "df_multikill", "lol_ace", "lol_shutdown", "lol_doublekill", "df_revenge",
+              "lol_first_blood", "laughter", "chat_spike", "chat_reactions", "df_kill", "lol_kill", "keyword",
+              "scream", "shouting", "cheering", "llm_explanation", "steady_explanation", "chorus", "drop",
+              "pause_then_burst", "loudness_spike", "fast_speech", "df_death", "lol_death", "df_extract_failed")
+
+
+def reason_chips(cand: dict, n: int = 3) -> list[dict]:
+    """1-3 plain reasons why this clip was picked (strongest kind first): {"code", "value", "count"}."""
+    best: dict[str, dict] = {}
+    for r in cand.get("reasons") or []:
+        code = str(r.get("code") or "")
+        if code not in CHIP_ORDER:
+            continue
+        cur = best.get(code)
+        if cur is None or float(r.get("strength") or 0) > float(cur.get("strength") or 0):
+            best[code] = r
+    if "lol_kill" in best and any(k in best for k in ("lol_doublekill", "lol_triplekill", "lol_quadrakill", "lol_pentakill")):
+        best.pop("lol_kill")
+    if "df_kill" in best and "df_multikill" in best:
+        best.pop("df_kill")
+    if "loudness_spike" in best and ("shouting" in best or "scream" in best):
+        best.pop("loudness_spike")
+    out = []
+    for code in sorted(best, key=CHIP_ORDER.index)[:n]:
+        r = best[code]
+        chip: dict = {"code": code}
+        if code in ("keyword", "df_multikill") and r.get("value"):
+            chip["value"] = str(r["value"])[:24]
+        if r.get("count") and int(r["count"]) > 1 and code not in ("keyword",):
+            chip["count"] = int(r["count"])
+        out.append(chip)
+    return out
