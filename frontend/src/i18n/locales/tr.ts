@@ -2092,6 +2092,21 @@ const tr: Record<string, string> = {
   "easy2.smart_title": "Yeni: akıllı kesimler",
   "easy2.smart_body": "Her klip girişini ve esprisini korur, iyi bir uzunluk ve güçlü ilk 3 saniye alır. Klipler yeniden hazırlanır.",
   "easy2.smart_on": "Aç",
+  "easy2.set_speedup": "Yavaş kısımları hızlandır (1.2×)",
+  "easy2.set_speedup_hint": "Kimsenin konuşmadığı yürüme ve loot kısımları biraz hızlı oynar. Konuşma ve asıl an asla.",
+  "easy2.set_banner": "Başlık bandı",
+  "easy2.set_banner_hint": "Üstte senin tarzında, marka renklerinde kısa ve vurucu bir başlık.",
+  "easy2.banner": "Başlık bandı",
+  "easy2.banner_hint": "Klip boyunca üstte kalır.",
+  "easy2.banner_ai": "Yapay zekânın metnini kullan",
+  "easy2.why_hook_later": "aksiyona daha yakın başlıyor",
+  "easy2.hook_score": "Kanca {n}/100",
+  "easy2.hook_better": "Kanca {a} → {b}",
+  "easy2.hook_strong": "ilk 3 saniye güçlü",
+  "easy2.hook_ok": "ilk 3 saniye iyi",
+  "easy2.hook_weak": "yavaş başlıyor",
+  "easy2.hook_flash": "en iyi anla açılıyor",
+  "easy2.hook_later": "{s} sn sonra, aksiyona daha yakın başlıyor",
 };
 
 export default tr;

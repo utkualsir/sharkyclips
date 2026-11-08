@@ -601,3 +601,12 @@
 .ez-nudge:disabled { opacity: 0.55; cursor: default; }
 .ez-nudge .spinner { width: 13px; height: 13px; }
 .ez-smart { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.ez-hook { display: flex; align-items: flex-start; gap: 6px; margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.ez-hook svg { flex: none; margin-top: 2px; }
+.ez-hook b { color: var(--text); font-weight: 600; }
+.ez-hook-strong svg { color: var(--success); }
+.ez-hook-ok svg { color: var(--gold-text); }
+.ez-hook-weak svg { color: var(--danger); }
+.ez-banner-field { display: grid; gap: 8px; }
+.ez-banner-row { display: flex; gap: 8px; align-items: center; }
+.ez-banner-row .input { flex: 1; min-width: 0; }

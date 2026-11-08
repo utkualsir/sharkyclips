@@ -4,6 +4,7 @@ autopilot, phone preview, action tracking, caption fixes, weekly digest."""
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from sharkyclips import shaping
 
@@ -100,3 +101,139 @@ def test_auto_trim_detection():
     assert not shaping.is_auto_trim(None, shape, cand)  # the user went back to the found cut
     e = shaping.edit_for(cand, 10.01, 31.0, {"deleted": [[12, 13]]})
     assert e == {"deleted": [[12, 13]], "start": None, "end": 31.0}
+
+
+# ===================================================================== pacing: slow parts at 1.2x
+
+
+def _talk_project(pid: str, seconds: float = 24.0):
+    """Words in 0.5-5 s and 15-23 s only: 5-15 s is a quiet walk (nobody talks)."""
+    import shutil
+
+    from sharkyclips import config
+    from sharkyclips.project import Project, write_json_atomic
+
+    d = config.workspace_dir() / pid
+    shutil.rmtree(d, ignore_errors=True)
+    d.mkdir(parents=True)
+    write_json_atomic(d / "meta.json", {"title": "T", "duration": seconds, "width": 640, "height": 360, "fps": 30,
+                                        "audio_codec": "aac", "mode": "gaming"})
+    words = [{"start": 0.5 + i * 0.5, "end": 0.9 + i * 0.5, "word": f" a{i}"} for i in range(9)]
+    words += [{"start": 15.0 + i * 0.5, "end": 15.4 + i * 0.5, "word": f" b{i}"} for i in range(16)]
+    write_json_atomic(d / "transcript.json", {"language": "en", "segments": [
+        {"start": 0.5, "end": seconds, "words": words}]})
+    return Project(pid, d)
+
+
+def test_time_stretch_keeps_the_length_asked_for():
+    from sharkyclips.edit import fx
+
+    sr = 48000
+    t = np.arange(sr * 2) / sr
+    x = np.stack([np.sin(2 * np.pi * 440 * t)] * 2, 1).astype(np.float32) * 0.5
+    y = fx.time_stretch(x, int(len(x) / 1.2), sr)
+    assert len(y) == int(len(x) / 1.2) and y.shape[1] == 2
+    # the pitch stays (zero crossings per second ~ 880 for 440 Hz)
+    zc = np.sum(np.abs(np.diff(np.sign(y[sr // 4: -sr // 4, 0])))) / 2 / (len(y) / sr - 0.5)
+    assert 800 < zc < 960
+
+
+@pytest.mark.requires_ffmpeg
+def test_slow_parts_play_faster_and_never_hold_speech(tmp_path):
+    import shutil
+
+    from sharkyclips.clips import ClipOptions, OutputSpec, render_clip
+    from sharkyclips.edit import plan as plan_mod
+    from test_fx import _probe, _source
+
+    proj = _talk_project("easy2-speed")
+    try:
+        _source(proj, 24.0)
+        cand = {"id": "c01", "rank": 1, "start": 0.0, "end": 24.0, "duration": 24.0, "peak": 20.0,
+                "reasons": [{"code": "df_kill", "t": 20.0, "strength": 0.8}], "text": "x"}
+        opts = ClipOptions.from_dict({"speedup": "auto", "profanity": "off", "layout": "fit"})
+        plan = plan_mod.build(proj, cand, opts, fps=30)
+        assert plan.speed, "the quiet walk 5-15 s is sped up"
+        for a, b, f in plan.speed:
+            assert f == plan_mod.SPEED and a >= 5.0 and b <= 15.0 and b - a >= plan_mod.SPEED_MIN_S
+        assert all(not w.get("removed") for w in plan.words)  # no word is touched
+        sp = [i for i in plan.fx.inserts if i.kind == "speed"]
+        saved = sum((i.src_end - i.src) - i.dur for i in sp)
+        assert saved > 1.0
+        dest = tmp_path / "out.mp4"
+        res = render_clip(proj, cand, opts, None, dest, spec=OutputSpec())
+        assert res.info["fx"]["sped_up"] == pytest.approx(saved, abs=0.05)
+        got = _probe(dest)
+        assert got["video"] == pytest.approx(24.0 - saved, abs=0.12)
+        assert got["audio"] == pytest.approx(24.0 - saved, abs=0.12)
+        # off: nothing changes
+        assert not plan_mod.build(proj, cand, ClipOptions.from_dict({"profanity": "off"}), fps=30).speed
+    finally:
+        shutil.rmtree(proj.dir, ignore_errors=True)
+
+
+# ===================================================================== hook check + banner
+
+
+def test_banner_takes_the_quote_or_the_first_sentence():
+    from sharkyclips import hooks
+
+    c = {"publish": {"titles": ['"CB\'YE GİDİYOR LAN" DEDİKTEN SONRA ÇOK GÜZEL PUSLUDUM! 🚨💀 (DELTA FORCE)'], "language": "tr"}}
+    assert hooks.banner_text(c, "tr") == '"CB\'YE GİDİYOR LAN" 🚨💀'
+    c = {"publish": {"titles": ["herkese bastık herkese! düğünden gelen görmez sanıklar 🚨😂"]}}
+    assert hooks.banner_text(c, "tr") == "HERKESE BASTIK HERKESE! 🚨😂"  # Turkish capitals (İ / I right)
+    c = {"publish": {"titles": [], "hook_text": "insane clutch"}, "llm": {"moment_type": "clutch"}}
+    assert hooks.banner_text(c, "en") == "INSANE CLUTCH 🔥"
+    long = {"publish": {"titles": ["a very long title that goes on and on without any stop at all here"]}}
+    b = hooks.banner_text(long, "en")
+    assert len(b) <= hooks.BANNER_MAX + 3 and not b.endswith(" A")  # cut at a word
+    assert hooks.banner_text({"publish": {}}, "en") == ""
+
+
+def test_banner_never_shows_a_swear():
+    from sharkyclips import hooks
+
+    c = {"publish": {"titles": ['"siktir git" dedi! 😂']}}
+    assert "SİKTİR" not in hooks.banner_text(c, "tr")
+
+
+@pytest.mark.requires_ffmpeg
+def test_easy2_project_is_shaped_then_rendered_and_nudged():
+    from sharkyclips import config, easy as E
+    from sharkyclips.web import state
+    from test_publishing import _client, _idle, _project, _wait
+
+    from sharkyclips.web import app as A, easy as WE
+
+    WE.install(A.jobs)  # what the server's startup does: the shape job's end queues the renders
+    config.update(easy_banner=None, easy_speedup=None)
+    project = _project("easy2-flow", 2)
+    E.save(project, easy=True, v2=True)
+    with _client() as c:
+        v = c.post(f"/api/easy/projects/{project.id}/prepare").json()
+        assert v["smart"] is True
+        _wait(_idle, 300)
+        v = c.get(f"/api/easy/projects/{project.id}").json()
+        assert all(x["render"]["status"] == "ready" for x in v["clips"])
+        sh = v["clips"][0]["shape"]
+        assert sh["shaped"] and sh["target"]["kind"] in ("funny", "action") and "hook" in sh
+        assert sh["banner"] == "HUGE PLAY 1"  # the title, in capitals
+        clip = state.load_clips(project)["c01"]
+        o = clip["options"]
+        assert o["safe_zone"] == "shorts" and o["cuts"] == "light" and o["banner"] == "HUGE PLAY 1"
+        assert o["speedup"] == "off"  # off until switched on
+        before = (v["clips"][0]["start"], v["clips"][0]["end"])
+        v = c.post(f"/api/easy/clips/{project.id}/c01/nudge", json={"action": "earlier"}).json()
+        cl = next(x for x in v["clips"] if x["id"] == "c01")
+        assert cl["start"] < before[0] and cl["end"] == before[1] and cl["shape"]["auto"] is False
+        v = c.post(f"/api/easy/clips/{project.id}/c01/nudge", json={"action": "auto"}).json()
+        cl = next(x for x in v["clips"] if x["id"] == "c01")
+        assert (cl["start"], cl["end"]) == before and cl["shape"]["auto"] is True
+        assert c.post(f"/api/easy/clips/{project.id}/c01/nudge", json={"action": "x"}).status_code == 400
+        # own banner text, then none
+        c.post(f"/api/easy/clips/{project.id}/c01/edit", json={"banner": "MY TEXT"})
+        assert E.clip_prefs(E.load(project), "c01")["banner"] == "MY TEXT"
+        c.post(f"/api/easy/clips/{project.id}/c01/edit", json={"banner": ""})
+        v = c.get(f"/api/easy/projects/{project.id}").json()
+        assert v["clips"][0]["shape"]["banner"] == ""
+        _wait(_idle, 300)

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ApiError, easyApi, type EasyClip, type EasyView, type NudgeAction } from "../api";
+import { ApiError, easyApi, type EasyClip, type EasyHook, type EasyView, type NudgeAction } from "../api";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { Icon, type IconName } from "./Icons";
@@ -35,6 +35,7 @@ export function CutRow({ pid, c, disabled, onView }: { pid: string; c: EasyClip;
 
   return (
     <div className="ez-cut">
+      {sh.hook && <HookChip h={sh.hook} />}
       {why.length > 0 && (
         <p className="ez-cut-why">
           <Icon name="scissors" size={14} />
@@ -89,5 +90,22 @@ export function SmartBanner({ pid, onView }: { pid: string; onView: (v: EasyView
         {busy && <span className="spinner" />} {t("easy2.smart_on")}
       </button>
     </div>
+  );
+}
+
+/** The hook check: score of the first 3 seconds, and what was done when it was weak. */
+function HookChip({ h }: { h: EasyHook }) {
+  const { t, num } = useI18n();
+  const level = h.score >= 65 ? "strong" : h.score >= 52 ? "ok" : "weak";
+  const better = h.score > h.before + 0.5;
+  return (
+    <p className={`ez-hook ez-hook-${level}`}>
+      <Icon name="zap" size={14} />
+      <span>
+        <b>{better ? t("easy2.hook_better", { a: num(h.before), b: num(h.score) }) : t("easy2.hook_score", { n: num(h.score) })}</b>
+        {" · "}
+        {h.choice === "flash" ? t("easy2.hook_flash") : h.choice === "later" ? t("easy2.hook_later", { s: num(h.moved, 1) }) : t(`easy2.hook_${level}`)}
+      </span>
+    </p>
   );
 }

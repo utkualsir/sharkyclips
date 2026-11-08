@@ -108,6 +108,38 @@ def transcript_words(project: Project, start: float, end: float,
     return out, tr.get("language")
 
 
+SPEED = 1.2  # slow parts play this much faster (subtle: 1.15-1.25 reads as "tighter", not "fast")
+SPEED_MIN_S = 2.5  # only stretches at least this long
+SPEED_HOOK_S = 3.0  # never in the first seconds (the hook) ...
+SPEED_TAIL_S = 2.0  # ... or the last ones
+SPEED_AROUND_S = 2.5  # nor this close to a big moment
+SPEED_MAX = 4
+
+
+def slow_parts(project: Project, cand: dict, words: list[dict], start: float, end: float) -> list[tuple[float, float]]:
+    """Source ranges where nobody speaks and nothing happens (walking, looting, menus): no
+    word, no reason event / laugh / peak nearby, no loud burst (gunfire, a shout)."""
+    lo, hi = start + SPEED_HOOK_S, end - SPEED_TAIL_S
+    if hi - lo < SPEED_MIN_S:
+        return []
+    talk = merge([(w["start"] - 0.45, w["end"] + 0.45) for w in words])
+    near = [(float(r["t"]) - SPEED_AROUND_S, float(r["t"]) + SPEED_AROUND_S) for r in cand.get("reasons") or []
+            if r.get("t") is not None]
+    peak = cand.get("peak")
+    if peak is not None:
+        near.append((float(peak) - SPEED_AROUND_S - 1.0, float(peak) + SPEED_AROUND_S))
+    near += [(t - 1.5, t + 2.0) for t in laugh_times(project, start, end)]
+    db = silence.frame_db(project.audio_path, start, end)
+    loud = []
+    if len(db):
+        thr = float(np.median(db)) + 9.0
+        idx = np.flatnonzero(db > thr)
+        loud = merge([(start + i * silence.FRAME_S - 0.6, start + (i + 1) * silence.FRAME_S + 0.6) for i in idx], gap=0.3)
+    free = subtract([(lo, hi)], merge(talk + near + loud))
+    parts = [(round(a + 0.15, 3), round(b - 0.15, 3)) for a, b in free if b - a - 0.3 >= SPEED_MIN_S]
+    return sorted(sorted(parts, key=lambda r: -(r[1] - r[0]))[:SPEED_MAX])
+
+
 @dataclass
 class EditPlan:
     start: float
@@ -136,6 +168,7 @@ class EditPlan:
     loop: Seam | None = None  # seamless loop: the seam (end flows back into the start)
     fx: object | None = None  # fx.FxPlan: instant replay, meme effects, chat bubbles (1.2.17)
     dub: dict | None = None  # dub.track_for(): the clip's sound in the user's own voice (1.2.18)
+    speed: list[tuple[float, float, float]] = field(default_factory=list)  # 1.2.34: (src a, src b, factor)
     _starts: list[float] = field(default_factory=list, repr=False)
     _offsets: list[float] = field(default_factory=list, repr=False)
 
@@ -276,6 +309,7 @@ class EditPlan:
             "intro_s": self.intro_s, "outro_s": self.outro_s,
             "loop": self.loop.to_dict() if self.loop is not None else None,
             "fx": self.fx.to_dict() if self.fx is not None else None,
+            "speed": [[round(a, 3), round(b, 3), f] for a, b, f in self.speed],
         }
 
 
@@ -502,6 +536,14 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
                     kept_auto.append((x, y, kind))
         auto = kept_auto
 
+    # ---- 1.2.34 pacing: slow walking / looting parts (nobody talks, nothing happens) at 1.2x
+    if getattr(opts, "speedup", "off") == "auto" and seam is None and project.audio_path.is_file():
+        taken = merge(deleted + [(a, b) for a, b, _k in auto])
+        for a, b in slow_parts(project, cand, words, start, end):
+            for x, y in subtract([(a, b)], taken):
+                if y - x >= SPEED_MIN_S:
+                    auto.append((x, y, "speed"))
+
     removed = [{"a": a, "b": b, "kind": "deleted"} for a, b in deleted]
     for a, b, kind in auto:
         for x, y in subtract([(max(start, a), min(end, b))], deleted):
@@ -529,6 +571,10 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
             w["removed"] = True
 
     plan = EditPlan(start, end, fps, keep, removed, words, lang)
+    plan.speed = [(r["a"], r["b"], SPEED) for r in removed if r["kind"] == "speed"
+                  and any(abs(q(r["a"]) - kb) < 1.5 / fps for _ka, kb in keep)]
+    if len(plan.speed) != sum(1 for r in removed if r["kind"] == "speed"):  # a speed part at the very start
+        plan.removed = [r for r in removed if r["kind"] != "speed" or any(abs(r["a"] - a) < 1e-6 for a, _b, _s in plan.speed)]
     if getattr(opts, "dub", ""):
         from .. import dub as dub_mod
 

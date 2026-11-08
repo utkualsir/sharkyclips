@@ -120,6 +120,20 @@ export default function EasySettings() {
         </div>
         <div className="toggle-line">
           <span>
+            <b>{t("easy2.set_banner")}</b>
+            <span className="muted ez-hint">{t("easy2.set_banner_hint")}</span>
+          </span>
+          <Toggle checked={settings?.banner !== false} onChange={(v) => update({ banner: v })} label={t("easy2.set_banner")} />
+        </div>
+        <div className="toggle-line">
+          <span>
+            <b>{t("easy2.set_speedup")}</b>
+            <span className="muted ez-hint">{t("easy2.set_speedup_hint")}</span>
+          </span>
+          <Toggle checked={!!settings?.speedup} onChange={(v) => update({ speedup: v })} label={t("easy2.set_speedup")} />
+        </div>
+        <div className="toggle-line">
+          <span>
             <b>{t("fx.replay")}</b>
             <span className="muted ez-hint">{t("fx.replay_hint")}</span>
           </span>

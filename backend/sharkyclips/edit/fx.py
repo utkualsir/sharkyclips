@@ -62,7 +62,7 @@ FALLBACK_CAPTIONS = {
 class Insert:
     at: float  # main time where it goes
     dur: float  # output seconds
-    kind: str  # replay | freeze
+    kind: str  # replay | freeze | speed (1.2.34: a slow part played faster, in place of its cut)
     src: float  # replay: source start / freeze: the frozen frame (source time)
     src_end: float = 0.0  # replay: source end
     text: str = ""  # freeze: the meme caption
@@ -86,6 +86,11 @@ class FxPlan:
     @property
     def active(self) -> bool:
         return bool(self.inserts or self.shakes or self.punches or self.bubbles)
+
+    @property
+    def effects(self) -> list[Insert]:
+        """The inserts that are effects (replay / freeze), not sped-up slow parts."""
+        return [i for i in self.inserts if i.kind != "speed"]
 
     @property
     def extra(self) -> float:
@@ -171,9 +176,18 @@ def build(project, cand: dict, opts, plan, max_len: float | None = None) -> FxPl
     replay = getattr(opts, "replay", "off") == "auto"
     memes = getattr(opts, "memes", "off")
     bubbles_on = bool(getattr(opts, "chat_bubbles", False))
-    if plan.loop is not None or not (replay or memes in MEME_COUNT or bubbles_on):
+    speed = list(getattr(plan, "speed", []) or [])
+    if plan.loop is not None or not (replay or memes in MEME_COUNT or bubbles_on or speed):
         return None
     fx = FxPlan(memes=memes if memes in MEME_COUNT else "off")
+    # ---- 1.2.34 pacing: each sped-up slow part plays where its cut is
+    for a, b, factor in speed:
+        at = plan.to_out(a, "back")
+        if at is None:
+            continue
+        n_out = max(1, round((b - a) / factor * plan.fps))
+        fx.inserts.append(Insert(round(at * plan.fps) / plan.fps, n_out / plan.fps, "speed", round(a, 3), round(b, 3),
+                                 code=f"x{factor:g}"))
     dur = plan.out_duration
     words = plan.out_words()
     taken: list[float] = []
@@ -452,6 +466,31 @@ def write_captions(project, cand: dict, model) -> list[str]:
 # ===================================================================== sound
 
 
+def time_stretch(x: np.ndarray, n_out: int, sr: int, win_s: float = 0.06) -> np.ndarray:
+    """Overlap-add time stretch to n_out samples, pitch kept (fine for game sound / ambience;
+    the sped-up parts never hold speech). x: (n, channels)."""
+    n = len(x)
+    if n_out <= 0 or n == 0:
+        return np.zeros((max(0, n_out), x.shape[1] if x.ndim == 2 else 2), np.float32)
+    win = max(64, int(sr * win_s)) // 2 * 2
+    hop_out = win // 2
+    if n < win or n_out < win:
+        idx = np.linspace(0, n - 1, n_out)
+        return np.stack([np.interp(idx, np.arange(n), x[:, c]) for c in range(x.shape[1])], 1).astype(np.float32)
+    w = np.hanning(win).astype(np.float32)[:, None]
+    out = np.zeros((n_out + 2 * win, x.shape[1]), np.float32)
+    norm = np.zeros((n_out + 2 * win, 1), np.float32)
+    frames = int(np.ceil(n_out / hop_out)) + 1
+    for f in range(frames):
+        o = f * hop_out
+        i = int(round(o * (n - win) / max(1, n_out - win))) if n_out > win else 0
+        i = min(max(0, i), n - win)
+        out[o:o + win] += x[i:i + win] * w
+        norm[o:o + win] += w
+    out = out[:n_out] / np.maximum(norm[:n_out], 1e-3)
+    return out.astype(np.float32)
+
+
 def splice_audio(main: np.ndarray, fx: FxPlan, source, sr: int, has_audio: bool, decode,
                  bleep=None) -> np.ndarray:
     """main (main time, stereo) -> the timeline with the inserts' sound and the effects.
@@ -478,7 +517,12 @@ def splice_audio(main: np.ndarray, fx: FxPlan, source, sr: int, has_audio: bool,
         if len(seg):
             parts.append(fade(seg, 0.0 if cur == 0 else 0.012, 0.012))
         k = n(ins.dur)
-        if ins.kind == "replay" and has_audio:
+        if ins.kind == "speed" and has_audio:  # 1.2.34: faster, same pitch (no voice in there)
+            raw = decode(source, ins.src, ins.src_end - ins.src, sr=sr, channels=2)
+            if len(raw) and bleep is not None:
+                raw = bleep(raw.astype(np.float32, copy=True), ins.src)
+            piece = fade(time_stretch(raw.astype(np.float32), k, sr), 0.012, 0.012) if len(raw) else np.zeros((k, 2), np.float32)
+        elif ins.kind == "replay" and has_audio:
             raw = decode(source, ins.src, ins.src_end - ins.src, sr=sr, channels=2)
             if len(raw) and bleep is not None:
                 raw = bleep(raw.astype(np.float32, copy=True), ins.src)
@@ -665,7 +709,7 @@ def ass_lines(fx: FxPlan, lead: float, geo, layout: str, ts, lang: str | None, z
             out.append(f"Dialogue: 5,{ts(a + 0.05)},{ts(b)},meme,,0,0,0,,{{\\an5\\pos({geo.cap_x},{y})\\frz4"
                        f"\\fscx40\\fscy40\\t(0,140,\\fscx112\\fscy112)\\t(140,260,\\fscx100\\fscy100)\\fad(0,120)}}{text}")
     if fx.bubbles and zone is not None:
-        hidden = [(a + lead, b + lead) for a, b, _i in fx.insert_ranges()]
+        hidden = [(a + lead, b + lead) for a, b, i in fx.insert_ranges() if i.kind != "speed"]
         items = []
         for bb in fx.bubbles:
             a, b = fx.final(bb["a"]) + lead, fx.final(bb["b"], end=True) + lead

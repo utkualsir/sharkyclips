@@ -2125,6 +2125,21 @@ const en: Record<string, string> = {
   "easy2.smart_title": "New: smart cuts",
   "easy2.smart_body": "Every clip keeps its setup and its punchline, gets a good length and a strong first 3 seconds. The clips are made again.",
   "easy2.smart_on": "Turn on",
+  "easy2.set_speedup": "Speed up slow parts (1.2×)",
+  "easy2.set_speedup_hint": "Walking and looting with nobody talking plays a little faster. Never speech or the big moment.",
+  "easy2.set_banner": "Headline banner",
+  "easy2.set_banner_hint": "A short punchy headline on top, in your style and your brand colours.",
+  "easy2.banner": "Headline banner",
+  "easy2.banner_hint": "Stays on top for the whole clip.",
+  "easy2.banner_ai": "Use the AI's text",
+  "easy2.why_hook_later": "starts closer to the action",
+  "easy2.hook_score": "Hook {n}/100",
+  "easy2.hook_better": "Hook {a} → {b}",
+  "easy2.hook_strong": "strong first 3 seconds",
+  "easy2.hook_ok": "good first 3 seconds",
+  "easy2.hook_weak": "slow start",
+  "easy2.hook_flash": "opens with the best moment",
+  "easy2.hook_later": "starts {s} s later, closer to the action",
 };
 
 export default en;

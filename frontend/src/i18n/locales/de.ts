@@ -2123,6 +2123,21 @@ const de: Record<string, string> = {
   "easy2.smart_title": "Neu: smarte Schnitte",
   "easy2.smart_body": "Jeder Clip behält Aufbau und Pointe, bekommt eine gute Länge und starke erste 3 Sekunden. Die Clips werden neu erstellt.",
   "easy2.smart_on": "Einschalten",
+  "easy2.set_speedup": "Langsame Stellen beschleunigen (1,2×)",
+  "easy2.set_speedup_hint": "Laufen und Looten ohne Sprache läuft etwas schneller. Nie Sprache oder der große Moment.",
+  "easy2.set_banner": "Titelbanner",
+  "easy2.set_banner_hint": "Eine kurze, knackige Überschrift oben, in deinem Stil und deinen Markenfarben.",
+  "easy2.banner": "Titelbanner",
+  "easy2.banner_hint": "Bleibt den ganzen Clip über oben.",
+  "easy2.banner_ai": "Text der KI nehmen",
+  "easy2.why_hook_later": "beginnt näher an der Action",
+  "easy2.hook_score": "Hook {n}/100",
+  "easy2.hook_better": "Hook {a} → {b}",
+  "easy2.hook_strong": "starke erste 3 Sekunden",
+  "easy2.hook_ok": "gute erste 3 Sekunden",
+  "easy2.hook_weak": "langsamer Start",
+  "easy2.hook_flash": "beginnt mit dem besten Moment",
+  "easy2.hook_later": "beginnt {s} s später, näher an der Action",
 };
 
 export default de;

@@ -2068,6 +2068,21 @@ const zh: Record<string, string> = {
   "easy2.smart_title": "新功能：智能剪辑",
   "easy2.smart_body": "每个片段都保留铺垫和笑点，长度合适，前 3 秒更抓人。片段会重新制作。",
   "easy2.smart_on": "开启",
+  "easy2.set_speedup": "加速平淡片段（1.2×）",
+  "easy2.set_speedup_hint": "没人说话的走路、搜刮片段会稍微加快。说话和高光时刻绝不加速。",
+  "easy2.set_banner": "标题横幅",
+  "easy2.set_banner_hint": "顶部一条简短有力的标题，用你的风格和品牌颜色。",
+  "easy2.banner": "标题横幅",
+  "easy2.banner_hint": "整个片段都显示在顶部。",
+  "easy2.banner_ai": "用 AI 的文字",
+  "easy2.why_hook_later": "更靠近高潮开始",
+  "easy2.hook_score": "开头吸引力 {n}/100",
+  "easy2.hook_better": "开头吸引力 {a} → {b}",
+  "easy2.hook_strong": "前 3 秒很抓人",
+  "easy2.hook_ok": "前 3 秒不错",
+  "easy2.hook_weak": "开头偏慢",
+  "easy2.hook_flash": "用最精彩的瞬间开场",
+  "easy2.hook_later": "晚 {s} 秒开始，更靠近高潮",
 };
 
 export default zh;

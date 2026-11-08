@@ -2074,6 +2074,21 @@ const ar: Record<string, string> = {
   "easy2.smart_title": "جديد: القص الذكي",
   "easy2.smart_body": "يحتفظ كل مقطع بتمهيده ونهايته، ويحصل على طول جيد وأول 3 ثوانٍ قوية. ستُصنع المقاطع من جديد.",
   "easy2.smart_on": "تشغيل",
+  "easy2.set_speedup": "تسريع الأجزاء البطيئة (1.2×)",
+  "easy2.set_speedup_hint": "يُعرض المشي وجمع الغنائم دون كلام أسرع قليلًا. لا يُسرَّع الكلام ولا اللحظة الكبرى أبدًا.",
+  "easy2.set_banner": "شريط العنوان",
+  "easy2.set_banner_hint": "عنوان قصير وجذاب في الأعلى بأسلوبك وألوان علامتك.",
+  "easy2.banner": "شريط العنوان",
+  "easy2.banner_hint": "يبقى في الأعلى طوال المقطع.",
+  "easy2.banner_ai": "استخدم نص الذكاء الاصطناعي",
+  "easy2.why_hook_later": "يبدأ أقرب إلى الحدث",
+  "easy2.hook_score": "الجذب {n}/100",
+  "easy2.hook_better": "الجذب {a} ← {b}",
+  "easy2.hook_strong": "أول 3 ثوانٍ قوية",
+  "easy2.hook_ok": "أول 3 ثوانٍ جيدة",
+  "easy2.hook_weak": "بداية بطيئة",
+  "easy2.hook_flash": "يبدأ بأفضل لحظة",
+  "easy2.hook_later": "يبدأ بعد {s} ث، أقرب إلى الحدث",
 };
 
 export default ar;

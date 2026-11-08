@@ -1831,6 +1831,10 @@ export interface EasySettings {
   visualizer: "off" | "auto";
   /** 1.2.21 "Check swears strictly": auto (= Strict for vertical clips) or normal */
   swear_strict: "auto" | "normal";
+  /** 1.2.34 Easy 2.0: slow parts at 1.2x, the headline banner, Autopilot */
+  speedup?: boolean;
+  banner?: boolean;
+  autopilot?: boolean;
 }
 
 // ---------------------------------------------------------------- automation + live (1.2.17)
@@ -1980,7 +1984,7 @@ export interface EasyClip {
   duration: number;
   found: { start: number; end: number };
   bounds: { start: number; end: number };
-  prefs: { title: string | null; subtitles: boolean; music: boolean };
+  prefs: { title: string | null; subtitles: boolean; music: boolean; banner?: string | null };
   render: {
     status: "ready" | "waiting" | "queued" | "rendering" | "error";
     progress: number | null;
@@ -2006,7 +2010,7 @@ export interface EasyClip {
 }
 
 export type ShapeWhy =
-  | "setup_sentence" | "setup_lead" | "ai_setup" | "payoff_event" | "payoff_reaction" | "payoff_sentence" | "ai_payoff";
+  | "setup_sentence" | "setup_lead" | "ai_setup" | "payoff_event" | "payoff_reaction" | "payoff_sentence" | "ai_payoff" | "hook_later";
 export type NudgeAction = "earlier" | "later" | "short" | "long" | "auto";
 
 export interface EasyHook {
@@ -2132,7 +2136,7 @@ export const easyApi = {
   more: (pid: string) => req<EasyView>("POST", `${EP(pid)}/more`),
   setMode: (pid: string, mode: Mode) => req<EasyView>("POST", `${EP(pid)}/mode`, { mode }),
   retry: (pid: string) => req<EasyView>("POST", `${EP(pid)}/retry`),
-  edit: (pid: string, cid: string, body: { title?: string; subtitles?: boolean; music?: boolean; start?: number; end?: number }) =>
+  edit: (pid: string, cid: string, body: { title?: string; subtitles?: boolean; music?: boolean; start?: number; end?: number; banner?: string | null }) =>
     req<EasyView>("POST", `${EZ(pid, cid)}/edit`, body),
   discard: (pid: string, cid: string) => req<EasyView>("POST", `${EZ(pid, cid)}/discard`),
   nudge: (pid: string, cid: string, action: NudgeAction) => req<EasyView>("POST", `${EZ(pid, cid)}/nudge`, { action }),

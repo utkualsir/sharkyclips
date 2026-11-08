@@ -2098,6 +2098,21 @@ const hu: Record<string, string> = {
   "easy2.smart_title": "Új: okos vágások",
   "easy2.smart_body": "Minden klip megtartja a felvezetést és a csattanót, jó hosszt és erős első 3 másodpercet kap. A klipek újra elkészülnek.",
   "easy2.smart_on": "Bekapcsolás",
+  "easy2.set_speedup": "Lassú részek gyorsítása (1,2×)",
+  "easy2.set_speedup_hint": "A beszéd nélküli sétálás és lootolás kicsit gyorsabb. Beszéd és a nagy pillanat soha.",
+  "easy2.set_banner": "Címsáv",
+  "easy2.set_banner_hint": "Rövid, ütős címsor felül, a stílusodban és a márkaszíneidben.",
+  "easy2.banner": "Címsáv",
+  "easy2.banner_hint": "Az egész klip alatt felül marad.",
+  "easy2.banner_ai": "Az MI szövege",
+  "easy2.why_hook_later": "közelebb kezdődik az akcióhoz",
+  "easy2.hook_score": "Horog {n}/100",
+  "easy2.hook_better": "Horog {a} → {b}",
+  "easy2.hook_strong": "erős első 3 másodperc",
+  "easy2.hook_ok": "jó első 3 másodperc",
+  "easy2.hook_weak": "lassú kezdés",
+  "easy2.hook_flash": "a legjobb pillanattal indul",
+  "easy2.hook_later": "{s} mp-cel később, közelebb az akcióhoz indul",
 };
 
 export default hu;

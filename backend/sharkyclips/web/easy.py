@@ -86,7 +86,16 @@ def _lang(project: Project) -> str | None:
 def wanted(project: Project, cand: dict, data: dict, review: dict, style: str, music_ok: bool,
            lang: str | None) -> tuple[dict, str]:
     """(render options, hook text) Easy mode wants for this clip."""
-    opts, hk = E.render_options(E.clip_prefs(data, cand["id"]), style, music_ok, E.fx_options(data))
+    prefs = E.clip_prefs(data, cand["id"])
+    opts, hk = E.render_options(prefs, style, music_ok, E.fx_options(data))
+    if data.get("v2"):  # Easy 2.0: pacing, the hook check, the banner, the Shorts safe zone
+        from .. import hooks
+
+        mode = project.load_meta().get("mode") or "gaming"
+        sh = dict(shape_of(data, cand["id"]) or {})
+        if E.v2_settings()["banner"] and prefs.get("banner") is None:  # follows new titles by itself
+            sh["banner"] = hooks.banner_text(cand, (cand.get("publish") or {}).get("language") or lang)
+        opts.update(E.v2_options(mode, sh, prefs))
     if hk == "question":
         from .. import abtest
 
@@ -631,8 +640,15 @@ def shape_card(data: dict, cand: dict, eff: dict, review: dict, mode: str) -> di
            "length": shaping.length_note(float(eff["duration"]), tgt), "shaped": bool(sh)}
     if sh.get("hook"):
         out["hook"] = sh["hook"]
-    if sh.get("banner") is not None:
-        out["banner"] = sh["banner"]
+    prefs = E.clip_prefs(data, cand["id"])
+    if prefs.get("banner") is not None:
+        out["banner"] = prefs["banner"]
+    elif E.v2_settings()["banner"]:
+        from .. import hooks
+
+        out["banner"] = hooks.banner_text(cand, (cand.get("publish") or {}).get("language"))
+    else:
+        out["banner"] = ""
     return out
 
 
@@ -778,6 +794,9 @@ def api_edit(project_id: str, cid: str, body: dict) -> dict:
         changes["subtitles"] = bool(body["subtitles"])
     if "music" in body:
         changes["music"] = bool(body["music"])
+    if "banner" in body:  # 1.2.34: None = the AI's headline, "" = no banner, else own text
+        b = body.get("banner")
+        changes["banner"] = None if b is None else " ".join(str(b).split())[:80]
     if changes:
         E.set_clip_prefs(project, cid, **changes)
     if "start" in body or "end" in body:

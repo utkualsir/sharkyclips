@@ -76,7 +76,7 @@ def settings() -> dict:
             "downloads": str(downloads_root()), **fx_settings(),
             "auto_clip": bool(config.get("auto_clip_enabled")),
             "platform": config.get("easy_platform") if config.get("easy_platform") in ("youtube", "tiktok", "reels") else "youtube",
-            **extras_settings()}
+            **extras_settings(), **v2_settings()}
 
 
 def save_settings(body: dict) -> dict:
@@ -101,6 +101,9 @@ def save_settings(body: dict) -> dict:
         changes["easy_study_cards"] = body["study_cards"]
     if body.get("visualizer") in ("off", "auto"):
         changes["easy_visualizer"] = body["visualizer"]
+    for key in ("speedup", "banner", "autopilot"):  # 1.2.34 Easy 2.0 switches
+        if key in body:
+            changes[f"easy_{key}"] = bool(body[key])
     if body.get("swear_strict") in ("auto", "normal"):
         changes["easy_swear_strict"] = body["swear_strict"] == "auto"
     if changes:
@@ -144,14 +147,16 @@ def save(project: Project, **changes) -> dict:
 def clip_prefs(data: dict, cid: str) -> dict:
     c = data["clips"].get(cid) or {}
     return {"title": c.get("title") or None, "subtitles": c.get("subtitles") is not False,
-            "music": bool(c.get("music"))}
+            "music": bool(c.get("music")),
+            # 1.2.34 headline banner: None = the AI's (when the switch is on), "" = none, else own text
+            "banner": c.get("banner") if isinstance(c.get("banner"), str) else None}
 
 
 def set_clip_prefs(project: Project, cid: str, **changes) -> dict:
     with _lock:
         data = load(project)
         cur = {**(data["clips"].get(cid) or {})}
-        cur.update({k: v for k, v in changes.items() if v is not None or k == "title"})
+        cur.update({k: v for k, v in changes.items() if v is not None or k in ("title", "banner")})
         data["clips"][cid] = cur
         write_json_atomic(_path(project), data)
         return clip_prefs(data, cid)
@@ -220,6 +225,30 @@ def extras_settings() -> dict:
     strict = config.get("easy_swear_strict") is not False
     return {"study_cards": sc if sc in ("off", "auto") else "auto", "visualizer": mv if mv in ("off", "auto") else "auto",
             "swear_strict": "auto" if strict else "normal"}
+
+
+def v2_settings() -> dict:
+    """1.2.34 switches: slow parts at 1.2x (off), the headline banner (on), Autopilot (off)."""
+    return {"speedup": config.get("easy_speedup") is True, "banner": config.get("easy_banner") is not False,
+            "autopilot": config.get("easy_autopilot") is True}
+
+
+def v2_options(mode: str, shape: dict | None, prefs: dict) -> dict:
+    """Render options Easy 2.0 adds for one clip: dead air tightened (not for music), slow parts
+    faster (when switched on), the hook check's choice, the headline banner, the Shorts safe zone."""
+    s = v2_settings()
+    out: dict = {"safe_zone": "shorts"}
+    if mode != "music":
+        out["cuts"] = "light"
+        if s["speedup"]:
+            out["speedup"] = "auto"
+    if (shape or {}).get("flash"):
+        out["hook_flash"] = True
+    banner = prefs.get("banner")
+    if banner is None:
+        banner = (shape or {}).get("banner") if s["banner"] else ""
+    out["banner"] = banner or ""
+    return out
 
 
 def render_options(prefs: dict, style: str, music_ok: bool, fx: dict | None = None) -> tuple[dict, str | None]:

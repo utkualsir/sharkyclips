@@ -78,13 +78,18 @@ class ClipOptions:
     dub: str = ""  # "" = original voice; a language code = the clip spoken in the user's own voice (dub.py)
     study_cards: str = "auto"  # off | auto (study mode: formulas / definitions / steps as cards)
     visualizer: str = "auto"  # off | auto (music mode: beat-synced visualizer + karaoke lyrics)
+    # 1.2.34 Easy 2.0: slow parts (no talking, nothing happening) at 1.2x; a headline banner on top
+    speedup: str = "off"  # off | auto
+    banner: str = ""  # "" = none, else the headline text shown at the top for the whole clip
+    safe_zone: str = ""  # "" = none | "shorts": captions / hook / banner stay clear of the Shorts buttons
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
         data = data or {}
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
                 "profanity_captions", "bleep_sound", "swear_strict", "bleep_visual", "bleep_icon", "speaker_colors", "speaker_names", "cuts", "zoom",
-                "music", "brand", "loop", "replay", "chat_bubbles", "memes", "dub", "study_cards", "visualizer")
+                "music", "brand", "loop", "replay", "chat_bubbles", "memes", "dub", "study_cards", "visualizer",
+                "speedup", "banner", "safe_zone")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.chat_bubbles = bool(opts.chat_bubbles)
         opts.hook_flash = bool(opts.hook_flash)
@@ -96,6 +101,7 @@ class ClipOptions:
                               ("zoom", ("off", "subtle", "strong")), ("replay", ("off", "auto")),
                               ("memes", ("off", "light", "strong")),
                               ("study_cards", ("off", "auto")), ("visualizer", ("off", "auto")),
+                              ("speedup", ("off", "auto")), ("safe_zone", ("", "shorts")),
                               ("bleep_sound", ("classic", "boop", "custom")),
                               ("swear_strict", ("auto", "normal", "strict", "paranoid"))):
             if getattr(opts, name) not in allowed:
@@ -116,6 +122,7 @@ class ClipOptions:
             raise SharkyClipsError(f"Unknown subtitle style '{opts.subtitles}'.",
                                    f"Use one of: {', '.join(SUBTITLE_STYLES)}")
         opts.hook_text = str(opts.hook_text or "").strip()[:120]
+        opts.banner = " ".join(str(opts.banner or "").split())[:80]
         return opts
 
     def to_dict(self) -> dict:
@@ -201,6 +208,26 @@ class Geometry:
                 cap = min(cap, h - bottom - 120)
             geo = cls(w, h, (left + w - right) // 2, cap, max(hook, top + 30), 1.0, 70 + left, 70 + right)
         return geo
+
+
+def with_safe_zone(spec: OutputSpec, opts: ClipOptions) -> OutputSpec:
+    """1.2.34: opts.safe_zone "shorts" keeps the text clear of the Shorts buttons and title area
+    (a plain 9:16 render has no safe zone of its own)."""
+    if opts.safe_zone != "shorts" or spec.frame != "vertical" or any(spec.safe):
+        return spec
+    from dataclasses import replace
+
+    from .export import PRESETS
+
+    return replace(spec, safe=PRESETS["youtube_shorts"].safe)
+
+
+def banner_y(geo: Geometry, layout: str) -> int:
+    """Where the headline banner sits: on the line between facecam and gameplay (split), else at
+    the top, below the app's own buttons."""
+    if layout == "split":
+        return SPLIT_TOP - int(round(66 * geo.scale))
+    return geo.hook_y if geo.hook_y is not None else (120 if layout != "fit" else 330)
 
 
 def flash_from(peak: float, src_duration: float, src_fps: float) -> float:
@@ -387,6 +414,13 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
                      f"100,100,0,0,{border},{outline},{shadow},5,{geo.margin_l},{geo.margin_r},0,1")
     lines.append(f"Style: hook,{font},{sz(64)},{NAVY},{NAVY},{WHITE},&H40000000,-1,0,0,0,"
                  f"100,100,0,0,3,{sz(22)},0,8,{geo.margin_l + 20},{geo.margin_r + 20},0,1")
+    if opts.banner:  # 1.2.34 headline banner: the brand kit's highlight colour as the box
+        from .edit.brand import ass_color as _ac
+
+        box = _ac((style or {}).get("highlight") or "#D9B56A")
+        ink = _ac((style or {}).get("outline") or "#0E1A33") if (style or {}).get("outline") else NAVY
+        lines.append(f"Style: banner,{font},{sz(62)},{ink},{ink},{box},&H50000000,-1,0,0,0,"
+                     f"100,100,0,0,3,{sz(20)},0,8,{geo.margin_l + 10},{geo.margin_r + 10},0,1")
     lines.append(f"Style: card,{font},{sz(80)},{WHITE},{WHITE},&H00000000,&H00000000,-1,0,0,0,"
                  f"100,100,0,0,1,0,0,5,{geo.margin_l},{geo.margin_r},0,1")
     lines.append(f"Style: handle,{font},{sz(38)},{WHITE},{WHITE},&H60000000,&H80000000,-1,0,0,0,"
@@ -511,7 +545,13 @@ def build_ass(words: list[dict], duration: float, opts: ClipOptions, layout: str
             event(a, max(b, a + 0.35), "bleepicon",
                   f"{{\\an5\\pos({bx},{by})\\fscx60\\fscy60\\t(0,110,\\fscx112\\fscy112)"
                   f"\\t(110,200,\\fscx100\\fscy100)\\fad(40,120)}}#@!", layer=2)
-    if opts.hook and hook_text:
+    if opts.banner:  # the headline stays on screen for the whole clip (it replaces the hook text)
+        text = _ass_escape(opts.banner)
+        if rtl:
+            text = "‫" + text + "‬"
+        event(hook_start, offset + duration, "banner",
+              f"{{\\an8\\pos({geo.cap_x},{banner_y(geo, layout)})\\fad({hook_fade_in},0)}}{text}", layer=1, shift=False)
+    elif opts.hook and hook_text:
         hook_y = geo.hook_y if geo.hook_y is not None else (120 if layout != "fit" else 330)
         text = _ass_escape(hook_text)
         if rtl:
@@ -848,7 +888,7 @@ def _render_core(project: Project, cand: dict, opts: ClipOptions, facecam: Facec
     if source is None:
         raise SharkyClipsError("The project's source video is missing.",
                                "Re-run: python cli.py ingest <url-or-path>")
-    spec = spec or OutputSpec()
+    spec = with_safe_zone(spec or OutputSpec(), opts)
     meta = project.load_meta()
     src_w, src_h, square = source_size(source, meta)  # the real picture size (1.2.22), not the stored one
     _SQUARE.set(square)
@@ -1086,7 +1126,13 @@ def _fx_video(g: list[str], fxp, fx_in: list[int], layout: str, src_w: int, src_
         prev = max(prev, fr)
         lbl = f"fxi{k}"
         n_out = max(1, round(ins.dur * F))
-        if ins.kind == "replay":
+        if ins.kind == "speed":  # 1.2.34: a slow part, a bit faster (plain frame pick, same layout)
+            n_src = max(1, round((ins.src_end - ins.src) * F))
+            g.append(f"[{fx_in[k]}:v]fps={F},trim=end_frame={n_src},setpts=N/({F}*TB)*{n_out}/{n_src},"
+                     f"fps={F},trim=end_frame={n_out},setpts=N/({F}*TB)[{lbl}s]")
+            g.append(_filter_graph(layout, src_w, src_h, facecam, f"{lbl}s", f"{lbl}b", size))
+            g.append(f"[{lbl}b]setsar=1,format=yuv420p[{lbl}]")
+        elif ins.kind == "replay":
             n_src = max(1, round((ins.src_end - ins.src) * F))
             g.append(f"[{fx_in[k]}:v]{fx_mod.slowmo_chain(F, n_src, n_out, fxp.smooth, (src_w, src_h))}[{lbl}s]")
             z = fx_mod.zoom_filter(fx_mod.zoom_expr(1.06, 1.16, n_out), 0.5)
@@ -1234,7 +1280,7 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
             tail_i, n_in = n_in, n_in + 1
         fx_in: list[int] = []
         for ins in (fxp.inserts if fxp is not None else []):
-            if ins.kind == "replay":
+            if ins.kind in ("replay", "speed"):
                 inputs += ["-ss", seek_at(ins.src, fps), "-t", f"{ins.src_end - ins.src + 0.2:.3f}", "-i", src]
             else:
                 inputs += ["-ss", seek_at(ins.src, fps), "-t", "0.4", "-i", src]
@@ -1362,6 +1408,7 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         if fxp is not None:
             info["fx"] = {"replays": sum(i.kind == "replay" for i in fxp.inserts),
                           "freezes": sum(i.kind == "freeze" for i in fxp.inserts),
+                          "sped_up": round(sum((i.src_end - i.src) - i.dur for i in fxp.inserts if i.kind == "speed"), 2),
                           "shakes": len(fxp.shakes) + len(fxp.punches), "bubbles": len(fxp.bubbles),
                           "smooth": fxp.smooth, "extra": round(fxp.extra, 2),
                           "inserts": [{**i.to_dict(), "at_out": round(lead + fxp.final(i.at, end=True), 3)}

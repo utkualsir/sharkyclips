@@ -603,6 +603,10 @@ function EditSheet({
   const [end, setEnd] = useState(clip.end);
   const [subs, setSubs] = useState(clip.prefs.subtitles);
   const [music, setMusic] = useState(clip.prefs.music);
+  // 1.2.34 headline banner: the AI's text unless the user typed one ("" = no banner)
+  const aiBanner = clip.prefs.banner == null ? clip.shape?.banner ?? "" : "";
+  const [banner, setBanner] = useState<string>(clip.prefs.banner ?? clip.shape?.banner ?? "");
+  const [bannerOn, setBannerOn] = useState(clip.prefs.banner !== "" && !!(clip.prefs.banner ?? clip.shape?.banner));
   const [saving, setSaving] = useState(false);
   const [srcOk, setSrcOk] = useState(true);
   const vid = useRef<HTMLVideoElement>(null);
@@ -624,12 +628,16 @@ function EditSheet({
       if (title.trim() !== clip.title) body.title = title.trim();
       if (subs !== clip.prefs.subtitles) body.subtitles = subs;
       if (music !== clip.prefs.music) body.music = music;
+      if (clip.shape) {
+        const want = !bannerOn ? "" : banner.trim() === aiBanner.trim() && clip.prefs.banner == null ? null : banner.trim();
+        if (want !== (clip.prefs.banner ?? null)) body.banner = want;
+      }
       if (trimmed) {
         body.start = start;
         body.end = end;
       }
       onSaved(await easyApi.edit(pid, clip.id, body));
-      toast({ kind: "ok", text: body.start != null || body.subtitles != null || body.music != null ? t("easy.saved_rerender") : t("common.saved") });
+      toast({ kind: "ok", text: body.start != null || body.subtitles != null || body.music != null || body.banner !== undefined ? t("easy.saved_rerender") : t("common.saved") });
     } catch (e) {
       if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
     } finally {
@@ -748,6 +756,26 @@ function EditSheet({
           <Toggle checked={music && musicAvailable} onChange={(v) => musicAvailable && setMusic(v)} label={t("easy.music")} />
         </div>
       </div>
+
+      {clip.shape && (
+        <fieldset className="ez-field ez-banner-field">
+          <legend>{t("easy2.banner")}</legend>
+          <div className="toggle-line">
+            <span className="muted ez-hint">{t("easy2.banner_hint")}</span>
+            <Toggle checked={bannerOn} onChange={setBannerOn} label={t("easy2.banner")} />
+          </div>
+          {bannerOn && (
+            <div className="ez-banner-row">
+              <input className="input" dir="auto" value={banner} maxLength={80} onChange={(e) => setBanner(e.target.value)} aria-label={t("easy2.banner")} />
+              {aiBanner && banner !== aiBanner && (
+                <button type="button" className="link-btn" onClick={() => setBanner(aiBanner)}>
+                  {t("easy2.banner_ai")}
+                </button>
+              )}
+            </div>
+          )}
+        </fieldset>
+      )}
 
       <DubSwitch pid={pid} cid={clip.id} compact />
 
