@@ -565,6 +565,15 @@ def prefer_small_llm() -> bool:
     return _gov is not None and _gov.prefer_small_llm()
 
 
+def full_speed() -> bool:
+    """Turbo mode, or the PC is idle / locked (the CLI, without a governor: Turbo mode only)."""
+    if _gov is None:
+        from . import config
+
+        return str(config.get("performance_mode") or "") == "turbo"
+    return _gov.full_speed()
+
+
 def vram_budget_mb() -> float | None:
     return None if _gov is None else _gov.vram_budget_mb()
 

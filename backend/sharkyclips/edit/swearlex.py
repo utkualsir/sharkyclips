@@ -280,7 +280,7 @@ def classify(word: str, lang: str | None, prob: float = 1.0) -> tuple[str, float
         if k in TR_ABBREV:
             return ("sure", 1.0, "abbrev")
         key = tr_key(k)  # ı kept
-        if key in TR_NOT:
+        if key in TR_NOT or k.startswith(("şikay", "şikây")):  # "şikayet" (complaint) folds to "sik..."
             return None
         for p in TR_PATTERNS:
             if not p.rx.match(key):

@@ -302,9 +302,46 @@ def has_socials(text: str) -> bool:
     return bool(split_socials(text)[1]) or bool(links and all(u in (text or "") for u in links))
 
 
-def with_socials(text: str, lang: str | None, limit: int | None = None) -> str:
-    """`text` + the socials block (once). With a limit, the block shrinks first, never the links."""
+HASHTAG_LABEL = re.compile(r"^\s*(?:hashtag'?ler|hashtags?|etiketler)\s*:?\s*$", re.I)
+
+
+def split_tail_hashtags(text: str) -> tuple[str, list[str]]:
+    """(text, the hashtags of its last lines): trailing lines made only of #tags, and a
+    "Hashtag'ler:" label line right above them."""
+    lines = (text or "").rstrip().split("\n")
+    tags: list[str] = []
+    while lines and lines[-1].strip() and all(w.startswith("#") for w in lines[-1].split()):
+        tags = lines.pop().split() + tags
+    if tags and lines and HASHTAG_LABEL.match(lines[-1]):
+        lines.pop()
+    return "\n".join(lines).rstrip(), tags
+
+
+def _my_layout(text: str, lang: str | None, limit: int | None, short: bool) -> str | None:
+    """My style (Brand kit): text, the socials block, then "Hashtag'ler:" + the hashtags.
+    Shorts get no socials block unless "Socials on Shorts" is on."""
+    from ..titles import style
+
+    lay = style.layout(lang)
+    if lay is None:
+        return None
+    body, tags = split_tail_hashtags(text)
+    before, block = split_socials(body)  # a block typed by the user stays, before the hashtags
+    if not block and (not short or lay["short_socials"]):
+        block = socials_block(lang)
+    tail = f"{lay['label']}\n{' '.join(tags)}" if tags else ""
+    if limit is not None and block:
+        block = fit_block(block, max(0, limit - len(before) - len(tail) - 4))
+    return "\n\n".join(x for x in (before.strip(), block, tail) if x).strip()
+
+
+def with_socials(text: str, lang: str | None, limit: int | None = None, short: bool = False) -> str:
+    """`text` + the socials block (once). With a limit, the block shrinks first, never the links.
+    short: a Shorts upload (My style can leave the block out there)."""
     text = (text or "").rstrip()
+    mine = _my_layout(text, lang, limit, short)
+    if mine is not None:
+        return mine
     if has_socials(text):
         return text
     block = socials_block(lang)

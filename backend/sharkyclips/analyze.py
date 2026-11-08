@@ -29,6 +29,7 @@ from typing import Callable
 
 from . import config, languages
 from . import titles as titles_mod
+from .titles import style as style_mod
 from .errors import SharkyClipsError
 from .highlights.modes import get_mode
 from .project import Project, read_json, write_json_atomic
@@ -716,7 +717,11 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
     profile = "fast" if fast else "normal"
     gl = None
     gtag = f"{game['id']}:{banks.BANK_VERSION}" if mode == "gaming" else "-"
-    with llm.lazy_session() as model:
+    # My style (Brand kit): the creator's own title / description / hashtag style
+    mine = style_mod.active(out_lang) if mode == "gaming" else None
+    sdig = style_mod.digest(out_lang, gid, "short") if mine else "-"
+    strong = bool(mine) and llm.metadata_boost()  # idle PC / Turbo: the big model, more drafts
+    with llm.lazy_session(llm.choose_model(ignore_fast=True) if strong else None) as model:
         for i, c in enumerate(todo):
             t0 = time.perf_counter()
             calls0 = model.calls
@@ -752,19 +757,20 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 gl = glossary_for(j["game_or_topic"])
                 gdig = hashlib.sha1(gl.digest().encode()).hexdigest()[:10]
                 tkey = _cache_key(model.model, out_lang, w, mode, transcript,
-                                  extra=f"titles:{style}:{gdig}:{gtag}" + (":fast" if fast else ""))
+                                  extra=f"titles:{style}:{gdig}:{gtag}" + (":fast" if fast else "")
+                                  + (f":my{sdig}" if mine else ""))
                 tfile = cache_dir / f"titles_{tkey}.json"
                 if tfile.is_file() and not force:
                     tw = read_json(tfile)
                 else:
                     tw = _write_titles(model, meta, mode, w, transcript, out_lang, j, gl, used_titles, fast=fast,
-                                       game=game, facts=facts, bank=bank)
+                                       game=game, facts=facts, bank=bank, mine=mine, strong=strong)
                     write_json_atomic(tfile, tw)
                     cached = False
                 if not cached:
                     record_speed(profile, model.model, time.perf_counter() - t0, "analysis")
                 tw = titles_mod.refilter(tw, out_lang, has_profanity,
-                                         forbidden=_forbidden(gid))
+                                         forbidden=_forbidden(gid), mild_ok=bool(mine))
             except SharkyClipsError as exc:  # one bad clip must not stop the batch
                 console.print(f"[yellow]#{c['rank']}: skipped ({exc.message[:160]})[/]")
                 failed.append({"rank": c["rank"], "error": exc.message})
@@ -794,6 +800,12 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
 
             hashtags, tags = clip_tags(mode, game, facts, j.get("moment_type"), out_lang, j.get("hashtags") or [],
                                        j["game_or_topic"], _channel_names(meta))
+            my_desc = None
+            if mine and tw["titles"]:  # My style: description first, its mood / search words feed the tags
+                my_desc = _my_description(model, mine, meta, mode, w, transcript, out_lang, j, tw["titles"][0]["text"],
+                                          gl, game, facts, cache_dir, extra=f"{sdig}:{gdig}:{gtag}", force=force,
+                                          strong=strong)
+                hashtags, tags = _my_tags(mine, "short", game, facts, j, w, transcript, out_lang, my_desc, tags)
             cover_text = tw["cover_text"] or (j.get("cover_text") or "").strip()
             if meta_only:
                 pub = c["publish"]
@@ -801,7 +813,8 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 pub.setdefault("titles_original", list(pub.get("titles") or []))
                 if len(tw["titles"]) < 4:
                     old = list(dict.fromkeys((pub.get("titles") or []) + pub["titles_original"]))
-                    tw = {**tw, "titles": _top_up(tw["titles"], old, out_lang, _forbidden(gid))}
+                    tw = {**tw, "titles": (_top_up_style(tw["titles"], old, out_lang, _forbidden(gid), j, w, transcript)
+                                           if mine else _top_up(tw["titles"], old, out_lang, _forbidden(gid)))}
                 old_cover = pub.get("cover_text") or ""
                 pub.update({"titles": [t["text"] for t in tw["titles"]], "title_styles": [t["style"] for t in tw["titles"]],
                             "title_checks": tw.get("checks"), "hashtags": hashtags, "tags": tags,
@@ -839,21 +852,29 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
                 pub["facts"] = {"events": [e["label"] for e in facts.get("events", [])],
                                 "terms": [t["term"] for t in facts.get("terms", [])]}
 
+            if mine:
+                pub["description"] = (style_mod.compose(my_desc["text"], pub["hashtags"])
+                                      if my_desc and my_desc["text"] else None)
+                pub["style"] = {"profile": "my_style", "format": "short", "strong": strong,
+                                "problems": (my_desc or {}).get("problems") or []}
+            else:
+                pub.pop("style", None)
             # YouTube description (own cache: clips analyzed before 1.2.1 only need this call)
             dkey = _cache_key(model.model, out_lang, w, mode, transcript,
                               extra=f"desc{DESCRIPTION_VERSION}:{gdig}:{gtag}:{(pub['titles'] or [''])[0]}")
             dfile = cache_dir / f"desc_{dkey}.json"
             try:
-                if dfile.is_file() and not force:
-                    raw = read_json(dfile)["text"]
-                else:
-                    raw = write_description(model, meta, mode, w, transcript, out_lang, j,
-                                            (pub["titles"] or [""])[0], gl, game=game, facts=facts)
-                    write_json_atomic(dfile, {"text": raw})
-                pub["description"] = finish_description(raw, out_lang, gl, pub["hashtags"], game_id=gid)
-                if not pub["description"] or pub["description"].startswith("#"):  # no usable text
-                    pub["description"] = None
-                    dfile.unlink(missing_ok=True)  # try again on the next run
+                if not mine:  # My style: written above, in the creator's layout
+                    if dfile.is_file() and not force:
+                        raw = read_json(dfile)["text"]
+                    else:
+                        raw = write_description(model, meta, mode, w, transcript, out_lang, j,
+                                                (pub["titles"] or [""])[0], gl, game=game, facts=facts)
+                        write_json_atomic(dfile, {"text": raw})
+                    pub["description"] = finish_description(raw, out_lang, gl, pub["hashtags"], game_id=gid)
+                    if not pub["description"] or pub["description"].startswith("#"):  # no usable text
+                        pub["description"] = None
+                        dfile.unlink(missing_ok=True)  # try again on the next run
             except SharkyClipsError as exc:
                 console.print(f"[yellow]#{c['rank']}: no description ({exc.message[:160]})[/]")
                 pub["description"] = None
@@ -916,11 +937,14 @@ def _clip_lines(transcript: dict, c: dict) -> str:
 def _write_titles(model, meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict, gl,
                   used_titles: list[str], avoid: list[str] | None = None, temperature: float = 0.75,
                   fast: bool = False, game: dict | None = None, facts: dict | None = None,
-                  bank: dict | None = None) -> dict:
+                  bank: dict | None = None, mine: dict | None = None, strong: bool = False) -> dict:
     from .titles import banks
 
     gaming = mode == "gaming"
     gid = (game or {}).get("id") if gaming else None
+    if mine and gaming:
+        return _my_titles(model, mine, meta, mode, c, transcript, out_lang, j, gl, used_titles, avoid=avoid,
+                          game=game, facts=facts, strong=strong, temperature=max(temperature, 0.8))
     words = banks.title_words(bank or banks.get(gid), facts or {}, out_lang) if gaming else {}
     return titles_mod.write(
         model, fast=fast, system=SYSTEM, context=_context_block(meta, mode, c, transcript, game, facts), lang=out_lang,
@@ -932,6 +956,109 @@ def _write_titles(model, meta: dict, mode: str, c: dict, transcript: dict, out_l
         forbidden=_forbidden(gid),
         keywords=words.get("keywords"), vocab=words.get("vocab"), facts=banks.facts_text(facts or {}),
         punchy=gaming, game=gid)
+
+
+# ------------------------------------------------------------------ My style (Brand kit)
+
+
+def game_names() -> dict[str, str]:
+    """Example game ids -> names for the prompts ("spider_man_2" -> "Spider Man 2")."""
+    from .titles import banks
+
+    out = {}
+    for e in style_mod.load()["examples"]:
+        g = e["game"]
+        if g and g not in out:
+            b = banks.get(g) if g in banks.ids() else None
+            out[g] = (b or {}).get("name") or g.replace("_", " ").title()
+    return out
+
+
+def _clip_text_around(transcript: dict, c: dict, pad: float = 1.0) -> str:
+    return "\n".join(x["text"] for x in sentences(transcript, max(0.0, c["start"] - pad), c["end"] + pad))[:2500]
+
+
+def _my_titles(model, mine: dict, meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict, gl,
+               used_titles: list[str], avoid: list[str] | None = None, game: dict | None = None,
+               facts: dict | None = None, strong: bool = False, temperature: float = 0.8, fmt: str = "short") -> dict:
+    from .titles import banks, feedback
+
+    gid = (game or {}).get("id")
+    known = bool(game and game.get("known"))
+    tw = style_mod.write_titles(
+        model, mine, system=SYSTEM, context=_context_block(meta, mode, c, transcript, game, facts), lang=out_lang,
+        lang_label=lang_name(out_lang), fmt=fmt, gid=gid if known else None, game_name=game["name"] if known else "",
+        what_happens=j["what_happens"], facts=banks.facts_text(facts or {}), clip_text=_clip_text_around(transcript, c),
+        glossary=gl, used_titles=used_titles, too_similar=too_similar, forbidden=_forbidden(gid),
+        moment=j.get("moment_type"), liked=feedback.examples(out_lang, mode)[0], strong=strong, avoid=avoid,
+        temperature=temperature, game_names=game_names())
+    hook, _f = titles_mod.lexicon.polish(gl.canonicalize(j.get("hook_text") or ""), out_lang, keep=gl.keep_case,
+                                         protected=gl.allowed)
+    hook, _n = style_mod.censor(hook, out_lang)
+    cover, _n = style_mod.censor(j.get("cover_text") or "", out_lang)
+    return {"titles": tw["titles"], "hook_text": titles_mod._short_text(hook, 5),
+            "cover_text": titles_mod.lexicon.strip_emoji(cover), "checks": tw["checks"]}
+
+
+def _my_description(model, mine: dict, meta: dict, mode: str, c: dict, transcript: dict, out_lang: str, j: dict,
+                    title: str, gl, game: dict | None, facts: dict | None, cache_dir, *, extra: str, force: bool,
+                    strong: bool, fmt: str = "short") -> dict:
+    """{text, mood_hashtags, search_tags, problems} in the creator's layout (cached)."""
+    from .titles import banks
+
+    gid = (game or {}).get("id")
+    known = bool(game and game.get("known"))
+    key = _cache_key(model.model, out_lang, c, mode, transcript,
+                     extra=f"mydesc{DESCRIPTION_VERSION}:{fmt}:{extra}:{title}")
+    f = cache_dir / f"mydesc_{key}.json"
+    if f.is_file() and not force:
+        return read_json(f)
+    try:
+        d = style_mod.write_description(
+            model, mine, system=SYSTEM, context=_context_block(meta, mode, c, transcript, game, facts), lang=out_lang,
+            lang_label=lang_name(out_lang), fmt=fmt, gid=gid if known else None,
+            game_name=game["name"] if known else "", what_happens=j["what_happens"],
+            facts=banks.facts_text(facts or {}), clip_text=_clip_text_around(transcript, c), title=title, glossary=gl,
+            forbidden=_forbidden(gid), strong=strong)
+    except SharkyClipsError as exc:
+        console.print(f"[yellow]#{c.get('rank')}: no description ({exc.message[:160]})[/]")
+        return {"text": "", "mood_hashtags": [], "search_tags": [], "problems": [exc.message[:200]]}
+    if d["text"]:
+        write_json_atomic(f, d)
+    return d
+
+
+def _my_tags(mine: dict, fmt: str, game: dict, facts: dict, j: dict, c: dict | None, transcript: dict, out_lang: str,
+             desc: dict | None, bank_tags: list[str]) -> tuple[list[str], list[str]]:
+    gid = game.get("id")
+    known = bool(game.get("known"))
+    forbidden = _forbidden(gid)
+    clip_text = _clip_text_around(transcript, c) if c else ""
+    hashtags = style_mod.build_hashtags(mine, fmt=fmt, gid=gid if known else None,
+                                        game_name=game["name"] if known else "", facts=facts or {},
+                                        moment=j.get("moment_type"), clip_text=clip_text,
+                                        llm=(desc or {}).get("mood_hashtags"), lang=out_lang, forbidden=forbidden)
+    tags = style_mod.build_tags(mine, fmt=fmt, gid=gid if known else None, game_name=game["name"] if known else "",
+                                facts=facts or {}, moment=j.get("moment_type"), llm=(desc or {}).get("search_tags"),
+                                bank_tags=bank_tags, forbidden=forbidden)
+    return hashtags, tags
+
+
+def _top_up_style(new: list[dict], old: list[str], lang: str, forbidden, j: dict, c: dict, transcript: dict,
+                  n: int = 4) -> list[dict]:
+    """Like _top_up, but old titles are rewritten in the creator's style and must pass its checks."""
+    out = list(new)
+    text = _clip_text_around(transcript, c)
+    for t in old:
+        if len(out) >= n:
+            break
+        if not t or has_profanity(t) or forbidden(t):
+            continue
+        f = style_mod.fix_title(t, lang, j.get("moment_type"))
+        if (not style_mod.check_title(f, lang=lang, fmt="short", clip_text=text, forbidden=forbidden)
+                and not any(too_similar(f, x["text"], phrases=False) for x in out)):
+            out.append({"style": "story", "text": f})
+    return out
 
 
 def _sync_hype_curve(project: Project, hl: dict) -> None:
@@ -1005,13 +1132,13 @@ def regenerate_titles(project: Project, cid: str) -> dict:
         extra_allowed=banks.caps_words(bank) if gaming else None)
     what = banks.scrub(c["llm"]["what_happens"], game["id"]) if gaming else c["llm"]["what_happens"]
     what = scrub_profanity(what)
-    j = {"what_happens": what, "game_or_topic": topic,
+    j = {"what_happens": what, "game_or_topic": topic, "moment_type": c["llm"].get("moment_type"),
          "hook_text": pub.get("hook_text") or "", "cover_text": pub.get("cover_text") or ""}
     facts = banks.clip_facts(bank, c, transcript) if gaming else {}
     with llm.session() as model:
         tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, others,
                            avoid=list(pub["titles"]), temperature=0.95, fast=llm.fast_analysis(),
-                           game=game, facts=facts, bank=bank)
+                           game=game, facts=facts, bank=bank, mine=style_mod.active(out_lang) if gaming else None)
     if tw["titles"]:
         pub["titles"] = [t["text"] for t in tw["titles"]]
         pub["title_styles"] = [t["style"] for t in tw["titles"]]

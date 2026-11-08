@@ -30,7 +30,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -595,6 +595,58 @@ export interface ChannelText {
   default_headings: Record<string, string>;
   preview: string;
   preview_lang: string;
+}
+
+/** Brand kit > My style: the creator's own titles / descriptions / hashtags / tags (in ~/.sharkyclips/style) */
+export interface StyleExample {
+  id?: string;
+  format: "short" | "long";
+  game: string;
+  title: string;
+  description: string;
+  hashtags: string[];
+  tags: string[];
+  source?: string;
+  views?: number | null;
+}
+
+export interface StyleProfile {
+  enabled: boolean;
+  lang: string;
+  name: string;
+  channel_tag: string;
+  shorts_socials: boolean;
+  learn_likes: boolean;
+  templates: Record<string, string>;
+  examples: StyleExample[];
+}
+
+export interface StyleGlossary {
+  keep: string[];
+  corrections: Record<string, string>;
+  sounds: Record<string, string>;
+  learned: { from: string; to: string; at: string }[];
+}
+
+export interface StyleState {
+  profile: StyleProfile;
+  exists: boolean;
+  glossary: StyleGlossary;
+  builtin_corrections: Record<string, string>;
+  games: { id: string; name: string }[];
+  folder: string;
+}
+
+/** Full-video (16:9) metadata in the creator's style */
+export interface LongMetadata {
+  titles: string[];
+  description: string;
+  hashtags: string[];
+  tags: string[];
+  profile: "my_style" | "sample";
+  model: string;
+  strong: boolean;
+  at: string;
 }
 
 /** One game's bank (Studio > Games): hashtags, tags, names, key words... as editable JSON */
@@ -1587,6 +1639,12 @@ export const api = {
   channelText: () => req<ChannelText>("GET", "/api/brand/channel"),
   saveChannelText: (d: Partial<Pick<ChannelText, "hashtags" | "names">> & { socials?: Partial<ChannelText["socials"]> }) =>
     req<ChannelText>("PUT", "/api/brand/channel", d),
+  myStyle: () => req<StyleState>("GET", "/api/brand/style"),
+  saveMyStyle: (d: { profile?: Partial<StyleProfile>; glossary?: Partial<StyleGlossary> }) =>
+    req<StyleState>("PUT", "/api/brand/style", d),
+  startMyStyle: () => req<StyleState>("POST", "/api/brand/style/sample"),
+  longMetadata: (id: string) => req<{ long_metadata: LongMetadata | null }>("GET", `${P(id)}/long-metadata`),
+  makeLongMetadata: (id: string, force = false) => req<Job>("POST", `${P(id)}/long-metadata`, { force }),
   gameBanks: () => req<{ games: GameBank[] }>("GET", "/api/studio/games"),
   saveGameBank: (gid: string, bank: Record<string, unknown>) =>
     req<GameBank>("PUT", `/api/studio/games/${encodeURIComponent(gid)}`, { bank }),

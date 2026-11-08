@@ -40,6 +40,9 @@ DEFAULTS: dict[str, Any] = {
     "llm_num_ctx": 8192,
     # "Fast analysis": the small model (llm_fallback_model) and fewer title drafts.
     "fast_analysis": False,
+    # Titles / descriptions: "auto" = the big model and more drafts while the PC is idle or in
+    # Turbo mode, "best" = always, "normal" = never (quality over speed for titles).
+    "metadata_quality": "auto",
     # Run the AI analysis (titles, viral score, ...) by itself after highlights are found.
     "auto_analyze": True,
     # Names and words AI titles must spell exactly like this (game maps, operators, nicknames,

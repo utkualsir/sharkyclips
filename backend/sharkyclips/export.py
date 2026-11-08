@@ -506,6 +506,14 @@ def delete_export(project: Project, export_id: str) -> bool:
         return True
 
 
+def is_vertical(project: Project, name: str) -> bool:
+    """Is this export file a 9:16 (Shorts) video? Unknown files count as vertical."""
+    for e in load_registry(project):
+        if any(f["name"] == name for f in e["files"]):
+            return (e.get("frame") or "vertical") == "vertical"
+    return True
+
+
 def file_path(project: Project, name: str) -> Path | None:
     """A file of an export, by name (only names the registry knows)."""
     for e in load_registry(project):

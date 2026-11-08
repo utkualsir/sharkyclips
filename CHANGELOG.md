@@ -7,6 +7,140 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.28] - 2026-11-08
+
+### New
+- **My style.** Studio > Brand kit > My style holds your own titles, descriptions, hashtags and
+  tags that got views (Shorts and long videos, per game). Gaming texts are now written exactly in
+  that style: ALL CAPS titles with "!" or "?!", two fitting emojis and a short (CONTEXT) at the
+  end, real details from the clip (names, scores like 55 KILL, 1v9). Your examples are used for
+  the same game and format first and are never copied. Titles you like (👍) are added by
+  themselves. Your style stays on your PC only.
+- **Shorts that hook in the first words.** Shorts titles often open with a real line from the
+  clip in quotes ("NASIL ÖLDÜM LAN?!"), checked against what was really said. The hook always
+  comes first, because YouTube shows only about 40 characters. Swears are always censored
+  (S*KTİR), never written out, and only one title per clip may contain one.
+- **Descriptions in your layout.** Shorts: 2-3 short lines with emojis and a comment question
+  ending with 👇, no socials block (you can turn it on). Long videos: a hook opener, one story
+  paragraph about the match, "İyi seyirler!", a like / subscribe / comment line, your socials,
+  then the hashtags.
+- **Hashtags and tags like yours.** 10-12 hashtags (game, game TR, champions or operators, mood,
+  format, your channel tag, #GamingTR) and 10-15 natural search phrases with your name. Never
+  another game.
+- **Full video texts.** A new button on the project page writes the title, description, hashtags
+  and tags for uploading the whole stream as a long 16:9 video. Best-of videos use your
+  long-video style too.
+- **Every result is checked.** Caps, emoji count, censored swears, the right game, real quotes and
+  length are checked, and anything that fails is written again.
+
+### Improved
+- **Gamer Turkish.** Gaming words stay the way streamers write them (kill, revive, ulti, gank,
+  tilt, clutch...): no more "iki katil" or "revize". Spelling and vowel harmony are fixed
+  ("kurtarırdın", "Delta Force'ta"). Words you correct in a title or description are remembered
+  and fixed from then on.
+- **Better quality when the PC is free.** While you're away or in Turbo mode, titles and
+  descriptions use the bigger AI model and more drafts.
+
+### Fixed
+- The word "şikayet" (complaint) is no longer treated as a swear and bleeped.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Yeni
+- **Benim tarzım.** Stüdyo > Marka kiti > Benim tarzım bölümünde izlenme getiren kendi
+  başlıkların, açıklamaların, hashtag'lerin ve etiketlerin duruyor (Shorts ve uzun videolar, oyun
+  oyun). Oyun metinleri artık tam bu tarzda yazılıyor: "!" ya da "?!" ile biten TAMAMI BÜYÜK
+  HARF başlıklar, iki uygun emoji, sonda kısa bir (BAĞLAM), klipten gerçek detaylar (isimler,
+  55 KILL gibi skorlar, 1v9). Örneklerin önce aynı oyun ve format için kullanılıyor, asla
+  kopyalanmıyor. Beğendiğin (👍) başlıklar kendiliğinden ekleniyor. Tarzın sadece senin
+  bilgisayarında duruyor.
+- **İlk kelimelerde yakalayan Shorts.** Shorts başlıkları çoğu zaman klipten tırnak içinde gerçek
+  bir sözle açılıyor ("NASIL ÖLDÜM LAN?!"); sözün gerçekten söylendiği kontrol ediliyor. YouTube
+  yalnızca 40 karakter kadar gösterdiği için kanca her zaman başta. Küfürler her zaman sansürlü
+  (S*KTİR), asla açık yazılmıyor ve bir klipte en fazla bir başlıkta geçebiliyor.
+- **Senin düzeninde açıklamalar.** Shorts: emojili 2-3 kısa satır ve 👇 ile biten bir yorum
+  sorusu, sosyal medya bloğu yok (istersen açabilirsin). Uzun videolar: kanca cümlesi, maçı
+  anlatan tek paragraf, "İyi seyirler!", beğen / abone ol / yorum satırı, sosyal medya hesapların,
+  sonra hashtag'ler.
+- **Seninki gibi hashtag ve etiketler.** 10-12 hashtag (oyun, oyun TR, şampiyonlar ya da
+  operatörler, mod, format, kanal hashtag'in, #GamingTR) ve adınla birlikte 10-15 doğal arama
+  ifadesi. Asla başka bir oyun yok.
+- **Tam video metinleri.** Proje sayfasındaki yeni düğme, yayının tamamını uzun 16:9 video olarak
+  yüklemek için başlık, açıklama, hashtag ve etiketleri yazıyor. Best-of videolar da uzun video
+  tarzını kullanıyor.
+- **Her sonuç kontrol ediliyor.** Büyük harf, emoji sayısı, sansürlü küfür, doğru oyun, gerçek
+  alıntı ve uzunluk kontrol ediliyor; uymayan her şey yeniden yazılıyor.
+
+### İyileştirildi
+- **Oyuncu Türkçesi.** Oyun kelimeleri yayıncıların yazdığı gibi kalıyor (kill, revive, ulti,
+  gank, tilt, clutch...): artık "iki katil" ya da "revize" yok. Yazım ve ünlü uyumu düzeltiliyor
+  ("kurtarırdın", "Delta Force'ta"). Bir başlıkta ya da açıklamada düzelttiğin kelimeler
+  hatırlanıyor ve bundan sonra hep düzeltiliyor.
+- **Bilgisayar boştayken daha iyi kalite.** Sen yokken ya da Turbo modunda başlık ve açıklamalar
+  daha büyük yapay zekâ modeliyle ve daha çok taslakla yazılıyor.
+
+### Düzeltildi
+- "Şikayet" kelimesi artık küfür sanılıp bipleme yapılmıyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Neu: **Mein Stil** (Studio > Brand-Kit). Deine eigenen erfolgreichen Titel, Beschreibungen,
+  Hashtags und Tags; Gaming-Texte werden genau in diesem Stil geschrieben und geprüft, nie kopiert.
+- Shorts-Titel beginnen oft mit einem echten Zitat aus dem Clip, der Hook steht immer vorn,
+  Flüche sind immer zensiert.
+- Neu: **Texte fürs ganze Video** (16:9) auf der Projektseite; Best-of-Videos nutzen deinen Stil.
+- Gaming-Wörter werden nie übersetzt, Korrekturen werden gelernt; mehr Qualität, wenn der PC frei ist.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Új: **Saját stílusom** (Stúdió > Márkakészlet). A saját bevált címeid, leírásaid, hashtagjeid és
+  címkéid; a játékos szövegek pontosan ebben a stílusban készülnek és ellenőrzöttek, soha nem másolva.
+- A Shorts címek gyakran valódi idézettel indulnak a klipből, a horog mindig elöl van, a
+  káromkodás mindig cenzúrázott.
+- Új: **Teljes videó szövegei** (16:9) a projektoldalon; a best-of videók is a stílusodat követik.
+- A játékos szavakat soha nem fordítja le, a javításaidat megtanulja; jobb minőség, ha a gép szabad.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Новое: **Мой стиль** (Студия > Бренд-кит). Ваши удачные названия, описания, хештеги и теги;
+  игровые тексты пишутся точно в этом стиле и проверяются, без копирования.
+- Названия Shorts часто начинаются с настоящей цитаты из клипа, зацепка всегда в начале, мат
+  всегда скрыт звёздочками.
+- Новое: **Тексты для всего видео** (16:9) на странице проекта; best-of тоже в вашем стиле.
+- Игровые слова не переводятся, ваши исправления запоминаются; выше качество, когда ПК свободен.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- جديد: **أسلوبي** (الاستوديو > عُدة العلامة). عناوينك وأوصافك ووسومك الناجحة؛ تُكتب نصوص الألعاب
+  بهذا الأسلوب تمامًا وتُفحص، دون نسخ أبدًا.
+- تبدأ عناوين Shorts غالبًا باقتباس حقيقي من المقطع، والجذب دائمًا في البداية، والشتائم مخفية دائمًا.
+- جديد: **نصوص الفيديو الكامل** (16:9) في صفحة المشروع؛ وفيديوهات best-of بأسلوبك أيضًا.
+- كلمات الألعاب لا تُترجم، وتُحفظ تصحيحاتك؛ جودة أعلى عندما يكون الجهاز متفرغًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 新增：**我的风格**（工作室 > 品牌套件）。保存你自己带来播放量的标题、简介、话题标签和标签；游戏文案完全按这个风格写并逐条检查，绝不照抄。
+- Shorts 标题常以片段里的真实原话开头，钩子总在最前，脏话一律打码。
+- 新增：项目页的**完整视频文案**（16:9）；best-of 视频也用你的风格。
+- 游戏词不再被翻译，你的修改会被记住；电脑空闲时质量更高。
+
+</details>
+
+
 ## [1.2.27] - 2026-11-08
 
 ### Fixed

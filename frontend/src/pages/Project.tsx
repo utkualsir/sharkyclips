@@ -26,6 +26,7 @@ import EditTools from "../components/EditTools";
 import FastReview, { ShortcutSheet } from "../components/FastReview";
 import { ExportDialog, ExportsList, UploadDialog, UploadsLine } from "../components/Publish";
 import { PublishSetupDialog } from "../components/PublishTools";
+import { LongMetaDialog } from "../components/MyStyle";
 import TranscriptEditor from "../components/TranscriptEditor";
 import SwearReview from "../components/SwearReview";
 import VoicesPanel from "../components/VoicesPanel";
@@ -738,6 +739,7 @@ export default function ProjectPage({ id }: { id: string }) {
   };
 
   // 1.2.25: the game every title / description / hashtag / tag is about (no re-render)
+  const [longOpen, setLongOpen] = useState(false);
   const chooseMetaGame = async (choice: string) => {
     try {
       const r = await api.setMetadataGame(id, choice);
@@ -973,6 +975,13 @@ export default function ProjectPage({ id }: { id: string }) {
                 {t("story.button")}
               </a>
             )}
+            {mode === "gaming" && project.analysis && (
+              <button className="btn btn-sm" onClick={() => setLongOpen(true)} title={t("longmeta.hint")}>
+                <Icon name="file" />
+                {t("longmeta.button")}
+              </button>
+            )}
+            {longOpen && <LongMetaDialog projectId={id} onClose={() => setLongOpen(false)} />}
             {project.highlights && (
               <a className="btn btn-sm" href={href.bestof(id)}>
                 <Icon name="layers" />

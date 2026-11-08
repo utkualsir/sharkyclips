@@ -326,8 +326,12 @@ def write_package(project: Project, items: list[dict], lang: str,
     if config.get("llm_enabled") is False or (llm.ollama_exe() is None and llm.server_version(0.5) is None):
         return fallback
     model_name = llm.choose_model()
+    from .titles import style as style_mod
+
+    mine = gaming and style_mod.active(lang) is not None
     payload = [PACKAGE_VERSION, model_name, lang, meta.get("title", ""), gid,
-               [[it["cand"]["id"], it["cand"]["start"], it["cand"]["end"]] for it in items]]
+               [[it["cand"]["id"], it["cand"]["start"], it["cand"]["end"]] for it in items],
+               style_mod.digest(lang, gid, "long") if mine else "-"]
     key = hashlib.sha1(json.dumps(payload).encode()).hexdigest()[:20]
     cache = project.cache_dir / "llm" / f"montage_{key}.json"
     if cache.is_file():
@@ -379,6 +383,18 @@ def write_package(project: Project, items: list[dict], lang: str,
     d["chapters"] = [{"i": c["i"], "label": fix(c["label"]).rstrip(".")} for c in d["chapters"]]
     d["outro_text"] = fix(d.get("outro_text") or "") or fallback["outro_text"]
     d["model"] = model_name
+    if mine:  # My style (Brand kit): the creator's long-video titles and description
+        from . import longmeta
+
+        try:
+            lm = longmeta.write(project, [it["cand"] for it in items], kind="montage", lang=lang, model_name=model_name)
+            if lm["titles"]:
+                d["titles"] = lm["titles"]
+            if lm["description"]:
+                d["description"] = lm["description"]
+            d["hashtags"], d["tags"] = lm["hashtags"], lm["tags"]
+        except SharkyClipsError as exc:
+            console.print(f"[yellow]Best-of: My style texts failed ({exc.message}); plain texts kept.[/]")
     write_json_atomic(cache, d)
     return d
 

@@ -145,8 +145,14 @@ RUDE = {
 }
 
 
-def is_rude(text: str, lang: str) -> bool:
+MILD = re.compile(r"(?<!\w)(?:u?lan|len)(?!\w)", re.I)
+
+
+def is_rude(text: str, lang: str, mild_ok: bool = False) -> bool:
+    """mild_ok: "lan" / "ulan" are fine (My style: the creator's own titles use them)."""
     rx = RUDE.get(lang)
+    if mild_ok:
+        text = MILD.sub(" ", text)
     return bool(rx and rx.search(text))
 
 
@@ -513,9 +519,9 @@ def _polish_all(items: list[dict], lang: str, g: Glossary, punchy: bool = False,
     return out
 
 
-def refilter(tw: dict, lang: str, has_profanity, forbidden=None) -> dict:
+def refilter(tw: dict, lang: str, has_profanity, forbidden=None, mild_ok: bool = False) -> dict:
     """Drop titles / texts that the current swear, rude-word and other-game filters reject."""
-    bad = lambda x: has_profanity(x) or is_rude(x, lang) or bool(forbidden and forbidden(x))  # noqa: E731
+    bad = lambda x: has_profanity(x) or is_rude(x, lang, mild_ok) or bool(forbidden and forbidden(x))  # noqa: E731
     keep = [t for t in tw.get("titles", []) if not bad(t["text"])]
     return {**tw, "titles": keep,
             "hook_text": "" if bad(tw.get("hook_text", "")) else tw.get("hook_text", ""),

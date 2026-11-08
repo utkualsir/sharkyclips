@@ -21,6 +21,7 @@ import { useMeta } from "../meta";
 import { href, type StudioTab } from "../router";
 import { useToast } from "../toast";
 import { LearnedWords, SwearCheckReview } from "../components/SwearCheck";
+import { MyStyleCard } from "../components/MyStyle";
 
 const MOODS: Mood[] = ["hype", "chill", "sad", "funny"];
 const POSITIONS: LogoPos[] = ["tl", "tr", "bl", "br"];
@@ -441,6 +442,7 @@ function BrandTab() {
   return (
     <div className="settings-list">
       <ChannelTextCard />
+      <MyStyleCard />
       <BrandPresets />
     </div>
   );

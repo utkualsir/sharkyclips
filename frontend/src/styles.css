@@ -4238,3 +4238,28 @@ a.edit-note:hover { text-decoration: underline; }
 .channel-text .channel-heads > summary { cursor: pointer; font-size: 13px; color: var(--muted, inherit); margin-bottom: 8px; }
 .games-json { min-height: 420px; font-size: 12px; white-space: pre; overflow: auto; tab-size: 2; }
 .field-error { color: var(--danger); font-size: 13px; margin: 6px 0 0; }
+
+/* 1.2.28 Brand kit > My style, project > Full video texts */
+.my-style .channel-heads > summary { cursor: pointer; font-size: 13px; color: var(--muted, inherit); margin-bottom: 8px; }
+.empty-inline { display: grid; gap: 10px; }
+.style-examples { list-style: none; margin: 6px 0 10px; padding: 0; display: grid; gap: 6px; min-width: 0; }
+.style-examples > li { border: 1px solid var(--border); border-radius: var(--r-sm, 8px); background: var(--surface-2, transparent); min-width: 0; }
+.style-ex-head {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; padding: 8px 10px;
+  background: none; border: 0; color: inherit; font: inherit; text-align: start; cursor: pointer;
+}
+.style-ex-head .chip { flex: none; }
+.style-ex-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.style-ex-body { display: grid; gap: 10px; padding: 4px 10px 12px; min-width: 0; }
+.style-rules { margin: 0; padding-inline-start: 18px; display: grid; gap: 4px; font-size: 13px; }
+.long-titles { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.long-titles > li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.long-titles > li > span:first-child { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.modal .channel-preview {
+  margin: 6px 0 0; padding: 10px 12px; border-radius: var(--radius, 10px); background: var(--surface-2, rgba(127, 127, 127, 0.08));
+  border: 1px solid var(--border); font-family: inherit; font-size: 13px; line-height: 1.5; white-space: pre-wrap;
+  overflow-wrap: anywhere; max-height: 40vh; overflow: auto;
+}
+.my-style, .my-style > div { min-width: 0; }
+.my-style p, .my-style .field-hint, .my-style .toggle-line > span { overflow-wrap: anywhere; }
+.my-style .brand-grid { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }

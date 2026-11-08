@@ -109,8 +109,12 @@ def prefill(project: Project, cand: dict) -> dict:
 
     text, tags_in_desc = P.split_hashtags(pub.get("description") or "")
     hashtags = tags_in_desc or [h if h.startswith("#") else f"#{h}" for h in (pub.get("hashtags") or [])[:8]]
-    chan = brand.channel_hashtags()  # the channel's own tags always lead (older analyses too)
-    hashtags = chan + [h for h in hashtags if h.casefold() not in {c.casefold() for c in chan}]
+    from ..titles import style
+
+    if style.layout(pub.get("language")) is None or not tags_in_desc:
+        chan = brand.channel_hashtags()  # the channel's own tags always lead (older analyses too)
+        hashtags = chan + [h for h in hashtags if h.casefold() not in {c.casefold() for c in chan}]
+    # My style: the creator's own order (game first, channel tag near the end) stays
     meta = project.load_meta()
     spoken = None
     if project.transcript_path.is_file():
@@ -126,6 +130,38 @@ def prefill(project: Project, cand: dict) -> dict:
             "hashtags": [h.lstrip("#") for h in hashtags], "tags": P.suggest_tags(pub, meta, _mode(project)),
             "category": youtube.CATEGORY.get(_mode(project), "20"), "language": pub.get("language") or spoken,
             "cover": {**d["cover"], "kind": cover_kind, "text": pub.get("cover_text") or title}}
+
+
+def learn_corrections(cand: dict, old: dict, new: dict) -> list:
+    """My style: words the creator corrected in an AI title / description go into the glossary
+    ("iki katil" -> "double kill") and are fixed in all future metadata."""
+    from ..titles import style
+
+    pub = cand.get("publish") or {}
+    lang = new.get("language") or pub.get("language") or "tr"
+    found = []
+    try:
+        title = new.get("title") or ""
+        if title and title != old.get("title") and title not in (pub.get("titles") or []):
+            from difflib import SequenceMatcher
+
+            ai = [t for t in [old.get("title") or ""] + list(pub.get("titles") or []) if t]
+            if ai:
+                base = max(ai, key=lambda t: SequenceMatcher(None, t.casefold(), title.casefold()).ratio())
+                found += style.learn_from_edit(base, title, lang)
+        desc = new.get("description") or ""
+        if desc and desc != (old.get("description") or ""):
+            found += style.learn_from_edit(old.get("description") or "", desc, lang)
+    except Exception:  # noqa: BLE001 - learning must never block saving
+        return []
+    return found
+
+
+def _preset_is_short(meta: dict) -> bool:
+    from .. import export
+
+    p = export.PRESETS.get(meta.get("preset") or "")
+    return p is None or p.frame == "vertical"
 
 
 def clean_meta(m: dict, base: dict) -> dict:
@@ -580,7 +616,8 @@ def upload_body(project: Project, cand: dict, item: dict, source: str, ab: dict 
         credit = e["music"]["credit"]
     body = {"source": source, "title": meta["title"],
             "description": P.compose_description(meta.get("description") or "", meta.get("hashtags") or [], credit,
-                                                 lang=meta.get("language") or (cand.get("publish") or {}).get("language")),
+                                                 lang=meta.get("language") or (cand.get("publish") or {}).get("language"),
+                                                 short=_app().is_short_source(project, source)),
             "tags": meta.get("tags") or [], "made_for_kids": bool(meta.get("made_for_kids")),
             "language": meta.get("language"), "category": meta.get("category") or "20",
             "plan_key": P.key_of(project.id, cand["id"]),
@@ -934,13 +971,15 @@ def api_setup_save(project_id: str, cid: str, body: dict) -> dict:
     project, cand, key = _key_parts(project_id, cid)
     item = _item_for(project, cid)
     meta = clean_meta(body.get("meta") or {}, item["meta"])
+    learn_corrections(cand, item["meta"], meta)
     live = state.live_upload(project, cid)
     applied = None
     if live:
         note = (live.get("ai_voice") or {}).get("line") if (live.get("ai_voice") or {}).get("note") else None
         snippet = youtube.build_body(meta["title"],
                                      youtube.with_note(P.compose_description(meta.get("description") or "", meta.get("hashtags") or [],
-                                                                           lang=meta.get("language")), note),
+                                                                           lang=meta.get("language"),
+                                                                           short=_preset_is_short(meta)), note),
                                      meta.get("tags") or [], "private", None, meta["made_for_kids"],
                                      meta.get("category") or "20", meta.get("language"))["snippet"]
         youtube.update_video(live["video_id"], snippet=snippet)

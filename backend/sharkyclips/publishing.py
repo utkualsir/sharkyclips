@@ -431,11 +431,28 @@ def split_hashtags(description: str) -> tuple[str, list[str]]:
 
 
 def compose_description(text: str, hashtags: list[str], credit: str | None = None, lang: str | None = None,
-                        socials: bool = True) -> str:
+                        socials: bool = True, short: bool = False) -> str:
     """The YouTube description: the text, the music credit, the hashtags (channel tag first),
-    then the channel's socials block from the Brand kit (once; its heading in `lang`)."""
+    then the channel's socials block from the Brand kit (once; its heading in `lang`).
+    My style: the socials block comes before the labelled hashtags, and Shorts (short=True)
+    get it only when the creator turned it on."""
     from .edit import brand
+    from .titles import style
 
+    if style.layout(lang) is not None:
+        body, tail = brand.split_tail_hashtags(text or "")
+        before, block = brand.split_socials(body)
+        out = before.strip()
+        if credit and credit not in out:
+            out = f"{out}\n\n{credit}".strip()
+        tags = [("#" + h.lstrip("#")).replace(" ", "") for h in hashtags if h.strip("# ")] or tail
+        if block:
+            out = f"{out}\n\n{block}"
+        full = f"{out}\n\n{' '.join(tags)}".strip() if tags else out
+        if not socials and not block:
+            lay = style.layout(lang)
+            return f"{out}\n\n{lay['label']}\n{' '.join(tags)}".strip() if tags else out
+        return brand.with_socials(full, lang, limit=4900, short=short)
     body, block = brand.split_socials(text or "")
     out = body.strip()
     tags = " ".join(("#" + h.lstrip("#")).replace(" ", "") for h in hashtags if h.strip("# "))

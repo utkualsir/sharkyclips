@@ -1,0 +1,50 @@
+{
+  "_note": "A generic 'My style' sample. Your own profile lives in ~/.sharkyclips/style/profile.json (Studio > Brand kit > My style); put titles, descriptions, hashtags and tags of YOUR videos that worked there. Never copied, only used as style examples.",
+  "enabled": true,
+  "lang": "tr",
+  "name": "",
+  "channel_tag": "",
+  "shorts_socials": false,
+  "examples": [
+    {
+      "format": "short",
+      "game": "",
+      "title": "\"BU NASIL GELDİ?!\" (SON SANİYE DÖNÜŞÜ) 😱🔥",
+      "description": "Son saniyede herkes pes etmişken gelen o hamle... 😱\n\nTakım çoktan kaybettik demişti, tek başıma kalıp maçı çevirdim! 🔥 Ekranda gördüğünüz her şey gerçek.\n\nSiz olsanız bu durumda ne yapardınız? Yorumlara yazın! 👇",
+      "hashtags": ["#KomikAnlar", "#Clutch", "#GamingShorts", "#ShortsTR", "#GamingTR"],
+      "tags": ["oyun komik anlar", "clutch anları", "gaming shorts tr", "oyun shorts", "funny gaming moments"]
+    },
+    {
+      "format": "short",
+      "game": "",
+      "title": "\"BEN HALLEDERİM\" DEDİKTEN 2 SANİYE SONRA... 💀😂",
+      "description": "\"Ben hallederim\" özgüveni... Ta ki köşeyi dönene kadar! 💀\n\nHerkese hava attım, ilk adımda yere yattım. 😂 Her oyuncunun bir kere yaşadığı o an.\n\nSizin de böyle bir rezillik anınız oldu mu? Yorumlara yazın! 👇",
+      "hashtags": ["#KomikAnlar", "#Fail", "#FailMoments", "#GamingShorts", "#ShortsTR", "#GamingTR"],
+      "tags": ["oyun fail anları", "komik oyun anları", "gaming fails", "oyun komedi shorts", "funny gaming moments"]
+    },
+    {
+      "format": "short",
+      "game": "",
+      "title": "TEK BAŞIMA 4 KİŞİYİ İNDİRDİM! (EFORSUZ CLUTCH) 😎🔥",
+      "description": "Takım düştü, geriye bir ben kaldım... 😎\n\nTek tek dördünü de indirip maçı bitirdim! 🔥 Bu kadar rahat beklemiyordum.\n\nSizce bu şans mıydı yoksa yetenek mi? Yorumlara yazın! 👇",
+      "hashtags": ["#Clutch", "#Outplay", "#EfsaneAnlar", "#GamingShorts", "#ShortsTR", "#GamingTR"],
+      "tags": ["clutch anları", "1v4 clutch", "oyun efsane anlar", "gaming shorts tr", "best clutch moments"]
+    },
+    {
+      "format": "long",
+      "game": "",
+      "title": "SON MAÇTA HER ŞEY TERS GİTTİ AMA... TAKIMI SIRTLADIM! 🔥😤 (FULL RAGE)",
+      "description": "Tansiyonun hiç düşmediği, sinirlerin tavan yaptığı efsane bir maçla karşınızdayım!\n\nBu maçta takım arkadaşlarım erkenden dağıldı, ben de tek başıma haritaya baskı kurup maçı çevirmeye çalıştım. Gereksiz ölümler, kaçan fırsatlar ve son dakikadaki o büyük dönüş derken ortaya unutulmaz bir maç çıktı. Kahkahaların ve öfkenin birbirine karıştığı bu maçı sakın kaçırmayın! İyi seyirler!\n\nVideoyu beğenmeyi, kanala abone olmayı ve sizin en çok tilt olduğunuz maçı yorumlarda paylaşmayı unutmayın! 🚀",
+      "hashtags": ["#Gameplay", "#Tilt", "#Rage", "#Carry", "#GamingTR"],
+      "tags": ["oyun türkçe oynanış", "tilt anları", "rage anları", "türkçe gameplay", "full match gameplay"]
+    },
+    {
+      "format": "long",
+      "game": "",
+      "title": "TOPLAM 40 KILL! LOBİYİ TEK BAŞIMIZA TEMİZLEDİK! 🚨💀",
+      "description": "Arkadaşımla birlikte rakibe tek bir nefes bile aldırmadığımız inanılmaz bir maçla karşınızdayım!\n\nBu maçta duom önden girip yolu açtı, ben de arkadan kimseyi geride bırakmadım. Maç sonu tablosunda toplam 40 kill ile hem saldırıda hem savunmada tam bir takım oyunu gösterdik. Tansiyonun bir an bile düşmediği bu maçı sakın kaçırmayın! İyi seyirler!\n\nVideoyu beğenmeyi, kanala abone olmayı ve en sevdiğiniz duo anını yorumlarda belirtmeyi unutmayın! 🚀",
+      "hashtags": ["#Gameplay", "#Duo", "#40Kill", "#GamingTR"],
+      "tags": ["türkçe gameplay", "duo maçları", "40 kill maç", "oyun oynanış türkçe", "full match"]
+    }
+  ]
+}

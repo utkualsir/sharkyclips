@@ -481,6 +481,15 @@ def submit_export(project_id: str, cid: str, request: dict, batch: dict | None =
                        attempt=attempt)
 
 
+def is_short_source(project: Project, source: str) -> bool:
+    """A 9:16 upload (the rendered clip, an A/B variant or a vertical export) = a Short."""
+    from .. import export
+
+    if source == "clip" or source.startswith("ab:"):
+        return True
+    return export.is_vertical(project, source)
+
+
 def _upload_source(project: Project, cid: str, source: str) -> Path:
     """'clip' = the rendered 9:16 clip, 'ab:A' / 'ab:B' = a hook variant, else the name of an
     export file of this clip."""
@@ -532,7 +541,8 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
     from ..edit import brand
 
     lang = body.get("language") or (cand.get("publish") or {}).get("language")
-    desc = brand.with_socials(str(body.get("description") or ""), lang, limit=4800)  # Brand kit socials, once
+    desc = brand.with_socials(str(body.get("description") or ""), lang, limit=4800,  # Brand kit socials, once
+                              short=is_short_source(project, source))
     yt = youtube.build_body(str(body.get("title") or ""),
                             youtube.with_note(desc, ai_voice["line"] if ai_voice["note"] else None),
                             [str(t) for t in body.get("tags") or []], str(body.get("privacy") or "private"),
@@ -1799,7 +1809,41 @@ def api_title_vote(project_id: str, cid: str, body: dict) -> dict:
     feedback.vote(text, pub.get("language") or "tr", max(-1, min(1, value)),
                   mode=hl.get("mode") or "", topic=(c.get("llm") or {}).get("game_or_topic") or "",
                   project=project.id, clip=cid)
+    from ..titles import style
+
+    if (hl.get("mode") or "gaming") == "gaming":  # My style: a liked title joins the examples
+        style.on_vote(text, pub.get("language") or "tr", max(-1, min(1, value)), (pub.get("game") or {}).get("id"),
+                      fmt="short")
     return {"text": text, "vote": max(-1, min(1, value))}
+
+
+def submit_long_metadata(project_id: str, force: bool = False) -> Job:
+    """Full-video (16:9) title, description, hashtags and tags in the creator's style."""
+    def run(job: Job):
+        from .. import longmeta
+
+        jobs.update(job, stage="loading_llm", progress=None)
+        out = longmeta.write(get_project(project_id), force=force,
+                             on_stage=lambda s: jobs.update(job, stage=s, progress=None))
+        return {"titles": len(out["titles"]), "has_description": bool(out["description"])}
+
+    return jobs.submit("long_metadata", "gpu", project_id, {"force": force}, run,
+                       key=f"long_metadata:{project_id}")
+
+
+@app.get("/api/projects/{project_id}/long-metadata")
+def api_long_metadata(project_id: str) -> dict:
+    from .. import longmeta
+
+    return {"long_metadata": longmeta.saved(_project(project_id))}
+
+
+@app.post("/api/projects/{project_id}/long-metadata")
+def api_long_metadata_make(project_id: str, body: dict | None = None) -> dict:
+    project = _project(project_id)
+    if not llm_available():
+        raise SharkyClipsError("The local LLM isn't installed.", "Run: python cli.py doctor")
+    return submit_long_metadata(project.id, bool((body or {}).get("force"))).to_dict()
 
 
 @app.post("/api/projects/{project_id}/analyze")

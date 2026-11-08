@@ -141,6 +141,24 @@ def choose_model(ignore_fast: bool = False) -> str:
     return str(config.get("llm_fallback_model") or SMALL_MODEL)
 
 
+def metadata_boost() -> bool:
+    """Titles and descriptions get the stronger setup (the big model, more drafts) when the PC
+    is idle or in Turbo mode: quality over speed. Config "metadata_quality": auto | best | normal."""
+    from . import governor
+
+    q = str(config.get("metadata_quality") or "auto")
+    if q == "best":
+        return True
+    if q == "normal":
+        return False
+    return governor.full_speed()
+
+
+def metadata_model() -> str | None:
+    """The model for a metadata run: the big one when boosted (None = the normal choice)."""
+    return choose_model(ignore_fast=True) if metadata_boost() else None
+
+
 def installed_models() -> list[str]:
     try:
         r = _http().get(f"{base_url()}/api/tags", timeout=10)

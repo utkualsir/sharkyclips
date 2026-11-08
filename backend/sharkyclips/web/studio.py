@@ -257,6 +257,53 @@ def _channel_view() -> dict:
             "preview": brand.socials_block(lang), "preview_lang": lang}
 
 
+# ------------------------------------------------------------------ My style (titles / descriptions)
+
+
+def _style_view() -> dict:
+    from ..titles import style
+
+    g = style.glossary()
+    return {"profile": style.load(), "exists": style.exists(), "glossary": g,
+            "builtin_corrections": style.BUILTIN_CORRECTIONS, "games": _style_games(),
+            "folder": str(style.folder())}
+
+
+def _style_games() -> list[dict]:
+    from ..titles import banks
+
+    return [{"id": gid, "name": banks.get(gid).get("name") or gid} for gid in banks.ids() if gid != banks.GENERIC]
+
+
+@router.get("/api/brand/style")
+def api_brand_style() -> dict:
+    """Brand kit > My style: the creator's example titles / descriptions and the gamer glossary."""
+    return _style_view()
+
+
+@router.put("/api/brand/style")
+def api_brand_style_put(body: dict) -> dict:
+    from ..titles import style
+
+    body = body or {}
+    if isinstance(body.get("profile"), dict):
+        style.save(body["profile"])
+    if isinstance(body.get("glossary"), dict):
+        style.save_glossary(body["glossary"])
+    return _style_view()
+
+
+@router.post("/api/brand/style/sample")
+def api_brand_style_sample() -> dict:
+    """Start My style from the generic sample (only when there is no profile yet)."""
+    from ..titles import style
+
+    if style.exists() and style.load()["examples"]:
+        raise SharkyClipsError("There is a style profile already.")
+    style.load_sample()
+    return _style_view()
+
+
 # ------------------------------------------------------------------ game banks (titles / hashtags / tags)
 
 

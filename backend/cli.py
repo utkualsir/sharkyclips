@@ -254,6 +254,23 @@ def cmd_analyze(args) -> int:
     return 0
 
 
+def cmd_long_meta(args) -> int:
+    from rich.markup import escape
+
+    from sharkyclips import longmeta
+    from sharkyclips.project import get_project
+
+    out = longmeta.write(get_project(args.id), lang=args.lang, force=args.force)
+    console.print(f"[bold]Long-video metadata[/] ({out['profile']}, {out['model']})")
+    for t in out["titles"]:
+        console.print(f"  {escape(t)}")
+    console.print("")
+    console.print(escape(out["description"] or "(no description)"))
+    console.print("")
+    console.print("Tags: " + escape(", ".join(out["tags"])))
+    return 0
+
+
 def cmd_render(args) -> int:
     from rich.table import Table
 
@@ -864,6 +881,12 @@ def build_parser() -> argparse.ArgumentParser:
     a.add_argument("--no-refine", action="store_true", help="keep the original clip boundaries")
     a.add_argument("--no-translate", action="store_true", help="don't translate subtitles")
     a.set_defaults(func=cmd_analyze)
+
+    lm = sub.add_parser("long-meta", help="My style: title, description, hashtags and tags for the full video (16:9)")
+    lm.add_argument("id", help="project id (a unique prefix is enough)")
+    lm.add_argument("--lang", choices=languages.codes(), help="output language (default: the analysis language)")
+    lm.add_argument("--force", action="store_true", help="ignore the cached answer")
+    lm.set_defaults(func=cmd_long_meta)
 
     r = sub.add_parser("render", help="render vertical 9:16 clips with subtitles")
     r.add_argument("id", help="project id (a unique prefix is enough)")
