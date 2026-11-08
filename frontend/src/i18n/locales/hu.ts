@@ -2148,6 +2148,9 @@ const hu: Record<string, string> = {
   "easy2.ap_on_toast": "A Robotpilóta bekapcsolva",
   "easy2.ap_on_hint": "Az összefoglalód minden reggel {h}:00-kor érkezik.",
   "easy2.ap_nothing_yet": "A következő felvételedre vár.",
+  "easy2.phone_view": "Megjelenítés telefonon",
+  "easy2.phone_hint": "A Shorts gombjai és címe a klipen: a feliratok és a sáv a szaggatott területen belül maradnak.",
+  "easy2.phone_subscribe": "Feliratkozás",
 };
 
 export default hu;

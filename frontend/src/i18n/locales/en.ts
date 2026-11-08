@@ -2175,6 +2175,9 @@ const en: Record<string, string> = {
   "easy2.ap_on_toast": "Autopilot is on",
   "easy2.ap_on_hint": "Your summary arrives every morning at {h}:00.",
   "easy2.ap_nothing_yet": "Waiting for your next recording.",
+  "easy2.phone_view": "Show as on a phone",
+  "easy2.phone_hint": "The Shorts buttons and title over the clip: captions and the banner stay inside the dashed area.",
+  "easy2.phone_subscribe": "Subscribe",
 };
 
 export default en;

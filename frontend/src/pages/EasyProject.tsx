@@ -12,7 +12,7 @@ import {
 import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { CutRow, ReasonChips, SmartBanner, TasteButtons } from "../components/EasyCut";
-import { ConnectionPill } from "../components/EasyAuto";
+import { ConnectionPill, ShortsOverlay, usePhonePreview } from "../components/EasyAuto";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
 import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
@@ -313,6 +313,7 @@ export default function EasyProject({ id }: { id: string }) {
                 onDiscard={() => discard(c)}
                 onView={setView}
                 tasteNeed={view.taste?.need ?? 0}
+                channel={view.youtube.channel?.title}
               />
             ))}
           </ul>
@@ -401,6 +402,7 @@ function ClipCard({
   onDiscard,
   onView,
   tasteNeed,
+  channel,
 }: {
   pid: string;
   c: EasyClip;
@@ -418,12 +420,14 @@ function ClipCard({
   onDiscard: () => void;
   onView: (v: EasyView) => void;
   tasteNeed: number;
+  channel?: string | null;
 }) {
   const { t, num, lang } = useI18n();
   const [menu, setMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const r = c.render;
   const ok = r.status === "ready" && r.has_video;
+  const [phone, setPhone] = usePhonePreview();
   const [cleared, setCleared] = useState(false);
   const hold = !cleared && (r.bleeps?.hold ?? 0) > 0;
   const up = c.upload;
@@ -531,6 +535,19 @@ function ClipCard({
           <input type="checkbox" checked={selected} onChange={onSelect} disabled={!ok} aria-label={t("easy.select_clip", { title: c.title })} />
         </label>
         <span className="ez-dur mono">{fmtTime(c.duration)}</span>
+        {ok && phone && <ShortsOverlay title={c.title} channel={channel} />}
+        {ok && (
+          <button
+            type="button"
+            className={`ez-phone-btn${phone ? " on" : ""}`}
+            aria-pressed={phone}
+            aria-label={t("easy2.phone_view")}
+            title={t("easy2.phone_hint")}
+            onClick={() => setPhone(!phone)}
+          >
+            <Icon name="phone" size={18} />
+          </button>
+        )}
       </div>
       <div className="ez-card-body">
         <ReasonChips c={c}>{ok && <BleepBadge s={cleared && r.bleeps ? { ...r.bleeps, checked: "now", hold: 0 } : r.bleeps} />}</ReasonChips>

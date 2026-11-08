@@ -2173,6 +2173,9 @@ const de: Record<string, string> = {
   "easy2.ap_on_toast": "Autopilot ist an",
   "easy2.ap_on_hint": "Deine Zusammenfassung kommt jeden Morgen um {h}:00.",
   "easy2.ap_nothing_yet": "Wartet auf deine nächste Aufnahme.",
+  "easy2.phone_view": "Wie auf dem Handy zeigen",
+  "easy2.phone_hint": "Shorts-Buttons und Titel über dem Clip: Untertitel und Banner bleiben im gestrichelten Bereich.",
+  "easy2.phone_subscribe": "Abonnieren",
 };
 
 export default de;

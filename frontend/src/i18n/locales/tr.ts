@@ -2142,6 +2142,9 @@ const tr: Record<string, string> = {
   "easy2.ap_on_toast": "Otopilot açık",
   "easy2.ap_on_hint": "Özetin her sabah {h}:00'da gelir.",
   "easy2.ap_nothing_yet": "Bir sonraki kaydın bekleniyor.",
+  "easy2.phone_view": "Telefondaki gibi göster",
+  "easy2.phone_hint": "Klibin üstünde Shorts butonları ve başlık: altyazılar ve bant kesikli alanın içinde kalır.",
+  "easy2.phone_subscribe": "Abone ol",
 };
 
 export default tr;

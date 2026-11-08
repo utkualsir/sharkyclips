@@ -2118,6 +2118,9 @@ const zh: Record<string, string> = {
   "easy2.ap_on_toast": "自动驾驶已开启",
   "easy2.ap_on_hint": "每天早上 {h}:00 发送摘要。",
   "easy2.ap_nothing_yet": "等待你的下一个录像。",
+  "easy2.phone_view": "按手机效果预览",
+  "easy2.phone_hint": "在片段上显示 Shorts 按钮和标题：字幕和横幅都在虚线区域内。",
+  "easy2.phone_subscribe": "订阅",
 };
 
 export default zh;

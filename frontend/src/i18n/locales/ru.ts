@@ -2223,6 +2223,9 @@ const ru: Record<string, string> = {
   "easy2.ap_on_toast": "Автопилот включён",
   "easy2.ap_on_hint": "Сводка приходит каждое утро в {h}:00.",
   "easy2.ap_nothing_yet": "Ждёт следующую запись.",
+  "easy2.phone_view": "Показать как на телефоне",
+  "easy2.phone_hint": "Кнопки и название Shorts поверх клипа: субтитры и баннер остаются в пунктирной зоне.",
+  "easy2.phone_subscribe": "Подписаться",
 };
 
 export default ru;

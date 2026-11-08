@@ -2124,6 +2124,9 @@ const ar: Record<string, string> = {
   "easy2.ap_on_toast": "الطيار الآلي يعمل",
   "easy2.ap_on_hint": "يصل ملخصك كل صباح الساعة {h}:00.",
   "easy2.ap_nothing_yet": "بانتظار تسجيلك التالي.",
+  "easy2.phone_view": "اعرض كما على الهاتف",
+  "easy2.phone_hint": "أزرار Shorts والعنوان فوق المقطع: تبقى الترجمة والشريط داخل المنطقة المتقطعة.",
+  "easy2.phone_subscribe": "اشتراك",
 };
 
 export default ar;
