@@ -1060,6 +1060,14 @@ def api_download_all(project_id: str, request: Request, body: dict | None = None
     return out
 
 
+@router.get("/api/easy/digest")
+def api_digest() -> dict:
+    """The weekly digest: published, views, the best one, what worked, one suggestion."""
+    from .. import digest
+
+    return digest.weekly()
+
+
 @router.get("/api/easy/library")
 def api_library() -> dict:
     """Three tabs: ready (rendered, not planned), planned, live (with views)."""

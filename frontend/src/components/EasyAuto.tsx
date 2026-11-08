@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiError, easyApi, type AutopilotView, type EasyHealth } from "../api";
+import { ApiError, easyApi, type AutopilotView, type EasyHealth, type WeeklyDigest } from "../api";
 import { useI18n } from "../i18n";
 import { href } from "../router";
 import { useToast } from "../toast";
@@ -196,5 +196,77 @@ export function ShortsOverlay({ title, channel }: { title: string; channel?: str
         {title}
       </span>
     </div>
+  );
+}
+
+/** 1.2.34: the weekly digest at the top of the Library. */
+export function WeeklyDigestCard() {
+  const { t, num, lang } = useI18n();
+  const [d, setD] = useState<WeeklyDigest | null>(null);
+  useEffect(() => {
+    easyApi.digest().then(setD).catch(() => {});
+  }, []);
+  if (!d) return null;
+  const compact = (n: number) => new Intl.NumberFormat(`${lang}-u-nu-latn`, { notation: "compact", maximumFractionDigits: 1 }).format(n);
+  const value = (dim: string, v: string) => (dim === "game" ? v : t(`easy2.dg_${dim}_${v}`));
+  const s = d.suggestion;
+  const sugText =
+    s.code === "length" || s.code === "hook" || s.code === "game"
+      ? t(`easy2.dg_sug_${s.code}`, { v: value(s.code, s.value ?? ""), x: num(s.ratio ?? 1, 1) })
+      : s.code === "autopilot"
+        ? t("easy2.dg_sug_autopilot", { n: num(s.n ?? 0), max: num(s.possible ?? 0) })
+        : t(`easy2.dg_sug_${s.code}`);
+  const action =
+    s.code === "connect" || s.code === "autopilot" ? href.settings : s.code === "publish_ready" ? null : null;
+  return (
+    <section className="card ez-digest" aria-labelledby="ez-digest-h">
+      <h2 id="ez-digest-h">{t("easy2.dg_title")}</h2>
+      <div className="ez-digest-stats">
+        <div>
+          <b className="mono">{num(d.published)}</b>
+          <span className="muted">{t("easy2.dg_published")}</span>
+        </div>
+        <div>
+          <b className="mono">{d.views_known ? compact(d.views) : "–"}</b>
+          <span className="muted">{t("easy2.dg_views")}</span>
+        </div>
+        <div className="ez-digest-best">
+          {d.best ? (
+            <>
+              <span className="muted">{t("easy2.dg_best")}</span>
+              {d.best.url ? (
+                <a href={d.best.url} target="_blank" rel="noreferrer" dir="auto">
+                  {d.best.title}
+                </a>
+              ) : (
+                <span dir="auto">{d.best.title}</span>
+              )}
+              <span className="mono">{t("easy2.real_views", { n: compact(d.best.views) })}</span>
+            </>
+          ) : (
+            <span className="muted">{t("easy2.dg_no_views")}</span>
+          )}
+        </div>
+      </div>
+      {d.worked.length > 0 && (
+        <div className="ez-digest-worked">
+          <span className="muted">{t("easy2.dg_worked")}</span>
+          {d.worked.map((w) => (
+            <span key={w.dim} className="ez-chip" dir="auto">
+              {value(w.dim, w.value)} · ×{num(w.ratio, 1)}
+            </span>
+          ))}
+        </div>
+      )}
+      <p className="ez-digest-sug">
+        <Icon name="sparkles" size={15} />
+        <span>{sugText}</span>
+        {action && (
+          <a className="link-btn" href={action}>
+            {t("easy2.dg_do")}
+          </a>
+        )}
+      </p>
+    </section>
   );
 }

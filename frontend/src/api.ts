@@ -2073,6 +2073,21 @@ export interface EasyView {
   taste?: { votes: number; views: number; active: boolean; need: number };
 }
 
+export interface WeeklyDigest {
+  from: string;
+  to: string;
+  published: number;
+  private: number;
+  views: number;
+  views_known: number;
+  likes: number;
+  best: { project_id: string; clip_id: string; title: string; url: string | null; views: number; duration: number; hook: string } | null;
+  worked: { dim: "length" | "hook" | "game"; value: string; ratio: number; n: number; avg_views: number }[];
+  suggestion: { code: "connect" | "publish_ready" | "length" | "hook" | "autopilot" | "game" | "keep_going"; value?: string; ratio?: number; n?: number; possible?: number };
+  daily_limit: number;
+  connected: boolean;
+}
+
 export interface CaptionWord {
   key: string;
   word: string;
@@ -2180,6 +2195,7 @@ export const easyApi = {
     req<{ words: CaptionWord[]; learned: { from: string; to: string; glossary: boolean } | null }>("POST", `${EZ(pid, cid)}/captions`, { key, word }),
   health: (probe = false) => req<EasyHealth>("GET", `/api/easy/health${probe ? "?probe=true" : ""}`),
   autopilot: () => req<AutopilotView>("GET", "/api/easy/autopilot"),
+  digest: () => req<WeeklyDigest>("GET", "/api/easy/digest"),
   upload: (pid: string, cid: string, when: UploadWhen) => req<EasyUploadResult>("POST", `${EZ(pid, cid)}/upload`, { when }),
   uploadMany: (clips: { project_id: string; clip_id: string }[], when: UploadWhen) =>
     req<{ results: (EasyUploadResult & { project_id: string; clip_id: string })[] }>("POST", "/api/easy/upload", { clips, when }),

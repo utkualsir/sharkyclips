@@ -9,6 +9,20 @@ import pytest
 from sharkyclips import shaping
 
 
+@pytest.fixture(autouse=True)
+def _no_leftover_projects():
+    """Projects made by a test are removed afterwards (other tests expect a clean workspace)."""
+    import shutil
+
+    from sharkyclips import config
+
+    before = set(config.workspace_dir().iterdir())
+    yield
+    for d in set(config.workspace_dir().iterdir()) - before:
+        if d.is_dir():
+            shutil.rmtree(d, ignore_errors=True)
+
+
 def _words(spec: list[tuple[float, float, str]]) -> list[dict]:
     return [{"start": a, "end": b, "word": w} for a, b, w in spec]
 
@@ -465,3 +479,38 @@ def test_caption_fix_is_kept_rerendered_and_learned():
         _wait(_idle, 300)
     finally:
         config.update(glossary=old_g, caption_corrections=old_c)
+
+
+# ===================================================================== weekly digest
+
+
+def test_weekly_digest_from_real_upload_records(monkeypatch):
+    from datetime import datetime, timezone
+
+    from sharkyclips import digest, youtube
+    from sharkyclips.project import write_json_atomic
+    from test_publishing import _client, _project
+
+    p1 = _project("easy2-dg1", 3)
+    p2 = _project("easy2-dg2", 3)
+
+    def up(cid, views, at, hook="statement"):
+        return {cid: [{"video_id": f"v{cid}{views}", "url": f"https://youtu.be/{cid}", "privacy": "public",
+                       "published_at": at, "views": views, "likes": 1, "hook_style": hook, "title": f"T {cid} {views}"}]}
+
+    write_json_atomic(p1.dir / "uploads.json", {"uploads": {**up("c01", 1000, "2026-11-06T10:00:00Z"),
+                                                            **up("c02", 200, "2026-11-05T10:00:00Z", "question"),
+                                                            **up("c03", 50, "2026-10-01T10:00:00Z")}})
+    write_json_atomic(p2.dir / "uploads.json", {"uploads": {**up("c01", 900, "2026-11-07T10:00:00Z"),
+                                                            **up("c02", 100, "2026-11-04T10:00:00Z", "question")}})
+    monkeypatch.setattr(youtube, "connected", lambda: True)
+    d = digest.weekly(datetime(2026, 11, 8, 12, 0, tzinfo=timezone.utc))
+    assert d["published"] == 4 and d["views"] == 2200 and d["views_known"] == 4
+    assert d["best"]["views"] == 1000 and d["best"]["clip_id"] == "c01"
+    hook = next(w for w in d["worked"] if w["dim"] == "hook")
+    assert hook["value"] == "statement" and hook["ratio"] > 1.3
+    assert d["suggestion"]["code"] == "hook"
+    monkeypatch.setattr(youtube, "connected", lambda: False)
+    assert digest.weekly(datetime(2026, 11, 8, 12, 0, tzinfo=timezone.utc))["suggestion"]["code"] == "connect"
+    with _client() as c:
+        assert "published" in c.get("/api/easy/digest").json()

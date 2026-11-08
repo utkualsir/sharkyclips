@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { easyApi, urls, type EasyLibRow } from "../api";
 import { Icon } from "../components/Icons";
+import { WeeklyDigestCard } from "../components/EasyAuto";
 import { fmtCompact, fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useJobs } from "../jobs";
@@ -35,6 +36,7 @@ export default function EasyLibrary() {
       <div className="ez-hero">
         <h1 className="display">{t("easy.library_title")}</h1>
       </div>
+      <WeeklyDigestCard />
       <div className="ez-tabs" role="tablist" aria-label={t("easy.library_title")}>
         {TABS.map((k) => (
           <button

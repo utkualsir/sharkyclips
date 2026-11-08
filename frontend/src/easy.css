@@ -722,3 +722,18 @@
 .ez-capword.mine { background: var(--success-soft); color: var(--success); }
 .ez-capword.swear { color: var(--muted); cursor: default; }
 .ez-capfix-input { min-height: 32px; height: 32px; padding: 2px 8px; width: auto; max-width: 100%; font-size: 15px; }
+
+/* ---- Easy 2.0: weekly digest */
+.ez-digest { display: grid; gap: 12px; margin-bottom: 20px; }
+.ez-digest h2 { margin: 0; font-size: 18px; }
+.ez-digest-stats { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 12px 24px; align-items: start; }
+.ez-digest-stats > div { display: grid; gap: 2px; min-width: 0; }
+.ez-digest-stats b { font-size: 26px; color: var(--strong); line-height: 1.1; }
+.ez-digest-best a, .ez-digest-best > span[dir] { font-weight: 600; overflow-wrap: anywhere; color: var(--strong); }
+.ez-digest-worked { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.ez-digest-sug { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--gold-soft); color: var(--text); }
+.ez-digest-sug svg { color: var(--gold-text); flex: none; }
+@media (max-width: 560px) {
+  .ez-digest-stats { grid-template-columns: 1fr 1fr; }
+  .ez-digest-best { grid-column: 1 / -1; }
+}
