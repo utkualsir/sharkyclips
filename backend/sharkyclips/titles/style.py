@@ -57,6 +57,8 @@ BUILTIN_CORRECTIONS = {
     "çift öldürme": "double kill", "üçlü öldürme": "triple kill", "dörtlü öldürme": "quadra kill",
     "beşli öldürme": "pentakill", "revize": "revive", "revize ettim": "revive attım", "revize etti": "revive attı",
     "kurtarırdin": "kurtarırdın", "nihai yetenek": "ulti", "nihai yeteneğini": "ultisini",
+    "nihai yetenekle": "ultiyle", "nihai yeteneği": "ultisi", "dubl kill": "double kill", "dubl-kill": "double kill",
+    "killing sonrası": "kill sonrası",
     "çıkarma": "extract", "yeniden doğma": "spawn", "doğma noktası": "spawn",
 }
 # How a name sounds, for the Turkish suffix after the apostrophe ("Delta Force'ta").
@@ -491,7 +493,7 @@ def ascii_words() -> set[str]:
     return {w for t in keep_terms() + list(BUILTIN_CORRECTIONS.values()) for w in t.lower().split() if w.isascii()}
 
 
-def upper(text: str, lang: str, ascii_ok: set[str] | None = None) -> str:
+def upper(text: str, lang: str, ascii_ok: set[str] | None = None, names: set[str] | None = None) -> str:
     """ALL CAPS the Turkish way (i -> İ, ı -> I); "1v9" keeps its small v; English gaming words
     ("kill", "revive") use the English capital I."""
     keep = {m.start(): m.group(0) for m in VS_TOKEN.finditer(text)}
@@ -501,6 +503,8 @@ def upper(text: str, lang: str, ascii_ok: set[str] | None = None) -> str:
         lw = w.lower() if w.isascii() else lexicon.lower(w, lang)  # "REVİVE" from the model -> "revive"
         if lw.isascii() and lw in words and m.start() not in keep:
             keep[m.start()] = lw.upper()
+        elif names and w.isascii() and w.lower() in names and m.start() not in keep:
+            keep[m.start()] = "".join(lexicon.upper_char(ch, lang) for ch in w.lower())  # DARIUS -> DARİUS
     out, i = [], 0
     while i < len(text):
         if i in keep:
@@ -605,7 +609,7 @@ def fix_apostrophes(text: str) -> str:
 
 
 def fix_title(text: str, lang: str, moment: str | None = None, sounds: dict[str, str] | None = None,
-              ascii_ok: set[str] | None = None) -> str:
+              ascii_ok: set[str] | None = None, names: set[str] | None = None) -> str:
     """Local fixes: gaming terms kept, Turkish spelling, censored swears, ALL CAPS, strong
     punctuation, exactly 2 emojis (before the parenthetical), at most 100 characters."""
     body, paren, em = split_title(text)
@@ -619,7 +623,7 @@ def fix_title(text: str, lang: str, moment: str | None = None, sounds: dict[str,
     body, _n = censor(body, lang)
     paren, _n = censor(paren, lang)
     if lang not in ("ar", "zh", "ja"):
-        body, paren = upper(body, lang, ascii_ok), upper(paren, lang, ascii_ok)
+        body, paren = upper(body, lang, ascii_ok, names), upper(paren, lang, ascii_ok, names)
     if lang == "tr":
         body, _f = fix_tr_suffixes(body, sounds)
         paren, _f = fix_tr_suffixes(paren, sounds)
@@ -740,9 +744,11 @@ def check_title(title: str, *, lang: str, fmt: str, clip_text: str, forbidden=No
     if fmt == "short" and hook_end(title) > SHORT_HOOK + 5:
         errs.append(f"Shorts: put the hook first, it must end within the first {SHORT_HOOK} characters")
     if too_similar:
-        if any(too_similar(title, e, phrases=False) for e in example_titles or []):
+        # compared without the (BRACKET) and emojis: "(DELTA FORCE)" on every title is no repeat
+        main = body
+        if any(too_similar(main, split_title(e)[0], phrases=False) for e in example_titles or []):
             errs.append("copies an example title; write a new one about THIS clip")
-        elif any(too_similar(title, u) for u in used or []):
+        elif any(too_similar(main, split_title(u)[0]) for u in used or []):
             errs.append("repeats another clip's title")
     return errs
 
@@ -774,6 +780,36 @@ def check_long_description(text: str, p: dict, *, lang: str, forbidden=None) -> 
         errs.append("opener, one story paragraph, then the like / subscribe / comment line")
     errs += _common_desc_problems(text, lang, forbidden)
     return errs
+
+
+def _sentences(text: str) -> list[str]:
+    return [x.strip() for x in re.split(r"(?<=[.!?…])\s+|\n+", strip_emojis(text or "")) if len(x.strip()) > 20]
+
+
+def copied_sentences(text: str, p: dict) -> list[str]:
+    """Sentences that (almost) repeat one of the creator's example descriptions. The fixed parts
+    of the templates (the CTA line, "İyi seyirler!", "... karşınızdayım!") don't count."""
+    tpl = p["templates"]
+    pre, _, post = tpl["cta"].partition("{comment}")
+    fixed = [_fold(x) for x in (tpl["sign_off"], tpl["opener_end"].split()[-1] if tpl["opener_end"] else "",
+                                tpl["comment_call"]) if x]
+
+    def core(sent: str) -> str | None:
+        f = _fold(sent)
+        if pre and f.startswith(_fold(pre)[:20]):
+            return None  # the like / subscribe / comment line
+        for x in fixed:
+            f = f.replace(x, " ")
+        f = " ".join(f.split())
+        return f if len(f) >= 25 else None
+
+    ex = [c for e in p["examples"] for s in _sentences(_desc_body_of(e)) if (c := core(s))]
+    out = []
+    for s in _sentences(text):
+        c = core(s)
+        if c and any(SequenceMatcher(None, c, x).ratio() >= 0.75 for x in ex):
+            out.append(s)
+    return out
 
 
 def _common_desc_problems(text: str, lang: str, forbidden=None) -> list[str]:
@@ -1112,6 +1148,22 @@ def build_hashtags(p: dict, *, fmt: str, gid: str | None, game_name: str, facts:
     return out[:12] if len(out) <= 12 else head + names + mood[:12 - len(head + names + fmt_tags + tail)] + fmt_tags + tail
 
 
+def real_words(text: str, extra: set[str] | frozenset[str] = frozenset()) -> bool:
+    """Every word is a real Turkish or English word, a number or a known name ("leof legends": no)."""
+    if not lexicon.available():
+        return True
+    for w in re.findall(r"[^\W_]+", text):
+        lw = w.lower()
+        if w.isdigit() or lw in extra or lexicon.lower(w, "tr") in extra:
+            continue
+        if len(w) == 1:
+            return False  # "lo l şok öldüm"
+        if lexicon.zipf(lexicon.lower(w, "tr"), "tr") < 2.0 and lexicon.zipf(lw, "en") < 3.0 \
+                and lexicon.known_score(lexicon.lower(w, "tr"), "tr") <= 0:
+            return False
+    return True
+
+
 def build_tags(p: dict, *, fmt: str, gid: str | None, game_name: str, facts: dict, moment: str | None,
                llm: list[str] | None, bank_tags: list[str], forbidden=None) -> list[str]:
     """10-15 search phrases: Turkish first, a few English, "<name> Shorts" / "<name> <game>"."""
@@ -1144,10 +1196,12 @@ def build_tags(p: dict, *, fmt: str, gid: str | None, game_name: str, facts: dic
             add(f"{label} {(e.get('search') or e.get('label') or '').lower()}")
     if p["name"]:
         add(f"{p['name']} Shorts" if fmt == "short" else f"{p['name']} {label or 'Gaming'}")
+    known_words = {w.lower() for x in [game, label, p["name"]] + [t["term"] for t in facts.get("terms") or []]
+                   for w in re.findall(r"[^\W_]+", x or "")}
     for t in llm or []:
         if len(out) >= 12:
             break
-        if 2 <= len(t.split()) <= 6:
+        if 2 <= len(t.split()) <= 6 and real_words(t, known_words):
             add(t)
     if game:
         add(f"{game} gameplay TR")
@@ -1179,6 +1233,7 @@ def write_titles(model, p: dict, *, system: str, context: str, lang: str, lang_l
     pool: list[dict] = []
     problems: list[str] = []
     terms = list(glossary.terms) if glossary is not None else []
+    name_words = {w.lower() for t in terms for w in re.findall(r"[^\W\d_]+", t) if w.isascii() and len(w) > 2}
     avoid = list(avoid or [])
     for _r in range(rounds):
         checks["rounds"] += 1
@@ -1208,7 +1263,7 @@ def write_titles(model, p: dict, *, system: str, context: str, lang: str, lang_l
             if quote_of(t["text"]) and not quote_of(new):
                 new = t["text"]  # the proofreader dropped the quote marks
             text = glossary.canonicalize(new) if glossary is not None else new
-            final = fix_title(text, lang, moment)
+            final = fix_title(text, lang, moment, names=name_words)
             if final != t["text"]:
                 checks["fixed"].append([t["text"], final])
             errs = check_title(final, lang=lang, fmt=fmt, clip_text=clip_text, forbidden=forbidden,
@@ -1220,7 +1275,7 @@ def write_titles(model, p: dict, *, system: str, context: str, lang: str, lang_l
                                             | {"lan", "ulan"})
             if unknown:
                 errs.append("unknown words: " + ", ".join(unknown[:3]))
-            if not errs and any(too_similar(final, k["text"], phrases=False) for k in pool):
+            if not errs and any(too_similar(split_title(final)[0], split_title(k["text"])[0], phrases=False) for k in pool):
                 errs.append("duplicate")
             if errs:
                 checks["rejected"].append({"text": final, "reason": "; ".join(errs)})
@@ -1277,15 +1332,18 @@ def write_description(model, p: dict, *, system: str, context: str, lang: str, l
     schema = SHORT_DESC_SCHEMA if fmt == "short" else LONG_DESC_SCHEMA
     problems: list[str] = []
     best: dict | None = None
-    for _r in range(2):
+    for _r in range(3):
         prompt = context + "\n\n" + description_task(
             p, fmt=fmt, gid=gid, game_name=game_name, what_happens=what_happens, facts=facts, clip_text=clip_text,
             title=title, lang_label=lang_label, terms=terms, problems=problems)
-        d = model.json(system, prompt, schema, temperature=0.65, num_predict=1600 if fmt == "long" else 900)
+        d = model.json(system, prompt, schema, temperature=0.65 + 0.1 * _r, num_predict=1600 if fmt == "long" else 900)
         d.pop("_soft_errors", None)
         text = assemble_short(d, p, lang, glossary) if fmt == "short" else assemble_long(d, p, lang, glossary)
         errs = (check_short_description(text, lang=lang, forbidden=forbidden) if fmt == "short"
                 else check_long_description(text, p, lang=lang, forbidden=forbidden))
+        copied = copied_sentences(text, p)
+        if copied:
+            errs.append(f"copies the creator's example (\"{copied[0][:80]}\"): write new sentences about THIS clip")
         cand = {"text": text, "mood_hashtags": list(d.get("mood_hashtags") or []),
                 "search_tags": list(d.get("search_tags") or []), "problems": errs}
         if best is None or len(errs) < len(best["problems"]):
@@ -1294,7 +1352,7 @@ def write_description(model, p: dict, *, system: str, context: str, lang: str, l
             break
         problems = errs
     assert best is not None
-    if any("swear" in e or "never mention" in e for e in best["problems"]):
+    if any("swear" in e or "never mention" in e or "copies the creator" in e for e in best["problems"]):
         best["text"] = ""  # never publish a description that breaks the hard rules
     return best
 

@@ -359,3 +359,25 @@ def test_prompt_labels_are_stripped_and_swear_titles_never_lead():
             {"style": "story", "text": "BAŞKA BAŞLIK! 🔥😱"}]
     out = S.pick(pool, "short")
     assert out[0]["text"] == "TEMİZ BAŞLIK! 😂💀" and S.has_censored(out[-1]["text"])
+
+
+def test_descriptions_never_copy_the_examples_and_tags_are_real_words():
+    p = S.load()
+    copy = "Delta Force'ta \"bu adam beni nereden vurdu?\" çaresizliği... 💀\n\nMerdivenden inerken tek yedim! 😂"
+    assert S.copied_sentences(copy, p)
+    assert not S.copied_sentences("Stinger ile koridora daldım, iki kişiyi indirip revive attım! 🔥", p)
+    cta = S.assemble_long({"opener": "Yepyeni bir maçla karşınızdayım!", "story": "Bu maçta Uluru ile koridorları kapattık.",
+                           "comment": "en sevdiğiniz anı yorumlarda paylaşmayı"}, p, "tr")
+    assert not S.copied_sentences(cta, p)  # the fixed CTA / sign-off repeat on purpose
+    known = {"league", "of", "legends", "darius"}
+    assert S.real_words("league of legends darius oynanış", known)
+    assert not S.real_words("leof legends tilt anları", known) and not S.real_words("lo l şok öldüm", known)
+
+
+def test_the_same_bracket_on_every_title_is_not_a_repeat():
+    used = ['"NE OLDU KANKA?" KARDEŞİMİ KAYBETTİM! 🚨💀 (DELTA FORCE)']
+    t = '"GELENLER VAR!" HEMEN ÇIKIŞA KOŞTUM! 🔥💀 (DELTA FORCE)'
+    assert not S.check_title(t, lang="tr", fmt="short", clip_text="gelenler var abi", used=used,
+                             too_similar=analyze.too_similar)
+    assert S.check_title('"NE OLDU KANKA?" KARDEŞİMİ KAYBETTİM! 😂😱', lang="tr", fmt="short",
+                         clip_text="ne oldu kanka", used=used, too_similar=analyze.too_similar)

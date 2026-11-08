@@ -801,8 +801,9 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
             hashtags, tags = clip_tags(mode, game, facts, j.get("moment_type"), out_lang, j.get("hashtags") or [],
                                        j["game_or_topic"], _channel_names(meta))
             my_desc = None
-            if mine and tw["titles"]:  # My style: description first, its mood / search words feed the tags
-                my_desc = _my_description(model, mine, meta, mode, w, transcript, out_lang, j, tw["titles"][0]["text"],
+            first = (tw["titles"] or [{"text": ""}])[0]["text"] or ((c.get("publish") or {}).get("titles") or [""])[0]
+            if mine and first:  # My style: description first, its mood / search words feed the tags
+                my_desc = _my_description(model, mine, meta, mode, w, transcript, out_lang, j, first,
                                           gl, game, facts, cache_dir, extra=f"{sdig}:{gdig}:{gtag}", force=force,
                                           strong=strong)
                 hashtags, tags = _my_tags(mine, "short", game, facts, j, w, transcript, out_lang, my_desc, tags)

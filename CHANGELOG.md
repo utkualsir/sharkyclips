@@ -7,6 +7,83 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.30] - 2026-11-08
+
+### Fixed
+- **Many more new titles survive.** In My style almost every title ends with the same bracket,
+  like "(DELTA FORCE)". That alone made new titles look like repeats of other clips' titles, so
+  many clips kept their old titles and got no new description. Titles are now compared without
+  the bracket and the emojis.
+- **Descriptions never copy your examples.** A description that repeats sentences from your own
+  example descriptions is written again. Only your fixed lines (the like / subscribe line and
+  "İyi seyirler!") may repeat.
+- **Every clip gets a description**, even when it keeps older titles.
+- **Cleaner tags.** Search phrases with broken or invented words ("leof legends") are left out.
+- **Names are written the same way** in capitals every time (DARİUS, not DARIUS), and "nihai
+  yetenekle" and "dubl kill" become "ultiyle" and "double kill".
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Çok daha fazla yeni başlık kalıyor.** Benim tarzımda neredeyse her başlık "(DELTA FORCE)" gibi
+  aynı parantezle bitiyor. Sırf bu yüzden yeni başlıklar başka kliplerin başlıklarının tekrarı
+  sanılıyor, birçok klip eski başlıklarında kalıp yeni açıklama alamıyordu. Başlıklar artık
+  parantez ve emojiler olmadan karşılaştırılıyor.
+- **Açıklamalar örneklerini asla kopyalamıyor.** Kendi örnek açıklamalarındaki cümleleri tekrar
+  eden bir açıklama yeniden yazılıyor. Sadece sabit satırların (beğen / abone ol satırı ve
+  "İyi seyirler!") tekrar edebilir.
+- **Her klip bir açıklama alıyor**, eski başlıklarını korusa bile.
+- **Daha temiz etiketler.** Bozuk ya da uydurma kelimeli arama ifadeleri ("leof legends") çıkarılıyor.
+- **İsimler büyük harfle hep aynı yazılıyor** (DARIUS değil DARİUS); "nihai yetenekle" ve "dubl kill"
+  artık "ultiyle" ve "double kill" oluyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Viel mehr neue Titel bleiben: die gleiche Klammer wie „(DELTA FORCE)“ am Ende zählt nicht mehr als Wiederholung.
+- Beschreibungen kopieren deine Beispiele nie; jeder Clip bekommt eine Beschreibung.
+- Sauberere Tags ohne kaputte Wörter; Namen in Großbuchstaben immer gleich geschrieben.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Sokkal több új cím marad meg: az azonos zárójel a végén, mint „(DELTA FORCE)”, már nem számít ismétlésnek.
+- A leírások soha nem másolják a példáidat; minden klip kap leírást.
+- Tisztább címkék hibás szavak nélkül; a nevek nagybetűvel mindig egyformán íródnak.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Сохраняется гораздо больше новых названий: одинаковая скобка в конце вроде «(DELTA FORCE)» больше не считается повтором.
+- Описания никогда не копируют ваши примеры; у каждого клипа есть описание.
+- Более чистые теги без сломанных слов; имена заглавными всегда пишутся одинаково.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- تبقى عناوين جديدة أكثر بكثير: القوس نفسه في النهاية مثل "(DELTA FORCE)" لم يعد يُعد تكرارًا.
+- الأوصاف لا تنسخ أمثلتك أبدًا، ويحصل كل مقطع على وصف.
+- علامات أنظف دون كلمات مكسورة، وتُكتب الأسماء بالأحرف الكبيرة بالطريقة نفسها دائمًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 保留下来的新标题多得多：标题结尾相同的括号（如"(DELTA FORCE)"）不再被当作与其他片段重复，很多片段不会再停留在旧标题上。
+- 简介绝不照抄你的示例；即使保留旧标题，每个片段也都会有简介。
+- 标签更干净，不再有拼错或编造的词；名字大写时总是写成同一种形式。
+
+</details>
+
+
 ## [1.2.29] - 2026-11-08
 
 ### Fixed
