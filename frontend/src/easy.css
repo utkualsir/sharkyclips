@@ -581,14 +581,17 @@
 .ez-cut-why svg, .ez-cut-len svg { flex: none; margin-top: 2px; }
 .ez-cut-len { color: var(--gold-text); }
 .ez-cut-len.warn { color: var(--danger); }
-.ez-nudges { display: flex; flex-wrap: wrap; gap: 6px; }
+.ez-nudges { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 112px), 1fr)); gap: 6px; }
 .ez-nudge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  justify-content: center;
   min-height: 34px;
-  padding: 4px 10px;
+  padding: 4px 8px;
   border-radius: 999px;
+  text-align: center;
+  line-height: 1.2;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
@@ -701,6 +704,7 @@
 .ez-phone-btn.on { background: var(--gold); color: #0e1a33; }
 .ez-phone-btn:focus-visible { outline: none; box-shadow: var(--focus); }
 .ez-video .ez-dur { inset-inline-end: 58px; }
+.ez-video:has(.ez-phone) .ez-dur { display: none; }
 
 /* ---- Easy 2.0: tap a caption word to fix it */
 .ez-capfix { display: flex; flex-wrap: wrap; gap: 4px; max-height: 220px; overflow-y: auto; padding: 2px; }
@@ -724,7 +728,7 @@
 .ez-capfix-input { min-height: 32px; height: 32px; padding: 2px 8px; width: auto; max-width: 100%; font-size: 15px; }
 
 /* ---- Easy 2.0: weekly digest */
-.ez-digest { display: grid; gap: 12px; margin-bottom: 20px; }
+.ez-digest { display: grid; gap: 12px; margin-bottom: 20px; padding: 18px 20px; }
 .ez-digest h2 { margin: 0; font-size: 18px; }
 .ez-digest-stats { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 12px 24px; align-items: start; }
 .ez-digest-stats > div { display: grid; gap: 2px; min-width: 0; }

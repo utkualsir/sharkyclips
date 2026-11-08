@@ -176,9 +176,6 @@ export function ShortsOverlay({ title, channel }: { title: string; channel?: str
         <rect x="0" y="0" width="1080" height="220" fill="url(#ezp-top)" />
         <rect x="0" y="1400" width="1080" height="520" fill="url(#ezp-bot)" />
         <g fill="none" stroke="#fff" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="880" cy="90" r="26" />
-          <path d="M900 110l22 22" />
-          <path d="M1000 62v0M1000 90v0M1000 118v0" strokeWidth="14" />
           {icons.map(([y, d]) => (
             <path key={y} d={d} transform={`translate(985 ${y})`} />
           ))}

@@ -90,8 +90,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const plural = new Intl.PluralRules(lang);
     const t: T = (key, vars) => {
       let s: string | undefined;
-      if (vars && typeof vars.n === "number") {
-        const rule = plural.select(vars.n);
+      // n may come already formatted (num(...) -> "1.234"): its digits still pick the plural form
+      const n = vars ? (typeof vars.n === "number" ? vars.n : typeof vars.n === "string" ? Number(vars.n.replace(/[^\d-]/g, "")) : NaN) : NaN;
+      if (vars && vars.n !== "" && Number.isFinite(n)) {
+        const rule = plural.select(n);
         s = cat[`${key}_${rule}`] ?? cat[`${key}_other`] ?? en[`${key}_${rule}`] ?? en[`${key}_other`];
       }
       s = s ?? cat[key] ?? en[key] ?? key;

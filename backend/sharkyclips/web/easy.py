@@ -540,7 +540,7 @@ def _steps(project: Project, hl: dict, top: list[dict], rstates: list[dict]) -> 
                              ("transcribe", has_t, ("transcribe",)),
                              ("find", has_h, ("highlights", "facecam", "voices", "proofread")),
                              ("titles", analyzed, ("analyze",)),
-                             ("render", rendered, ("render",))):
+                             ("render", rendered, ("shape", "render"))):
         s, prog = st(done, *kinds)
         if key == "render" and s == "todo" and any(r["status"] in ("rendering", "queued") for r in rstates):
             s = "active"

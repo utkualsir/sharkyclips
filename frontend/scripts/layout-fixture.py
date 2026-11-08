@@ -28,6 +28,8 @@ SECONDS = 60.0
 OPTIONS = {"layout": "auto", "subtitles": "bold", "hook": True, "hook_flash": False, "subtitle_lang": "",
            "profanity": "bleep", "profanity_captions": True, "bleep_sound": "classic", "speaker_colors": True,
            "speaker_names": False, "cuts": "off", "zoom": "off", "music": False, "brand": False, "loop": False}
+# 1.2.34 Easy 2.0 adds these for a gaming project with a facecam (easy.v2_options)
+EASY2 = {"cuts": "light", "safe_zone": "shorts", "banner": ""}
 
 TITLES = [
     "Takım arkadaşım beni neden bıraktı, son saniyede inanılmaz bir geri dönüş",
@@ -72,7 +74,8 @@ def build(root: Path) -> str:
     version = (Path(__file__).resolve().parents[2] / "VERSION").read_text(encoding="utf-8").strip()
     _json(home / "config.json", {"workspace_dir": str(ws), "onboarding_done": True, "llm_enabled": False,
                                  "publish_auto": False, "ui_language": "en", "ui_motion": "off",
-                                 "seen_version": version, "easy_tour_done": True})  # no popups over the page
+                                 "seen_version": version, "easy_tour_done": True,  # no popups over the page
+                                 "easy_banner": False})  # 1.2.34: banner text off, so the renders stay current
     _video(d / "source.mp4", "640x360", SECONDS, vp9=True)
     _json(d / "meta.json", {
         "id": PID, "title": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get cut off (DELTA FORCE)",
@@ -125,11 +128,22 @@ def build(root: Path) -> str:
         name = f"{i + 1:02d}_{c['id']}.mp4"
         _video(d / "clips" / name, "180x320", 2.0)
         clips[c["id"]] = {"file": name, "id": c["id"], "rank": c["rank"], "start": c["start"], "end": c["end"],
-                          "duration": c["duration"], "options": {**OPTIONS, "hook_text": ""},
+                          "duration": c["duration"], "options": {**OPTIONS, **EASY2, "hook_text": ""},
                           "facecam": {}, "rendered_at": "2026-10-01T10:00:00+00:00",
                           "size_bytes": (d / "clips" / name).stat().st_size, "render_seconds": 3.0, "encoder": "CPU"}
     _json(d / "clips.json", {"version": 1, "clips": clips})
-    _json(d / "easy.json", {"easy": True, "mode_auto": True, "shown": 6, "clips": {},
+    # Easy 2.0 (1.2.34): every grid clip is already shaped (no shape job), with the longest texts
+    whys = [["setup_sentence", "payoff_reaction"], ["setup_lead"], [], ["ai_setup", "payoff_sentence"], ["hook_later"], []]
+    hooks = [{"score": 71, "before": 47, "choice": "flash", "moved": 0.0}, {"score": 66, "before": 66, "choice": "start", "moved": 0.0},
+             {"score": 44, "before": 44, "choice": "start", "moved": 0.0}, {"score": 59, "before": 50, "choice": "later", "moved": 4.5},
+             {"score": 80, "before": 52, "choice": "later", "moved": 1.5}, {"score": 55, "before": 55, "choice": "start", "moved": 0.0}]
+    shapes = {}
+    for i in range(N_CLIPS):
+        c = cands[i]
+        shapes[c["id"]] = {"shape": {"v": 1, "base": [c["start"], c["end"]], "start": c["start"], "end": c["end"],
+                                     "why": whys[i], "target": {"kind": "action", "min": 20.0, "max": 35.0},
+                                     "hook": {**hooks[i], "reasons": [], "options": []}, "flash": False}}
+    _json(d / "easy.json", {"easy": True, "mode_auto": True, "shown": 6, "clips": shapes, "v2": True,
                             "notified_for": "2026-10-01T00:00:00+00:00"})
     return PID
 
