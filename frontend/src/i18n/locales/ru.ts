@@ -2138,6 +2138,22 @@ const ru: Record<string, string> = {
   "longmeta.tags": "Теги",
   "kind.long_metadata": "Тексты для всего видео",
   "stage.long_writing": "Пишутся тексты для всего видео",
+  "bleep.badge_ok_one": "{n} запикивание ✅",
+  "bleep.badge_ok_other": "{n} запикиваний ✅",
+  "bleep.badge_missing_one": "{n} мат не запикан",
+  "bleep.badge_missing_other": "{n} мата не запикано",
+  "bleep.report": "Отчёт о запикивании",
+  "bleep.play": "Прослушать момент",
+  "bleep.item_ok": "запикано",
+  "bleep.item_audible": "ещё слышно",
+  "bleep.where_flash": "вспышка-хук",
+  "bleep.where_replay": "повтор",
+  "bleep.spk_me": "вы",
+  "bleep.spk_friend": "друг",
+  "bleep.checked_btn": "Прослушал, всё в порядке",
+  "bleep.checked": "проверено вами",
+  "bleep.hold_hint": "Загрузка ждёт, пока вы не прослушаете.",
+  "bleep.check_failed": "Проверка запикивания не запустилась",
 };
 
 export default ru;

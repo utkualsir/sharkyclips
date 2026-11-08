@@ -133,7 +133,7 @@ def _ensure_renders(project: Project, auto: bool, only: str | None, explicit: bo
         if only and c["id"] != only:
             continue
         opts, hook = wanted(project, c, data, review, style, music_ok, lang)
-        if A._render_is_current(clips.get(c["id"]), c, opts, hook, review):
+        if A._render_is_current(clips.get(c["id"]), c, opts, hook, review, project):
             continue
         j = rj.get(c["id"])
         if j is not None and j.status in ACTIVE:
@@ -154,14 +154,26 @@ def render_state(project: Project, cand: dict, data: dict, review: dict, clips: 
     j = rj.get(cand["id"])
     clip = clips.get(cand["id"])
     opts, hook = wanted(project, cand, data, review, style, music_ok, lang)
-    current = A._render_is_current(clip, cand, opts, hook, review)
+    current = A._render_is_current(clip, cand, opts, hook, review, project)
     st = {"status": "ready" if current else "waiting", "progress": None, "stamp": (clip or {}).get("rendered_at"),
           "has_video": bool(clip and (project.dir / "clips" / clip["file"]).is_file()), "error": None}
     if j is not None and j.status in ACTIVE:
         st.update(status="rendering" if j.status == "running" else "queued", progress=j.progress)
     elif not current and j is not None and j.status == "error":
         st.update(status="error", error=(j.error or {}).get("message"))
+    st["bleeps"] = bleep_summary(clip)
     return st
+
+
+def bleep_summary(clip: dict | None) -> dict | None:
+    """1.2.31: the clip's bleep report in short (the "7 bleeps" badge), None before a check ran."""
+    rep = ((clip or {}).get("edits") or {}).get("bleep_report")
+    if not rep:
+        return None
+    audible = 0 if rep.get("error") else int(rep.get("audible") or 0)
+    return {"expected": rep.get("expected"), "bleeped": rep.get("bleeped"), "audible": audible,
+            "checked": (clip or {}).get("bleep_checked"), "hold": audible if not (clip or {}).get("bleep_checked") else 0,
+            "error": bool(rep.get("error"))}
 
 
 # ===================================================================== the upload side
@@ -187,6 +199,8 @@ def clip_step(project: Project, cand: dict) -> tuple[str, dict]:
         return "wait", {}
     clip = state.load_clips(project).get(cand["id"])
     if clip and (project.dir / "clips" / clip["file"]).is_file():
+        if state.bleep_hold(project, cand["id"]):  # 1.2.31: a swear is still heard: the user checks first
+            return "wait", {"reason": "bleep_check"}
         return "upload", {"source": "clip", "ab": None, "sig": "clip"}
     ensure_renders(project, auto=False, only=cand["id"])
     return "wait", {}
@@ -222,6 +236,12 @@ def upload(project: Project, cid: str, when: str) -> dict:
     if not youtube.connected():
         e = SharkyClipsError("Connect YouTube first.")
         e.code = "not_connected"  # type: ignore[attr-defined]
+        raise e
+    held = state.bleep_hold(project, cid)
+    if held:
+        e = SharkyClipsError(f"{held} swear(s) in this clip could not be bleeped.",
+                             "Listen to the clip (Bleep report), then press \"I checked it\" to upload.")
+        e.code = "bleep_check"  # type: ignore[attr-defined]
         raise e
     prefs = E.clip_prefs(E.load(project), cid)
     item = _plan_meta(project, cand, prefs)

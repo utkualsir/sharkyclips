@@ -461,6 +461,8 @@ def next_step(project: Project, cand: dict, item: dict) -> tuple[str, dict]:
 
     key = P.key_of(project.id, cand["id"])
     meta = item["meta"]
+    if state.bleep_hold(project, cand["id"]):  # 1.2.31: a swear is still heard: the user checks first
+        return "wait", {"reason": "bleep_check"}
     if meta.get("source") == "clip":  # Easy mode: the rendered 9:16 clip itself
         from .easy import clip_step
 

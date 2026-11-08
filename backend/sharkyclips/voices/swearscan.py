@@ -813,68 +813,30 @@ def load_fixes(project: Project) -> dict[str, list[list[float]]]:
         return {}
 
 
+def _rendered_plan(project: Project, cand: dict, opts):
+    from .. import clips as clips_mod
+
+    plan = clips_mod.edit_plan(project, cand, opts, None, 30)
+    flash = clips_mod.FLASH_SECONDS if getattr(opts, "hook_flash", False) and not getattr(opts, "loop", False) else 0.0
+    start, end = float(cand["start"]), float(cand["end"])
+    meta = project.load_meta() if hasattr(project, "load_meta") else {}
+    flash_start = clips_mod.flash_from(float(cand.get("peak") or (start + end) / 2),
+                                       float(meta.get("duration") or end), float(meta.get("fps") or 30))
+    return plan, flash, flash_start
+
+
 def verify_render(project: Project, cand: dict, opts, out_path: Path, asr=None) -> list[tuple[float, float]]:
     """Listen to the rendered clip's bleeps (no prompt, then the swear prompt): where part of a
     swear is still heard, the bleep gets wider (saved in bleep_fixes.json, read by the plan).
-    Returns the widened source ranges ([] = all clean: the render can stay)."""
-    from .. import clips as clips_mod
-    from ..edit import swearlearn
+    Returns the widened source ranges ([] = all clean). See edit/bleepcheck.py."""
+    from ..edit import bleepcheck
 
-    plan = clips_mod.edit_plan(project, cand, opts, None, 30)
+    plan, flash, flash_start = _rendered_plan(project, cand, opts)
     if plan is None or not plan.bleep_src or plan.bleep_mode == "off":
         return []
-    lang = plan.lang
-    offset = clips_mod.FLASH_SECONDS if getattr(opts, "hook_flash", False) and not getattr(opts, "loop", False) else 0.0
-    offset += float(getattr(plan, "intro_s", 0.0) or 0.0)
-    prompt = prompt_for(lang, swearlearn.hotwords(lang))
-    own = asr is None
-    engine = None
-    if own:
-        from .. import transcribe
-
-        engine = transcribe.load_whisper("check" if transcribe.check_model_ready() else "auto")
-
-        def asr(x, lang_, prompt_=None, temperature=0.0, hotwords=None):
-            return transcribe.transcribe_check(engine, x, lang_, prompt_, temperature, hotwords)
-    widened: list[tuple[float, float]] = []
-    try:
-        for a, b in plan.bleep_src:
-            governor.checkpoint()
-            outs = plan.out_ranges([(a, b)])
-            if not outs:
-                continue
-            oa, ob = outs[0][0] + offset, outs[-1][1] + offset
-            s = max(0.0, oa - 1.5)
-            x = tracks.read_track(out_path, 0, s, ob + 1.5)
-            if len(x) < E.SR * 0.3:
-                continue
-            names = [it["word"] for it in plan.swears
-                     if it.get("bleep") and a - 0.05 <= it["start"] <= b + 0.05] or [""]
-            side = None
-            for prompted in (False, True):
-                segs = asr(E.level(x), lang, prompt if prompted else None, 0.0, None)
-                ws = words_of(segs, s, s, s + len(x) / E.SR)
-                for name in names:
-                    side = leak(name, ws, oa, ob, lang) if name else None
-                    if side:
-                        break
-                if side:
-                    break
-            if side:
-                widened.append((round(a - (0.08 if side in ("left", "both") else 0.0), 3),
-                                round(b + (0.1 if side in ("right", "both") else 0.0), 3)))
-    finally:
-        if own:
-            from .. import memory
-
-            engine = None
-            memory.release_current()
-    if widened:
-        fx = load_fixes(project)
-        cur = [tuple(r) for r in fx.get(str(cand["id"]), [])]
-        fx[str(cand["id"])] = [[x, y] for x, y in sorted(set(cur) | set(widened))][:200]
-        write_json_atomic(fixes_path(project), fx)
-    return widened
+    rows = bleepcheck.targets(plan, flash, flash_start)
+    bleepcheck.listen(out_path, plan, rows, asr)
+    return bleepcheck.widen(project, cand, rows, 1)
 
 
 def tone_share(x: np.ndarray, hz: float = 1000.0) -> float:
@@ -887,36 +849,15 @@ def tone_share(x: np.ndarray, hz: float = 1000.0) -> float:
 
 
 def missing_bleeps(project: Project, cand: dict, opts, out_path: Path, plan=None) -> list[tuple[float, float]]:
-    """Bleeps the plan has but the rendered file doesn't (source ranges): a classic bleep must
-    carry the 1 kHz tone, a mute must be quiet. Boop / custom sounds: not checked."""
-    from .. import clips as clips_mod
+    """Swears (source ranges) the plan bleeps but the rendered file doesn't cover: a classic
+    bleep must carry the 1 kHz tone (500 Hz in a slow-motion replay), a mute must be quiet, a
+    boop / custom sound must leave no trace of the voice. See edit/bleepcheck.py."""
+    from ..edit import bleepcheck
 
-    plan = plan if plan is not None else clips_mod.edit_plan(project, cand, opts, None, 30)
+    p, flash, flash_start = _rendered_plan(project, cand, opts)
+    plan = plan if plan is not None else p
     if plan is None or not plan.bleep_src or plan.bleep_mode == "off":
         return []
-    if plan.bleep_mode == "bleep" and plan.bleep_sound != "classic":
-        return []
-    offset = clips_mod.FLASH_SECONDS if getattr(opts, "hook_flash", False) and not getattr(opts, "loop", False) else 0.0
-    offset += float(getattr(plan, "intro_s", 0.0) or 0.0)
-    if plan.fx is not None and getattr(plan.fx, "inserts", None):
-        return []  # inserts move the timeline: the caption-word check covers these clips
-    missing = []
-    for a, b in plan.bleep_src:
-        outs = plan.out_ranges([(a, b)])
-        if not outs:
-            continue
-        oa, ob = outs[0][0] + offset, outs[-1][1] + offset
-        if ob - oa < 0.06:
-            continue
-        x = tracks.read_track(out_path, 0, oa + 0.02, ob - 0.02)
-        if len(x) < 400:
-            missing.append((a, b))
-            continue
-        if plan.bleep_mode == "bleep":
-            ok = tone_share(x) >= 0.25
-        else:
-            ctx = tracks.read_track(out_path, 0, max(0.0, oa - 0.6), oa)
-            ok = float(np.sqrt(np.mean(x ** 2))) <= max(1e-3, 0.3 * float(np.sqrt(np.mean(ctx ** 2)) if len(ctx) else 1.0))
-        if not ok:
-            missing.append((a, b))
-    return missing
+    rows = bleepcheck.check_tones(out_path, plan, bleepcheck.targets(plan, flash, flash_start),
+                                  getattr(project, "source_path", None))
+    return [tuple(r["src"]) for r in rows if not r["ok"]]

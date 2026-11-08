@@ -24,6 +24,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .. import __version__, config, governor, languages, startup
 from ..clips import LAYOUTS, SUBTITLE_STYLES, ClipOptions, Facecam, first_sentence, render_clip
+from ..edit import bleepcheck
 from ..errors import SharkyClipsError, require_tool
 from ..highlights.modes import MODES as MODE_PRESETS
 from ..project import MODES, Project, get_project, list_projects, read_json, slugify
@@ -300,24 +301,18 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
             jobs.update(job, stage="meme_captions", progress=None)
             polish_memes(project, cand, opts)
         jobs.update(job, stage="rendering", progress=0.0)
-        res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
-                          on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
-        warns: list[str] = []
-        if verify_bleeps(job, project, cand, opts, project.dir / "clips" / name, warns):  # a bleep is off: once more
-            jobs.update(job, stage="rendering_again", progress=0.0)
-            res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
-                              on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))))
-            if "bleep_missing" in warns:
-                from ..voices import swearscan
 
-                try:
-                    if not swearscan.missing_bleeps(project, cand, opts, project.dir / "clips" / name):
-                        warns.remove("bleep_missing")
-                except Exception:  # noqa: BLE001
-                    pass
+        def stage(name_: str) -> None:
+            jobs.update(job, stage=name_, progress=None if name_ == "checking_bleeps" else 0.0)
+        # 1.2.31: render_clip itself checks every bleep in the file and renders again if needed
+        res = render_clip(project, cand, opts, facecam, project.dir / "clips" / name,
+                          on_progress=lambda s: jobs.update(job, progress=min(1.0, s / max(cand["duration"], 0.1))),
+                          on_stage=stage)
+        warns: list[str] = []
         entry = {"file": name, "id": cand["id"], "rank": cand["rank"], "start": cand["start"],
                  "end": cand["end"], "duration": res.info.get("duration") or cand["duration"],
                  "options": opts.to_dict(), "edit_fp": edit_fp, "dub": opts.dub or cand.get("dub") or "",
+                 "bleep_fp": bleepcheck.inputs_fingerprint(project, cand, opts.to_dict()),
                  "facecam": facecam.to_dict() if facecam else None,
                  "rendered_at": state.now_iso(), "size_bytes": res.size_bytes,
                  "render_seconds": round(res.seconds, 2), "encoder": res.encoder,
@@ -334,39 +329,6 @@ def submit_render_clip(project_id: str, cid: str, options: dict, hook: str = "",
               "project_title": project.load_meta().get("title") or project_id, **(batch or {})}
     return jobs.submit("render", "gpu", project_id, params, run, key=f"render:{project_id}:{cid}",
                        persist=True, job_id=job_id, attempt=attempt)
-
-
-def verify_bleeps(job: Job, project, cand: dict, opts: ClipOptions, path, warnings: list | None = None) -> bool:
-    """After a render with bleeps: (1) every bleep must really be in the file (the tone / the
-    silence), (2) Strict / Paranoid: no swear may still be heard (Whisper listens again). True
-    when the clip must be rendered again (once). Problems go into `warnings` (shown on the clip);
-    this never fails the render."""
-    from ..edit import swears
-
-    if config.get("swear_verify_render") is False or os.environ.get("SHARKYCLIPS_NO_BLEEP_CHECK"):
-        return False
-    if opts.profanity == "off":
-        return False
-    warnings = warnings if warnings is not None else []
-    try:
-        from ..voices import swearscan
-
-        jobs.update(job, stage="checking_bleeps", progress=None)
-        if swearscan.missing_bleeps(project, cand, opts, path):
-            warnings.append("bleep_missing")
-            return True
-        if swears.resolve_strictness(opts.swear_strict, True) == "normal":
-            return False
-        if swearscan.verify_render(project, cand, opts, path):
-            warnings.append("bleep_widened")
-            return True
-        return False
-    except Exception as exc:  # noqa: BLE001 - the clip is fine as rendered
-        from ..ui import console
-
-        console.print(f"[yellow]Bleep check skipped: {exc}[/]")
-        warnings.append("bleep_check_skipped")
-        return False
 
 
 def submit_render(project_id: str, clip_ids: list[str], options: ClipOptions,
@@ -1340,7 +1302,8 @@ def api_queue() -> dict:
     return _queue_view()
 
 
-def _render_is_current(clip: dict | None, cand: dict, options: dict, hook: str, review: dict | None = None) -> bool:
+def _render_is_current(clip: dict | None, cand: dict, options: dict, hook: str, review: dict | None = None,
+                       project: Project | None = None) -> bool:
     """Already rendered with the same cut, edits and settings? (Clips rendered before an
     option existed count as rendered with its default.)"""
     if not clip:
@@ -1353,6 +1316,10 @@ def _render_is_current(clip: dict | None, cand: dict, options: dict, hook: str, 
         if (clip.get("edit_fp") or "") != state.edit_fingerprint(cand, review, options):
             return False
         cand = state.effective_cand(cand, review)
+    # 1.2.31: never reuse a render whose bleeps could differ (swear list, deep check, voice
+    # pass, bleep / unbleep edits, bleep settings, detector version)
+    if project is not None and clip.get("bleep_fp") != bleepcheck.inputs_fingerprint(project, cand, {**old, **want}):
+        return False
     return same_opts and abs(clip["start"] - cand["start"]) < 0.05 and abs(clip["end"] - cand["end"]) < 0.05
 
 
@@ -1366,7 +1333,7 @@ def _accepted_overview(project: Project) -> dict | None:
     opts = dict(review["options"])
     accepted = [c for c in review["accepted"] if c in by_id]
     current = [c for c in accepted
-               if _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, ""), review)]
+               if _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, ""), review, project)]
     return {"project_id": project.id, "title": project.load_meta().get("title") or project.id,
             "accepted": len(accepted), "rendered": len(current), "to_render": len(accepted) - len(current),
             "seconds": round(sum(by_id[c]["duration"] for c in accepted if c not in current), 1)}
@@ -1398,7 +1365,7 @@ def api_queue_render(body: dict) -> dict:
         opts = dict(review["options"])
         todo = [c for c in review["accepted"] if c in by_id and
                 (include_current or not _render_is_current(clips.get(c), by_id[c], opts, review["hooks"].get(c, ""),
-                                                            review))]
+                                                            review, project))]
         if todo:
             out += submit_render(project.id, todo, ClipOptions.from_dict(opts), review["hooks"])
     return {"queued": len(out), "jobs": [j.to_dict() for j in out]}

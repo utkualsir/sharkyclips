@@ -2088,6 +2088,22 @@ const de: Record<string, string> = {
   "longmeta.tags": "Tags",
   "kind.long_metadata": "Texte fürs ganze Video",
   "stage.long_writing": "Texte fürs ganze Video werden geschrieben",
+  "bleep.badge_ok_one": "{n} Piep ✅",
+  "bleep.badge_ok_other": "{n} Pieps ✅",
+  "bleep.badge_missing_one": "{n} Schimpfwort nicht überpiept",
+  "bleep.badge_missing_other": "{n} Schimpfwörter nicht überpiept",
+  "bleep.report": "Piep-Bericht",
+  "bleep.play": "Diese Stelle abspielen",
+  "bleep.item_ok": "überpiept",
+  "bleep.item_audible": "noch hörbar",
+  "bleep.where_flash": "Hook-Flash",
+  "bleep.where_replay": "Wiederholung",
+  "bleep.spk_me": "du",
+  "bleep.spk_friend": "Freund",
+  "bleep.checked_btn": "Angehört, passt",
+  "bleep.checked": "von dir geprüft",
+  "bleep.hold_hint": "Der Upload wartet, bis du es angehört hast.",
+  "bleep.check_failed": "Die Piep-Prüfung lief nicht",
 };
 
 export default de;

@@ -551,3 +551,26 @@
 .ez-platform-tools .link-btn { display: inline-flex; align-items: center; gap: 5px; }
 .ez-mode-note { margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 .ez-up-live .ez-hint { display: block; color: var(--muted); font-weight: 400; font-size: 12px; }
+
+/* 1.2.31: bleep report */
+.bleep-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+}
+.bleep-badge.ok { color: var(--success); border-color: color-mix(in srgb, var(--success) 45%, transparent); }
+.bleep-badge.bad { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 55%, transparent); }
+.bleep-badge.warn { color: var(--warn); }
+.bleep-hold { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bleep-list { padding: 6px 12px 10px; font-size: 12px; min-width: 0; }
+.bleep-list summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.bleep-list ul { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 4px; }
+.bleep-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.bleep-list li.bad .bleep-word { color: var(--danger); font-weight: 600; }
+.bleep-word { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 12em; }

@@ -166,6 +166,10 @@ def caption(platform: str, title: str, description: str, hashtags: list[str], no
     """Title + the first line of the description (+ `note`, e.g. the AI-voice line) + hashtags
     + the channel's socials block, within the platform's limits. The note is never cut off; a
     tight caption drops socials lines from the bottom (a link is never cut), then shortens the body."""
+    from .youtube import _has_swear, censor_text
+
+    title, description = censor_text(title, None), censor_text(description, None)
+    hashtags = [h for h in hashtags if not _has_swear(str(h), None)]
     tags = []
     for h in hashtags:
         h = "#" + str(h).lstrip("#").strip()

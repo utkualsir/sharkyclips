@@ -7,6 +7,117 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.31] - 2026-11-08
+
+### Fixed
+- **Every swear gets its bleep.** Often only one swear of a clip was bleeped and the others
+  could be heard. Four reasons, all fixed:
+  - Swears the way the transcript writes them fast ("Amanakoyim", "iskiyim", "Skiyim", "pıç",
+    "aman akayım", "Deepfuck") were missed. They are found now, and two-word swears get both
+    words bleeped.
+  - Clips made with an older version were kept as they were. A clip is now made again whenever
+    anything about its bleeps changes, so your existing clips get the new bleeps.
+  - The hook flash at the start, the slow-motion replay and best-of videos played the original
+    sound, swears included. They are bleeped the same way now.
+  - The check after making a clip only ran in some places. It runs after every clip now: Easy,
+    Pro, the queue, exports, A/B hooks, stories and loops.
+- **Swears in titles, descriptions and captions are always censored** ("S*KTİR") before an upload.
+
+### Added
+- **Bleep report.** Each clip shows how many swears it bleeped ("7 bleeps ✅"). In Pro you get the
+  list with a play button for each swear.
+- **Checked after every clip.** SharkyClips listens to the finished clip. If a swear can still be
+  heard, the bleep gets wider and the clip is made again (at most twice). If one is still left,
+  the clip says "2 swears could not be bleeped", and one-click and automatic uploads wait until
+  you listen and press "I listened, it's OK".
+
+### Changed
+- **More bleeps by default.** Strict is the default for every format, and "Check swears strictly"
+  is on in Easy mode. Likely swears are bleeped from a lower score, for every speaker. A few more
+  false bleeps are possible, but missed swears are much rarer.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi
+- **Her küfür bip'leniyor.** Bir klipte çoğu zaman tek küfür bip'leniyor, diğerleri duyuluyordu.
+  Dört sebebi vardı, hepsi düzeltildi:
+  - Hızlı söylenip yazıya öyle geçen küfürler ("Amanakoyim", "iskiyim", "Skiyim", "pıç",
+    "aman akayım", "Deepfuck") kaçıyordu. Artık yakalanıyor; iki kelimelik küfürlerde iki kelime
+    de bip'leniyor.
+  - Eski sürümle yapılmış klipler olduğu gibi kalıyordu. Artık bip'leriyle ilgili herhangi bir şey
+    değişince klip yeniden yapılıyor, yani mevcut kliplerin de yeni bip'leri alıyor.
+  - Baştaki açılış flaşı, ağır çekim tekrar ve en iyiler videoları orijinal sesi, küfürleriyle
+    birlikte çalıyordu. Artık onlar da aynı şekilde bip'leniyor.
+  - Klip yapıldıktan sonraki kontrol sadece bazı yerlerde çalışıyordu. Artık her klipten sonra
+    çalışıyor: Kolay mod, Pro, kuyruk, dışa aktarmalar, A/B kancaları, hikâyeler ve döngüler.
+- **Başlık, açıklama ve altyazı metinlerindeki küfürler** yüklemeden önce her zaman sansürleniyor
+  ("S*KTİR").
+
+### Eklendi
+- **Bip raporu.** Her klip kaç küfrü bip'lediğini gösteriyor ("7 bip ✅"). Pro'da her küfür için
+  bir dinle düğmesiyle liste var.
+- **Her klipten sonra kontrol.** SharkyClips bitmiş klibi dinliyor. Bir küfür hâlâ duyuluyorsa
+  bip genişliyor ve klip yeniden yapılıyor (en fazla iki kez). Yine de kalan olursa klipte
+  "2 küfür biplenemedi" yazıyor; tek tıkla ve otomatik yükleme, sen dinleyip "Dinledim, sorun yok"
+  diyene kadar bekliyor.
+
+### Değişti
+- **Varsayılan olarak daha çok bip.** Her formatta varsayılan Sıkı; Kolay modda "Küfürleri sıkı
+  denetle" açık. Büyük ihtimalle küfür olan kelimeler, her konuşanda, daha düşük bir puandan
+  itibaren bip'leniyor. Arada fazladan bir bip olabilir ama kaçan küfür çok daha nadir.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- Jedes Schimpfwort wird überpiept: auch schnell gesprochene Formen, die Hook-Flash, die Zeitlupen-Wiederholung und Best-of-Videos.
+- Ältere Clips werden neu gemacht, sobald sich etwas an ihren Pieps ändert.
+- Neu: Piep-Bericht pro Clip („7 Pieps ✅“). Nach jedem Clip wird nachgehört; bleibt etwas hörbar, wartet der Upload auf dich.
+- Strenge Prüfung ist überall Standard; Schimpfwörter in Titeln und Beschreibungen werden immer zensiert.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- Minden káromkodás kisípolva: a gyorsan kimondott alakok, a nyitó villanás, a lassított visszajátszás és a legjobb pillanatok videók is.
+- A régebbi klipek újrakészülnek, ha bármi változik a sípolásaikon.
+- Új: sípolás-jelentés klipenként („7 sípolás ✅”). Minden klip után újrahallgatás; ha valami hallható marad, a feltöltés rád vár.
+- A szigorú ellenőrzés mindenhol alapértelmezett; a címekben és leírásokban a káromkodás mindig cenzúrázva.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- Запикивается каждый мат: и быстро сказанные формы, и вспышка-хук, и замедленный повтор, и видео с лучшими моментами.
+- Старые клипы делаются заново, как только меняется что-то в их запикивании.
+- Новое: отчёт о запикивании для каждого клипа («7 запикиваний ✅»). После каждого клипа он прослушивается; если что-то слышно, загрузка ждёт вас.
+- Строгая проверка по умолчанию везде; мат в названиях и описаниях всегда скрывается.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- يُغطّى على كل شتيمة بالصفير: حتى الصيغ السريعة، ووميض البداية، والإعادة البطيئة، وفيديوهات أفضل اللحظات.
+- تُصنع المقاطع القديمة من جديد عندما يتغير أي شيء في صفيرها.
+- جديد: تقرير صفير لكل مقطع ("7 صفير ✅"). يُستمع لكل مقطع بعد صنعه؛ إن بقي شيء مسموعًا ينتظر الرفع موافقتك.
+- الفحص الصارم افتراضي في كل مكان، والشتائم في العناوين والأوصاف تُخفى دائمًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- 每一处脏话都会消音：包括说得很快的写法、开头闪回、慢动作回放和精彩合集视频。
+- 只要消音相关的内容有变化，旧片段就会重新制作。
+- 新增：每个片段的消音报告（"7 处消音 ✅"）。每个片段做完后都会再听一遍；若仍能听到，上传会等你确认。
+- 所有格式默认严格检查；标题和简介中的脏话始终打码。
+
+</details>
+
+
 ## [1.2.30] - 2026-11-08
 
 ### Fixed

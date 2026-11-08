@@ -5,7 +5,7 @@
 - cuts: equal-power crossfades (40 ms). Each side of a join borrows 20 ms from the cut
   part, so the sound stays exactly as long as the picture (frame-accurate cut points).
 - swear words: a bleep (classic 1 kHz, soft boop or your own sound) 3 dB under the voice,
-  or silence (mute), with 12 ms fades.
+  or silence (mute), with 12 ms fades. The hook flash and replays get the same bleeps.
 - music: starts at the song's strongest part, ducks under speech (word timestamps,
   smooth attack / release) and comes back in pauses, fades out at the end. With music
   the whole mix is normalized to -14 LUFS with peaks under -1 dBFS.
@@ -172,6 +172,16 @@ def apply_bleeps(y: np.ndarray, ranges: list[tuple[float, float]], mode: str, so
     return y
 
 
+def bleep_source_chunk(y: np.ndarray, t0: float, plan: EditPlan, custom: np.ndarray | None = None) -> np.ndarray:
+    """Bleep a piece of SOURCE sound that starts at source time t0 (1.2.31: the hook flash and
+    the slow-motion replay play the source again: the same swears get the same bleeps)."""
+    if plan.bleep_mode not in ("bleep", "mute") or not plan.bleep_src or not len(y):
+        return y
+    dur = len(y) / SR
+    rel = [(a - t0, b - t0) for a, b in plan.bleep_src if b > t0 and a < t0 + dur]
+    return apply_bleeps(y, rel, plan.bleep_mode, plan.bleep_sound, custom) if rel else y
+
+
 def load_custom_bleep() -> np.ndarray | None:
     p = custom_bleep_path()
     if not p.is_file():
@@ -262,8 +272,8 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
             cont = src[b: b + _n(seam.audio_xfade)]
     else:
         main = np.zeros((_n(plan.out_duration), 2), np.float32)
-    main = apply_bleeps(main, plan.bleeps, plan.bleep_mode, plan.bleep_sound,
-                         load_custom_bleep() if plan.bleep_sound == "custom" else None)
+    custom = load_custom_bleep() if plan.bleep_sound == "custom" else None
+    main = apply_bleeps(main, plan.bleeps, plan.bleep_mode, plan.bleep_sound, custom)
     if seam is not None:
         main, end_gain = loop_mod.meet_levels(main, SR)
         if cont is not None and end_gain:
@@ -276,7 +286,8 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
     if fxp is not None and (fxp.inserts or fxp.sfx):
         from . import fx as fx_mod
 
-        main = fx_mod.splice_audio(main, fxp, source, SR, has_audio, dec)
+        main = fx_mod.splice_audio(main, fxp, source, SR, has_audio, dec,
+                                   bleep=lambda raw, t0: bleep_source_chunk(raw, t0, plan, custom))
     governor.checkpoint()
 
     parts = [np.zeros((_n(plan.intro_s), 2), np.float32)]
@@ -285,6 +296,7 @@ def build(source: Path, plan: EditPlan, dest: Path, *, has_audio: bool = True,
         fs, fd = flash
         fl = dec(source, fs, fd, sr=SR, channels=2) if has_audio else np.zeros((_n(fd), 2), np.float32)
         fl = np.concatenate([fl, np.zeros((max(0, _n(fd) - len(fl)), 2), np.float32)])[: _n(fd)]
+        fl = bleep_source_chunk(fl, fs, plan, custom)
         parts.append(_fade(fl, 0.05, 0.12))
         lead += fd
     parts += [main, np.zeros((_n(plan.outro_s), 2), np.float32)]

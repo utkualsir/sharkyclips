@@ -629,7 +629,8 @@ def render(project: Project, story: dict, opts, facecam, dest: Path,
             plan = p["plan"]
             t0 = max(0.0, plan.start - 0.1)
             y = audiomix.cut_and_join(decode(source, t0, plan.end - t0 + 0.1, sr=SR, channels=2), t0, plan)
-            y = audiomix.apply_bleeps(y, plan.bleeps, plan.bleep_mode)
+            y = audiomix.apply_bleeps(y, plan.bleeps, plan.bleep_mode, plan.bleep_sound,
+                                      audiomix.load_custom_bleep() if plan.bleep_sound == "custom" else None)
             y = np.concatenate([y, np.zeros((max(0, n - len(y)), 2), np.float32)])[:n]
             lufs = loudness.integrated_lufs(y)
             seg_lufs.append(lufs)

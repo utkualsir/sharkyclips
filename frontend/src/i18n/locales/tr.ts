@@ -2057,6 +2057,22 @@ const tr: Record<string, string> = {
   "longmeta.tags": "Etiketler",
   "kind.long_metadata": "Tam video metinleri",
   "stage.long_writing": "Tam video metinleri yazılıyor",
+  "bleep.badge_ok_one": "{n} bip ✅",
+  "bleep.badge_ok_other": "{n} bip ✅",
+  "bleep.badge_missing_one": "{n} küfür biplenemedi",
+  "bleep.badge_missing_other": "{n} küfür biplenemedi",
+  "bleep.report": "Bip raporu",
+  "bleep.play": "Bu anı dinle",
+  "bleep.item_ok": "biplendi",
+  "bleep.item_audible": "hâlâ duyuluyor",
+  "bleep.where_flash": "açılış flaşı",
+  "bleep.where_replay": "tekrar",
+  "bleep.spk_me": "sen",
+  "bleep.spk_friend": "arkadaş",
+  "bleep.checked_btn": "Dinledim, sorun yok",
+  "bleep.checked": "senin onayınla",
+  "bleep.hold_hint": "Sen dinleyene kadar yükleme bekler.",
+  "bleep.check_failed": "Bip kontrolü çalışamadı",
 };
 
 export default tr;

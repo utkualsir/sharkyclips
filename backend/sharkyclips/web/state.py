@@ -215,6 +215,31 @@ def save_clip(project: Project, cid: str, entry: dict) -> None:
         write_json_atomic(project.dir / "clips.json", {"version": 1, "clips": clips})
 
 
+def bleep_hold(project: Project, cid: str) -> int:
+    """1.2.31: swears of the rendered clip that are still audible after every fix, while the
+    user hasn't listened and said OK (one-click / automatic upload waits until then)."""
+    from ..edit import bleepcheck
+
+    clip = load_clips(project).get(cid)
+    if not clip or clip.get("bleep_checked"):
+        return 0
+    return bleepcheck.unresolved(clip)
+
+
+def mark_bleeps_checked(project: Project, cid: str, ok: bool = True) -> dict | None:
+    with _lock:
+        clips = load_clips(project)
+        clip = clips.get(cid)
+        if clip is None:
+            return None
+        if ok:
+            clip["bleep_checked"] = now_iso()
+        else:
+            clip.pop("bleep_checked", None)
+        write_json_atomic(project.dir / "clips.json", {"version": 1, "clips": clips})
+        return clip
+
+
 def file_dub(project: Project, cid: str, source: str) -> str:
     """The dub language of a video file of this clip ("" = the original voice). source = "clip",
     "ab:A" / "ab:B" or an export file name ("" = a file still to be made). Files made since 1.2.19 record it ("dub"); for older

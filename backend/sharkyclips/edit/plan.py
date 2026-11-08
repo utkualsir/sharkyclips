@@ -295,6 +295,8 @@ def swear_review(project: Project, words: list[dict], lang: str | None, start: f
         hints = voices_mod.hints_for(project, start, end, vdata)
         scan = scan if scan is not None else swearscan.load(project)
     items = [it for it in swears.detect(words, lang, hints) if start - 0.05 <= it["start"] <= end + 0.05]
+    if use_hints:  # 1.2.31: the main transcript too, where the voice pass replaced its words
+        items = _add_main_transcript(project, items, words, lang, start, end)
     if scan is not None:
         from ..voices import swearscan
 
@@ -324,6 +326,32 @@ def swear_review(project: Project, words: list[dict], lang: str | None, start: f
             words[i]["bleep"] = True
     items.sort(key=lambda it: it["start"])
     return items
+
+
+def _add_main_transcript(project: Project, items: list[dict], words: list[dict], lang: str | None,
+                         start: float, end: float) -> list[dict]:
+    """Swears the main transcript has that the clip's words (the voice pass) don't: every
+    speaker, every reading. Added as their own items (same "sure" / "maybe" as found)."""
+    from . import swears
+
+    try:
+        base, _l = transcript_words(project, start, end, voices=False)
+    except Exception:  # noqa: BLE001 - no transcript: nothing to add
+        return items
+    if not base or [w["word"] for w in base] == [w["word"] for w in words]:
+        return items
+    out = list(items)
+    for it in swears.detect(base, lang):
+        if not (start - 0.05 <= it["start"] <= end + 0.05):
+            continue
+        if any(o["start"] < it["end"] + 0.1 and o["end"] > it["start"] - 0.1 for o in out):
+            continue
+        under = [i for i, w in enumerate(words) if w["start"] < it["end"] + 0.05 and w["end"] > it["start"] - 0.05]
+        alike = [i for i in under if swears.sounds_alike(words[i]["word"], it["word"], lang)]
+        out.append({**it, "i": alike[0] if alike else None, "why": it["why"] + "+main",
+                    "spk": words[under[0]].get("spk") if under else it.get("spk")})
+    out.sort(key=lambda it: it["start"])
+    return out
 
 
 def merge_scan(items: list[dict], scanned: list[dict], words: list[dict], lang: str | None) -> list[dict]:
@@ -544,8 +572,10 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
                 words[it["i"]]["bleep"] = True
                 if words[it["i"]].get("removed"):
                     continue
-            if it.get("bleep_at"):  # aligned + checked by the deep check
+            if it.get("bleep_at"):  # aligned + checked by the deep check (+ the word's own time:
+                # 1.2.31, a misaligned check range never leaves the word itself unbleeped)
                 ranges.append((float(it["bleep_at"][0]), float(it["bleep_at"][1])))
+                ranges.append((it["start"] - pre, it["end"] + post))
             elif it["status"] == "manual":
                 ranges.append((it["start"], it["end"]))
             else:

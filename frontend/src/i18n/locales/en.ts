@@ -2090,6 +2090,22 @@ const en: Record<string, string> = {
   "longmeta.tags": "Tags",
   "kind.long_metadata": "Full video texts",
   "stage.long_writing": "Writing the full video texts",
+  "bleep.badge_ok_one": "{n} bleep ✅",
+  "bleep.badge_ok_other": "{n} bleeps ✅",
+  "bleep.badge_missing_one": "{n} swear could not be bleeped",
+  "bleep.badge_missing_other": "{n} swears could not be bleeped",
+  "bleep.report": "Bleep report",
+  "bleep.play": "Play this moment",
+  "bleep.item_ok": "bleeped",
+  "bleep.item_audible": "still audible",
+  "bleep.where_flash": "hook flash",
+  "bleep.where_replay": "replay",
+  "bleep.spk_me": "you",
+  "bleep.spk_friend": "friend",
+  "bleep.checked_btn": "I listened, it's OK",
+  "bleep.checked": "checked by you",
+  "bleep.hold_hint": "Upload waits until you've listened to it.",
+  "bleep.check_failed": "The bleep check couldn't run",
 };
 
 export default en;

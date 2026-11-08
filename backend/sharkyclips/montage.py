@@ -455,6 +455,37 @@ def list_exports(project: Project) -> list[dict]:
     return out
 
 
+def _bleeped_audio(project: Project, cand: dict, dur: float, dest: Path) -> Path | None:
+    """The clip's source sound with its bleeps (the same pipeline as its Short: every speaker,
+    Strict, the user's own bleep / unbleep choices), or None when it has no swears."""
+    from .clips import ClipOptions
+    from .edit import audiomix
+    from .edit import plan as plan_mod
+    from .edit.music import decode
+
+    opts_d: dict = {}
+    try:
+        from .web import state
+
+        review = state.load_review(project)
+        opts_d = dict(review.get("options") or {})
+        cand = state.effective_cand(cand, review)
+    except Exception:  # noqa: BLE001 - no review yet: the defaults (bleep, Strict)
+        pass
+    opts = ClipOptions.from_dict({**opts_d, "cuts": "off", "zoom": "off", "music": False, "brand": False,
+                                  "loop": False, "replay": "off", "memes": "off", "chat_bubbles": False,
+                                  "dub": "", "hook_flash": False})
+    plan = plan_mod.build(project, cand, opts, vertical=False, fps=30)
+    if plan.bleep_mode == "off" or not plan.bleep_src:
+        return None
+    start = float(cand["start"])
+    y = decode(project.source_path, start, dur + 0.05, sr=audiomix.SR, channels=2)
+    y = audiomix.bleep_source_chunk(y.astype("float32", copy=True), start, plan,
+                                    audiomix.load_custom_bleep() if plan.bleep_sound == "custom" else None)
+    audiomix.write_wav(dest, y)
+    return dest
+
+
 def render_montage(project: Project, clip_ids: list[str], *, lang: str | None = None, intro: bool = True,
                    outro: bool = True, cards: bool = True,
                    on_progress: Callable[[str, float | None], None] | None = None) -> dict:
@@ -549,8 +580,14 @@ def render_montage(project: Project, clip_ids: list[str], *, lang: str | None = 
                 c = p["cand"]
                 inputs += ["-ss", f"{c['start']:.3f}", "-t", f"{p['dur']:.3f}", "-i", src]
                 graph.append(f"[{n_in}:v]{vfit},trim=0:{p['dur']:.3f},setpts=PTS-STARTPTS[v{k}]")
+                a_in = n_in
+                wav = _bleeped_audio(project, c, p["dur"], work / f"clip{k}.wav") if has_audio else None
+                if wav is not None:  # 1.2.31: the clip's bleeps, the same as in its Short
+                    inputs += ["-i", wav.name]
+                    n_in += 1
+                    a_in = n_in
                 if has_audio:
-                    graph.append(f"[{n_in}:a]aresample=48000,aformat=channel_layouts=stereo,{_loudnorm(p['loud'])},"
+                    graph.append(f"[{a_in}:a]aresample=48000,aformat=channel_layouts=stereo,{_loudnorm(p['loud'])},"
                                  f"aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,"
                                  f"apad,atrim=0:{p['dur']:.3f},asetpts=PTS-STARTPTS[a{k}]")
                 else:

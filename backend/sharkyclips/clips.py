@@ -781,9 +781,40 @@ def out_mapper(project: Project, cand: dict, opts: ClipOptions, spec: OutputSpec
 
 def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None,
                 dest: Path, on_progress: Callable[[float], None] | None = None,
-                spec: OutputSpec | None = None) -> RenderResult:
+                spec: OutputSpec | None = None,
+                on_stage: Callable[[str], None] | None = None) -> RenderResult:
     """Render one clip. Without `spec`: the 1080x1920 H.264 MP4 of the Clips tab.
-    1.2.18: study cards / the music visualizer are a second pass on the finished clip."""
+    1.2.31: every render ends with the bleep guarantee (edit/bleepcheck.py): the file is
+    checked, a swear that is still heard gets a wider bleep and the clip is rendered again
+    (at most twice), the report goes into res.info["bleep_report"]."""
+    from .edit import bleepcheck
+
+    res = _render_once(project, cand, opts, facecam, dest, on_progress, spec)
+    return bleepcheck.guarantee(
+        project, cand, opts, spec or OutputSpec(), dest, res,
+        lambda: _render_once(project, cand, opts, facecam, dest, on_progress, spec),
+        lambda: bleep_plan(project, cand, opts, spec), on_stage)
+
+
+def bleep_plan(project: Project, cand: dict, opts: ClipOptions, spec: OutputSpec | None = None):
+    """(plan, flash seconds, flash source start) exactly as _render_core renders the clip."""
+    spec = spec or OutputSpec()
+    meta = project.load_meta()
+    fps = float(meta.get("fps") or 30)
+    start, end = float(cand["start"]), float(cand["end"])
+    if not opts.dub and cand.get("dub"):
+        opts = ClipOptions.from_dict({**opts.to_dict(), "dub": cand["dub"]})
+    flash = FLASH_SECONDS if opts.hook_flash and not opts.loop else 0.0
+    peak = float(cand.get("peak") or (start + end) / 2)
+    flash_start = flash_from(peak, float(meta.get("duration") or end), fps)
+    plan = edit_plan(project, cand, opts, spec, max(1, round(min(60.0, fps, float(spec.fps or 60)))))
+    return plan, flash, flash_start
+
+
+def _render_once(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None,
+                 dest: Path, on_progress: Callable[[float], None] | None = None,
+                 spec: OutputSpec | None = None) -> RenderResult:
+    """1.2.18: study cards / the music visualizer are a second pass on the finished clip."""
     ex = mode_extras(project, opts)
     if not (ex["cards"] or ex["visualizer"]):
         return _render_core(project, cand, opts, facecam, dest, on_progress, spec)
@@ -803,7 +834,7 @@ def render_clip(project: Project, cand: dict, opts: ClipOptions, facecam: Faceca
         enc = mx.apply(project, cand, opts, spec, base, dest, ex, part(0.55, 1.0))
     finally:
         base.unlink(missing_ok=True)
-    return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc or res.encoder)
+    return RenderResult(dest, time.perf_counter() - t0, dest.stat().st_size, enc or res.encoder, res.info)
 
 
 def _render_core(project: Project, cand: dict, opts: ClipOptions, facecam: Facecam | None,

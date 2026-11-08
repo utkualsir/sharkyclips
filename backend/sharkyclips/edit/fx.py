@@ -452,8 +452,10 @@ def write_captions(project, cand: dict, model) -> list[str]:
 # ===================================================================== sound
 
 
-def splice_audio(main: np.ndarray, fx: FxPlan, source, sr: int, has_audio: bool, decode) -> np.ndarray:
-    """main (main time, stereo) -> the timeline with the inserts' sound and the effects."""
+def splice_audio(main: np.ndarray, fx: FxPlan, source, sr: int, has_audio: bool, decode,
+                 bleep=None) -> np.ndarray:
+    """main (main time, stereo) -> the timeline with the inserts' sound and the effects.
+    bleep(raw, source_t0) -> raw: the clip's bleeps on a replay's source sound (before slow-mo)."""
     from . import sfx as sfx_mod
 
     def n(t: float) -> int:
@@ -478,6 +480,8 @@ def splice_audio(main: np.ndarray, fx: FxPlan, source, sr: int, has_audio: bool,
         k = n(ins.dur)
         if ins.kind == "replay" and has_audio:
             raw = decode(source, ins.src, ins.src_end - ins.src, sr=sr, channels=2)
+            if len(raw) and bleep is not None:
+                raw = bleep(raw.astype(np.float32, copy=True), ins.src)
             if len(raw):
                 # Slow motion: twice as long, an octave lower (the classic slow-mo sound).
                 x = np.linspace(0, len(raw) - 1, max(2, k))

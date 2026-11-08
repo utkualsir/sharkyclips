@@ -677,11 +677,37 @@ export interface WordLists {
   learned?: Record<string, { add: LearnedWord[]; ignore: LearnedWord[] }>;
 }
 
+/** 1.2.31: the check after every render: each bleeped swear and whether it is really bleeped */
+export interface BleepReport {
+  version: number;
+  expected: number | null;
+  bleeped: number | null;
+  audible: number | null;
+  ok: boolean;
+  error?: string;
+  attempts: number;
+  listened?: boolean;
+  strictness?: string | null;
+  items: { word: string; spk: string | null; status: string | null; t: number; ok: boolean; why?: string;
+    where: ("main" | "flash" | "replay")[] }[];
+}
+
+export interface BleepSummary {
+  expected: number | null;
+  bleeped: number | null;
+  audible: number;
+  hold: number;
+  checked: string | null;
+  error: boolean;
+}
+
 export interface RenderEdits {
   duration?: number;
   cut_seconds?: number;
   cuts?: number;
   bleeps?: number;
+  bleep_report?: BleepReport | null;
+  warnings?: string[] | null;
   zoom_pulses?: number;
   music?: (PlanMusic & { offset: number }) | null;
   lufs?: number | null;
@@ -725,6 +751,8 @@ export interface RenderedClip {
   encoder: string;
   performance?: Performance | null;
   edits?: RenderEdits | null;
+  bleep_checked?: string | null;
+  warnings?: string[] | null;
 }
 
 export interface ProjectDetail extends Omit<ProjectSummary, "clips"> {
@@ -1959,6 +1987,7 @@ export interface EasyClip {
     stamp: string | null;
     has_video: boolean;
     error: string | null;
+    bleeps?: BleepSummary | null;
   };
   upload: {
     status: LibStatus;
@@ -2052,6 +2081,15 @@ export interface EasyLibRow {
   error: { message: string; hint: string | null } | null;
   job: { kind: string; stage: string | null; progress: number | null } | null;
 }
+
+export const bleepApi = {
+  report: (pid: string, cid: string) =>
+    req<{ report: BleepReport | null; checked: string | null; hold: number }>(
+      "GET", `/api/projects/${encodeURIComponent(pid)}/clips/${encodeURIComponent(cid)}/bleeps`),
+  checked: (pid: string, cid: string, ok: boolean) =>
+    req<{ checked: string | null; hold: number }>(
+      "POST", `/api/projects/${encodeURIComponent(pid)}/clips/${encodeURIComponent(cid)}/bleeps/checked`, { ok }),
+};
 
 const EZ = (pid: string, cid: string) => `/api/easy/clips/${encodeURIComponent(pid)}/${encodeURIComponent(cid)}`;
 const EP = (pid: string) => `/api/easy/projects/${encodeURIComponent(pid)}`;

@@ -13,8 +13,12 @@ detect() returns one item per swear (or "maybe" swear) with the speaker, time an
   learned   a word the user bleeped by hand before (swearlearn.py) -> sure
   scan      the deep check (voices/swearscan.py) heard one here, with votes over passes
 
+  phrase    two words that make a swear together ("aman akayım", "amına kodum": Whisper's
+            split of "amına koyayım")
+
 "sure" items are bleeped. "maybe" items are bleeped when their score reaches the strictness
-level (STRICTNESS: normal 0.6, strict 0.35, paranoid any); all show up in the review list.
+level (STRICTNESS: normal 0.5, strict 0.3, paranoid any); all show up in the review list.
+1.2.31: Strict is the default everywhere; a missed swear costs more than a false bleep.
 """
 
 from __future__ import annotations
@@ -25,9 +29,9 @@ import unicodedata
 from . import profanity, swearlex
 from .words import compile_entries, find, fold, token
 
-BLEEP_MAYBE_AT = 0.6
+BLEEP_MAYBE_AT = 0.5
 # The score from which a "maybe" swear is bleeped, per strictness level.
-STRICTNESS = {"normal": 0.6, "strict": 0.35, "paranoid": 0.0}
+STRICTNESS = {"normal": 0.5, "strict": 0.3, "paranoid": 0.0}
 LEVELS = ("auto", "normal", "strict", "paranoid")
 
 
@@ -180,14 +184,17 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
             continue
         if len(tok) < 3 or _common_word(tok, lang):
             continue
+        if lang == "tr" and swearlex.lower(w["word"].strip(" .,!?;:\"'"), lang).startswith(swearlex.TR_DOTLESS_OK):
+            continue  # "sıktığım" (I shot), "kahretsin" (damn): real words
         hit = _near(tok, stems)
         if hit is None:
             continue
         exactish = _phon(tok).startswith(hit)
         if exactish:  # same sound, other spelling ("amina", "orosbu", "sıkeyim")
             put(i, "maybe", "phonetic", 0.65 if p < 0.9 else 0.55)
-        elif p < 0.75:
-            put(i, "maybe", "fuzzy", 0.45 + (0.75 - p) * 0.3)
+        else:  # 1.2.31: a clear near-miss counts too (Strict bleeps it)
+            put(i, "maybe", "fuzzy", 0.45 + (0.75 - p) * 0.3 if p < 0.75 else 0.33)
+    _phrases(words, lang, items, put)
     # The user's "not a swear" choices: a maybe goes away, a list word unbleeped twice -> maybe.
     for i, it in list(items.items()):
         n = ignore.get(token(it["word"], lang), 0)
@@ -196,7 +203,7 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
         if it["status"] == "maybe":
             items.pop(i)
         elif n >= 2:
-            it.update(status="maybe", why=it["why"] + "+unbleeped", score=0.5)
+            it.update(status="maybe", why=it["why"] + "+unbleeped", score=0.4)
 
     out = list(items.values())
     # Other passes: confirm a word here (only one that sounds like the hint), or add a swear
@@ -226,6 +233,31 @@ def detect(words: list[dict], lang: str | None, hints: list[dict] | None = None,
                         "score": round(score, 2)})
     out.sort(key=lambda it: it["start"])
     return out
+
+
+# Turkish two-word swears as Whisper splits them: "aman akayım", "amman koydum", "bana koyayım".
+_TR_HEAD = re.compile(r"^(a+m+[aeıi]n+[aeıi]?|ana|bana|amk)$")
+_TR_TAIL = re.compile(r"^(a?k[oa]y|a?kod|akay|koy|kod)[a-zçğıöşü]*$")
+
+
+def _phrases(words: list[dict], lang: str | None, items: dict, put) -> None:
+    if lang != "tr":
+        return
+    for i in range(len(words) - 1):
+        a, b = token(words[i]["word"], lang), token(words[i + 1]["word"], lang)
+        if not _TR_TAIL.match(b) or not (_TR_HEAD.match(a) or (items.get(i) or {}).get("status") == "sure"):
+            continue
+        if float(words[i + 1]["start"]) - float(words[i]["end"]) > 0.6:
+            continue
+        head = items.get(i)
+        if head is not None and head["status"] == "sure":  # "amına" + "kodum": the second word too
+            put(i + 1, "sure", "phrase", 1.0)
+        elif a in ("ana", "bana"):  # "bana koyayım": could be said, rarely
+            put(i, "maybe", "phrase", 0.45)
+            put(i + 1, "maybe", "phrase", 0.45)
+        else:
+            put(i, "maybe", "phrase", 0.6)
+            put(i + 1, "maybe", "phrase", 0.6)
 
 
 def bleeped(item: dict, strictness: str = "normal") -> bool:

@@ -2039,6 +2039,22 @@ const ar: Record<string, string> = {
   "longmeta.tags": "العلامات",
   "kind.long_metadata": "نصوص الفيديو الكامل",
   "stage.long_writing": "جارٍ كتابة نصوص الفيديو الكامل",
+  "bleep.badge_ok_one": "صفير واحد ✅",
+  "bleep.badge_ok_other": "{n} صفير ✅",
+  "bleep.badge_missing_one": "شتيمة واحدة لم يُغطَّ عليها",
+  "bleep.badge_missing_other": "{n} شتائم لم يُغطَّ عليها",
+  "bleep.report": "تقرير الصفير",
+  "bleep.play": "استمع لهذه اللحظة",
+  "bleep.item_ok": "مغطّاة",
+  "bleep.item_audible": "ما زالت مسموعة",
+  "bleep.where_flash": "وميض البداية",
+  "bleep.where_replay": "الإعادة",
+  "bleep.spk_me": "أنت",
+  "bleep.spk_friend": "صديق",
+  "bleep.checked_btn": "استمعت، لا مشكلة",
+  "bleep.checked": "راجعتَه أنت",
+  "bleep.hold_hint": "ينتظر الرفع حتى تستمع إليه.",
+  "bleep.check_failed": "تعذّر تشغيل فحص الصفير",
 };
 
 export default ar;

@@ -22,6 +22,7 @@ import {
   type Word,
   type YoutubeUpload,
 } from "../api";
+import { BleepList } from "../components/BleepReport";
 import EditTools from "../components/EditTools";
 import FastReview, { ShortcutSheet } from "../components/FastReview";
 import { ExportDialog, ExportsList, UploadDialog, UploadsLine } from "../components/Publish";
@@ -1503,7 +1504,14 @@ export default function ProjectPage({ id }: { id: string }) {
                   <div className="clips-grid">
                     {clips.map((c) => (
                       <div className="clip-card" key={c.id}>
-                        <video src={urls.clip(id, c.id, c.rendered_at)} controls playsInline preload="metadata" loop={!!c.options.loop} />
+                        <video
+                          id={`clipvid-${c.id}`}
+                          src={urls.clip(id, c.id, c.rendered_at)}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          loop={!!c.options.loop}
+                        />
                         <div className="foot">
                           <div style={{ display: "grid", minWidth: 0 }}>
                             <span className="tc">
@@ -1539,6 +1547,14 @@ export default function ProjectPage({ id }: { id: string }) {
                             <Icon name="download" />
                           </a>
                         </div>
+                        <BleepList
+                          pid={id}
+                          cid={c.id}
+                          report={c.edits?.bleep_report}
+                          checked={c.bleep_checked}
+                          videoId={`clipvid-${c.id}`}
+                          onChanged={load}
+                        />
                         <div className="clip-pub">
                           <button className="btn btn-sm btn-ghost" onClick={() => setExportIds([c.id])}>
                             <Icon name="download" />

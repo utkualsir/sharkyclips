@@ -2063,6 +2063,22 @@ const hu: Record<string, string> = {
   "longmeta.tags": "Címkék",
   "kind.long_metadata": "Teljes videó szövegei",
   "stage.long_writing": "A teljes videó szövegeinek írása",
+  "bleep.badge_ok_one": "{n} sípolás ✅",
+  "bleep.badge_ok_other": "{n} sípolás ✅",
+  "bleep.badge_missing_one": "{n} káromkodás nincs kisípolva",
+  "bleep.badge_missing_other": "{n} káromkodás nincs kisípolva",
+  "bleep.report": "Sípolás-jelentés",
+  "bleep.play": "Lejátszás",
+  "bleep.item_ok": "kisípolva",
+  "bleep.item_audible": "még hallható",
+  "bleep.where_flash": "nyitó villanás",
+  "bleep.where_replay": "visszajátszás",
+  "bleep.spk_me": "te",
+  "bleep.spk_friend": "barát",
+  "bleep.checked_btn": "Meghallgattam, rendben",
+  "bleep.checked": "te ellenőrizted",
+  "bleep.hold_hint": "A feltöltés vár, amíg meg nem hallgatod.",
+  "bleep.check_failed": "A sípolás-ellenőrzés nem futott le",
 };
 
 export default hu;

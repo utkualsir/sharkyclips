@@ -41,6 +41,7 @@ import os
 import secrets
 import threading
 import time
+import re
 import urllib.parse
 import warnings
 from datetime import date, datetime, timedelta, timezone
@@ -715,15 +716,33 @@ def with_note(description: str, note: str | None, limit: int = 4900) -> str:
     return f"{body[:max(0, room)].rstrip()}\n\n{note}{tail}".strip()
 
 
+def censor_text(text: str, lang: str | None) -> str:
+    """1.2.31: every swear in an uploaded title / description / caption is censored ("S*KTİR"),
+    whatever wrote it (the AI, the user, an old saved text). Links are left alone."""
+    from .titles import style
+
+    lang = lang or config.get("output_language") or "tr"
+    out = []
+    for part in re.split(r"(https?://\S+)", text or ""):
+        out.append(part if part.startswith(("http://", "https://")) else style.censor(part, lang)[0])
+    return "".join(out)
+
+
+def _has_swear(text: str, lang: str | None) -> bool:
+    return censor_text(str(text), lang) != str(text)
+
+
 def build_body(title: str, description: str, tags: list[str], privacy: str, publish_at: str | None,
                made_for_kids: bool, category: str = "20", language: str | None = None,
                synthetic: bool = False) -> dict:
     """`synthetic`: tell YouTube the video has altered / synthetic content (status.containsSyntheticMedia)."""
     if privacy not in PRIVACY:
         raise SharkyClipsError(f"Unknown privacy '{privacy}'.")
-    title = clean_text(title, 100)
+    title = clean_text(censor_text(title, language), 100)
     if not title:
         raise SharkyClipsError("The video needs a title.")
+    description = censor_text(description, language)
+    tags = [t for t in tags if not _has_swear(t, language)]
     status: dict = {"privacyStatus": privacy, "selfDeclaredMadeForKids": bool(made_for_kids),
                     "embeddable": True}
     if synthetic:

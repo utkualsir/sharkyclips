@@ -178,6 +178,27 @@ def api_peaks(project_id: str, start: float, end: float, n: int = 400) -> dict:
 # ------------------------------------------------------------------ bleep sound
 
 
+@router.get("/api/projects/{project_id}/clips/{cid}/bleeps")
+def api_bleep_report(project_id: str, cid: str) -> dict:
+    """1.2.31: the clip's bleep report (expected / bleeped / audible swears with their times)."""
+    project = _app()._project(project_id)
+    clip = state.load_clips(project).get(cid)
+    if clip is None:
+        raise SharkyClipsError("This clip isn't rendered yet.")
+    rep = (clip.get("edits") or {}).get("bleep_report")
+    return {"report": rep, "checked": clip.get("bleep_checked"), "hold": state.bleep_hold(project, cid)}
+
+
+@router.post("/api/projects/{project_id}/clips/{cid}/bleeps/checked")
+def api_bleeps_checked(project_id: str, cid: str, body: dict | None = None) -> dict:
+    """"I listened, upload it": lifts the upload hold of a clip with unresolved bleeps."""
+    project = _app()._project(project_id)
+    clip = state.mark_bleeps_checked(project, cid, (body or {}).get("ok", True) is not False)
+    if clip is None:
+        raise SharkyClipsError("This clip isn't rendered yet.")
+    return {"checked": clip.get("bleep_checked"), "hold": state.bleep_hold(project, cid)}
+
+
 @router.get("/api/bleep")
 def api_bleep() -> dict:
     from ..edit.audiomix import custom_bleep_path

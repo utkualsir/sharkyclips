@@ -91,12 +91,19 @@ TR_PATTERNS: list[Pat] = [
     _p(r"^amk" + _SUF + "$", why="abbrev"),
     _p(r"^am[ıi]n[aeıi]" + _SUF + "$"),                     # amına, amını, amina, amınakoyayım
     _p(r"^am[ıi]na?k" + _SUF + "$"),                        # amınak, aminakim (fast "amına koyayım")
+    # 1.2.31: Whisper's spellings of "amına koyayım" said fast: "Amanakoyim", "ammanakoyim",
+    # "amanakodumun", "amenekoyim" (no Turkish word starts like this)
+    _p(r"^am+[aeıi]n+[aeıi]k[ao][yd]" + _SUF + "$"),
+    # "sikeyim" with the first vowel lost or moved: "skiyim", "iskiyim", "ıskıyım", "skildi"
+    _p(r"^[iı]?sk[iı]y[iı]m" + _SUF + "$|^sk[iı]ld[iı]" + _SUF + "$|^sk[iı]cem" + _SUF + "$"),
+    _p(r"^[iı]sk[iı](m|y|cem|ld)" + _SUF + "$", "maybe", "sound"),
     _p(r"^amc[ıi]k" + _SUF + "$"),
     _p(r"^(has+)?sik(?!ke)" + _SUF + "$"),                  # sik, siktir, sikeyim, sikerler, hassiktir
     _p(r"^(has+)?sık(t[ıi]r|ey[ıi]m|er[ıi]m|em|ecem|[ıi]cem|ko|[ıi]k$|[ıi]s|im$|[ıi]y[ıi]m)" + _SUF + "$",
        "maybe", "dotless"),                                 # "sıkeyim", "sıktır": Whisper's ı for i
     _p(r"^or[ou]?s[pb]u" + _SUF + "$"),                     # orospu, orosbu, orspu, oruspu
     _p(r"^pic(?!k|n|t|s|a|o)" + _SUF + "$"),                # piç, piçin, piçler, piçlik (not pick/picnic)
+    _p(r"^pıc(?!ak|ag)" + _SUF + "$", "maybe", "dotless"),  # "pıç": Whisper's ı for i (not "bıçak")
     _p(r"^yar+ak" + _SUF + "$|^yar+ag" + _SUF + "$|^yarram" + _SUF + "$|^dalyar+ak" + _SUF + "$"),
     _p(r"^got(?!ur|ik|ham)" + r"[a-zı]{0,8}$"),        # göt, götü, götün, götveren (not götür = carry)
     _p(r"^kahpe" + _SUF + "$|^kaltak" + _SUF + "$|^ibne" + _SUF + "$|^pust" + _SUF + "$|^gavat" + _SUF + "$"),
@@ -265,6 +272,12 @@ def variants(word: str, lang: str | None) -> list[str]:
     return seen
 
 
+# English swears inside another word, in every language: names like "Deepfuck", "xBitchx".
+EMBEDDED = re.compile(r"(f+u+c+k+|motherf|b+i+t+c+h)")
+# Real (Turkish) words that start like a dotless swear form: never near-misses.
+TR_DOTLESS_OK = ("sıkt", "sıkıl", "sıkış", "sıkın", "sıkıc", "sıkm", "sıkı", "sıkk", "kahret")
+
+
 def classify(word: str, lang: str | None, prob: float = 1.0) -> tuple[str, float, str] | None:
     """('sure' | 'maybe', score, why) for one transcript word, or None."""
     k = raw_key(word, lang)
@@ -272,6 +285,16 @@ def classify(word: str, lang: str | None, prob: float = 1.0) -> tuple[str, float
         return None
     if is_censored(word):
         return ("sure", 1.0, "masked")
+    if lang not in ("zh", "ja", "ru", "ar") and len(k) > 4 and EMBEDDED.search(latin_key(k)):
+        hit = classify_plain(k, lang, prob)
+        return hit or ("sure", 1.0, "embedded")
+    return classify_plain(word, lang, prob)
+
+
+def classify_plain(word: str, lang: str | None, prob: float = 1.0) -> tuple[str, float, str] | None:
+    k = raw_key(word, lang)
+    if not k or len(k) > 40:
+        return None
     if lang in ("zh", "ja"):
         if ZH_LATIN.match(k) or any(s in k for s in ZH_SUBSTR):
             return ("sure", 1.0, "form")
@@ -304,6 +327,8 @@ def classify(word: str, lang: str | None, prob: float = 1.0) -> tuple[str, float
     stems = PHON_STEMS.get(lang or "")
     if not stems or common_word(k, lang):
         return None
+    if lang == "tr" and k.startswith(TR_DOTLESS_OK):  # "sıktığım" (I shot), "sıkıntım"
+        return None
     pk = phon(tr_key(k) if lang == "tr" else k)
     if len(pk) < 4:
         return None
@@ -323,4 +348,4 @@ def classify(word: str, lang: str | None, prob: float = 1.0) -> tuple[str, float
     return None
 
 
-__all__ = ["classify", "common_word", "is_censored", "phon", "raw_key", "tr_key", "variants", "wdist"]
+__all__ = ["classify", "classify_plain", "common_word", "is_censored", "phon", "raw_key", "tr_key", "variants", "wdist"]

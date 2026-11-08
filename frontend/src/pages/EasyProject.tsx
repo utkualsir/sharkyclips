@@ -9,6 +9,7 @@ import {
   type Mode,
   type UploadWhen,
 } from "../api";
+import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
@@ -412,6 +413,8 @@ function ClipCard({
   const menuRef = useRef<HTMLDivElement>(null);
   const r = c.render;
   const ok = r.status === "ready" && r.has_video;
+  const [cleared, setCleared] = useState(false);
+  const hold = !cleared && (r.bleeps?.hold ?? 0) > 0;
   const up = c.upload;
   const uploading = up.step === "uploading" || up.step === "queued_uploading" || busy === "upload";
   const titleId = `ez-t-${c.id}`;
@@ -465,7 +468,8 @@ function ClipCard({
             <Icon name="alert" size={15} /> {up.error?.message || t("easy.toast_upload_failed", { title: "" })}
           </p>
         )}
-        <button className="btn btn-primary ez-big" disabled={!ok || !!busy} onClick={onUpload}>
+        {ok && hold && <BleepCheckedButton pid={pid} cid={c.id} onDone={() => setCleared(true)} />}
+        <button className="btn btn-primary ez-big" disabled={!ok || !!busy || (ok && hold)} onClick={onUpload}>
           <Icon name="upload" /> {t("easy.upload_youtube")}
         </button>
         <div className="ez-when" role="radiogroup" aria-label={t("easy.when_label")}>
@@ -518,6 +522,7 @@ function ClipCard({
         <span className="ez-dur mono">{fmtTime(c.duration)}</span>
       </div>
       <div className="ez-card-body">
+        {ok && <BleepBadge s={cleared && r.bleeps ? { ...r.bleeps, checked: "now", hold: 0 } : r.bleeps} />}
         {c.viral_label && (
           <span className={`ez-viral ez-viral-${c.viral_label}`}>
             <Icon name="sparkles" size={13} /> {t("easy.viral", { label: t(`publish.label.${c.viral_label}`) })}

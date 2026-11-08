@@ -2033,6 +2033,22 @@ const zh: Record<string, string> = {
   "longmeta.tags": "标签",
   "kind.long_metadata": "完整视频文案",
   "stage.long_writing": "正在写完整视频文案",
+  "bleep.badge_ok_one": "{n} 处消音 ✅",
+  "bleep.badge_ok_other": "{n} 处消音 ✅",
+  "bleep.badge_missing_one": "{n} 处脏话未消音",
+  "bleep.badge_missing_other": "{n} 处脏话未消音",
+  "bleep.report": "消音报告",
+  "bleep.play": "播放此处",
+  "bleep.item_ok": "已消音",
+  "bleep.item_audible": "仍可听到",
+  "bleep.where_flash": "开头闪回",
+  "bleep.where_replay": "回放",
+  "bleep.spk_me": "你",
+  "bleep.spk_friend": "朋友",
+  "bleep.checked_btn": "我听过了，没问题",
+  "bleep.checked": "你已确认",
+  "bleep.hold_hint": "你听过之前不会上传。",
+  "bleep.check_failed": "消音检查未能运行",
 };
 
 export default zh;

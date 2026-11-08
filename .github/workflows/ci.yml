@@ -45,6 +45,8 @@ jobs:
           node-version: 24
       - name: Lint (ruff)
         run: python -m ruff check backend installer
+      - name: Bleep guarantee (end-to-end render, every swear bleeped)
+        run: python -m pytest -q backend/tests/test_bleep_guarantee.py
       - name: Tests (pytest)
         run: python -m pytest
 
