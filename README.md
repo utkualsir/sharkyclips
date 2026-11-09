@@ -16,7 +16,7 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.35-1F6FE5" alt="Version 1.2.35"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.36-1F6FE5" alt="Version 1.2.36"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -278,10 +278,12 @@ Twitch VODs, YouTube (videos and past live streams), Kick and most sites yt-dlp 
 local video file. The chat replay is fetched automatically for Twitch and YouTube; for others you
 can import a chat log.
 
-**Does it post to TikTok / YouTube for me?**
-Only if you want it to, and only to YouTube: connect your channel once (Settings → YouTube) and
-press Upload on a clip. SharkyClips never posts by itself. For TikTok, Instagram and X you
-download the clip and post it yourself.
+**Does it post to YouTube, Instagram and TikTok for me?**
+Only if you want it to. Connect your accounts once (Settings → Accounts: YouTube with one click,
+Instagram and TikTok through your own free developer app, with a step-by-step guide) and press
+Publish on a clip: it goes to every platform you switched on, now or at a planned time. Nothing
+is ever posted on its own unless you turn on Autopilot. For X you download the clip and post it
+yourself.
 
 **Where are my files?**
 In the `workspace` folder inside the SharkyClips folder (each project in its own subfolder, rendered
@@ -460,8 +462,10 @@ değiştirin. Ollama, Ayarlar'dan açmadığınız sürece Windows ile başlamaz
 - **Ücretsiz mi?** Evet, tamamen ücretsiz ve açık kaynaklıdır (MIT). Filigran veya kredi yoktur.
 - **Güçlü bir bilgisayar gerekir mi?** Şart değil. NVIDIA ekran kartı veya Apple Silicon ile çok daha
   hızlıdır; ekran kartı olmadan da çalışır, sadece daha yavaştır.
-- **Klipleri benim yerime paylaşır mı?** Yalnızca siz isterseniz ve yalnızca YouTube'a: kanalınızı bir
-  kez bağlayıp (Ayarlar → YouTube) klipte Yükle'ye basarsınız. Kendiliğinden hiçbir şey
-  paylaşmaz. TikTok, Instagram ve X için klibi indirip kendiniz paylaşırsınız.
+- **Klipleri benim yerime paylaşır mı?** Yalnızca siz isterseniz. Hesaplarınızı bir kez bağlayın
+  (Ayarlar → Hesaplar: YouTube tek tıkla, Instagram ve TikTok adım adım rehberle kendi ücretsiz
+  geliştirici uygulamanızla) ve klipte Yayınla'ya basın: açtığınız her platforma şimdi ya da
+  planladığınız saatte gider. Otomatik pilotu açmadıkça kendiliğinden hiçbir şey paylaşmaz. X için
+  klibi indirip kendiniz paylaşırsınız.
 - **Bir sorun mu var?** Kurulum aracını tekrar çalıştırın (eksikleri onarır) veya
   [bir hata kaydı açın](https://github.com/utkualsir/sharkyclips/issues/new/choose).

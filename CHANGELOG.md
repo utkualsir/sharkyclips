@@ -7,6 +7,112 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.36] - 2026-11-09
+
+### New: one Publish button for YouTube, Instagram and TikTok
+- **Accounts.** Settings has a new **Accounts** section with three cards: YouTube, Instagram and
+  TikTok. Each shows who is connected (picture and name), a status (green connected, amber needs
+  attention, red signed out), Connect / Reconnect / Disconnect, and how much you can still post
+  today. Sign-ins are saved encrypted on this PC and renew themselves.
+- **Step-by-step setup** for your own Meta app (Instagram) and TikTok developer app, with direct
+  links: creating the app, adding yourself as an Instagram tester and accepting the invite,
+  TikTok's sandbox, the exact redirect address to copy.
+- **Publish everywhere.** The clip card has one **Publish** button with three switches
+  (YouTube · Instagram · TikTok, all on by default and remembered). Nothing to fix? One tap posts
+  everywhere. Something to fix? The preview opens: a phone-frame preview per platform with the
+  title or caption, hashtags, cover frame and length check, the platform limits, and one-tap
+  fixes (shorten, keep 30 hashtags, skip a platform, connect).
+- **Same clip, adapted texts.** YouTube gets title + description + tags; Instagram and TikTok get
+  a caption made from the title, a short description, your hashtags (your channel tag first) and
+  your socials where they fit. Swears are censored and the AI-voice line is added everywhere, and
+  a clip with an unbleeped swear can't go out anywhere.
+- **TikTok's own post screen**, as TikTok requires: who is posting, who can see it (you choose),
+  comments / Duet / Stitch, the branded-content disclosure and the Music Usage Confirmation.
+  Until TikTok reviews your app, posts are "Only me": after posting, **Make it public on TikTok**
+  takes you there.
+- **Now or planned.** Post now or pick a time: YouTube schedules it, Instagram and TikTok are
+  posted by SharkyClips at that time (the PC has to be on; if it was off, they go out as soon as
+  it starts).
+- **Reliable posting.** The three platforms upload side by side, each with its own progress.
+  If one fails, the others are not touched and **Try again** redoes only that one. Nothing is
+  ever posted twice, even after a crash or a restart: SharkyClips picks up where it stopped.
+  Rate limits are waited out by themselves.
+- **Library:** each clip shows small badges per platform (status and views, linked to the post),
+  a total, a "Posted everywhere" mark, and filters per platform. Views and likes from every
+  platform also teach the viral score.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Yeni: YouTube, Instagram ve TikTok için tek Yayınla düğmesi
+- **Hesaplar.** Ayarlar'da yeni bir **Hesaplar** bölümü var: YouTube, Instagram ve TikTok için üç
+  kart. Her biri kimin bağlı olduğunu (resim ve ad), bir durum (yeşil bağlı, sarı dikkat
+  gerekiyor, kırmızı oturum kapandı), Bağla / Yeniden bağla / Bağlantıyı kes düğmelerini ve
+  bugün daha ne kadar paylaşabileceğini gösteriyor. Oturumlar bu bilgisayarda şifreli saklanıyor
+  ve kendiliğinden yenileniyor.
+- Kendi Meta uygulaman (Instagram) ve TikTok geliştirici uygulaman için **adım adım kurulum**,
+  doğrudan bağlantılarla: uygulamayı oluşturma, kendini Instagram test kullanıcısı olarak ekleyip
+  daveti kabul etme, TikTok sandbox'ı, kopyalanacak tam yönlendirme adresi.
+- **Her yerde yayınla.** Klip kartında üç anahtarlı tek bir **Yayınla** düğmesi var (YouTube ·
+  Instagram · TikTok; üçü de varsayılan açık ve hatırlanıyor). Düzeltilecek bir şey yoksa tek
+  dokunuş her yere paylaşır. Varsa önizleme açılır: her platform için telefon çerçevesinde başlık
+  ya da metin, hashtag'ler, kapak karesi ve süre kontrolü, platform sınırları ve tek dokunuşla
+  düzeltmeler (kısalt, 30 hashtag bırak, platformu atla, bağla).
+- **Aynı klip, uyarlanmış metinler.** YouTube başlık + açıklama + etiket alır; Instagram ve
+  TikTok başlıktan, kısa açıklamadan, hashtag'lerinden (önce kanal etiketin) ve sığdığı yerde
+  sosyal medya satırlarından oluşan bir metin alır. Küfürler her yerde sansürleniyor, yapay zekâ
+  ses satırı her yere ekleniyor ve bip'lenmemiş küfür içeren bir klip hiçbir yere gidemiyor.
+- **TikTok'un kendi paylaşım ekranı**, TikTok'un istediği gibi: kim paylaşıyor, kimler görebilir
+  (sen seçersin), yorum / Düet / Stitch, markalı içerik beyanı ve Müzik Kullanım Onayı. TikTok
+  uygulamanı inceleyene kadar paylaşımlar "Sadece ben" olur: paylaştıktan sonra **TikTok'ta
+  herkese aç** seni oraya götürür.
+- **Şimdi ya da planlı.** Şimdi paylaş ya da bir saat seç: YouTube planlar, Instagram ve TikTok'u
+  SharkyClips o saatte paylaşır (bilgisayar açık olmalı; kapalıysa açılır açılmaz gönderilir).
+- **Güvenilir paylaşım.** Üç platform yan yana yüklenir, her birinin kendi ilerlemesi var. Biri
+  başarısız olursa diğerlerine dokunulmaz, **Yeniden dene** yalnızca onu tekrarlar. Çökme ya da
+  yeniden başlatmadan sonra bile hiçbir şey iki kez paylaşılmaz: SharkyClips kaldığı yerden devam
+  eder. Hız sınırları kendiliğinden beklenir.
+- **Kitaplık:** her klipte platform başına küçük rozetler (durum ve izlenme, paylaşıma bağlantılı),
+  toplam, "Her yerde yayında" işareti ve platform filtreleri var. Tüm platformlardan gelen
+  izlenme ve beğeniler viral puanı da eğitiyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Ein Veröffentlichen-Knopf für YouTube, Instagram und TikTok:** neuer Bereich „Konten“ mit drei Karten (verbunden / Achtung / abgemeldet, Kontingent, verschlüsselte Anmeldung) und Schritt-für-Schritt-Einrichtung deiner eigenen Meta- und TikTok-App. Ein Tipp postet überall, oder die Vorschau zeigt pro Plattform Text, Grenzen und Ein-Tipp-Korrekturen. TikToks eigene Post-Einstellungen sind dabei („Nur ich“, bis TikTok deine App prüft). Jetzt oder geplant; die Plattformen laden parallel hoch, ein Fehler betrifft nur seine Plattform, nichts wird doppelt gepostet. Die Mediathek zeigt Status und Aufrufe pro Plattform.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Egy Közzététel gomb a YouTube-hoz, az Instagramhoz és a TikTokhoz:** új „Fiókok” rész három kártyával (csatlakoztatva / figyelem / kijelentkezve, keret, titkosított bejelentkezés) és lépésenkénti beállítás a saját Meta- és TikTok-alkalmazásodhoz. Egy koppintás mindenhová posztol, vagy az előnézet platformonként mutatja a szöveget, a korlátokat és az egykoppintásos javításokat. A TikTok saját poszt-beállításai is benne vannak („Csak én”, amíg a TikTok nem ellenőrzi az alkalmazásodat). Most vagy ütemezve; a platformok párhuzamosan töltenek fel, egy hiba csak a saját platformját érinti, semmi sem megy ki kétszer. A könyvtár platformonként mutatja az állapotot és a megtekintéseket.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Одна кнопка «Опубликовать» для YouTube, Instagram и TikTok:** новый раздел «Аккаунты» с тремя карточками (подключено / требует внимания / выход выполнен, лимиты, зашифрованный вход) и пошаговая настройка своих приложений Meta и TikTok. Одно касание публикует везде, или предпросмотр показывает текст, ограничения и исправления в одно касание для каждой платформы. Есть собственные настройки публикации TikTok («Только я», пока TikTok не проверит приложение). Сейчас или по расписанию; платформы загружаются параллельно, ошибка затрагивает только свою платформу, ничего не публикуется дважды. В библиотеке видны статус и просмотры по платформам.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **زر نشر واحد لـيوتيوب وإنستغرام وتيك توك:** قسم «الحسابات» الجديد بثلاث بطاقات (متصل / يحتاج انتباهًا / تم تسجيل الخروج، الحصة، تسجيل دخول مشفّر) وإعداد خطوة بخطوة لتطبيقَي Meta وتيك توك الخاصّين بك. نقرة واحدة تنشر في كل مكان، أو تعرض المعاينة النص والحدود والإصلاحات بنقرة واحدة لكل منصة. تتضمن إعدادات النشر الخاصة بتيك توك («لي فقط» حتى يدقّق تيك توك تطبيقك). الآن أو بجدولة؛ ترفع المنصات بالتوازي، والخطأ يخص منصته فقط، ولا يُنشر شيء مرتين. تعرض المكتبة الحالة والمشاهدات لكل منصة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **YouTube、Instagram 和 TikTok 一键发布：** 新增“账号”区域，三张卡片显示连接状态（已连接 / 需要处理 / 已退出登录）、剩余额度和加密保存的登录，并提供自建 Meta 应用和 TikTok 开发者应用的分步设置。
+- 没有问题时一键发到所有平台；有问题时预览会按平台显示文案、限制和一键修正。包含 TikTok 要求的发布设置（在 TikTok 审核你的应用之前仅自己可见）。
+- 可以立即发布或定时发布；三个平台并行上传，一个出错不影响其他平台，任何情况下都不会重复发布。资料库按平台显示状态和观看次数。
+
+</details>
+
 ## [1.2.35] - 2026-11-09
 
 ### Changed: clip length follows your channel's views
