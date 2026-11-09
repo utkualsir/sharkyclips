@@ -65,7 +65,8 @@ def test_semi_mode_by_default_and_api_mode_needs_a_connection(fake):
     with pytest.raises(SharkyClipsError, match="Connect"):
         PF.set_mode("tiktok", "api")
     _connect_tiktok(fake)
-    assert PF.status("tiktok")["account"] == "utku" and PF.mode("tiktok") == "semi"  # still the user's choice
+    # (1.2.36: the name comes from TikTok's creator info, the nickname)
+    assert PF.status("tiktok")["account"] == "utku alsir" and PF.mode("tiktok") == "semi"  # still the user's choice
     assert PF.set_mode("tiktok", "api")["mode"] == "api"
     tok = (config.config_dir() / "platforms" / "tiktok" / "token.enc").read_text(encoding="utf-8")
     assert "TT-ACCESS" not in tok  # kept encrypted

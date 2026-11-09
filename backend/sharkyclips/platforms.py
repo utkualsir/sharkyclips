@@ -37,7 +37,7 @@ UPLOAD_PAGE = {"tiktok": "https://www.tiktok.com/tiktokstudio/upload",
                "reels": "https://www.instagram.com/"}
 CAPTION_MAX = {"tiktok": 2200, "reels": 2200}
 HASHTAG_MAX = {"tiktok": 10, "reels": 30}
-TIKTOK_SCOPES = "user.info.basic,video.publish,video.upload"
+TIKTOK_SCOPES = "user.info.basic,video.publish,video.list"  # video.list: views of your posts (1.2.36)
 CHUNK = 10 * 1024 * 1024
 ProgressFn = Callable[[float], None]
 
@@ -94,10 +94,15 @@ def save_token(name: str, data: dict) -> None:
     secretstore.save(_token_path(name), data)
 
 
-def forget(name: str) -> None:
+def forget(name: str, everything: bool = True) -> None:
+    """Sign out. everything=False (Disconnect in Accounts) keeps your developer app's keys, so
+    Reconnect is one click."""
     _token_path(name).unlink(missing_ok=True)
-    app = folder(name) / "app.enc"
-    app.unlink(missing_ok=True)
+    for f in ("avatar.jpg", "problem.json", "quota.json"):
+        (folder(name) / f).unlink(missing_ok=True)
+    _creator_cache.clear()
+    if everything:
+        (folder(name) / "app.enc").unlink(missing_ok=True)
 
 
 def load_app(name: str) -> dict | None:
@@ -209,6 +214,9 @@ def tiktok_redirect(port: int) -> str:
 def tiktok_start(client_key: str, client_secret: str, port: int) -> str:
     """Save the user's app and return the TikTok sign-in URL (PKCE)."""
     client_key, client_secret = client_key.strip(), client_secret.strip()
+    saved = load_app("tiktok") or {}
+    if not client_key and not client_secret and saved.get("client_key"):  # Reconnect: the saved app
+        client_key, client_secret = saved["client_key"], saved.get("client_secret") or ""
     if not client_key or not client_secret:
         raise SharkyClipsError("Enter the Client key and Client secret of your TikTok app.",
                                "developers.tiktok.com -> Manage apps -> your app -> Credentials.")
@@ -238,13 +246,22 @@ def tiktok_finish(code: str, state: str) -> dict:
     tok = _tiktok_json(r, "sign-in")
     _save_tiktok_token(tok)
     try:
-        info = tiktok_call("GET", "/v2/user/info/?fields=open_id,display_name")
-        name = ((info.get("data") or {}).get("user") or {}).get("display_name")
+        info = tiktok_call("GET", "/v2/user/info/?fields=open_id,display_name,avatar_url")
+        user = (info.get("data") or {}).get("user") or {}
+        name = user.get("display_name")
+        save_avatar("tiktok", user.get("avatar_url"))
     except SharkyClipsError:
         name = None
     t = load_token("tiktok") or {}
     t["account"] = name
+    t["connected_at"] = time.time()
     save_token("tiktok", t)
+    note_problem("tiktok", None)
+    _creator_cache.clear()
+    try:
+        tiktok_creator_info(fresh=True)  # handle + avatar
+    except SharkyClipsError:
+        pass
     return status("tiktok")
 
 
@@ -269,7 +286,8 @@ def _tiktok_json(r, what: str) -> dict:
     else:
         code, msg = err, d.get("error_description")
     if r.status_code >= 400 or (code and code != "ok"):
-        raise SharkyClipsError(f"TikTok refused the {what}: {msg or code or r.status_code}.", _tiktok_hint(str(code)))
+        raise api_error("tiktok", f"TikTok refused the {what}: {msg or code or r.status_code}.",
+                        _tiktok_hint(str(code)), str(code or r.status_code), r.status_code)
     return d
 
 
@@ -281,6 +299,10 @@ def _tiktok_hint(code: str) -> str | None:
         "spam_risk_too_many_posts": "TikTok's daily posting limit is reached: try again tomorrow.",
         "rate_limit_exceeded": "Too many requests: wait a minute and try again.",
         "invalid_grant": "Connect TikTok again in Settings.",
+        "reached_active_user_cap": "TikTok lets an app that isn't reviewed yet post for 5 accounts a day: try again tomorrow.",
+        "privacy_level_option_mismatch": "Pick who can see the video again: TikTok changed the choices.",
+        "access_token_expired": "Connect TikTok again in Settings.",
+        "url_ownership_unverified": None,
     }.get(code)
 
 
@@ -289,20 +311,41 @@ def _tiktok_access() -> str:
     if not tok or not tok.get("access_token"):
         raise SharkyClipsError("TikTok isn't connected.", "Connect it in Settings, or use the semi-automatic mode.")
     if tok.get("expires_at", 0) - time.time() < 120:
-        app = load_app("tiktok") or {}
-        r = _http().post(f"{tiktok_api()}/v2/oauth/token/", timeout=30, data={
-            "client_key": app.get("client_key"), "client_secret": app.get("client_secret"),
-            "grant_type": "refresh_token", "refresh_token": tok.get("refresh_token")})
-        _save_tiktok_token(_tiktok_json(r, "refresh"))
+        refresh_tiktok()
         tok = load_token("tiktok") or {}
     return tok["access_token"]
 
 
+def refresh_tiktok() -> None:
+    """New access token from the refresh token (TikTok: 24 h access, 365 days refresh)."""
+    tok = load_token("tiktok") or {}
+    app = load_app("tiktok") or {}
+    try:
+        r = _http().post(f"{tiktok_api()}/v2/oauth/token/", timeout=30, data={
+            "client_key": app.get("client_key"), "client_secret": app.get("client_secret"),
+            "grant_type": "refresh_token", "refresh_token": tok.get("refresh_token")})
+        _save_tiktok_token(_tiktok_json(r, "refresh"))
+        note_problem("tiktok", None)
+    except SharkyClipsError as exc:
+        if getattr(exc, "code", "") in ("invalid_grant", "access_token_invalid", "400", "401"):
+            note_problem("tiktok", "signed_out", exc.message)
+        raise
+
+
 def tiktok_call(method: str, path: str, body: dict | None = None) -> dict:
-    r = _http().request(method, f"{tiktok_api()}{path}", timeout=60, json=body,
-                        headers={"Authorization": f"Bearer {_tiktok_access()}",
-                                 "Content-Type": "application/json; charset=UTF-8"})
-    return _tiktok_json(r, "request")
+    """One API call; an access token TikTok says is invalid / expired is refreshed once."""
+    for attempt in (1, 2):
+        r = _http().request(method, f"{tiktok_api()}{path}", timeout=60, json=body,
+                            headers={"Authorization": f"Bearer {_tiktok_access()}",
+                                     "Content-Type": "application/json; charset=UTF-8"})
+        try:
+            return _tiktok_json(r, "request")
+        except SharkyClipsError as exc:
+            if attempt == 1 and getattr(exc, "code", "") in ("access_token_invalid", "access_token_expired"):
+                refresh_tiktok()
+                continue
+            raise
+    raise SharkyClipsError("TikTok request failed.")
 
 
 def tiktok_post(file: Path, text: str, on_progress: ProgressFn | None = None,
@@ -368,18 +411,24 @@ def ig_connect(token: str) -> dict:
     if len(token) < 20:
         raise SharkyClipsError("Paste the long access token of your Instagram app.",
                                "Meta for Developers -> your app -> Instagram -> API setup -> Generate token.")
+    return _ig_save(token, 60 * 86400)
+
+
+def _ig_save(token: str, expires_in: float) -> dict:
     r = _http().get(f"{ig_api()}/{IG_VERSION}/me", timeout=30,
-                    params={"fields": "user_id,username,account_type", "access_token": token})
+                    params={"fields": "user_id,username,account_type,profile_picture_url", "access_token": token})
     d = _ig_json(r, "connection")
     kind = (d.get("account_type") or "").upper()
     if kind and kind not in ("BUSINESS", "MEDIA_CREATOR", "CREATOR"):
         raise SharkyClipsError("Instagram only lets Business or Creator accounts post through its API.",
-                               "Switch the account to Creator in the Instagram app (Settings -> Account type), or keep the semi-automatic mode.")
+                               "Switch the account to Creator in the Instagram app (Settings → Account type).")
     save_token("reels", {"access_token": token, "user_id": str(d.get("user_id") or d.get("id")),
-                         "account": d.get("username"), "saved_at": time.time(),
-                         "expires_at": time.time() + 60 * 86400})
+                         "account": d.get("username"), "saved_at": time.time(), "connected_at": time.time(),
+                         "expires_at": time.time() + float(expires_in or 60 * 86400)})
     if load_app("reels") is None:
         save_app("reels", {"audited": False})
+    note_problem("reels", None)
+    save_avatar("reels", d.get("profile_picture_url"))
     return status("reels")
 
 
@@ -390,32 +439,60 @@ def _ig_json(r, what: str) -> dict:
         d = {}
     if r.status_code >= 400 or "error" in d:
         e = d.get("error") or {}
-        code = e.get("code")
-        hint = {190: "The token expired or was revoked: make a new one and paste it in Settings.",
+        if not isinstance(e, dict):
+            e = {"message": str(e)}
+        code, sub = e.get("code"), e.get("error_subcode")
+        hint = {190: "The sign-in expired or was revoked: connect Instagram again in Settings.",
                 10: "Your Meta app lacks the instagram_business_content_publish permission.",
                 200: "Your Meta app lacks the instagram_business_content_publish permission.",
                 9007: "Instagram is still processing the video: try again in a minute.",
-                4: "Instagram's hourly limit is reached: try again later.",
+                4: "Instagram's hourly limit is reached: SharkyClips tries again by itself.",
+                17: "Instagram's hourly limit is reached: SharkyClips tries again by itself.",
+                32: "Instagram's hourly limit is reached: SharkyClips tries again by itself.",
+                613: "Instagram's hourly limit is reached: SharkyClips tries again by itself.",
                 }.get(code)
-        raise SharkyClipsError(f"Instagram refused the {what}: {e.get('message') or r.status_code}.", hint)
+        if code == 9 and sub == 2207042:
+            hint = "Instagram allows a limited number of API posts per 24 hours: it goes out when there's room again."
+        tag = f"{code}:{sub}" if sub else str(code if code is not None else r.status_code)
+        raise api_error("reels", f"Instagram refused the {what}: {e.get('message') or r.status_code}.", hint, tag,
+                        r.status_code)
     return d
 
 
 def _ig_token() -> dict:
     tok = load_token("reels")
     if not tok or not tok.get("access_token"):
-        raise SharkyClipsError("Instagram isn't connected.", "Connect it in Settings, or use the semi-automatic mode.")
-    if time.time() - float(tok.get("saved_at") or 0) > 30 * 86400:  # long-lived tokens: refresh monthly
+        raise SharkyClipsError("Instagram isn't connected.", "Connect it in Settings → Accounts.")
+    if float(tok.get("expires_at") or 0) and float(tok["expires_at"]) < time.time():
+        note_problem("reels", "signed_out", "The Instagram sign-in expired.")
+        raise api_error("reels", "The Instagram sign-in expired.", "Connect Instagram again in Settings → Accounts.",
+                        "190", 401)
+    if time.time() - float(tok.get("saved_at") or 0) > IG_REFRESH_AFTER:  # 60-day tokens: refreshed weekly
         try:
-            r = _http().get(f"{ig_api()}/refresh_access_token", timeout=30,
-                            params={"grant_type": "ig_refresh_token", "access_token": tok["access_token"]})
-            d = _ig_json(r, "token refresh")
-            tok.update(access_token=d["access_token"], saved_at=time.time(),
-                       expires_at=time.time() + float(d.get("expires_in") or 60 * 86400))
-            save_token("reels", tok)
+            refresh_ig()
+            tok = load_token("reels") or tok
         except SharkyClipsError:
-            pass  # still valid for a while; the next post tries again
+            pass  # still valid for a while; the next post / health check tries again
     return tok
+
+
+IG_REFRESH_AFTER = 7 * 86400
+
+
+def refresh_ig() -> None:
+    tok = load_token("reels") or {}
+    r = _http().get(f"{ig_api()}/refresh_access_token", timeout=30,
+                    params={"grant_type": "ig_refresh_token", "access_token": tok.get("access_token")})
+    try:
+        d = _ig_json(r, "token refresh")
+    except SharkyClipsError as exc:
+        if str(getattr(exc, "code", "")).startswith("190"):
+            note_problem("reels", "signed_out", exc.message)
+        raise
+    tok.update(access_token=d["access_token"], saved_at=time.time(),
+               expires_at=time.time() + float(d.get("expires_in") or 60 * 86400))
+    save_token("reels", tok)
+    note_problem("reels", None)
 
 
 def ig_post(file: Path, text: str, on_progress: ProgressFn | None = None, poll: float = 3.0,
@@ -497,3 +574,453 @@ def record(project, cid: str, platform: str, **data) -> dict:
         all_.setdefault(cid, {})[platform] = cur
         write_json_atomic(record_path(project), all_)
         return cur
+
+
+# ===================================================================== 1.2.36: errors, health, avatars
+
+
+class PlatformError(SharkyClipsError):
+    """An API refusal with what the posting engine needs to react: `kind` is one of
+    auth (connect again) | rate_limit (try again in a minute or two) | quota (daily cap: later) |
+    transient (network / 5xx: try again) | fatal (this post can't work as it is)."""
+
+    def __init__(self, message: str, hint: str | None, platform: str, code: str, kind: str,
+                 retry_after: float | None = None):
+        super().__init__(message, hint)
+        self.platform, self.code, self.kind, self.retry_after = platform, code, kind, retry_after
+
+
+_TT_KIND = {"rate_limit_exceeded": "rate_limit", "spam_risk_too_many_posts": "quota",
+            "spam_risk_user_banned_from_posting": "fatal", "reached_active_user_cap": "quota",
+            "access_token_invalid": "auth", "access_token_expired": "auth", "invalid_grant": "auth",
+            "scope_not_authorized": "auth", "unaudited_client_can_only_post_to_private_accounts": "fatal",
+            "privacy_level_option_mismatch": "fatal", "internal_error": "transient"}
+
+
+def api_error(platform: str, message: str, hint: str | None, code: str, http: int = 400) -> PlatformError:
+    if platform == "tiktok":
+        kind = _TT_KIND.get(code) or ("rate_limit" if http == 429 else "transient" if http >= 500 else
+                                      "auth" if http == 401 else "fatal")
+    else:
+        base = code.split(":")[0]
+        kind = ("quota" if code == "9:2207042" else "rate_limit" if base in ("4", "17", "32", "613") or http == 429
+                else "auth" if base in ("190", "10", "200") or http == 401 else
+                "transient" if base in ("1", "2", "-1") or http >= 500 else "fatal")
+    retry = {"rate_limit": 90.0, "quota": 6 * 3600.0, "transient": 60.0}.get(kind)
+    return PlatformError(message, hint, platform, code, kind, retry)
+
+
+def note_problem(name: str, kind: str | None, message: str | None = None) -> None:
+    """Remember why an account needs you (signed_out / attention), or clear it (kind None)."""
+    p = folder(name) / "problem.json"
+    if kind is None:
+        p.unlink(missing_ok=True)
+        return
+    folder(name).mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps({"kind": kind, "message": message, "at": time.time()}), encoding="utf-8")
+
+
+def problem(name: str) -> dict | None:
+    try:
+        return json.loads((folder(name) / "problem.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
+def avatar_path(name: str) -> Path:
+    return folder(name) / "avatar.jpg"
+
+
+def save_avatar(name: str, url: str | None) -> None:
+    """The profile picture is kept here (the UI never loads it from the platform)."""
+    if not url:
+        return
+    try:
+        r = _http().get(url, timeout=20)
+        if r.status_code == 200 and r.content and len(r.content) < 3_000_000:
+            folder(name).mkdir(parents=True, exist_ok=True)
+            tmp = avatar_path(name).with_suffix(".tmp")
+            tmp.write_bytes(r.content)
+            os.replace(tmp, avatar_path(name))
+    except Exception:  # noqa: BLE001 - a missing picture is fine
+        pass
+
+
+def health(name: str) -> dict:
+    """Account card state: pill ok (green) | attention (amber) | signed_out (red), with the reason."""
+    tok = load_token(name) or {}
+    prob = problem(name)
+    now = time.time()
+    if not tok.get("access_token"):
+        signed_out = (prob or {}).get("kind") == "signed_out"
+        return {"pill": "signed_out", "reason": "signed_out" if signed_out else "not_connected",
+                "message": (prob or {}).get("message")}
+    if prob and prob.get("kind") == "signed_out":
+        return {"pill": "signed_out", "reason": "signed_out", "message": prob.get("message")}
+    if name == "tiktok":
+        scope = str(tok.get("scope") or "")
+        if scope and "video.publish" not in scope:
+            return {"pill": "attention", "reason": "scope", "message": None}
+        if float(tok.get("refresh_expires_at") or now + 1e9) - now < 7 * 86400:
+            return {"pill": "attention", "reason": "expires", "message": None}
+    if name == "reels":
+        if float(tok.get("expires_at") or now + 1e9) - now < 5 * 86400:
+            return {"pill": "attention", "reason": "expires", "message": None}
+    if prob:
+        return {"pill": "attention", "reason": prob.get("kind") or "attention", "message": prob.get("message")}
+    return {"pill": "ok", "reason": None, "message": None}
+
+
+def keep_fresh() -> list[str]:
+    """Background (publish loop): refresh tokens before they run out. Returns what it did."""
+    acts = []
+    now = time.time()
+    tok = load_token("tiktok") or {}
+    if tok.get("access_token") and float(tok.get("expires_at") or 0) - now < 2 * 3600 and \
+            (problem("tiktok") or {}).get("kind") != "signed_out":
+        try:
+            refresh_tiktok()
+            acts.append("refresh:tiktok")
+        except SharkyClipsError:
+            acts.append("refresh_failed:tiktok")
+    tok = load_token("reels") or {}
+    if tok.get("access_token") and now - float(tok.get("saved_at") or 0) > IG_REFRESH_AFTER and \
+            (problem("reels") or {}).get("kind") != "signed_out":
+        try:
+            refresh_ig()
+            acts.append("refresh:reels")
+        except SharkyClipsError:
+            acts.append("refresh_failed:reels")
+    return acts
+
+
+def account(name: str) -> dict:
+    """What an Accounts card shows (no secrets)."""
+    tok = load_token(name) or {}
+    app = load_app(name) or {}
+    out = {"platform": name, "connected": bool(tok.get("access_token")),
+           "handle": tok.get("handle") or tok.get("account"), "name": tok.get("account"),
+           "avatar": avatar_path(name).is_file(), "health": health(name), "audited": bool(app.get("audited")),
+           "has_app": bool(app.get("client_key") or app.get("app_id")),
+           "app_id": app.get("client_key") or app.get("app_id"), "expires_at": tok.get("expires_at"),
+           "connected_at": tok.get("connected_at") or tok.get("saved_at"), "encrypted": True}
+    if name == "tiktok":
+        out["scopes"] = [x for x in str(tok.get("scope") or "").split(",") if x]
+        out["stats"] = "video.list" in out["scopes"]
+    if name == "reels":
+        out["stats"] = "insights" in str(tok.get("scope") or "insights")
+        out["redirect"] = app.get("redirect")
+    return out
+
+
+# ===================================================================== 1.2.36: TikTok step by step
+
+TIKTOK_DAILY_CAP = 15  # TikTok's own cap per creator account is "around 15 posts a day"
+_creator_cache: dict = {}
+
+
+def tiktok_creator_info(fresh: bool = False) -> dict:
+    """creator_info/query (TikTok's UX rules: who posts, the privacy choices, which interactions
+    the creator allows, the longest video). Cached a minute (TikTok allows 20 calls a minute)."""
+    if not fresh and _creator_cache.get("at", 0) > time.time() - 60:
+        return dict(_creator_cache["data"])
+    d = tiktok_call("POST", "/v2/post/publish/creator_info/query/").get("data") or {}
+    info = {"username": d.get("creator_username"), "nickname": d.get("creator_nickname"),
+            "avatar_url": d.get("creator_avatar_url"),
+            "privacy_options": list(d.get("privacy_level_options") or ["SELF_ONLY"]),
+            "comment_disabled": bool(d.get("comment_disabled")), "duet_disabled": bool(d.get("duet_disabled")),
+            "stitch_disabled": bool(d.get("stitch_disabled")),
+            "max_seconds": int(d.get("max_video_post_duration_sec") or 600)}
+    _creator_cache.update(at=time.time(), data=info)
+    tok = load_token("tiktok") or {}
+    if info["username"] and (tok.get("handle") != info["username"] or not avatar_path("tiktok").is_file()):
+        tok["handle"] = info["username"]
+        tok["account"] = info["nickname"] or tok.get("account")
+        save_token("tiktok", tok)
+        save_avatar("tiktok", info["avatar_url"])
+    return dict(info)
+
+
+def tiktok_post_info(text: str, settings: dict, audited: bool, info: dict, ai_label: bool = False,
+                     cover_ms: int | None = None) -> dict:
+    """post_info from the user's choices, checked against TikTok's rules (raises when one breaks)."""
+    privacy = settings.get("privacy") if audited else "SELF_ONLY"
+    if not privacy:
+        raise SharkyClipsError("Choose who can see the TikTok video.")
+    if privacy not in info["privacy_options"]:
+        raise api_error("tiktok", "TikTok doesn't offer this privacy choice for your account.",
+                        _tiktok_hint("privacy_level_option_mismatch"), "privacy_level_option_mismatch")
+    disclose = bool(settings.get("disclose"))
+    organic, branded = disclose and bool(settings.get("brand_organic")), disclose and bool(settings.get("brand_content"))
+    if disclose and not (organic or branded):
+        raise SharkyClipsError("Say whether the video promotes you or a brand, or switch the disclosure off.")
+    if branded and privacy == "SELF_ONLY":
+        raise SharkyClipsError("Branded content can't be private on TikTok.")
+    out = {"title": text[:CAPTION_MAX["tiktok"]], "privacy_level": privacy,
+           "disable_comment": info["comment_disabled"] or not settings.get("allow_comment"),
+           "disable_duet": info["duet_disabled"] or not settings.get("allow_duet"),
+           "disable_stitch": info["stitch_disabled"] or not settings.get("allow_stitch"),
+           "brand_content_toggle": branded, "brand_organic_toggle": organic}
+    if cover_ms is not None:
+        out["video_cover_timestamp_ms"] = max(0, int(cover_ms))
+    if ai_label:
+        out["is_aigc"] = True
+    return out
+
+
+def tiktok_init(file: Path, post_info: dict) -> dict:
+    size = file.stat().st_size
+    chunk = size if size <= 64 * 1024 * 1024 else CHUNK
+    count = max(1, size // chunk)
+    init = tiktok_call("POST", "/v2/post/publish/video/init/", {
+        "post_info": post_info,
+        "source_info": {"source": "FILE_UPLOAD", "video_size": size, "chunk_size": chunk, "total_chunk_count": count}})
+    data = init.get("data") or {}
+    if not data.get("upload_url") or not data.get("publish_id"):
+        raise api_error("tiktok", "TikTok didn't give an upload address.", "SharkyClips tries again.", "no_url", 500)
+    return {"publish_id": data["publish_id"], "upload_url": data["upload_url"], "chunk": chunk, "count": count,
+            "size": size}
+
+
+def tiktok_send(file: Path, up: dict, on_progress: ProgressFn | None = None,
+                cancel: threading.Event | None = None) -> None:
+    size, chunk, count = up["size"], up["chunk"], up["count"]
+    with open(file, "rb") as f:
+        for i in range(count):
+            if cancel is not None and cancel.is_set():
+                raise SharkyClipsError("Cancelled.")
+            a = i * chunk
+            b = size - 1 if i == count - 1 else a + chunk - 1
+            f.seek(a)
+            part = f.read(b - a + 1)
+            r = _http().put(up["upload_url"], data=part, timeout=300, headers={
+                "Content-Type": "video/mp4", "Content-Length": str(len(part)),
+                "Content-Range": f"bytes {a}-{b}/{size}"})
+            if r.status_code not in (200, 201, 206):
+                raise api_error("tiktok", f"TikTok stopped the upload ({r.status_code}).", "SharkyClips tries again.",
+                                str(r.status_code), 429 if r.status_code == 429 else max(500, r.status_code))
+            if on_progress:
+                on_progress((b + 1) / size)
+
+
+def tiktok_status(publish_id: str) -> dict:
+    """{"status": PROCESSING_UPLOAD | PROCESSING_DOWNLOAD | SEND_TO_USER_INBOX | PUBLISH_COMPLETE | FAILED,
+    "fail_reason", "post_ids"}"""
+    d = tiktok_call("POST", "/v2/post/publish/status/fetch/", {"publish_id": publish_id}).get("data") or {}
+    return {"status": d.get("status"), "fail_reason": d.get("fail_reason"),
+            "post_ids": [str(x) for x in (d.get("publicaly_available_post_id") or [])]}
+
+
+def tiktok_video_stats(since: float) -> list[dict]:
+    """Your recent public videos with views / likes (needs the video.list scope)."""
+    tok = load_token("tiktok") or {}
+    if "video.list" not in str(tok.get("scope") or ""):
+        return []
+    out, cursor = [], None
+    for _page in range(5):
+        body = {"max_count": 20, **({"cursor": cursor} if cursor else {})}
+        d = tiktok_call("POST", "/v2/video/list/?fields=id,title,create_time,view_count,like_count,share_url",
+                        body).get("data") or {}
+        vids = d.get("videos") or []
+        out += vids
+        if not d.get("has_more") or not vids or min(int(v.get("create_time") or 0) for v in vids) < since:
+            break
+        cursor = d.get("cursor")
+    return out
+
+
+# ===================================================================== 1.2.36: Instagram Login (OAuth)
+
+IG_SCOPES = "instagram_business_basic,instagram_business_content_publish,instagram_business_manage_insights"
+
+
+def ig_auth_host() -> str:
+    return _endpoint("SHARKYCLIPS_IG_ENDPOINT", "https://www.instagram.com")
+
+
+def ig_token_host() -> str:
+    return _endpoint("SHARKYCLIPS_IG_ENDPOINT", "https://api.instagram.com")
+
+
+def ig_redirect(port: int) -> str:
+    return f"https://localhost:{port}/api/platforms/reels/callback"
+
+
+def ig_start(app_id: str, app_secret: str, port: int, redirect: str | None = None) -> str:
+    """Save your Meta app (Instagram app ID + secret) and return the Instagram sign-in URL.
+    Meta wants an https redirect address: the sign-in ends on https://localhost/..., which the
+    browser can't open (SharkyClips runs plain http), so the user pastes that address back."""
+    app_id, app_secret = app_id.strip(), app_secret.strip()
+    saved = load_app("reels") or {}
+    if not app_id and not app_secret and saved.get("app_id"):  # Reconnect: the saved app
+        app_id, app_secret = saved["app_id"], saved.get("app_secret") or ""
+    if not app_id or not app_secret:
+        raise SharkyClipsError("Enter the Instagram app ID and app secret of your Meta app.",
+                               "developers.facebook.com → your app → Instagram → API setup with Instagram login → "
+                               "3. Set up Instagram business login → Business login settings.")
+    app = load_app("reels") or {}
+    redirect = (redirect or "").strip() or ig_redirect(port)
+    save_app("reels", {**app, "app_id": app_id, "app_secret": app_secret, "redirect": redirect})
+    state = secrets.token_urlsafe(16)
+    with _plock:
+        _pending["ig"] = {"state": state, "redirect": redirect, "at": time.time()}
+    q = {"client_id": app_id, "redirect_uri": redirect, "response_type": "code", "scope": IG_SCOPES,
+         "state": state, "enable_fb_login": "0", "force_reauth": "true"}
+    return f"{ig_auth_host()}/oauth/authorize?{urlencode(q)}"
+
+
+def ig_finish(code: str, state: str | None = None) -> dict:
+    """code -> short-lived token -> 60-day token -> profile. `code` may be the whole address the
+    browser ended on (the https://localhost page that doesn't load)."""
+    from urllib.parse import parse_qs
+
+    code = (code or "").strip()
+    if "code=" in code:
+        q = {k: v[0] for k, v in parse_qs(urlparse(code).query or code.split("?", 1)[-1]).items()}
+        code, state = q.get("code", ""), q.get("state") or state
+    code = code.split("#")[0].strip()
+    with _plock:
+        p = _pending.get("ig")
+    if p is None or time.time() - p["at"] > 1800 or (state and state != p["state"]):
+        raise SharkyClipsError("This Instagram sign-in expired.", "Start the connection again.")
+    if not code:
+        raise SharkyClipsError("Instagram didn't send a sign-in code.",
+                               "Copy the whole address from the browser's address bar after you allowed access.")
+    app = load_app("reels") or {}
+    r = _http().post(f"{ig_token_host()}/oauth/access_token", timeout=30, data={
+        "client_id": app.get("app_id"), "client_secret": app.get("app_secret"), "grant_type": "authorization_code",
+        "redirect_uri": p["redirect"], "code": code})
+    d = _ig_json(r, "sign-in")
+    if isinstance(d.get("data"), list) and d["data"]:
+        d = d["data"][0]
+    short = d.get("access_token")
+    if not short:
+        raise SharkyClipsError("Instagram didn't send a token.", "Start the connection again.")
+    r = _http().get(f"{ig_api()}/access_token", timeout=30, params={
+        "grant_type": "ig_exchange_token", "client_secret": app.get("app_secret"), "access_token": short})
+    long = _ig_json(r, "sign-in")
+    with _plock:
+        _pending.pop("ig", None)
+    st = _ig_save(long["access_token"], float(long.get("expires_in") or 60 * 86400))
+    perms = d.get("permissions")
+    tok = load_token("reels") or {}
+    tok["scope"] = ",".join(perms) if isinstance(perms, list) else str(perms or IG_SCOPES)
+    save_token("reels", tok)
+    return st
+
+
+# ===================================================================== 1.2.36: Instagram step by step
+
+
+def ig_container(text: str, ai_label: bool = False, thumb_ms: int | None = None) -> str:
+    tok = _ig_token()
+    data = {"media_type": "REELS", "upload_type": "resumable", "caption": text[:CAPTION_MAX["reels"]],
+            "share_to_feed": "true", "access_token": tok["access_token"]}
+    if thumb_ms is not None:
+        data["thumb_offset"] = str(max(0, int(thumb_ms)))
+    if ai_label:
+        data["is_ai_generated"] = "true"
+    r = _http().post(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/media", timeout=60, data=data)
+    cid = _ig_json(r, "upload").get("id")
+    if not cid:
+        raise api_error("reels", "Instagram didn't create the upload.", "SharkyClips tries again.", "no_id", 500)
+    return str(cid)
+
+
+def ig_send(file: Path, container: str) -> None:
+    tok = _ig_token()
+    size = file.stat().st_size
+    with open(file, "rb") as f:
+        r = _http().post(f"{ig_upload_api()}/ig-api-upload/{IG_VERSION}/{container}", data=f, timeout=900, headers={
+            "Authorization": f"OAuth {tok['access_token']}", "offset": "0", "file_size": str(size)})
+    _ig_json(r, "upload")
+
+
+def ig_container_status(container: str) -> str:
+    """IN_PROGRESS | FINISHED | ERROR | EXPIRED | PUBLISHED"""
+    tok = _ig_token()
+    r = _http().get(f"{ig_api()}/{IG_VERSION}/{container}", timeout=30,
+                    params={"fields": "status_code,status", "access_token": tok["access_token"]})
+    return str(_ig_json(r, "upload").get("status_code") or "IN_PROGRESS")
+
+
+def ig_publish(container: str) -> str:
+    tok = _ig_token()
+    r = _http().post(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/media_publish", timeout=60,
+                     data={"creation_id": container, "access_token": tok["access_token"]})
+    mid = _ig_json(r, "publish").get("id")
+    if not mid:
+        raise api_error("reels", "Instagram didn't confirm the post.", "SharkyClips checks again.", "no_id", 500)
+    return str(mid)
+
+
+def ig_recent(limit: int = 12) -> list[dict]:
+    """Your newest posts (finds a post whose confirmation got lost, so nothing is posted twice)."""
+    tok = _ig_token()
+    r = _http().get(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/media", timeout=30, params={
+        "fields": "id,caption,timestamp,permalink,media_type", "limit": str(limit), "access_token": tok["access_token"]})
+    return list(_ig_json(r, "check").get("data") or [])
+
+
+def ig_permalink(media: str) -> str | None:
+    tok = _ig_token()
+    try:
+        r = _http().get(f"{ig_api()}/{IG_VERSION}/{media}", timeout=30,
+                        params={"fields": "permalink", "access_token": tok["access_token"]})
+        return _ig_json(r, "link").get("permalink")
+    except SharkyClipsError:
+        return None
+
+
+def ig_quota() -> dict | None:
+    """{"used", "total"} of Instagram's API posts in the last 24 h (cached 10 minutes)."""
+    p = folder("reels") / "quota.json"
+    try:
+        q = json.loads(p.read_text(encoding="utf-8"))
+        if q.get("at", 0) > time.time() - 600:
+            return q
+    except (OSError, ValueError):
+        pass
+    try:
+        tok = _ig_token()
+        r = _http().get(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/content_publishing_limit", timeout=20,
+                        params={"fields": "quota_usage,config", "access_token": tok["access_token"]})
+        d = (_ig_json(r, "limit").get("data") or [{}])[0]
+        q = {"used": int(d.get("quota_usage") or 0), "total": int((d.get("config") or {}).get("quota_total") or 50),
+             "at": time.time()}
+        p.write_text(json.dumps(q), encoding="utf-8")
+        return q
+    except Exception:  # noqa: BLE001 - only shown when it works
+        return None
+
+
+def ig_stats(media: str) -> dict:
+    """Views / likes of a Reel (views need the insights permission; likes come with the basic one)."""
+    tok = _ig_token()
+    out: dict = {}
+    r = _http().get(f"{ig_api()}/{IG_VERSION}/{media}", timeout=30,
+                    params={"fields": "like_count,comments_count,permalink", "access_token": tok["access_token"]})
+    d = _ig_json(r, "stats")
+    out["likes"], out["comments"], out["url"] = d.get("like_count"), d.get("comments_count"), d.get("permalink")
+    try:
+        r = _http().get(f"{ig_api()}/{IG_VERSION}/{media}/insights", timeout=30,
+                        params={"metric": "views", "access_token": tok["access_token"]})
+        for m in _ig_json(r, "stats").get("data") or []:
+            if m.get("name") == "views":
+                vals = m.get("values") or []
+                v = vals[0].get("value") if vals else (m.get("total_value") or {}).get("value")
+                out["views"] = int(v or 0)
+    except SharkyClipsError:
+        pass
+    return out
+
+
+def ig_delete(media: str) -> bool:
+    """Delete a post. Meta only allows this for some apps: False means delete it in the Instagram app."""
+    tok = _ig_token()
+    try:
+        r = _http().delete(f"{ig_api()}/{IG_VERSION}/{media}", timeout=30, params={"access_token": tok["access_token"]})
+        _ig_json(r, "delete")
+        return True
+    except SharkyClipsError:
+        return False
