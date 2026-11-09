@@ -15,8 +15,8 @@ import { CaptionFixer, CutRow, ReasonChips, SmartBanner, TasteButtons } from "..
 import { ConnectionPill, ShortsOverlay, usePhonePreview } from "../components/EasyAuto";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
-import { PlatformPicker, PlatformPost, usePlatforms } from "../components/PlatformPost";
-import type { Platform, PlatformsOverview } from "../extras";
+import { PublishBlock, useTargets } from "../components/PublishAll";
+import { publishApi } from "../multipost";
 import { Icon } from "../components/Icons";
 import { Modal, ProgressBar, Toggle } from "../components/ui";
 import { ConnectPrompt } from "../components/YoutubeConnect";
@@ -62,7 +62,7 @@ export default function EasyProject({ id }: { id: string }) {
   const [allBusy, setAllBusy] = useState(false);
   const prepared = useRef(false);
   const when: UploadWhen = settings?.upload_when ?? "now";
-  const platforms = usePlatforms();
+  const [targets] = useTargets();
 
   const load = useCallback(async () => {
     try {
@@ -83,7 +83,8 @@ export default function EasyProject({ id }: { id: string }) {
     !!view &&
     (view.state === "working" ||
       view.clips.some((c) => ["rendering", "queued"].includes(c.render.status) || ["uploading", "queued_uploading", "rendering"].includes(c.upload.step ?? "") ||
-        Object.values(c.platforms ?? {}).some((x) => x.status === "exporting" || x.status === "uploading")) ||
+        Object.values(c.platforms ?? {}).some((x) => x.status === "exporting" || x.status === "uploading") ||
+        (["youtube", "tiktok", "reels"] as const).some((p) => ["preparing", "uploading", "processing"].includes(c.posts?.[p]?.status ?? ""))) ||
       Object.keys(tracked).length > 0);
   useEffect(() => {
     const ms = moving ? 1500 : 15000;
@@ -166,6 +167,27 @@ export default function EasyProject({ id }: { id: string }) {
 
   const uploadClips = async (cids: string[]) => {
     if (!cids.length) return;
+    if (!(targets.length === 1 && targets[0] === "youtube")) {
+      // 1.2.36: every platform that's switched on (a clip that needs a look is left out and said)
+      setBusy((b) => ({ ...b, ...Object.fromEntries(cids.map((c) => [c, "upload" as const])) }));
+      let ok = 0;
+      const need: string[] = [];
+      for (const cid of cids) {
+        try {
+          await publishApi.start(id, cid, { platforms: targets, when, consent: targets.includes("tiktok") });
+          ok++;
+        } catch (e) {
+          need.push(view.clips.find((c) => c.id === cid)?.title ?? cid);
+          if (!(e instanceof ApiError && e.code === "problems") && e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+        }
+      }
+      if (ok) toast({ kind: "ok", text: t("mp.bulk_started", { n: ok }) });
+      if (need.length) toast({ kind: "info", text: t("mp.bulk_need_look", { n: need.length }), hint: need.join(" · ") });
+      setSelected([]);
+      setBusy((b) => Object.fromEntries(Object.entries(b).filter(([k]) => !cids.includes(k))));
+      load();
+      return;
+    }
     if (!view.youtube.connected) {
       setConnectFor(cids);
       return;
@@ -301,13 +323,10 @@ export default function EasyProject({ id }: { id: string }) {
                 c={c}
                 when={when}
                 onWhen={(w) => update({ upload_when: w })}
-                platform={settings?.platform ?? "youtube"}
-                onPlatform={(p) => update({ platform: p })}
-                platforms={platforms}
+                onRefresh={load}
                 selected={selected.includes(c.id)}
                 onSelect={() => toggleSel(c.id)}
                 busy={busy[c.id]}
-                onUpload={() => uploadClips([c.id])}
                 onDownload={() => download(c)}
                 onEdit={() => setEditing(c)}
                 onDiscard={() => discard(c)}
@@ -391,13 +410,10 @@ function ClipCard({
   c,
   when,
   onWhen,
-  platform,
-  onPlatform,
-  platforms,
+  onRefresh,
   selected,
   onSelect,
   busy,
-  onUpload,
   onDownload,
   onEdit,
   onDiscard,
@@ -409,13 +425,10 @@ function ClipCard({
   c: EasyClip;
   when: UploadWhen;
   onWhen: (w: UploadWhen) => void;
-  platform: Platform;
-  onPlatform: (p: Platform) => void;
-  platforms: PlatformsOverview | null;
+  onRefresh: () => void;
   selected: boolean;
   onSelect: () => void;
   busy?: "upload" | "download";
-  onUpload: () => void;
   onDownload: () => void;
   onEdit: () => void;
   onDiscard: () => void;
@@ -423,7 +436,7 @@ function ClipCard({
   tasteNeed: number;
   channel?: string | null;
 }) {
-  const { t, num, lang } = useI18n();
+  const { t } = useI18n();
   const [menu, setMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const r = c.render;
@@ -432,7 +445,9 @@ function ClipCard({
   const [cleared, setCleared] = useState(false);
   const hold = !cleared && (r.bleeps?.hold ?? 0) > 0;
   const up = c.upload;
-  const uploading = up.step === "uploading" || up.step === "queued_uploading" || busy === "upload";
+  const uploading =
+    up.step === "uploading" || up.step === "queued_uploading" || busy === "upload" ||
+    (["tiktok", "reels"] as const).some((p) => ["published", "scheduled", "preparing", "uploading", "processing"].includes(c.posts?.[p]?.status ?? ""));
   const titleId = `ez-t-${c.id}`;
 
   useEffect(() => {
@@ -446,64 +461,6 @@ function ClipCard({
       window.removeEventListener("keydown", key);
     };
   }, [menu]);
-
-  let upPart: JSX.Element;
-  if (up.status === "published" || up.status === "locked") {
-    upPart = (
-      <div className="ez-up-state ez-up-live">
-        <Icon name="check" size={18} />
-        <span>{up.status === "locked" ? t("easy.live_private") : t("easy.live")}</span>
-        {up.url && (
-          <a className="btn btn-primary ez-big" href={up.url} target="_blank" rel="noreferrer">
-            <Icon name="eye" /> {t("easy.open_youtube")}
-          </a>
-        )}
-      </div>
-    );
-  } else if (uploading) {
-    upPart = (
-      <div className="ez-up-state">
-        <span className="ez-up-line">
-          <span className="spinner" /> {up.progress != null ? t("easy.uploading_pct", { p: num(Math.round(up.progress * 100)) }) : t("easy.uploading")}
-        </span>
-        <ProgressBar value={up.progress} label={t("easy.uploading")} />
-      </div>
-    );
-  } else if (up.status === "scheduled") {
-    upPart = (
-      <div className="ez-up-state ez-up-planned">
-        <Icon name="calendar" size={18} />
-        <span>{t("easy.planned_for", { when: fmtWhen(up.publish_at || up.date, lang) })}</span>
-      </div>
-    );
-  } else {
-    upPart = (
-      <>
-        {up.status === "failed" && (
-          <p className="ez-up-error" role="alert">
-            <Icon name="alert" size={15} /> {up.error?.message || t("easy.toast_upload_failed", { title: "" })}
-          </p>
-        )}
-        {ok && hold && <BleepCheckedButton pid={pid} cid={c.id} onDone={() => setCleared(true)} />}
-        <button className="btn btn-primary ez-big" disabled={!ok || !!busy || (ok && hold)} onClick={onUpload}>
-          <Icon name="upload" /> {t("easy.upload_youtube")}
-        </button>
-        <div className="ez-when" role="radiogroup" aria-label={t("easy.when_label")}>
-          {(["now", "auto"] as UploadWhen[]).map((w) => (
-            <button key={w} type="button" role="radio" aria-checked={when === w} onClick={() => onWhen(w)}>
-              {t(`easy.when_${w}`)}
-            </button>
-          ))}
-        </div>
-      </>
-    );
-  }
-
-  if (platform !== "youtube") {
-    upPart = (
-      <PlatformPost pid={pid} cid={c.id} platform={platform} state={c.platforms?.[platform]} ready={ok} overview={platforms} />
-    );
-  }
 
   return (
     <li className={`ez-card${selected ? " selected" : ""}`} aria-labelledby={titleId}>
@@ -557,8 +514,19 @@ function ClipCard({
         </h3>
         <CutRow pid={pid} c={c} onView={onView} disabled={up.status === "published" || up.status === "scheduled" || uploading} />
         <div className="ez-actions">
-          <PlatformPicker value={platform} onChange={onPlatform} />
-          {upPart}
+          {ok && hold && <BleepCheckedButton pid={pid} cid={c.id} onDone={() => setCleared(true)} />}
+          <PublishBlock
+            pid={pid}
+            cid={c.id}
+            title={c.title}
+            posts={c.posts}
+            ready={ok}
+            hold={ok && hold}
+            video={ok ? urls.clip(pid, c.id, r.stamp ?? "") : null}
+            when={when === "auto" ? "auto" : "now"}
+            onWhen={onWhen}
+            onChanged={onRefresh}
+          />
           <button className="btn ez-big" disabled={!ok || !!busy} onClick={onDownload}>
             {busy === "download" ? <span className="spinner" /> : <Icon name="download" />} {t("easy.download_pc")}
           </button>

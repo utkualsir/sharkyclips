@@ -14,7 +14,8 @@ import { PublishingCard } from "../components/PublishTools";
 import { applyMotion, type MotionSetting } from "../motion";
 import { useTheme } from "../theme";
 import { useToast } from "../toast";
-import { CoverAiCard, MyVoiceCard, PlatformsCard } from "../components/ExtrasSettings";
+import { CoverAiCard, MyVoiceCard } from "../components/ExtrasSettings";
+import { AccountsSection } from "../components/Accounts";
 import { AboutCard } from "../components/Licenses";
 
 function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
@@ -706,6 +707,8 @@ export default function Settings() {
 
           <PhoneCard />
 
+          <AccountsSection />
+
           <YoutubeCard
             isLocal={!!meta?.is_local}
             quota={settings.youtube_daily_quota}
@@ -715,8 +718,6 @@ export default function Settings() {
           <PublishingCard />
 
           <CoverAiCard />
-
-          <PlatformsCard />
 
           <MyVoiceCard />
 

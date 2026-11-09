@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { easyApi, urls, type EasyLibRow } from "../api";
 import { Icon } from "../components/Icons";
+import { PostBadges } from "../components/PublishAll";
 import { WeeklyDigestCard } from "../components/EasyAuto";
 import { fmtCompact, fmtTime } from "../format";
 import { useI18n } from "../i18n";
@@ -105,6 +106,7 @@ export default function EasyLibrary() {
                     )}
                   </span>
                 </a>
+                {r.posts && <PostBadges posts={r.posts} pid={r.project_id} cid={r.clip_id} onChanged={load} />}
               </li>
             ))}
           </ul>

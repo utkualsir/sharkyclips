@@ -5,6 +5,9 @@ import { LockBanner, PublishSetupDialog, RescheduleDialog, ScheduleDialog, useWh
 import { CopyButton, Modal, ProgressBar, Segmented } from "../components/ui";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
+import type { Target } from "../multipost";
+import { PlatformIcon } from "../components/PlatformIcons";
+import { PostBadges, PublishEverywhereButton } from "../components/PublishAll";
 import { useJobs } from "../jobs";
 import { go, href } from "../router";
 import { useToast } from "../toast";
@@ -96,6 +99,18 @@ function StepLine({ row }: { row: LibraryRow }) {
     );
   }
   return null;
+}
+
+type PfFilter = "all" | Target | "everywhere" | "missing";
+const PF_FILTERS: PfFilter[] = ["all", "youtube", "reels", "tiktok", "everywhere", "missing"];
+
+function pfMatch(r: LibraryRow, f: PfFilter): boolean {
+  const p = r.platforms;
+  if (f === "all") return true;
+  if (!p) return f === "missing";
+  if (f === "everywhere") return p.everywhere;
+  if (f === "missing") return !p.everywhere;
+  return p[f].status !== "idle";
 }
 
 function RowActions({
@@ -250,7 +265,13 @@ function Row({
         </div>
         <StepLine row={row} />
       </div>
-      <RowActions row={row} {...rest} />
+      <div className="lib-side">
+        {row.platforms && <PostBadges posts={row.platforms} pid={row.project_id} cid={row.clip_id} onChanged={rest.onChanged} all />}
+        <div className="lib-side-acts">
+          <PublishEverywhereButton pid={row.project_id} cid={row.clip_id} title={row.title} posts={row.platforms} small onChanged={rest.onChanged} />
+          <RowActions row={row} {...rest} />
+        </div>
+      </div>
     </li>
   );
 }
@@ -441,6 +462,7 @@ export default function ClipLibrary({ view }: { view: "list" | "calendar" }) {
   const [data, setData] = useState<LibraryView | null>(null);
   const [failed, setFailed] = useState(false);
   const [tab, setTab] = useState<Tab>("all");
+  const [pf, setPf] = useState<PfFilter>("all");
   const [sel, setSel] = useState<Set<string>>(new Set());
   const [setup, setSetup] = useState<LibraryRow | null>(null);
   const [plan, setPlan] = useState<LibraryRow[] | null>(null);
@@ -475,7 +497,7 @@ export default function ClipLibrary({ view }: { view: "list" | "calendar" }) {
   }, [load]);
 
   const rows = data?.rows ?? [];
-  const shown = tab === "all" ? rows : rows.filter((r) => r.status === tab);
+  const shown = (tab === "all" ? rows : rows.filter((r) => r.status === tab)).filter((r) => pfMatch(r, pf));
   const selRows = rows.filter((r) => sel.has(r.key));
   const toggle = (k: string, v: boolean) => {
     const next = new Set(sel);
@@ -582,6 +604,17 @@ export default function ClipLibrary({ view }: { view: "list" | "calendar" }) {
               <button key={x} role="tab" aria-selected={tab === x} onClick={() => setTab(x)}>
                 {t(`pub.tab.${x}`)}
                 <span className="count mono">{num(x === "all" ? rows.length : data.counts[x] ?? 0)}</span>
+              </button>
+            ))}
+          </div>
+          <div className="lib-pf-filter" role="group" aria-label={t("mp.filter")}>
+            {PF_FILTERS.map((f) => (
+              <button key={f} type="button" className={`mp-filter${f !== "all" && f !== "everywhere" && f !== "missing" ? ` pf-accent-${f}` : ""}`}
+                aria-pressed={pf === f} onClick={() => setPf(f)}>
+                {f !== "all" && f !== "everywhere" && f !== "missing" && <PlatformIcon p={f} size={14} />}
+                {f === "everywhere" && <Icon name="check" size={13} />}
+                {t(`mp.filter_${f}`)}
+                <span className="count mono">{num(rows.filter((r) => pfMatch(r, f)).length)}</span>
               </button>
             ))}
           </div>

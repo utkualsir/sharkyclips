@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { ApiError, api, liveApi, phoneApi, type PhoneStatus, type YoutubeStatus } from "../api";
+import { ApiError, liveApi, phoneApi, type PhoneStatus } from "../api";
 import { PhoneConnect } from "../components/Phone";
 import { AboutCard } from "../components/Licenses";
 import { Icon } from "../components/Icons";
 import { useToast } from "../toast";
 import { Toggle } from "../components/ui";
 import { AutopilotCard } from "../components/EasyAuto";
-import { ConnectYoutube, YoutubeAccount } from "../components/YoutubeConnect";
+import { AccountsGrid } from "../components/Accounts";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { chooseLanguage, useMeta } from "../meta";
 import { useTheme } from "../theme";
@@ -18,14 +18,12 @@ export default function EasySettings() {
   const meta = useMeta();
   const [theme, , toggleTheme] = useTheme();
   const { settings, update, setMode } = useUiMode();
-  const [yt, setYt] = useState<YoutubeStatus | null>(null);
   const [phone, setPhone] = useState<PhoneStatus | null>(null);
   const [folder, setFolder] = useState<string | null>(null);
   const toast = useToast();
   const onPhone = useCallback((s: PhoneStatus) => setPhone(s), []);
 
   useEffect(() => {
-    api.youtube().then(setYt).catch(() => {});
     liveApi
       .get()
       .then((l) => setFolder(l.watch.folders[0] ?? ""))
@@ -54,16 +52,10 @@ export default function EasySettings() {
         <h1 className="display">{t("nav.settings")}</h1>
       </div>
 
-      <section className="card ez-set-card" aria-labelledby="ez-set-yt">
-        <h2 id="ez-set-yt">{t("easy.set_youtube")}</h2>
-        {yt?.connected ? (
-          <YoutubeAccount yt={yt} onStatus={setYt} onDisconnect={() => api.youtubeDisconnect().then(setYt).catch(() => {})} />
-        ) : (
-          <>
-            <p className="muted" style={{ marginTop: 0 }}>{t("easy.connect_body")}</p>
-            <ConnectYoutube yt={yt} onStatus={setYt} onAdvanced={() => setMode("pro")} />
-          </>
-        )}
+      <section className="card ez-set-card ez-set-accounts" id="accounts" aria-labelledby="ez-set-acc">
+        <h2 id="ez-set-acc">{t("acc.title")}</h2>
+        <p className="muted" style={{ marginTop: 0 }}>{t("acc.lede")}</p>
+        <AccountsGrid />
       </section>
 
       <section className="card ez-set-card" aria-labelledby="ez-set-pub">

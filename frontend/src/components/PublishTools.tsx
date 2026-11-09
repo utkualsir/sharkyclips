@@ -20,7 +20,7 @@ import { href } from "../router";
 import { useToast } from "../toast";
 import { CoverStudio, useAiCovers } from "./CoverStudio";
 import { AiVoiceSwitches } from "./Licenses";
-import { PlatformRow } from "./PlatformPost";
+import { PublishEverywhereButton } from "./PublishAll";
 import { Icon } from "./Icons";
 import { Markdown } from "./Shell";
 import { Modal, Segmented, Toggle } from "./ui";
@@ -637,7 +637,13 @@ export function PublishSetupDialog({
                 </div>
               ))}
 
-            <PlatformRow pid={projectId} cid={clipId} />
+            <div className="field">
+              <span className="field-label">{t("mp.also_title")}</span>
+              <span className="inline-row" style={{ flexWrap: "wrap" }}>
+                <PublishEverywhereButton pid={projectId} cid={clipId} title={meta.title} small />
+                <span className="field-hint">{t("mp.also_hint")}</span>
+              </span>
+            </div>
 
             <div className="export-two">
               <label className="field">

@@ -1201,6 +1201,8 @@ export type LibStep =
 export type PublishFix = "retry" | "reconnect" | "edit" | "rerender" | "reschedule" | "wait";
 
 export interface LibraryRow {
+  /** 1.2.36: this clip on YouTube, TikTok and Instagram */
+  platforms?: import("./multipost").ClipPosts | null;
   key: string;
   project_id: string;
   project_title: string;
@@ -1251,6 +1253,9 @@ export interface PublishSettings {
 
 export interface LibraryView extends PublishSettings {
   rows: LibraryRow[];
+  /** 1.2.36: the remembered platform switches and the three accounts */
+  targets?: import("./multipost").Target[];
+  accounts?: import("./multipost").Accounts;
   counts: Partial<Record<LibStatus, number>>;
   now: string;
   youtube: {
@@ -1367,11 +1372,14 @@ export class ApiError extends Error {
   status: number;
   /** a machine-readable reason (e.g. "not_connected") when the server sends one */
   code: string | null;
-  constructor(message: string, hint: string | null, status: number, code: string | null = null) {
+  /** 1.2.36: the publish checks that failed (code "problems") */
+  problems: unknown[] | null;
+  constructor(message: string, hint: string | null, status: number, code: string | null = null, problems: unknown[] | null = null) {
     super(message);
     this.hint = hint;
     this.status = status;
     this.code = code;
+    this.problems = problems;
   }
 }
 
@@ -1388,6 +1396,7 @@ const HEAVY: [string, RegExp][] = [
   ["PUT", /^\/api\/uploads/],
   ["POST", /\/(ai-covers|dub)$/],
   ["POST", /^\/api\/platforms\/(tiktok|reels)\/clips\//],
+  ["POST", /^\/api\/publish\/[^/]+\/[^/]+$/],
 ];
 let heavyGuard: (() => Promise<void>) | null = null;
 export function setHeavyGuard(guard: (() => Promise<void>) | null) {
@@ -1432,16 +1441,18 @@ export async function req<T>(method: string, path: string, body?: unknown): Prom
     let msg = res.statusText;
     let hint: string | null = null;
     let code: string | null = null;
+    let problems: unknown[] | null = null;
     try {
       const data = await res.json();
       msg = data.error || data.detail || msg;
       hint = data.hint || null;
       code = typeof data.code === "string" ? data.code : null;
+      problems = Array.isArray(data.problems) ? data.problems : null;
       if (res.status === 401 && data.code === "auth_required") window.dispatchEvent(new Event(AUTH_EVENT));
     } catch {
       /* not JSON */
     }
-    throw new ApiError(msg, hint, res.status, code);
+    throw new ApiError(msg, hint, res.status, code, problems);
   }
   return res.json() as Promise<T>;
 }
@@ -2005,6 +2016,8 @@ export interface EasyClip {
   };
   /** 1.2.18: TikTok / Reels posts of this clip */
   platforms?: Record<"tiktok" | "reels", PlatformClipState>;
+  /** 1.2.36: the clip on YouTube, TikTok and Instagram */
+  posts?: import("./multipost").ClipPosts;
   /** 1.2.34 Easy 2.0: the smart cut (context guard, length target, hook check) */
   shape?: EasyShape;
   /** 1.2.34: 👍 / 👎 on the whole clip, and how well it fits the learned taste (-1..1, null = not enough votes) */
@@ -2146,6 +2159,8 @@ export interface EasyDownload {
 }
 
 export interface EasyLibRow {
+  /** 1.2.36: YouTube / TikTok / Instagram of this clip */
+  posts?: import("./multipost").ClipPosts | null;
   key: string;
   project_id: string;
   project_title: string;
