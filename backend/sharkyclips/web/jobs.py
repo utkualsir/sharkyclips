@@ -59,7 +59,9 @@ HISTORY_KEEP = 40  # finished persistent jobs kept in _queue.json (the Queue scr
 # stay until the user starts the job again.
 TOMBSTONE_TTL = {"yt_stats": 12 * 3600, "hook_fetch": 12 * 3600, "benchmark": 12 * 3600}
 
-CLIP_KINDS = ("render", "export", "cover_burn", "upload", "platform_export", "platform_upload", "dub", "ai_cover")
+CLIP_KINDS = ("render", "export", "cover_burn", "upload", "platform_export", "platform_upload", "dub", "ai_cover",
+              "post")
+NET_WORKERS = 3  # 1.2.36: YouTube, TikTok and Instagram upload side by side (each one at a time)
 
 _EXPLICIT: contextvars.ContextVar[bool] = contextvars.ContextVar("sc_explicit_submit", default=False)
 
@@ -107,6 +109,15 @@ def _release_gpu() -> None:
             llm.unload_all()
     except Exception:  # noqa: BLE001
         pass
+
+
+def slot(job: "Job") -> str:
+    """Jobs of one slot run one after the other; the net lane runs different slots side by side
+    (YouTube uploads + stats, TikTok, Instagram, the social stats). Other lanes: one slot."""
+    if job.lane != "net":
+        return job.lane
+    p = job.params.get("platform")
+    return p if p in ("tiktok", "reels", "stats") else "youtube"
 
 
 @dataclass
@@ -177,8 +188,9 @@ class JobManager:
         self.paused = False  # "Pause queue": no new job starts
         self._tombs: dict[str, dict] = {}  # tomb_key -> {"at", "kind", "project_id", "clip_id", "plan_key", "job"}
         for lane in self._lanes:
-            threading.Thread(target=self._worker, args=(lane,), name=f"sharkyclips-{lane}",
-                             daemon=True).start()
+            for n in range(NET_WORKERS if lane == "net" else 1):
+                threading.Thread(target=self._worker, args=(lane,), name=f"sharkyclips-{lane}{n or ''}",
+                                 daemon=True).start()
 
     # ------------------------------------------------------------------ public
 
@@ -508,8 +520,9 @@ class JobManager:
     def _next(self, lane: str) -> Job:
         with self._cv:
             while True:
+                busy = {slot(x) for x in self._lanes[lane] if x.status == "running"}
                 for j in ([] if self.paused else self._lanes[lane]):
-                    if j.status == "queued":
+                    if j.status == "queued" and slot(j) not in busy:
                         j.status = "running"
                         j.started = time.time()
                         self._changed(j)

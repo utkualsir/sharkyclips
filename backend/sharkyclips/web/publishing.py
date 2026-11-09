@@ -341,7 +341,11 @@ def library_view(now: datetime | None = None) -> dict:
     for r in rows:
         counts[r["status"]] = counts.get(r["status"], 0) + 1
     st = youtube.status()
+    from . import multipost
+
+    multipost.library_extras(rows)
     return {"rows": rows, "counts": counts, "now": iso(now), **settings_view(),
+            "targets": multipost.targets(), "accounts": multipost.accounts(),
             "youtube": {"connected": st["connected"], "manage": st["manage"], "channel": st["channel"],
                         "lock": st["lock"], "client": st["client"]}}
 
@@ -735,6 +739,14 @@ class Scheduler:
     def tick(self, now: datetime | None = None) -> list[str]:
         with self._lock, automatic():  # background logic: never restarts what the user cancelled
             acts = self._tick(now or P.now_utc())
+            try:  # 1.2.36: TikTok / Instagram posts (planned, interrupted, retries, views)
+                from . import multipost
+
+                acts += multipost.tick(now)
+            except Exception:  # noqa: BLE001 - never stops the publish loop
+                from ..ui import console
+
+                console.print(f"[red]Multi-platform posting:[/]\n{traceback.format_exc()}")
             try:  # 1.2.34 Autopilot: sign-in health check + the morning summary
                 from .. import autopilot
 

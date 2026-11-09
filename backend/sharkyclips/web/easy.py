@@ -609,6 +609,7 @@ def view(project: Project) -> dict:
     now = P.now_utc()
     dur = float(meta.get("duration") or 0)
     from .. import platforms as PF
+    from . import multipost
 
     precs = PF.records(project)
     from .. import taste as taste_mod
@@ -639,6 +640,7 @@ def view(project: Project) -> dict:
             "prefs": prefs, "render": rs, "shape": shape_card(data, c, eff, review, hl.get("mode") or meta.get("mode") or "gaming"),
             "upload": _upload_state(project, c["id"], items.get(key), pj, lock, now),
             "platforms": _platform_state(project, c["id"], precs.get(c["id"]) or {}),
+            "posts": multipost.clip_states(project, c["id"]),
         })
     steps, eta = _steps(project, hl, top, rstates)
     active = [j for j in A.jobs.for_project(project.id) if j.status in ACTIVE]
@@ -1085,9 +1087,14 @@ def api_library() -> dict:
         row["url"] = (r.get("upload") or {}).get("url")
         row["views"] = (r.get("upload") or {}).get("views")
         row["job"] = r.get("job")
-        if r["status"] in ("published", "locked"):
+        posts = r.get("platforms") or {}
+        row["posts"] = posts or None
+        st = {(posts.get(p) or {}).get("status") for p in ("youtube", "tiktok", "reels")} if posts else set()
+        if r["status"] in ("published", "locked") or "published" in st:  # 1.2.36: out on any platform
+            if "published" in st and not row["views"]:
+                row["views"] = posts.get("total_views")
             tabs["live"].append(row)
-        elif r["status"] in ("scheduled", "failed"):
+        elif r["status"] in ("scheduled", "failed") or st & {"scheduled", "failed", "preparing", "uploading", "processing"}:
             tabs["planned"].append(row)
         elif r.get("rendered"):
             tabs["ready"].append(row)

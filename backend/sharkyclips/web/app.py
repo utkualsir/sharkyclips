@@ -83,6 +83,8 @@ async def _sharkyclips_error(_req: Request, exc: SharkyClipsError):
     body = {"error": exc.message, "hint": exc.hint}
     if getattr(exc, "code", None):
         body["code"] = exc.code  # type: ignore[attr-defined]
+    if getattr(exc, "problems", None):
+        body["problems"] = exc.problems  # type: ignore[attr-defined]  (1.2.36 publish checks)
     return JSONResponse(body, status_code=400)
 
 
@@ -801,6 +803,13 @@ def rebuild_job(saved: dict, attempt: int | None = None) -> Job | None:
                               ranks=p.get("ranks") or None, meta_only=bool(p.get("meta_only")))
     if kind == "titles":
         return submit_titles(pid, p["clip_id"])
+    if kind == "post":
+        from . import multipost
+
+        try:
+            return multipost.rebuild(saved, keep_id, attempt)
+        except (SharkyClipsError, KeyError):
+            return None
     if kind in ("platform_export", "platform_upload"):
         from . import platforms_api
 
@@ -2426,6 +2435,7 @@ from .phone_api import router as _phone_router  # noqa: E402 - Telegram bot + ap
 from .covers_api import router as _covers_router  # noqa: E402 - cover studio (1.2.18)
 from .platforms_api import router as _platforms_router  # noqa: E402 - TikTok / Reels (1.2.18)
 from .dub_api import router as _dub_router  # noqa: E402 - my-voice dubbing (1.2.18)
+from .multipost import router as _multipost_router  # noqa: E402 - one Publish button, 3 platforms (1.2.36)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2436,6 +2446,7 @@ app.include_router(_easy_router)
 app.include_router(_live_router)
 app.include_router(_phone_router)
 app.include_router(_covers_router)
+app.include_router(_multipost_router)
 app.include_router(_platforms_router)
 app.include_router(_dub_router)
 
