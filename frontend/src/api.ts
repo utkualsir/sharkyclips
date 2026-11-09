@@ -2083,9 +2083,11 @@ export interface WeeklyDigest {
   likes: number;
   best: { project_id: string; clip_id: string; title: string; url: string | null; views: number; duration: number; hook: string } | null;
   worked: { dim: "length" | "hook" | "game"; value: string; ratio: number; n: number; avg_views: number }[];
-  suggestion: { code: "connect" | "publish_ready" | "length" | "hook" | "autopilot" | "game" | "keep_going"; value?: string; ratio?: number; n?: number; possible?: number };
+  suggestion: { code: "connect" | "publish_ready" | "length" | "length_auto" | "hook" | "autopilot" | "game" | "keep_going"; value?: string; ratio?: number; n?: number; possible?: number };
   daily_limit: number;
   connected: boolean;
+  /** 1.2.35: the Easy clip length target set by the channel's views (null = built-in targets). */
+  length_target: { mode: string; min: number; max: number; source: "channel" | "learned"; ratio?: number; n?: number } | null;
 }
 
 export interface CaptionWord {

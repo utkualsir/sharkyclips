@@ -208,8 +208,8 @@ export function WeeklyDigestCard() {
   const value = (dim: string, v: string) => (dim === "game" ? v : t(`easy2.dg_${dim}_${v}`));
   const s = d.suggestion;
   const sugText =
-    s.code === "length" || s.code === "hook" || s.code === "game"
-      ? t(`easy2.dg_sug_${s.code}`, { v: value(s.code, s.value ?? ""), x: num(s.ratio ?? 1, 1) })
+    s.code === "length" || s.code === "length_auto" || s.code === "hook" || s.code === "game"
+      ? t(`easy2.dg_sug_${s.code}`, { v: value(s.code === "length_auto" ? "length" : s.code, s.value ?? ""), x: num(s.ratio ?? 1, 1) })
       : s.code === "autopilot"
         ? t("easy2.dg_sug_autopilot", { n: num(s.n ?? 0), max: num(s.possible ?? 0) })
         : t(`easy2.dg_sug_${s.code}`);
@@ -254,6 +254,15 @@ export function WeeklyDigestCard() {
             </span>
           ))}
         </div>
+      )}
+      {d.length_target && (
+        <p className="muted ez-digest-target">
+          {t(`easy2.dg_target_${d.length_target.source}`, {
+            min: num(d.length_target.min),
+            max: num(d.length_target.max),
+            n: num(d.length_target.n ?? 0),
+          })}
+        </p>
       )}
       <p className="ez-digest-sug">
         <Icon name="sparkles" size={15} />

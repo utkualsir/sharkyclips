@@ -5,7 +5,9 @@
    the reaction calms down and the sentence is finished. The local AI's judgement ("needs the
    setup") from the analysis is used too. Always on word boundaries.
 2. Length target per content type (funny gaming 18-28 s, clutch / action 20-35 s, study
-   30-45 s, music 15-30 s) and a plain-words warning when a clip is longer.
+   30-45 s, music 15-30 s) and a plain-words warning when a clip is longer. 1.2.35: when the
+   channel's own views say another length works better (lengthfit.py), that target is used
+   for the mode, and a clip shorter than it gets more setup / payoff (sentence boundaries).
 3. One-tap nudges: start 3 s earlier, end 3 s later, short / long version.
 
 The result lives in two places: the trim in review.json "edits" (so the renderer, the preview
@@ -62,9 +64,21 @@ def content_kind(mode: str, cand: dict) -> str:
 
 
 def target(mode: str, cand: dict) -> dict:
+    """{"kind", "min", "max"} (+ "source" / "ratio" / "n" when the channel's views set it)."""
+    from . import lengthfit
+
     kind = content_kind(mode, cand)
     lo, hi = TARGETS[kind]
-    return {"kind": kind, "min": lo, "max": hi}
+    out = {"kind": kind, "min": lo, "max": hi}
+    ch = lengthfit.for_mode(mode)
+    if ch:
+        out.update(ch)
+    return out
+
+
+def same_target(a: dict | None, b: dict | None) -> bool:
+    a, b = a or {}, b or {}
+    return all(_close(a.get(k), b.get(k)) for k in ("min", "max")) and a.get("source") == b.get("source")
 
 
 def length_note(duration: float, tgt: dict) -> str | None:
@@ -344,6 +358,44 @@ def limits(project: Project, cand: dict, hl: dict, duration: float) -> tuple[flo
     return lo, hi
 
 
+# ===================================================================== reach the target length
+
+
+STRETCH_MAX = 15.0  # a clip gets at most this much longer to reach the channel's target
+STRETCH_BACK = 0.6  # share of it that goes to more setup (the rest: more payoff)
+
+
+def stretch(ar: Around, start: float, end: float, goal: float, lo: float, hi: float,
+            clip_max: float) -> tuple[float, float]:
+    """A clip shorter than goal -> more setup before it and more payoff after it (sentence
+    boundaries, never past the neighbours or the mode's limit). As close as it gets."""
+    s, e = float(start), float(end)
+    goal = min(goal, clip_max, (e - s) + STRETCH_MAX)
+    need = goal - (e - s)
+    if need < 0.5:
+        return round(s, 2), round(e, 2)
+    t = max(lo, s - need * STRETCH_BACK)
+    ns = max(lo, snap_start(ar, max(lo, sentence_start(ar, t + 0.05, 3.0))))
+    if ns < s:
+        s = ns
+    for _ in range(2):  # the rest after the end; when a neighbour stops it, before the start
+        rem = goal - (e - s)
+        if rem < 0.5:
+            break
+        if e < hi - 0.3:
+            ne = min(hi, snap_end(ar, min(hi, sentence_end(ar, min(hi, e + rem) - 0.05, 3.0))))
+            if ne > e:
+                e = ne
+                continue
+        if s > lo + 0.3:
+            ns = max(lo, snap_start(ar, max(lo, sentence_start(ar, max(lo, s - rem) + 0.05, 3.0))))
+            if ns < s:
+                s = ns
+    if e - s > clip_max:
+        e = min(snap_end(ar, s + clip_max), s + clip_max)
+    return round(s, 2), round(e, 2)
+
+
 # ===================================================================== one-tap nudges
 
 
@@ -398,8 +450,11 @@ def base_of(cand: dict) -> list[float]:
     return [round(float(cand["start"]), 2), round(float(cand["end"]), 2)]
 
 
-def needs_shape(shape: dict | None, cand: dict) -> bool:
-    return not shape or shape.get("v") != SHAPE_VERSION or shape.get("base") != base_of(cand)
+def needs_shape(shape: dict | None, cand: dict, tgt: dict | None = None) -> bool:
+    """tgt: the length target now; a clip shaped for another target is shaped again."""
+    if not shape or shape.get("v") != SHAPE_VERSION or shape.get("base") != base_of(cand):
+        return True
+    return tgt is not None and not same_target(shape.get("target"), tgt)
 
 
 def _close(a, b) -> bool:
@@ -424,8 +479,14 @@ def shape_clip(project: Project, cand: dict, hl: dict, mode: str) -> dict:
     duration = float(project.load_meta().get("duration") or cand["end"])
     lo, hi = limits(project, cand, hl, duration)
     ar = around(project, cand, float(cand["start"]), float(cand["end"]), mode)
-    s, e, why = guard(ar, cand, float(cand["start"]), float(cand["end"]), lo, hi, get_mode(mode).clip_max)
+    clip_max = get_mode(mode).clip_max
+    s, e, why = guard(ar, cand, float(cand["start"]), float(cand["end"]), lo, hi, clip_max)
     tgt = target(mode, cand)
+    if tgt.get("source") and e - s < tgt["min"] - 1.0:  # the channel's views: this length works
+        ns, ne = stretch(ar, s, e, tgt["min"], lo, hi, clip_max)
+        if ne - ns > e - s + 1.0:
+            s, e = ns, ne
+            why.append("target_length")
     return {"v": SHAPE_VERSION, "base": base_of(cand), "start": s, "end": e, "why": why, "target": tgt,
             "guard": {"start": round(s - float(cand["start"]), 2), "end": round(e - float(cand["end"]), 2)}}
 

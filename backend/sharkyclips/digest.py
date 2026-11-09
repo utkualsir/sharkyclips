@@ -51,6 +51,7 @@ def shorts(now: datetime) -> list[dict]:
         hl = state.load_highlights(project) or {}
         cands = {c["id"]: c for c in hl.get("candidates") or []}
         review = state.load_review(project, hl)
+        mode = project.load_meta().get("mode") or hl.get("mode") or "gaming"
         for cid, lst in ups.items():
             u = next((x for x in lst if x.get("video_id") and not x.get("missing") and not x.get("cancelled")), None)
             if u is None:
@@ -66,7 +67,7 @@ def shorts(now: datetime) -> list[dict]:
                         "length": _length(float(eff.get("duration") or 0)), "duration": float(eff.get("duration") or 0),
                         "hook": u.get("hook_style") or "statement",
                         "game": ((pub.get("game") or {}).get("name")) or None,
-                        "private": u.get("privacy") == "private"})
+                        "private": u.get("privacy") == "private", "mode": mode})
     return out
 
 
@@ -97,7 +98,7 @@ def _worked(items: list[dict]) -> list[dict]:
 
 
 def weekly(now: datetime | None = None) -> dict:
-    from . import autopilot, publishing as P, youtube
+    from . import autopilot, config, lengthfit, publishing as P, youtube
 
     now = now or datetime.now(timezone.utc)
     allshorts = shorts(now)
@@ -108,6 +109,8 @@ def weekly(now: datetime | None = None) -> dict:
     worked = _worked(recent)
     connected = youtube.connected()
     limit = P.effective_limit()
+    mode = config.get("default_mode") or "gaming"
+    tgt = lengthfit.for_mode(mode)
     # one suggestion, the most useful first
     if not connected:
         sug = {"code": "connect"}
@@ -115,7 +118,9 @@ def weekly(now: datetime | None = None) -> dict:
         sug = {"code": "publish_ready"}
     elif any(w["dim"] == "length" and w["ratio"] >= 1.3 for w in worked):
         w = next(w for w in worked if w["dim"] == "length")
-        sug = {"code": "length", "value": w["value"], "ratio": w["ratio"]}
+        # the length target already follows it (lengthfit): say so instead of "use the buttons"
+        code = "length_auto" if lengthfit.band_name(tgt) == w["value"] else "length"
+        sug = {"code": code, "value": w["value"], "ratio": w["ratio"]}
     elif any(w["dim"] == "hook" and w["ratio"] >= 1.3 for w in worked):
         w = next(w for w in worked if w["dim"] == "hook")
         sug = {"code": "hook", "value": w["value"], "ratio": w["ratio"]}
@@ -133,4 +138,5 @@ def weekly(now: datetime | None = None) -> dict:
         "likes": sum(int(s["likes"] or 0) for s in with_views if s.get("likes") is not None),
         "best": {k: best[k] for k in ("project_id", "clip_id", "title", "url", "views", "duration", "hook")} if best else None,
         "worked": worked, "suggestion": sug, "daily_limit": limit, "connected": connected,
+        "length_target": {"mode": mode, **tgt} if tgt else None,
     }

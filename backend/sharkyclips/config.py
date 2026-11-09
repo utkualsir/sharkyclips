@@ -101,6 +101,10 @@ DEFAULTS: dict[str, Any] = {
     "phone_send_top": 3,
     "phone_lan": False,  # the phone approval page on the Wi-Fi (needs an access PIN)
     "replay_smooth": "auto",  # instant replay frames: auto | motion | blend
+    # Easy mode clip length target per mode, set from the channel's own views (lengthfit.py):
+    # {"gaming": {"min": 30, "max": 45}}. Empty = the built-in targets until enough published
+    # clips have views; then the learned target wins.
+    "length_targets": {},
     # Set by `doctor` when the GPU smoke test fails even after upgrading libraries.
     "force_cpu": False,
     "force_cpu_reason": None,

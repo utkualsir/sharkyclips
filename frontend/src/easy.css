@@ -737,6 +737,7 @@
 .ez-digest-worked { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .ez-digest-sug { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--gold-soft); color: var(--text); }
 .ez-digest-sug svg { color: var(--gold-text); flex: none; }
+.ez-digest-target { margin: 0; font-size: 13px; }
 @media (max-width: 560px) {
   .ez-digest-stats { grid-template-columns: 1fr 1fr; }
   .ez-digest-best { grid-column: 1 / -1; }

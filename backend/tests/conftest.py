@@ -43,3 +43,13 @@ def pytest_collection_modifyitems(config, items):
     for item in items:
         if "requires_ffmpeg" in item.keywords:
             item.add_marker(skip)
+
+
+@pytest.fixture(autouse=True)
+def _fresh_length_target():
+    """The channel length target is cached for 10 minutes: every test starts without it."""
+    from sharkyclips import lengthfit
+
+    lengthfit.clear_cache()
+    yield
+    lengthfit.clear_cache()

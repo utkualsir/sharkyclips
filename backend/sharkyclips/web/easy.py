@@ -222,7 +222,11 @@ def _ensure_renders(project: Project, auto: bool, only: str | None, explicit: bo
     data = E.load(project)
     top = _top(project, data, hl, review)
     if data["v2"]:  # Easy 2.0: shape the clips first (the renders follow when that job ends)
-        todo = [c["id"] for c in top if (not only or c["id"] == only) and shaping.needs_shape(shape_of(data, c["id"]), c)]
+        mode = hl.get("mode") or project.load_meta().get("mode") or "gaming"
+        ups = state.load_uploads(project) or {}
+        # a new length target (the channel's views) reshapes the clips that aren't uploaded yet
+        todo = [c["id"] for c in top if (not only or c["id"] == only) and shaping.needs_shape(
+            shape_of(data, c["id"]), c, None if ups.get(c["id"]) else shaping.target(mode, c))]
         if todo:
             submit_shape(project.id, todo)
             return []

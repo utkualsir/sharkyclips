@@ -7,6 +7,76 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.35] - 2026-11-09
+
+### Changed: clip length follows your channel's views
+- **Your channel decides the length.** SharkyClips now looks at the real views of your published
+  shorts and finds the length that works best for you (under 20 s, 20-30 s, 30-45 s or over
+  45 s). New Easy clips aim for that length, and clips that are too short get a little more setup
+  before the moment and more payoff after it (always at sentence boundaries, never into the next
+  clip). It only learns once there is enough data: at least 8 published clips with views, 3 of
+  them in the winning length, each at least 2 days old, and one viral clip alone can't decide.
+  It keeps updating as new views come in.
+- Until then, a target can be set from your channel's numbers in the settings file
+  (`length_targets`). Without one, the usual targets per content type stay.
+- Clips that aren't uploaded yet are re-cut when the target changes; your own trims and uploaded
+  clips are never touched.
+- The weekly digest in the Library shows the current target length, and the length tip no longer
+  points to the "short version" button when longer clips are the ones doing well.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Değişti: klip uzunluğu kanalının izlenmelerine göre
+- **Uzunluğa kanalın karar veriyor.** SharkyClips artık yayınladığın Shorts'ların gerçek
+  izlenmelerine bakıp sana en iyi gelen uzunluğu buluyor (20 sn altı, 20-30 sn, 30-45 sn ya da
+  45 sn üstü). Yeni Kolay mod klipleri bu uzunluğu hedefliyor; fazla kısa kliplere andan önce biraz
+  daha giriş, sonrasına biraz daha sonuç ekleniyor (her zaman cümle sınırında, asla bir sonraki
+  klibe taşmadan). Yeterli veri olunca öğreniyor: izlenmesi gelmiş en az 8 yayınlanmış klip,
+  bunların 3'ü kazanan uzunlukta, her biri en az 2 günlük; tek bir viral klip tek başına karar
+  veremez. Yeni izlenmeler geldikçe kendini güncelliyor.
+- O zamana kadar, kanalının rakamlarına göre bir hedef ayar dosyasından (`length_targets`)
+  belirlenebiliyor. Yoksa içerik türüne göre olağan hedefler geçerli.
+- Hedef değişince henüz yüklenmemiş klipler yeniden kesiliyor; senin kendi kesimlerine ve
+  yüklenmiş kliplere asla dokunulmuyor.
+- Kitaplıktaki haftalık özet geçerli hedef uzunluğu gösteriyor; uzun klipler daha iyi gidiyorsa
+  uzunluk ipucu artık "kısa versiyon" butonunu önermiyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Die Cliplänge folgt den Aufrufen deines Kanals:** SharkyClips lernt aus den echten Aufrufen deiner Shorts, welche Länge am besten läuft (ab 8 Clips mit Aufrufen), neue Clips zielen darauf und zu kurze bekommen etwas mehr Aufbau und Pointe. Eigene Schnitte und hochgeladene Clips bleiben unverändert; der Wochenrückblick zeigt die Ziellänge.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **A kliphossz a csatornád megtekintéseit követi:** a SharkyClips a Shortsaid valós megtekintéseiből tanulja meg, melyik hossz működik a legjobban (legalább 8 megtekintéssel rendelkező kliptől), az új klipek erre törekszenek, a túl rövidek kicsit több felvezetést és csattanót kapnak. A saját vágásaid és a feltöltött klipek nem változnak; a heti összefoglaló mutatja a célhosszt.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Длина клипа следует за просмотрами канала:** SharkyClips учится по реальным просмотрам твоих Shorts, какая длина работает лучше (от 8 клипов с просмотрами), новые клипы стремятся к ней, а слишком короткие получают чуть больше завязки и развязки. Твои обрезки и загруженные клипы не меняются; недельная сводка показывает целевую длину.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **طول المقطع يتبع مشاهدات قناتك:** يتعلم SharkyClips من المشاهدات الحقيقية لمقاطع Shorts الطول الأنسب لك (بدءًا من 8 مقاطع لها مشاهدات)، وتستهدفه المقاطع الجديدة، وتحصل المقاطع القصيرة جدًا على تمهيد ونهاية أطول قليلًا. لا تتغير قصّاتك ولا المقاطع المرفوعة؛ ويعرض الملخص الأسبوعي الطول المستهدف.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **片段时长跟随你频道的观看量：** SharkyClips 会根据你 Shorts 的真实观看量学习哪个时长效果最好（至少 8 个有观看量的片段），新片段以此为目标，太短的片段会多保留一点铺垫和结尾。你自己的剪辑和已上传的片段不会改动；每周摘要会显示目标时长。
+
+</details>
+
 ## [1.2.34] - 2026-11-08
 
 ### Added: Easy mode 2.0
