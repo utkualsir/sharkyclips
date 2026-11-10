@@ -10,6 +10,13 @@ Knobs in `state` (1.2.36) make it behave like the real thing on a bad day:
   ig_processing_polls   container status answers IN_PROGRESS this many times after the bytes
   ig_rate_limit         the next N container creations answer code 4 (rate limit)
   ig_fail_publish       media_publish answers a server error once
+
+1.2.37: the Facebook Graph side too (/v24.0/..., a system user's EAA token, FB_TOKEN). The same
+Instagram account sits behind FB_IG_ID; the Reels routes are shared with the Instagram side.
+  fb_pages        "pages": the account comes through /me/accounts; "business": only through
+                  /me/businesses (a system user's assigned assets); "none": no Instagram account
+  fb_no_publish   the token sees the account but may not post (content_publishing_limit: code 10)
+  fb_revoked      every Facebook Graph call answers 190 (the token was revoked)
 """
 
 from __future__ import annotations
@@ -24,6 +31,9 @@ from datetime import datetime, timezone
 from urllib.parse import parse_qs, urlparse
 
 IG_TOKEN = "IGTOKEN-0123456789abcdef"
+FB_TOKEN = "EAAFAKE0123456789abcdefSYSTEMUSER"
+FB_IG_ID = "17841400000000001"
+FB_IG = {"id": FB_IG_ID, "username": "utkualsirr48", "profile_picture_url": ""}
 
 
 class FakePlatforms:
@@ -34,7 +44,9 @@ class FakePlatforms:
                       "tt_rate_limit": 0, "tt_expire_token": False, "tt_token": "TT-ACCESS", "tt_daily_cap": 99,
                       "tt_status": {}, "tt_comment_disabled": False, "tt_max_seconds": 600,
                       "ig_processing_polls": 0, "ig_rate_limit": 0, "ig_fail_publish": 0, "ig_media": [],
-                      "ig_codes": {}, "ig_deleted": [], "ig_container_polls": {}, "tt_videos": [], "calls": []}
+                      "ig_codes": {}, "ig_deleted": [], "ig_container_polls": {}, "tt_videos": [], "calls": [],
+                      "fb_pages": "pages", "fb_no_publish": False, "fb_revoked": False, "fb_calls": [],
+                      "upload_auth": []}
         self.lock = threading.Lock()
         fake = self
 
@@ -64,11 +76,54 @@ class FakePlatforms:
                     return False
                 return True
 
+            def _fb(self, method: str, path: str, token: str | None, q: dict) -> str | None:
+                """A /v24.0/ call: answers it (returns None) or hands back the shared Instagram path."""
+                st = fake.state
+                st["fb_calls"].append((method, path))
+                if st["fb_revoked"] or token != FB_TOKEN:
+                    msg = "Error validating access token: The session has been invalidated" if st["fb_revoked"] \
+                        else "Invalid OAuth access token - Cannot parse access token"
+                    self._json(400, {"error": {"code": 190, "message": msg, "type": "OAuthException"}})
+                    return None
+                rest = path.removeprefix("/v24.0/")
+                if rest == "me":
+                    self._json(200, {"id": "61550000000001", "name": "SharkyClips system user"})
+                    return None
+                if rest == "debug_token":
+                    self._json(200, {"data": {"type": "SYSTEM_USER", "is_valid": True, "expires_at": 0,
+                                              "scopes": ["instagram_basic", "instagram_content_publish",
+                                                         "instagram_manage_insights", "pages_show_list"]}})
+                    return None
+                ig = {"instagram_business_account": FB_IG}
+                if rest == "me/accounts":
+                    pages = [{"id": "1001", "name": "Utku", **ig}] if st["fb_pages"] == "pages" else []
+                    self._json(200, {"data": pages})
+                    return None
+                if rest == "me/businesses":
+                    owned = [{"id": "1001", **ig}] if st["fb_pages"] == "business" else []
+                    self._json(200, {"data": [{"id": "900", "owned_pages": {"data": owned}}]})
+                    return None
+                if rest == FB_IG_ID and method == "GET" and "status_code" not in q.get("fields", ""):
+                    self._json(200, FB_IG)
+                    return None
+                if rest.startswith(FB_IG_ID) or rest.split("/")[0].startswith(("C", "M")):
+                    if rest == f"{FB_IG_ID}/content_publishing_limit" and st["fb_no_publish"]:
+                        self._json(400, {"error": {"code": 10, "message": "Application does not have permission"}})
+                        return None
+                    return "/v21.0/" + rest.replace(FB_IG_ID, "1784", 1)
+                self._json(400, {"error": {"code": 100, "message": "Unsupported get request. Object does not exist"}})
+                return None
+
             def do_GET(self):  # noqa: N802
                 u = urlparse(self.path)
                 q = {k: v[0] for k, v in parse_qs(u.query).items()}
                 st = fake.state
                 st["calls"].append(("GET", u.path))
+                if u.path.startswith("/v24.0/"):
+                    path = self._fb("GET", u.path, q.get("access_token"), q)
+                    if path is None:
+                        return
+                    u = u._replace(path=path)
                 if u.path == "/v2/user/info/":
                     return self._json(200, {"data": {"user": {"display_name": "utku"}}, "error": {"code": "ok"}})
                 if u.path == "/access_token":  # IG short -> long token
@@ -108,6 +163,10 @@ class FakePlatforms:
 
             def do_DELETE(self):  # noqa: N802
                 u = urlparse(self.path)
+                if u.path.startswith("/v24.0/"):
+                    q = {k: v[0] for k, v in parse_qs(u.query).items()}
+                    if self._fb("DELETE", u.path, q.get("access_token"), {"fields": "status_code"}) is None:
+                        return
                 obj = u.path.split("/")[-1]
                 fake.state["ig_deleted"].append(obj)
                 fake.state["ig_media"] = [m for m in fake.state["ig_media"] if m["id"] != obj]
@@ -132,6 +191,11 @@ class FakePlatforms:
                 ctype = self.headers.get("Content-Type") or ""
                 form = {k: v[0] for k, v in parse_qs(raw.decode(errors="replace")).items()} \
                     if "x-www-form-urlencoded" in ctype else {}
+                if u.path.startswith("/v24.0/"):
+                    path = self._fb("POST", u.path, form.get("access_token"), {"fields": "status_code"})
+                    if path is None:
+                        return
+                    u = u._replace(path=path)
                 if u.path == "/v2/oauth/token/":
                     if form.get("grant_type") == "authorization_code":
                         want = st["codes"].get(form.get("code"))
@@ -208,6 +272,7 @@ class FakePlatforms:
                     up["bytes"] = len(raw)
                     up["file_size"] = self.headers.get("file_size")
                     up["auth"] = self.headers.get("Authorization")
+                    st["upload_auth"].append((u.path, up["auth"]))
                     return self._json(200, {"success": True})
                 if u.path.endswith("/media_publish"):
                     if st["ig_fail_publish"] > 0:

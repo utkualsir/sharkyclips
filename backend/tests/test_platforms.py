@@ -31,6 +31,7 @@ def fake(monkeypatch, tmp_path):
     f = FakePlatforms()
     monkeypatch.setenv("SHARKYCLIPS_TIKTOK_ENDPOINT", f.url)
     monkeypatch.setenv("SHARKYCLIPS_IG_ENDPOINT", f.url)
+    monkeypatch.setenv("SHARKYCLIPS_FB_ENDPOINT", f.url)
     monkeypatch.setenv("SHARKYCLIPS_DOWNLOADS", str(tmp_path / "dl"))
     for p in ("tiktok", "reels"):
         PF.forget(p)
@@ -101,8 +102,10 @@ def test_tiktok_refreshes_an_expired_token(fake, tmp_path):
     assert fake.state["refreshes"] == 1
 
 
-def test_instagram_checks_the_token_and_the_account_type(fake):
-    with pytest.raises(SharkyClipsError, match="refused"):
+def test_instagram_checks_the_token_and_the_account_type(fake, monkeypatch):
+    real_get = config.get
+    monkeypatch.setattr(config, "get", lambda k: "en" if k == "ui_language" else real_get(k))
+    with pytest.raises(SharkyClipsError, match="didn't accept"):  # neither Instagram nor Facebook takes it
         PF.ig_connect("WRONG-TOKEN-xxxxxxxxxxxxxxxxx")
     fake.state["account_type"] = "PERSONAL"
     with pytest.raises(SharkyClipsError, match="Business or Creator"):

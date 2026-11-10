@@ -36,6 +36,7 @@ def social(monkeypatch, cfg):  # noqa: F811
     f = FakePlatforms()
     monkeypatch.setenv("SHARKYCLIPS_TIKTOK_ENDPOINT", f.url)
     monkeypatch.setenv("SHARKYCLIPS_IG_ENDPOINT", f.url)
+    monkeypatch.setenv("SHARKYCLIPS_FB_ENDPOINT", f.url)
     monkeypatch.setattr(MP, "POLL_S", 0.01)
     for p in ("tiktok", "reels"):
         PF.forget(p)
@@ -551,3 +552,23 @@ def test_instagram_delete_for_the_real_test(social):
     MP.start(project, "c01", {"platforms": ["reels"], "when": "now"})
     _wait(_idle)
     assert PF.ig_delete(_rec(project, "c01", "reels")["media_id"]) and social.state["ig_deleted"] == ["MC1"]
+
+
+def test_facebook_token_posts_and_a_revoked_one_signs_out(social):
+    from fake_platforms import FB_IG_ID, FB_TOKEN
+
+    from sharkyclips.web import multipost as MP
+
+    PF.ig_connect(FB_TOKEN)  # 1.2.37: a system-user token from "API setup with unified login"
+    project = _project("pub-mp-fb")
+    _rendered(project, "c01")
+    MP.start(project, "c01", {"platforms": ["reels"], "when": "now"})
+    _wait(_idle)
+    assert _rec(project, "c01", "reels")["status"] == "published"
+    assert ("POST", f"/v24.0/{FB_IG_ID}/media_publish") in social.state["fb_calls"]
+    social.state["fb_revoked"] = True
+    _rendered(project, "c02")
+    MP.start(project, "c02", {"platforms": ["reels"], "when": "now"})
+    _wait(_idle)
+    assert _rec(project, "c02", "reels")["status"] == "failed"
+    assert _client().get("/api/accounts").json()["reels"]["health"]["pill"] == "signed_out"

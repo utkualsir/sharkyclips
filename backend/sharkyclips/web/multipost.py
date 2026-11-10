@@ -756,8 +756,9 @@ def _failed(project: Project, cid: str, platform: str, exc: SharkyClipsError) ->
     nxt = None
     if kind in ("transient", "rate_limit", "quota") and tries < MAX_TRIES and retry:
         nxt = time.time() + float(retry) * (1 if kind == "quota" else min(8, 2 ** (tries - 1)))
-    if kind == "auth":
-        PF.note_problem(platform, "attention", exc.message)
+    if kind == "auth":  # Meta's 190: the token was revoked (or the password changed): connect again
+        revoked = platform == "reels" and str(getattr(exc, "code", "")).split(":")[0] == "190"
+        PF.note_problem(platform, "signed_out" if revoked else "attention", exc.message)
     PF.record(project, cid, platform, status="failed", attempts=tries, next_try_at=nxt,
               error={"message": exc.message, "hint": exc.hint, "code": getattr(exc, "code", None), "kind": kind})
 

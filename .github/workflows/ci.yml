@@ -53,12 +53,11 @@ jobs:
 
   backend-macos:
     # macOS runners are free for public repositories but cost 10x minutes on private ones, so
-    # this job only runs once the repository is public. Non-blocking until it has passed once.
+    # this job only runs while the repository is public. Required since 1.2.37.
     name: Backend (macOS)
     if: ${{ !github.event.repository.private }}
     runs-on: macos-latest
     timeout-minutes: 40
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

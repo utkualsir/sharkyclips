@@ -7,6 +7,94 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.37] - 2026-11-10
+
+### Instagram: tokens from a business portfolio work too
+- **Both kinds of Instagram token.** Meta's newer setup ("API setup with unified login") gives a
+  token that starts with **EAA** (for example a business portfolio's system user). SharkyClips
+  used to refuse it with "Cannot parse access token". Now it recognises the token by itself:
+  **IGAA…** tokens work as before, **EAA…** tokens connect through Facebook's side of the API.
+  Posting Reels, views, the daily limit and deleting a post work with both.
+- **Finds your account.** With an EAA token, SharkyClips looks up the Instagram account behind
+  your Pages or your business portfolio. The new optional **Instagram account** field
+  (@username or user id) picks one when the token reaches several, or when none can be found.
+- **Clear messages.** If the token belongs to a different account, can't post, or was copied
+  badly, you're told what's wrong and what to do, in your language. Spaces and line breaks
+  pasted with the token are removed.
+- **No expiry worries.** System-user tokens don't expire, so nothing is renewed. If you revoke
+  one, the Instagram card turns red (signed out) instead of failing quietly.
+
+### Mac: captions, bleeps and covers work again
+- Homebrew's standard FFmpeg no longer includes subtitles or text drawing. The Mac installer
+  now sets up **ffmpeg-full**, SharkyClips uses it by itself, and `doctor` warns when your FFmpeg
+  is missing these features (`brew install ffmpeg-full` fixes it).
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Instagram: işletme portföyünden alınan token'lar da çalışıyor
+- **İki tür Instagram token'ı.** Meta'nın yeni kurulumu ("Unified login ile API kurulumu")
+  **EAA** ile başlayan bir token veriyor (örneğin işletme portföyünün sistem kullanıcısı).
+  SharkyClips bunu "Cannot parse access token" diyerek reddediyordu. Artık token'ı kendisi
+  tanıyor: **IGAA…** token'ları eskisi gibi, **EAA…** token'ları API'nin Facebook tarafından
+  bağlanıyor. Reels paylaşma, görüntülenmeler, günlük sınır ve gönderi silme ikisinde de çalışıyor.
+- **Hesabını kendisi buluyor.** EAA token'ında SharkyClips, sayfalarının ya da işletme
+  portföyünün arkasındaki Instagram hesabını buluyor. Yeni, isteğe bağlı **Instagram hesabı**
+  alanı (@kullanıcıadı veya kullanıcı kimliği), token birden fazla hesaba erişiyorsa ya da hiç
+  hesap bulunamıyorsa hangisinin kullanılacağını seçiyor.
+- **Açık mesajlar.** Token başka bir hesaba aitse, paylaşım izni yoksa ya da eksik kopyalandıysa
+  neyin yanlış olduğu ve ne yapman gerektiği kendi dilinde söyleniyor. Token'la birlikte
+  yapıştırılan boşluklar ve satır sonları siliniyor.
+- **Süre derdi yok.** Sistem kullanıcısı token'ları sona ermiyor, yenilenecek bir şey yok.
+  Token'ı iptal edersen Instagram kartı sessizce hata vermek yerine kırmızıya (oturum kapandı)
+  dönüyor.
+
+### Mac: altyazılar, bip sesleri ve kapaklar yeniden çalışıyor
+- Homebrew'un standart FFmpeg'i artık altyazı ve yazı çizme içermiyor. Mac kurulumu artık
+  **ffmpeg-full** kuruyor, SharkyClips onu kendiliğinden kullanıyor ve `doctor`, FFmpeg'inde bu
+  özellikler eksikse uyarıyor (`brew install ffmpeg-full` düzeltir).
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Instagram mit Business-Portfolio-Token:** Tokens mit **EAA** (z. B. Systemnutzer aus „API setup with unified login“) werden jetzt erkannt und über Facebooks Seite der API verbunden; **IGAA…** funktioniert wie bisher. Das Konto wird automatisch gefunden (optional: Feld „Instagram-Konto“), Fehler wie ein falsches Konto werden klar in deiner Sprache erklärt, Systemnutzer-Tokens laufen nicht ab, ein widerrufener Token zeigt „abgemeldet“.
+- **Mac:** Untertitel, Pieptöne und Cover funktionieren wieder (der Installer richtet **ffmpeg-full** ein).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Instagram vállalati portfólió tokennel:** az **EAA** kezdetű tokeneket (pl. rendszerfelhasználó az „API setup with unified login” részből) a SharkyClips most felismeri, és a Facebook-oldali API-n keresztül csatlakoztatja; az **IGAA…** ugyanúgy működik. A fiókot magától megtalálja (nem kötelező: „Instagram-fiók” mező), a hibákat (pl. rossz fiók) érthetően, a saját nyelveden magyarázza el, a rendszerfelhasználói token nem jár le, a visszavont token „kijelentkezve” állapotot mutat.
+- **Mac:** a feliratok, a sípolások és a borítók újra működnek (a telepítő **ffmpeg-full**-t tesz fel).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Instagram с токеном бизнес-портфолио:** токены, начинающиеся с **EAA** (например, системный пользователь из «API setup with unified login»), теперь распознаются и подключаются через API на стороне Facebook; **IGAA…** работает как раньше. Аккаунт находится сам (необязательное поле «Аккаунт Instagram»), ошибки вроде чужого аккаунта объясняются понятно на вашем языке, токены системного пользователя не истекают, отозванный токен показывает «выход выполнен».
+- **Mac:** субтитры, запикивание и обложки снова работают (установщик ставит **ffmpeg-full**).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **إنستغرام برمز من حافظة الأعمال:** الرموز التي تبدأ بـ **EAA** (مثل مستخدم النظام من «API setup with unified login») صارت تُعرف تلقائيًا وتتصل عبر واجهة فيسبوك؛ ورموز **IGAA…** تعمل كما كانت. يُعثر على الحساب تلقائيًا (حقل «حساب Instagram» اختياري)، وتُشرح الأخطاء مثل الحساب الخطأ بوضوح وبلغتك، ورموز مستخدم النظام لا تنتهي، والرمز الملغى يظهر «تم تسجيل الخروج».
+- **ماك:** عادت الترجمات والصفير والأغلفة للعمل (المثبّت يُعدّ **ffmpeg-full**).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **用商务资产组合令牌连接 Instagram：** 以 **EAA** 开头的令牌（例如“API setup with unified login”中的系统用户）现在会被自动识别，并通过 Facebook 侧的 API 连接；**IGAA…** 令牌照常使用。会自动找到账号（可选“Instagram 账号”栏），账号不对等错误会用你的语言清楚说明；系统用户令牌不会过期，被撤销的令牌会显示“已退出登录”。
+- **Mac：** 字幕、哔声和封面恢复正常（安装程序会安装 **ffmpeg-full**）。
+
+</details>
+
+
 ## [1.2.36] - 2026-11-09
 
 ### New: one Publish button for YouTube, Instagram and TikTok

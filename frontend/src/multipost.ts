@@ -160,7 +160,7 @@ export const accountsApi = {
   tiktokConnect: (client_key: string, client_secret: string) =>
     req<{ url: string; redirect_uri: string }>("POST", "/api/platforms/tiktok/connect", { client_key, client_secret }),
   igRedirect: () => req<{ redirect_uri: string }>("GET", "/api/platforms/reels/redirect"),
-  igToken: (token: string) => req<unknown>("POST", "/api/platforms/reels/connect", { token }),
+  igToken: (token: string, account = "") => req<unknown>("POST", "/api/platforms/reels/connect", { token, account }),
   igOauth: (app_id: string, app_secret: string) => req<{ url: string; redirect_uri: string }>("POST", "/api/platforms/reels/oauth", { app_id, app_secret }),
   igFinish: (url: string) => req<Accounts>("POST", "/api/platforms/reels/oauth/finish", { url }),
   setAudited: (p: "tiktok" | "reels", audited: boolean) => req<unknown>("PUT", `/api/platforms/${p}/audited`, { audited }),

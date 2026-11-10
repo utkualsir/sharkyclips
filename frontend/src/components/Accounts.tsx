@@ -213,6 +213,7 @@ function InstagramSetup({ a, onDone }: { a: Account; onDone: () => void }) {
   const { t } = useI18n();
   const toast = useToast();
   const [token, setToken] = useState("");
+  const [igAccount, setIgAccount] = useState("");
   const [busy, setBusy] = useState(false);
   const [adv, setAdv] = useState(false);
   const [appId, setAppId] = useState("");
@@ -255,10 +256,16 @@ function InstagramSetup({ a, onDone }: { a: Account; onDone: () => void }) {
       <label className="field">
         <span className="field-label">{t("acc.ig_token")}</span>
         <input className="input mono" type="password" value={token} autoComplete="off" spellCheck={false}
-          placeholder="IGAA…" onChange={(e) => setToken(e.target.value)} />
+          placeholder="IGAA… / EAA…" onChange={(e) => setToken(e.target.value)} />
         <span className="field-hint">{t("acc.ig_token_hint")}</span>
       </label>
-      <button className="btn btn-primary" disabled={busy || token.trim().length < 20} onClick={() => run(() => accountsApi.igToken(token.trim()))}>
+      <label className="field">
+        <span className="field-label">{t("acc.ig_account")}</span>
+        <input className="input mono" value={igAccount} autoComplete="off" spellCheck={false}
+          placeholder="@username" onChange={(e) => setIgAccount(e.target.value)} />
+        <span className="field-hint">{t("acc.ig_account_hint")}</span>
+      </label>
+      <button className="btn btn-primary" disabled={busy || token.trim().length < 20} onClick={() => run(() => accountsApi.igToken(token, igAccount.trim()))}>
         {busy ? <span className="spinner" /> : <PlatformIcon p="reels" size={16} />} {t("acc.connect_with", { name: "Instagram" })}
       </button>
       <details className="acc-adv" open={adv} onToggle={(e) => setAdv((e.target as HTMLDetailsElement).open)}>

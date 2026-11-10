@@ -6,13 +6,15 @@ Two ways to post, and the app always says which one is active:
         file in and press Post. Works for everyone, no account linking.
   api   automatic, through the official APIs, after a guided setup with YOUR OWN developer app:
         TikTok Content Posting API (Login Kit + PKCE, loopback redirect), Instagram Graph API
-        (Instagram Login token of a Business / Creator account, resumable Reels upload).
+        (Instagram Login token "IGAA..." of a Business / Creator account on graph.instagram.com, or
+        since 1.2.37 a Facebook-side token "EAA..." - Business portfolio system user, "API setup with
+        unified login" - on graph.facebook.com; resumable Reels upload either way).
         Both platforms review apps first: until TikTok approves yours, its posts are private
         ("Only me"); until Meta approves yours, only the app's own accounts can post.
 
 Tokens are kept encrypted (secretstore) in <settings>/platforms/<name>/token.enc.
-Tests point the API hosts at fake servers: SHARKYCLIPS_TIKTOK_ENDPOINT / SHARKYCLIPS_IG_ENDPOINT
-(loopback only).
+Tests point the API hosts at fake servers: SHARKYCLIPS_TIKTOK_ENDPOINT / SHARKYCLIPS_IG_ENDPOINT /
+SHARKYCLIPS_FB_ENDPOINT (loopback only).
 """
 
 from __future__ import annotations
@@ -21,6 +23,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import secrets
 import threading
 import time
@@ -69,6 +72,24 @@ def ig_upload_api() -> str:
 
 
 IG_VERSION = "v21.0"
+FB_VERSION = "v24.0"
+
+
+def fb_api() -> str:
+    return _endpoint("SHARKYCLIPS_FB_ENDPOINT", "https://graph.facebook.com")
+
+
+def _ig_graph(tok: dict) -> str:
+    """The Graph API a saved Instagram token talks to: graph.facebook.com for a Facebook-side token
+    (EAA...), graph.instagram.com for an Instagram Login token (IGAA...)."""
+    if tok.get("graph") == "facebook":
+        return f"{fb_api()}/{FB_VERSION}"
+    return f"{ig_api()}/{IG_VERSION}"
+
+
+def _ig_upload_url(tok: dict, container: str) -> str:
+    version = FB_VERSION if tok.get("graph") == "facebook" else IG_VERSION
+    return f"{ig_upload_api()}/ig-api-upload/{version}/{container}"
 
 
 def _http():
@@ -405,16 +426,152 @@ def tiktok_post(file: Path, text: str, on_progress: ProgressFn | None = None,
 # ===================================================================== Instagram
 
 
-def ig_connect(token: str) -> dict:
-    """Check a pasted Instagram Login access token (Business / Creator account) and keep it."""
-    token = token.strip()
+_IG_TEXT = {
+    "en": {"bad_token": ("Meta didn't accept this access token.",
+                         "Copy it again in full (it starts with EAA or IGAA) and paste it as it is."),
+           "no_account": ("This token doesn't reach any Instagram professional account.",
+                          "Business settings → System users → assign the Instagram account (full control), then "
+                          "generate the token again with instagram_basic and instagram_content_publish."),
+           "wrong_account": ("This token belongs to another account: it can't post to {account}.",
+                             "Generate the token for {account} (business portfolio → system user → assigned "
+                             "assets), or leave the account field empty to connect the token's own account."),
+           "no_publish": ("This token sees {account} but isn't allowed to post to it.",
+                          "Generate the token again with instagram_content_publish (and instagram_manage_insights "
+                          "for views).")},
+    "tr": {"bad_token": ("Meta bu erişim token'ını kabul etmedi.",
+                         "Token'ı baştan sona yeniden kopyala (EAA veya IGAA ile başlar) ve olduğu gibi yapıştır."),
+           "no_account": ("Bu token hiçbir Instagram profesyonel hesabına erişemiyor.",
+                          "İşletme ayarları → Sistem kullanıcıları → Instagram hesabını ata (tam kontrol), sonra "
+                          "token'ı instagram_basic ve instagram_content_publish izinleriyle yeniden oluştur."),
+           "wrong_account": ("Bu token başka bir hesaba ait: {account} hesabına paylaşım yapamaz.",
+                             "Token'ı {account} için oluştur (işletme portföyü → sistem kullanıcısı → atanan "
+                             "varlıklar) ya da hesap alanını boş bırak, token'ın kendi hesabı bağlansın."),
+           "no_publish": ("Bu token {account} hesabını görüyor ama paylaşım iznine sahip değil.",
+                          "Token'ı instagram_content_publish izniyle yeniden oluştur (görüntülenmeler için "
+                          "instagram_manage_insights da ekle).")},
+    "de": {"bad_token": ("Meta hat dieses Zugriffstoken nicht angenommen.",
+                         "Kopiere es noch einmal vollständig (es beginnt mit EAA oder IGAA) und füge es unverändert ein."),
+           "no_account": ("Dieses Token erreicht kein professionelles Instagram-Konto.",
+                          "Unternehmenseinstellungen → Systemnutzer → Instagram-Konto zuweisen (volle Kontrolle), "
+                          "dann das Token mit instagram_basic und instagram_content_publish neu erstellen."),
+           "wrong_account": ("Dieses Token gehört zu einem anderen Konto: es kann nicht auf {account} posten.",
+                             "Erstelle das Token für {account} oder lass das Kontofeld leer, um das Konto des "
+                             "Tokens zu verbinden."),
+           "no_publish": ("Dieses Token sieht {account}, darf dort aber nicht posten.",
+                          "Erstelle das Token mit instagram_content_publish neu (und instagram_manage_insights "
+                          "für Aufrufe).")},
+    "hu": {"bad_token": ("A Meta nem fogadta el ezt a hozzáférési tokent.",
+                         "Másold ki újra teljes egészében (EAA vagy IGAA az eleje), és illeszd be változatlanul."),
+           "no_account": ("Ez a token egyetlen Instagram szakmai fiókot sem ér el.",
+                          "Vállalati beállítások → Rendszerfelhasználók → rendeld hozzá az Instagram-fiókot (teljes "
+                          "hozzáférés), majd hozd létre újra a tokent instagram_basic és instagram_content_publish "
+                          "engedéllyel."),
+           "wrong_account": ("Ez a token egy másik fiókhoz tartozik: nem tud posztolni ide: {account}.",
+                             "Hozd létre a tokent ehhez: {account}, vagy hagyd üresen a fiók mezőt, hogy a token "
+                             "saját fiókja kapcsolódjon."),
+           "no_publish": ("Ez a token látja ezt: {account}, de nem posztolhat oda.",
+                          "Hozd létre újra a tokent instagram_content_publish engedéllyel (a megtekintésekhez "
+                          "instagram_manage_insights is kell).")},
+    "ru": {"bad_token": ("Meta не приняла этот токен доступа.",
+                         "Скопируйте его ещё раз целиком (он начинается с EAA или IGAA) и вставьте как есть."),
+           "no_account": ("Этот токен не даёт доступа ни к одному профессиональному аккаунту Instagram.",
+                          "Настройки компании → Системные пользователи → назначьте аккаунт Instagram (полный "
+                          "доступ), затем создайте токен заново с instagram_basic и instagram_content_publish."),
+           "wrong_account": ("Этот токен принадлежит другому аккаунту: он не может публиковать в {account}.",
+                             "Создайте токен для {account} или оставьте поле аккаунта пустым, чтобы подключить "
+                             "аккаунт самого токена."),
+           "no_publish": ("Этот токен видит {account}, но не может публиковать.",
+                          "Создайте токен заново с instagram_content_publish (и instagram_manage_insights для "
+                          "просмотров).")},
+    "ar": {"bad_token": ("لم تقبل Meta رمز الوصول هذا.",
+                         "انسخه مرة أخرى كاملًا (يبدأ بـ EAA أو IGAA) والصقه كما هو."),
+           "no_account": ("هذا الرمز لا يصل إلى أي حساب Instagram احترافي.",
+                          "إعدادات الأعمال ← مستخدمو النظام ← عيّن حساب Instagram (تحكم كامل)، ثم أنشئ الرمز من "
+                          "جديد مع instagram_basic و instagram_content_publish."),
+           "wrong_account": ("هذا الرمز يخص حسابًا آخر: لا يمكنه النشر على {account}.",
+                             "أنشئ الرمز لـ {account}، أو اترك حقل الحساب فارغًا لربط حساب الرمز نفسه."),
+           "no_publish": ("هذا الرمز يرى {account} لكنه لا يملك إذن النشر.",
+                          "أنشئ الرمز من جديد مع instagram_content_publish (و instagram_manage_insights للمشاهدات).")},
+    "zh": {"bad_token": ("Meta 不接受这个访问令牌。",
+                         "请重新完整复制（以 EAA 或 IGAA 开头）并原样粘贴。"),
+           "no_account": ("这个令牌无法访问任何 Instagram 专业账号。",
+                          "商务设置 → 系统用户 → 分配该 Instagram 账号（完全控制），然后用 instagram_basic 和 "
+                          "instagram_content_publish 重新生成令牌。"),
+           "wrong_account": ("这个令牌属于另一个账号：不能发布到 {account}。",
+                             "为 {account} 生成令牌，或把账号栏留空以连接令牌自己的账号。"),
+           "no_publish": ("这个令牌能看到 {account}，但没有发布权限。",
+                          "用 instagram_content_publish 重新生成令牌（查看次数还需 instagram_manage_insights）。")},
+}
+
+
+def _ig_error(key: str, **kw) -> SharkyClipsError:
+    """A connection error in the UI language (the user reads it while setting the account up)."""
+    lang = str(config.get("ui_language") or "en")
+    msg, hint = (_IG_TEXT.get(lang) or _IG_TEXT["en"])[key]
+    return SharkyClipsError(msg.format(**kw), hint.format(**kw))
+
+
+def clean_token(token: str) -> str:
+    """A pasted token without spaces, line breaks, quotes, "Bearer " or the access_token= around it."""
+    t = str(token or "")
+    m = re.search(r"access_token=([^&\s]+)", t)
+    if m:
+        t = m.group(1)
+    t = re.sub(r"\s+", "", t).strip("\"'`<>")
+    for prefix in ("Bearer", "OAuth"):
+        t = t.removeprefix(prefix)
+    return t
+
+
+def token_kind(token: str) -> str | None:
+    """facebook (EAA..., graph.facebook.com) | instagram (IGAA... / IGQ..., graph.instagram.com) | None."""
+    if token.startswith("EAA"):
+        return "facebook"
+    if token.startswith("IG"):
+        return "instagram"
+    return None
+
+
+def _wanted(account: str | None) -> tuple[str | None, str | None]:
+    """The optional account field: an Instagram user id (digits) or a @username / profile link."""
+    a = (account or "").strip()
+    if not a:
+        return None, None
+    m = re.search(r"instagram\.com/([A-Za-z0-9._]+)", a)
+    if m:
+        a = m.group(1)
+    a = a.lstrip("@").strip("/")
+    return (a, None) if a.isdigit() else (None, a.lower())
+
+
+def ig_connect(token: str, account: str | None = None) -> dict:
+    """Check a pasted Instagram access token and keep it: an Instagram Login token (IGAA...) or a
+    Facebook-side one (EAA..., e.g. a business portfolio's system user). `account` (optional): the
+    Instagram account it must post to (user id or @username)."""
+    token = clean_token(token)
     if len(token) < 20:
         raise SharkyClipsError("Paste the long access token of your Instagram app.",
                                "Meta for Developers -> your app -> Instagram -> API setup -> Generate token.")
-    return _ig_save(token, 60 * 86400)
+    kind = token_kind(token)
+    if kind == "facebook":
+        return _fb_connect(token, account)
+    if kind == "instagram":
+        return _ig_save(token, 60 * 86400, account)
+    try:  # unknown prefix: Instagram first, then the Facebook side
+        return _ig_save(token, 60 * 86400, account)
+    except PlatformError as exc:
+        if exc.kind != "auth":
+            raise
+    return _fb_connect(token, account)
 
 
-def _ig_save(token: str, expires_in: float) -> dict:
+def _check_wanted(account: str | None, uid: str, username: str | None) -> None:
+    want_id, want_name = _wanted(account)
+    if (want_id and want_id != uid) or (want_name and want_name != (username or "").lower()):
+        raise _ig_error("wrong_account", account="@" + want_name if want_name else want_id)
+
+
+def _ig_save(token: str, expires_in: float, account: str | None = None) -> dict:
     r = _http().get(f"{ig_api()}/{IG_VERSION}/me", timeout=30,
                     params={"fields": "user_id,username,account_type,profile_picture_url", "access_token": token})
     d = _ig_json(r, "connection")
@@ -422,13 +579,106 @@ def _ig_save(token: str, expires_in: float) -> dict:
     if kind and kind not in ("BUSINESS", "MEDIA_CREATOR", "CREATOR"):
         raise SharkyClipsError("Instagram only lets Business or Creator accounts post through its API.",
                                "Switch the account to Creator in the Instagram app (Settings → Account type).")
-    save_token("reels", {"access_token": token, "user_id": str(d.get("user_id") or d.get("id")),
+    uid = str(d.get("user_id") or d.get("id"))
+    _check_wanted(account, uid, d.get("username"))
+    save_token("reels", {"access_token": token, "graph": "instagram", "user_id": uid,
                          "account": d.get("username"), "saved_at": time.time(), "connected_at": time.time(),
                          "expires_at": time.time() + float(expires_in or 60 * 86400)})
     if load_app("reels") is None:
         save_app("reels", {"audited": False})
     note_problem("reels", None)
     save_avatar("reels", d.get("profile_picture_url"))
+    return status("reels")
+
+
+IG_FIELDS = "id,username,profile_picture_url"
+
+
+def _fb_get(path: str, token: str, what: str, **params) -> dict:
+    r = _http().get(f"{fb_api()}/{FB_VERSION}/{path.lstrip('/')}", timeout=30,
+                    params={**params, "access_token": token})
+    return _ig_json(r, what)
+
+
+def _fb_ig_accounts(token: str) -> list[dict]:
+    """The Instagram professional accounts a Facebook-side token reaches: through its Pages, and
+    through the Pages of its business portfolios (a system user's assigned assets)."""
+    found: dict[str, dict] = {}
+
+    def add(pages):
+        for pg in pages or []:
+            ig = (pg or {}).get("instagram_business_account") or {}
+            if ig.get("id"):
+                found.setdefault(str(ig["id"]), ig)
+
+    sub = f"instagram_business_account{{{IG_FIELDS}}}"
+    try:
+        add(_fb_get("me/accounts", token, "check", fields=f"name,{sub}", limit="100").get("data"))
+    except SharkyClipsError:
+        pass
+    if not found:
+        try:
+            biz = _fb_get("me/businesses", token, "check",
+                          fields=f"owned_pages{{{sub}}},client_pages{{{sub}}}", limit="25").get("data") or []
+            for b in biz:
+                for edge in ("owned_pages", "client_pages"):
+                    add(((b or {}).get(edge) or {}).get("data"))
+        except SharkyClipsError:
+            pass
+    return list(found.values())
+
+
+def _fb_connect(token: str, account: str | None = None) -> dict:
+    """A Facebook-side token (EAA...): find its Instagram account, check it may post there, keep it.
+    System-user tokens never expire (nothing to refresh); a revoked one shows up as signed out."""
+    try:
+        _fb_get("me", token, "connection", fields="id,name")
+    except PlatformError as exc:
+        if exc.kind == "auth":
+            raise _ig_error("bad_token") from exc
+        raise
+    info: dict = {}
+    try:
+        info = _fb_get("debug_token", token, "check", input_token=token).get("data") or {}
+    except SharkyClipsError:
+        pass
+    want_id, want_name = _wanted(account)
+    accounts = _fb_ig_accounts(token)
+    old = load_token("reels") or {}
+    target = None
+    if want_id:
+        target = want_id
+    elif want_name:
+        target = next((str(a["id"]) for a in accounts if (a.get("username") or "").lower() == want_name), None)
+        if target is None:
+            raise _ig_error("wrong_account" if accounts else "no_account", account="@" + want_name)
+    elif accounts:
+        ids = [str(a["id"]) for a in accounts]
+        target = old.get("user_id") if old.get("user_id") in ids else ids[0]
+    if not target:
+        raise _ig_error("no_account")
+    label = "@" + want_name if want_name else target
+    try:
+        ig = _fb_get(target, token, "connection", fields=IG_FIELDS)
+    except PlatformError as exc:
+        raise _ig_error("wrong_account", account=label) from exc
+    label = "@" + ig["username"] if ig.get("username") else label
+    try:  # posting rights: the publishing limit needs instagram_content_publish on this account
+        _fb_get(f"{target}/content_publishing_limit", token, "check", fields="quota_usage")
+    except PlatformError as exc:
+        if exc.kind in ("auth", "fatal"):
+            raise _ig_error("no_publish", account=label) from exc
+    scopes = info.get("scopes") or []
+    expires = float(info.get("expires_at") or 0)  # 0: never (system user)
+    save_token("reels", {"access_token": token, "graph": "facebook", "user_id": str(ig.get("id") or target),
+                         "account": ig.get("username"), "handle": ig.get("username"), "saved_at": time.time(),
+                         "connected_at": time.time(), "expires_at": expires if expires > time.time() else 0,
+                         "token_type": info.get("type"),
+                         "scope": ",".join(scopes) if isinstance(scopes, list) else ""})
+    if load_app("reels") is None:
+        save_app("reels", {"audited": False})
+    note_problem("reels", None)
+    save_avatar("reels", ig.get("profile_picture_url"))
     return status("reels")
 
 
@@ -467,7 +717,8 @@ def _ig_token() -> dict:
         note_problem("reels", "signed_out", "The Instagram sign-in expired.")
         raise api_error("reels", "The Instagram sign-in expired.", "Connect Instagram again in Settings → Accounts.",
                         "190", 401)
-    if time.time() - float(tok.get("saved_at") or 0) > IG_REFRESH_AFTER:  # 60-day tokens: refreshed weekly
+    if tok.get("graph") != "facebook" and time.time() - float(tok.get("saved_at") or 0) > IG_REFRESH_AFTER:
+        # Instagram Login tokens last 60 days: refreshed weekly (Facebook-side system-user tokens don't expire)
         try:
             refresh_ig()
             tok = load_token("reels") or tok
@@ -481,6 +732,8 @@ IG_REFRESH_AFTER = 7 * 86400
 
 def refresh_ig() -> None:
     tok = load_token("reels") or {}
+    if tok.get("graph") == "facebook":
+        return  # nothing to refresh: a system-user token doesn't expire
     r = _http().get(f"{ig_api()}/refresh_access_token", timeout=30,
                     params={"grant_type": "ig_refresh_token", "access_token": tok.get("access_token")})
     try:
@@ -499,31 +752,15 @@ def ig_post(file: Path, text: str, on_progress: ProgressFn | None = None, poll: 
             cancel: threading.Event | None = None, ai_label: bool = False) -> dict:
     """Reels upload: container (resumable) -> bytes to rupload -> wait FINISHED -> publish.
     ai_label: Instagram's AI self-disclosure (is_ai_generated, 1.2.20)."""
-    tok = _ig_token()
-    acc, uid = tok["access_token"], tok["user_id"]
-    data = {"media_type": "REELS", "upload_type": "resumable", "caption": text[:2200], "share_to_feed": "true",
-            "access_token": acc}
-    if ai_label:
-        data["is_ai_generated"] = "true"
-    r = _http().post(f"{ig_api()}/{IG_VERSION}/{uid}/media", timeout=60, data=data)
-    cont = _ig_json(r, "upload")
-    cid = cont.get("id")
-    if not cid:
-        raise SharkyClipsError("Instagram didn't create the upload.", "Try again later.")
-    size = file.stat().st_size
-    with open(file, "rb") as f:
-        r = _http().post(f"{ig_upload_api()}/ig-api-upload/{IG_VERSION}/{cid}", data=f, timeout=900, headers={
-            "Authorization": f"OAuth {acc}", "offset": "0", "file_size": str(size)})
-    _ig_json(r, "upload")
+    cid = ig_container(text, ai_label)
+    ig_send(file, cid)
     if on_progress:
         on_progress(0.8)
     end = time.time() + 900
     while True:
         if cancel is not None and cancel.is_set():
             raise SharkyClipsError("Cancelled.")
-        r = _http().get(f"{ig_api()}/{IG_VERSION}/{cid}", timeout=30,
-                        params={"fields": "status_code,status", "access_token": acc})
-        st = _ig_json(r, "upload").get("status_code")
+        st = ig_container_status(cid)
         if st == "FINISHED":
             break
         if st in ("ERROR", "EXPIRED"):
@@ -532,16 +769,8 @@ def ig_post(file: Path, text: str, on_progress: ProgressFn | None = None, poll: 
         if time.time() > end:
             raise SharkyClipsError("Instagram is taking too long with this video.", "Try again later.")
         time.sleep(poll)
-    r = _http().post(f"{ig_api()}/{IG_VERSION}/{uid}/media_publish", timeout=60,
-                     data={"creation_id": cid, "access_token": acc})
-    media = _ig_json(r, "publish").get("id")
-    url = None
-    try:
-        r = _http().get(f"{ig_api()}/{IG_VERSION}/{media}", timeout=30,
-                        params={"fields": "permalink", "access_token": acc})
-        url = _ig_json(r, "link").get("permalink")
-    except SharkyClipsError:
-        pass
+    media = ig_publish(cid)
+    url = ig_permalink(media)
     if on_progress:
         on_progress(1.0)
     return {"media_id": media, "status": "published", "url": url}
@@ -684,7 +913,8 @@ def keep_fresh() -> list[str]:
         except SharkyClipsError:
             acts.append("refresh_failed:tiktok")
     tok = load_token("reels") or {}
-    if tok.get("access_token") and now - float(tok.get("saved_at") or 0) > IG_REFRESH_AFTER and \
+    if tok.get("access_token") and tok.get("graph") != "facebook" and \
+            now - float(tok.get("saved_at") or 0) > IG_REFRESH_AFTER and \
             (problem("reels") or {}).get("kind") != "signed_out":
         try:
             refresh_ig()
@@ -920,7 +1150,7 @@ def ig_container(text: str, ai_label: bool = False, thumb_ms: int | None = None)
         data["thumb_offset"] = str(max(0, int(thumb_ms)))
     if ai_label:
         data["is_ai_generated"] = "true"
-    r = _http().post(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/media", timeout=60, data=data)
+    r = _http().post(f"{_ig_graph(tok)}/{tok['user_id']}/media", timeout=60, data=data)
     cid = _ig_json(r, "upload").get("id")
     if not cid:
         raise api_error("reels", "Instagram didn't create the upload.", "SharkyClips tries again.", "no_id", 500)
@@ -931,7 +1161,7 @@ def ig_send(file: Path, container: str) -> None:
     tok = _ig_token()
     size = file.stat().st_size
     with open(file, "rb") as f:
-        r = _http().post(f"{ig_upload_api()}/ig-api-upload/{IG_VERSION}/{container}", data=f, timeout=900, headers={
+        r = _http().post(_ig_upload_url(tok, container), data=f, timeout=900, headers={
             "Authorization": f"OAuth {tok['access_token']}", "offset": "0", "file_size": str(size)})
     _ig_json(r, "upload")
 
@@ -939,14 +1169,14 @@ def ig_send(file: Path, container: str) -> None:
 def ig_container_status(container: str) -> str:
     """IN_PROGRESS | FINISHED | ERROR | EXPIRED | PUBLISHED"""
     tok = _ig_token()
-    r = _http().get(f"{ig_api()}/{IG_VERSION}/{container}", timeout=30,
+    r = _http().get(f"{_ig_graph(tok)}/{container}", timeout=30,
                     params={"fields": "status_code,status", "access_token": tok["access_token"]})
     return str(_ig_json(r, "upload").get("status_code") or "IN_PROGRESS")
 
 
 def ig_publish(container: str) -> str:
     tok = _ig_token()
-    r = _http().post(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/media_publish", timeout=60,
+    r = _http().post(f"{_ig_graph(tok)}/{tok['user_id']}/media_publish", timeout=60,
                      data={"creation_id": container, "access_token": tok["access_token"]})
     mid = _ig_json(r, "publish").get("id")
     if not mid:
@@ -957,7 +1187,7 @@ def ig_publish(container: str) -> str:
 def ig_recent(limit: int = 12) -> list[dict]:
     """Your newest posts (finds a post whose confirmation got lost, so nothing is posted twice)."""
     tok = _ig_token()
-    r = _http().get(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/media", timeout=30, params={
+    r = _http().get(f"{_ig_graph(tok)}/{tok['user_id']}/media", timeout=30, params={
         "fields": "id,caption,timestamp,permalink,media_type", "limit": str(limit), "access_token": tok["access_token"]})
     return list(_ig_json(r, "check").get("data") or [])
 
@@ -965,7 +1195,7 @@ def ig_recent(limit: int = 12) -> list[dict]:
 def ig_permalink(media: str) -> str | None:
     tok = _ig_token()
     try:
-        r = _http().get(f"{ig_api()}/{IG_VERSION}/{media}", timeout=30,
+        r = _http().get(f"{_ig_graph(tok)}/{media}", timeout=30,
                         params={"fields": "permalink", "access_token": tok["access_token"]})
         return _ig_json(r, "link").get("permalink")
     except SharkyClipsError:
@@ -983,7 +1213,7 @@ def ig_quota() -> dict | None:
         pass
     try:
         tok = _ig_token()
-        r = _http().get(f"{ig_api()}/{IG_VERSION}/{tok['user_id']}/content_publishing_limit", timeout=20,
+        r = _http().get(f"{_ig_graph(tok)}/{tok['user_id']}/content_publishing_limit", timeout=20,
                         params={"fields": "quota_usage,config", "access_token": tok["access_token"]})
         d = (_ig_json(r, "limit").get("data") or [{}])[0]
         q = {"used": int(d.get("quota_usage") or 0), "total": int((d.get("config") or {}).get("quota_total") or 50),
@@ -998,12 +1228,12 @@ def ig_stats(media: str) -> dict:
     """Views / likes of a Reel (views need the insights permission; likes come with the basic one)."""
     tok = _ig_token()
     out: dict = {}
-    r = _http().get(f"{ig_api()}/{IG_VERSION}/{media}", timeout=30,
+    r = _http().get(f"{_ig_graph(tok)}/{media}", timeout=30,
                     params={"fields": "like_count,comments_count,permalink", "access_token": tok["access_token"]})
     d = _ig_json(r, "stats")
     out["likes"], out["comments"], out["url"] = d.get("like_count"), d.get("comments_count"), d.get("permalink")
     try:
-        r = _http().get(f"{ig_api()}/{IG_VERSION}/{media}/insights", timeout=30,
+        r = _http().get(f"{_ig_graph(tok)}/{media}/insights", timeout=30,
                         params={"metric": "views", "access_token": tok["access_token"]})
         for m in _ig_json(r, "stats").get("data") or []:
             if m.get("name") == "views":
@@ -1019,7 +1249,7 @@ def ig_delete(media: str) -> bool:
     """Delete a post. Meta only allows this for some apps: False means delete it in the Instagram app."""
     tok = _ig_token()
     try:
-        r = _http().delete(f"{ig_api()}/{IG_VERSION}/{media}", timeout=30, params={"access_token": tok["access_token"]})
+        r = _http().delete(f"{_ig_graph(tok)}/{media}", timeout=30, params={"access_token": tok["access_token"]})
         _ig_json(r, "delete")
         return True
     except SharkyClipsError:

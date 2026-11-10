@@ -249,7 +249,9 @@ def api_tiktok_callback(code: str = "", state: str = "", error: str = "", error_
 
 @router.post("/api/platforms/reels/connect")
 def api_reels_connect(body: dict) -> dict:
-    return PF.ig_connect(str(body.get("token") or ""))
+    """token: IGAA... (Instagram Login) or EAA... (Facebook side, 1.2.37); account (optional): the
+    Instagram user id or @username it must post to."""
+    return PF.ig_connect(str(body.get("token") or ""), str(body.get("account") or "") or None)
 
 
 @router.get("/api/platforms/{platform}/clips/{project_id}/{cid}")
