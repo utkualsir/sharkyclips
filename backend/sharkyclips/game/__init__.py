@@ -97,7 +97,9 @@ def resolve(project: Project) -> dict:
         detected, why = cached.get("game"), cached.get("why", "")
     else:
         transcript = project.load_transcript() if project.transcript_path.is_file() else None
-        detected, why = detect(meta.get("title", ""), transcript)
+        # Kick (and some sites) name the game as the stream's category: a strong title hint
+        hint = " ".join(t for t in (meta.get("title", ""), (meta.get("source") or {}).get("category") or "") if t)
+        detected, why = detect(hint, transcript)
         if transcript is not None:
             meta["game_detect"] = {"key": tkey, "game": detected, "why": why}
             project.save_meta(meta)

@@ -78,7 +78,7 @@ python cli.py highlights me-at --force                       # recompute cached 
 python cli.py cut me-at 1          # one candidate by rank
 python cli.py cut me-at --all      # -> workspace/<id>/previews/01_s94_02-14-37.mp4 ...
 
-# 5. Chat replay (optional; `highlights` fetches it by itself for YouTube/Twitch streams)
+# 5. Chat replay (optional; `highlights` fetches it by itself for YouTube/Twitch/Kick streams)
 python cli.py chat me-at                                    # download it again: --force
 python cli.py chat me-at --file chat.json                   # or import a chat log
 
@@ -181,9 +181,16 @@ kept for later calibration. Reason `code`s are stable identifiers (`loudness_spi
 |---|---|
 | YouTube (videos that were live streams) | yt-dlp's live chat replay. YouTube sends it in small pieces, so a long stream takes a few minutes |
 | Twitch VODs | Twitch's public chat API, 8 parts of the VOD in parallel (a 5 h VOD: ~30 s) |
+| Kick VODs and clips | Kick's public chat endpoint (no login). It answers ~5 s of chat per call, so 6 parts run in parallel (a 5 h VOD: a few minutes) |
 | Anything else | `python cli.py chat <id> --file ...` or "Import chat" in the web UI: chat-downloader / yt-dlp `.live_chat.json` / TwitchDownloader JSON, or text lines like `[1:02:03] name: message` |
 
-No chat replay is fine: the signal is skipped. Twitch only keeps the chat of VODs that still exist.
+No chat replay is fine: the signal is skipped. Twitch and Kick only keep the chat of VODs that still exist.
+
+Kick links: `kick.com/<channel>/videos/<id>`, `kick.com/video/<id>`, `kick.com/<channel>/clips/<id>` and
+`kick.com/<channel>?clip=<id>` all work (yt-dlp downloads them; if its Kick support breaks after a site
+change, SharkyClips asks Kick's public endpoints directly). A channel link gets a "pick a VOD" message,
+subscriber-only VODs can't be downloaded (no login), and the stream's category (the game) helps game
+detection.
 
 ### Game awareness (Delta Force, League of Legends)
 

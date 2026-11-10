@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-from . import __version__, audio, config
+from . import __version__, audio, config, kick
 from .errors import SharkyClipsError, pip_hint, require_module, require_tool
 from .project import MODES, Project, make_project_id, project_for_id
 from .ui import console, download_progress, time_progress
@@ -115,6 +115,9 @@ class _YdlLogger:
     def warning(self, msg: str) -> None:
         from rich.markup import escape
 
+        if "impersonat" in msg:  # Kick works without curl_cffi; the note only worries people
+            return
+
         console.print(f"[dim]yt-dlp: {escape(msg)}[/]")
 
     def error(self, msg: str) -> None:
@@ -130,29 +133,39 @@ def _download_error(exc: Exception, url: str) -> SharkyClipsError:
             "SharkyClips doesn't log in to sites. Download the video yourself, then run: "
             'python cli.py ingest "path/to/video.mp4"')
     hint = "Update yt-dlp (sites change often): " + pip_hint("yt-dlp[default]")
+    if kick.is_kick(url):
+        hint = ("Kick may have changed its site: " + hint[0].lower() + hint[1:]
+                + "\nSubscriber-only VODs can't be downloaded (SharkyClips doesn't log in).")
     if "youtu" in url and not js_runtimes():
         hint += "\nYouTube also needs a JavaScript runtime: install Deno or Node.js."
     return SharkyClipsError(f"Download failed: {text[:500]}", hint)
 
 
 def _ingest_url(url: str) -> tuple[Project, dict]:
+    console.print(f"Looking up [cyan]{url}[/] ...")
+    lookup = kick.canonical(url) if kick.is_kick(url) else url  # channel links get a clear message
     yt_dlp = require_module("yt_dlp", "yt-dlp[default]")
     max_height = int(config.get("download_max_height") or 1080)
-    console.print(f"Looking up [cyan]{url}[/] ...")
     try:
         with yt_dlp.YoutubeDL({"quiet": True, "noplaylist": True, "skip_download": True,
                                "socket_timeout": 30, "retries": 5, "logger": _YdlLogger(),
                                **({"js_runtimes": js_runtimes()} if js_runtimes() else {})}) as ydl:
-            info = ydl.extract_info(url, download=False)
+            info = ydl.extract_info(lookup, download=False)
     except Exception as exc:
-        raise _download_error(exc, url) from exc
+        if not kick.parse(lookup):
+            raise _download_error(exc, url) from exc
+        # yt-dlp's Kick extractor breaks now and then when the site changes: Kick's public
+        # endpoints give the same VOD / clip (raises its own clear message, e.g. subscriber-only)
+        console.print("[dim]yt-dlp couldn't read this Kick link; asking Kick directly.[/]")
+        info = kick.resolve(lookup)
     if info.get("_type") == "playlist":
         raise SharkyClipsError("That URL is a playlist/channel.", "Pass a single video or VOD URL.")
     if info.get("is_live"):
         raise SharkyClipsError("This stream is live right now.",
                                "Wait until the stream ends and use the VOD/replay URL.")
     title = info.get("title") or info.get("id") or "video"
-    canonical = info.get("webpage_url") or url
+    canonical = info.get("webpage_url") or lookup
+    media = info.get("media_url") or canonical  # the Kick fallback downloads its HLS playlist
     project = project_for_id(make_project_id(title, f"url:{info.get('extractor_key')}:{info.get('id') or canonical}"))
     project.dir.mkdir(parents=True, exist_ok=True)
 
@@ -171,7 +184,7 @@ def _ingest_url(url: str) -> tuple[Project, dict]:
             opts = _ydl_opts(project.dir, max_height) | {"progress_hooks": [hook]}
             try:
                 with yt_dlp.YoutubeDL(opts) as ydl:
-                    ydl.download([canonical])
+                    ydl.download([media])
             except Exception as exc:
                 raise _download_error(exc, url) from exc
         if project.source_path is None:
@@ -188,6 +201,7 @@ def _ingest_url(url: str) -> tuple[Project, dict]:
         "video_id": info.get("id"),
         "uploader": info.get("uploader") or info.get("channel"),
         "upload_date": info.get("upload_date"),
+        "category": next((c for c in info.get("categories") or [] if c), None),  # Kick: the game
         "title": title,
     }
 

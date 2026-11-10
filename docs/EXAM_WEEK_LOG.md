@@ -48,6 +48,45 @@ frontend scripts and CI; route handlers and test-only helpers kept): `audiomix._
 `publishing.split_key`, `taste.vote_of`, `style.socials_for_short`, `JobManager.tombstones`,
 `youtube.clear_locked`.
 
+### Task 4: Kick VOD / clip import
+
+**What I found:** yt-dlp (2026.10.21, already a dependency) has working `kick:vod` and `kick:clip`
+extractors, and every URL already went through yt-dlp, so a pasted Kick link half-worked before.
+What was missing: the short `kick.com/video/<id>` links (yt-dlp needs the channel in the path), a
+useful message for channel links (yt-dlp says "not currently live"), chat replay, and a plan B
+for the next time Kick changes its site and yt-dlp's extractor breaks.
+
+**What changed** (`backend/sharkyclips/kick.py`, `ingest.py`, `chat.py`, `game/__init__.py`):
+
+- Every link shape: `kick.com/<ch>/videos/<id>`, `kick.com/video/<id>`, `kick.com/<ch>/clips/<id>`,
+  `kick.com/<ch>?clip=<id>`. Channel links (`kick.com/<ch>`, `/videos`, `/clips`) get "That's a
+  Kick channel, not a video" plus where to find a VOD, before anything downloads.
+- yt-dlp first. If its Kick extractor fails, Kick's public endpoints (the same ones kick.com's
+  own player uses, no login) give the title, channel, date and the HLS playlist, and yt-dlp
+  downloads that. Subscriber-only VODs get a clear "can't download without an account" message
+  (decision: no login support, like for YouTube members-only videos).
+- **Chat replay** for VODs and clips: Kick's public messages endpoint answers ~5 s of chat per
+  call, so it runs in 6 parallel parts (a 5 h VOD: a few minutes; Twitch's API is faster).
+  `[emote:123:KEKW]` codes become `KEKW`, so emote spam counts as hype like on Twitch.
+- The stream's **category** (Kick names the game) is saved as `source.category` and used as a
+  game-detection hint next to the title.
+- yt-dlp's "attempting impersonation" warning is hidden (Kick works without curl_cffi).
+  Decision: no new dependency (`curl_cffi`); if Cloudflare starts blocking, adding
+  `yt-dlp[default,curl-cffi]` to requirements is the fix.
+- Easy mode's link placeholder and tour now say Kick (7 languages); docs updated.
+
+**Tests:** `test_kick.py` (9 tests, fake Kick server, no network): link shapes, canonical links,
+VOD/clip resolve, subscriber-only, chat windows (order, de-dup, emotes, clip offset), chat
+dispatch, ingest fallback when yt-dlp's extractor fails, channel link refused before any
+download, category -> game detection.
+
+**Real test** (throwaway settings folder, Whisper `small` on the CPU, no GPU):
+
+| Link | Result |
+|---|---|
+| xQc clip, `kick.com/xqc?clip=clip_01M6PNKW...` (30 s) | 1080p60 in 6 s; chat replay 161 messages / 119 people; transcript + highlights OK (1 candidate, hype 100) |
+| Destiny VOD, `kick.com/video/01a1989d-...` (2:14, short link form) | resolved to `kick.com/destiny/videos/...`, 720p in 9 s, category "Just Chatting"; transcript + highlights OK (3 candidates). That stream had no chat; the same code read 31 messages in 20 s of a busy xQc VOD |
+
 ## Session 1: 2026-10-27 (1.2.5 -> 1.2.6)
 ### Summary (read this first)
 

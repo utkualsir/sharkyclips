@@ -275,7 +275,7 @@ and resume where they stopped if you close SharkyClips.
 
 **Which sites can I import from?**
 Twitch VODs, YouTube (videos and past live streams), Kick and most sites yt-dlp supports, plus any
-local video file. The chat replay is fetched automatically for Twitch and YouTube; for others you
+local video file. The chat replay is fetched automatically for Twitch, Kick and YouTube; for others you
 can import a chat log.
 
 **Does it post to YouTube, Instagram and TikTok for me?**

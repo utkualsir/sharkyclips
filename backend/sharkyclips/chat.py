@@ -5,6 +5,8 @@ Sources
     that were live streams
   * Twitch VOD chat (Twitch's public GraphQL API, no login; several parts of the VOD are
     fetched in parallel)
+  * Kick VOD / clip chat (Kick's public messages endpoint, no login; ~5 s per call, parallel
+    parts like Twitch)
   * a chat log file: chat-downloader JSON, yt-dlp .live_chat.json, TwitchDownloader JSON,
     or plain text lines like "[1:02:03] name: message"
 
@@ -302,6 +304,39 @@ def _download_twitch(project: Project, url: str, duration: float) -> dict:
     return _save(project, "twitch", [r for c in chunks for r in c])
 
 
+def _download_kick(project: Project, url: str, duration: float) -> dict:
+    from concurrent.futures import ThreadPoolExecutor
+
+    from . import kick
+    from .ui import time_progress
+
+    plan = kick.chat_plan(url, duration)
+    if plan is None:
+        return _save_none(project, "kick", "Kick has no chat replay for this link")
+    chat_id, t0, length = plan
+    length = length or duration or 3600
+    # ~5 s of chat per call: 15+ min per worker, at most 6 in parallel (polite to Kick)
+    parts = max(1, min(6, int(length // 900)))
+    bounds = [length * i / parts for i in range(parts + 1)]
+    bounds[-1] = length + 5
+    done = [0.0] * parts
+    console.print(f"Downloading Kick chat replay ({parts} parallel parts) ...")
+    with time_progress() as prog:
+        task = prog.add_task("Downloading chat", total=length)
+
+        def run(i: int) -> list:
+            def on_page(t: float) -> None:
+                done[i] = max(done[i], min(t, bounds[i + 1]) - bounds[i])
+                prog.update(task, completed=min(length, sum(done)))
+
+            return kick.chat_segment(chat_id, t0, bounds[i], bounds[i + 1], on_page)
+
+        with ThreadPoolExecutor(parts) as pool:
+            chunks = list(pool.map(run, range(parts)))
+        prog.update(task, completed=length)
+    return _save(project, "kick", [r for c in chunks for r in c])
+
+
 def ensure_chat(project: Project, force: bool = False) -> dict:
     """Download the chat replay once per project. Never raises: no chat = signal skipped."""
     existing = load_chat(project)
@@ -318,6 +353,8 @@ def ensure_chat(project: Project, force: bool = False) -> dict:
             return _download_youtube(project, url)
         if "twitch" in extractor or "twitch.tv" in url:
             return _download_twitch(project, url, float(meta.get("duration") or 0))
+        if "kick" in extractor or "kick.com" in url:
+            return _download_kick(project, url, float(meta.get("duration") or 0))
         return _save_none(project, extractor or "url", "chat replay isn't supported for this site")
     except Exception as exc:  # noqa: BLE001 - chat is optional
         console.print(f"[yellow]Chat replay unavailable:[/] {str(exc)[:200]}")
