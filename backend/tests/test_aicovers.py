@@ -158,6 +158,7 @@ def test_gpu_lost_counts_as_no_gpu(monkeypatch):
 
     monkeypatch.setattr(hardware, "detect_nvidia_gpus", lambda: [])
     monkeypatch.setattr(imagegen, "_gpu_lost", lambda: True)
+    monkeypatch.setattr(imagegen.platform, "system", lambda: "Windows")  # a lost NVIDIA GPU: not a Mac thing
     cap = imagegen._detect()
     assert cap.reason == "gpu_lost" and cap.tier in ("cpu", "none")
 

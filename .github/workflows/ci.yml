@@ -71,7 +71,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r backend/requirements.txt -r backend/requirements-dev.txt
       - name: Install ffmpeg
-        run: brew install ffmpeg
+        # the plain formula has no libass / freetype; ffmpeg-full is what install.sh sets up
+        run: |
+          brew install ffmpeg-full
+          echo "$(brew --prefix ffmpeg-full)/bin" >> "$GITHUB_PATH"
       - name: Installer dry run (macOS)
         run: bash install.sh --dry-run --lang en
       - name: macOS code paths load (idle time, front app, hardware, encoders)

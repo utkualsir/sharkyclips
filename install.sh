@@ -105,8 +105,13 @@ if [ -z "$BREW" ]; then list_line new Homebrew "$(t 'macOS paket yöneticisi (y�
 if [ -n "$VENV_VERSION" ]; then list_line found Python "$VENV_VERSION (SharkyClips/.venv)"
 elif [ -n "$PYTHON" ]; then list_line found Python "$(py_ok "$PYTHON")"
 else list_line new "Python 3.12" "$(t 'SharkyClips onunla çalışır' 'runs SharkyClips')" "~70 MB"; TO_INSTALL="$TO_INSTALL python@3.12"; fi
-if have ffmpeg && have ffprobe; then list_line found FFmpeg "$(command -v ffmpeg)"
-else list_line new FFmpeg "$(t 'video ve ses işleme' 'video and audio processing')" "~100 MB"; TO_INSTALL="$TO_INSTALL ffmpeg"; fi
+# Homebrew's plain `ffmpeg` has no libass / freetype (no captions, bleeps or covers): use `ffmpeg-full`
+# (keg-only; SharkyClips puts it first on PATH by itself) unless the ffmpeg here can draw subtitles.
+full_ffmpeg() { for d in /opt/homebrew/opt/ffmpeg-full/bin /usr/local/opt/ffmpeg-full/bin; do
+  if [ -x "$d/ffmpeg" ]; then echo "$d/ffmpeg"; return 0; fi; done; return 1; }
+ffmpeg_ok() { full_ffmpeg >/dev/null || { have ffmpeg && have ffprobe && ffmpeg -hide_banner -filters 2>/dev/null | grep -q ' ass '; }; }
+if ffmpeg_ok; then list_line found FFmpeg "$(full_ffmpeg || command -v ffmpeg)"
+else list_line new FFmpeg "$(t 'video ve ses işleme (altyazılı tam sürüm)' 'video and audio processing (full build with captions)')" "~300 MB"; TO_INSTALL="$TO_INSTALL ffmpeg-full"; fi
 if have git; then list_line found Git "$(command -v git)"
 else list_line new Git "$(t "SharkyClips'i indirir ve günceller" 'downloads and updates SharkyClips')" "~50 MB"; TO_INSTALL="$TO_INSTALL git"; fi
 if have deno || have node; then list_line found "JavaScript runtime" "$(command -v deno || command -v node)"
@@ -154,7 +159,7 @@ if [ -z "$VENV_VERSION" ]; then
   [ -n "$PYTHON" ] || fail "$(t 'Python 3.12 bulunamadı.' 'Python 3.12 was not found.')"
   ok "Python $(py_ok "$PYTHON")"
 else ok "Python $VENV_VERSION"; fi
-have ffmpeg && ok FFmpeg || warn "$(t 'FFmpeg bulunamadı.' 'FFmpeg not found.')"
+ffmpeg_ok && ok FFmpeg || warn "$(t 'FFmpeg bulunamadı (ya da altyazı desteği yok): brew install ffmpeg-full' 'FFmpeg not found (or without captions): brew install ffmpeg-full')"
 have git && ok Git || warn "$(t 'Git bulunamadı: otomatik güncelleme çalışmaz.' "Git not found: automatic updates won't work.")"
 
 # 2. SharkyClips itself

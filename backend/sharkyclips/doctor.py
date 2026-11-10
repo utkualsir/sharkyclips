@@ -121,6 +121,7 @@ class Doctor:
         self._check_whisper_model(plan)
         self._check_highlight_deps()
         self._check_encoder()
+        self._check_ffmpeg_filters()
         self._check_llm()
 
         ws = config.workspace_dir()
@@ -234,6 +235,22 @@ class Doctor:
             fb = config.get("llm_fallback_model") or llm.SMALL_MODEL
             self.add("LLM model", WARN, f"{model} test failed ({str(exc)[:160]}). For weaker PCs set "
                                          f"\"llm_model\": \"{fb}\" in {config.config_path()}")
+
+    def _check_ffmpeg_filters(self) -> None:
+        """Subtitles (ass) and cover / meme text (drawtext) need an ffmpeg built with libass + freetype."""
+        exe = shutil.which("ffmpeg")
+        if not exe:
+            return
+        try:
+            out = subprocess.run([exe, "-hide_banner", "-filters"], capture_output=True, text=True, timeout=15,
+                                 encoding="utf-8", errors="replace", **no_window()).stdout
+        except (OSError, subprocess.SubprocessError):
+            return
+        names = {ln.split()[1] for ln in out.splitlines() if len(ln.split()) > 2}
+        missing = [f for f in ("ass", "drawtext") if f not in names]
+        if missing:
+            hint = "brew install ffmpeg-full" if sys.platform == "darwin" else "install a full ffmpeg build"
+            self.add("FFmpeg filters", WARN, f"{exe} lacks {', '.join(missing)} (captions, bleeps and covers fail): {hint}")
 
     def _check_encoder(self) -> None:
         if not shutil.which("ffmpeg"):
