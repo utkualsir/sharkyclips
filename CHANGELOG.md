@@ -7,6 +7,110 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.38] - 2026-11-10
+
+### Kick VODs and clips
+- **Paste a Kick link.** VODs (`kick.com/<channel>/videos/…` and the short `kick.com/video/…`)
+  and clips (`kick.com/<channel>/clips/…` or `?clip=…`) import like Twitch and YouTube links.
+  A channel link tells you where to find a VOD instead of failing.
+- **Kick chat replay.** The chat of a Kick VOD or clip is downloaded by itself and counts as a
+  hype signal, emotes included (KEKW spam counts).
+- **Knows the game.** The stream's Kick category helps SharkyClips recognise the game.
+- If Kick changes its site and the downloader can't read a link, SharkyClips asks Kick directly.
+  Subscriber-only VODs can't be downloaded (SharkyClips never logs in to sites).
+
+### Your YouTube data is kept only as long as needed
+- **Disconnect deletes it.** Disconnecting YouTube now also deletes the views, likes and
+  retention numbers SharkyClips read from YouTube (it asks first). Numbers you typed in yourself
+  stay.
+- **Nothing old lingers.** Numbers that weren't refreshed for 30 days are deleted by themselves,
+  and if Google signs you out and you don't reconnect within 7 days, they're deleted too.
+
+### TikTok
+- **Disconnect ends the access at TikTok too**, not only on your computer.
+- The post screen always loads your account's current TikTok settings when it opens, and the
+  disclosure notes use TikTok's own wording.
+
+### Steadier
+- On Windows, a clip you had just posted could briefly show as "not posted" while another
+  platform's upload was being saved. Fixed.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Kick yayınları ve klipleri
+- **Kick linkini yapıştır.** Yayın kayıtları (`kick.com/<kanal>/videos/…` ve kısa
+  `kick.com/video/…`) ile klipler (`kick.com/<kanal>/clips/…` ya da `?clip=…`) Twitch ve YouTube
+  linkleri gibi içe aktarılıyor. Kanal linki verirsen hata yerine yayın kaydını nerede bulacağın
+  söyleniyor.
+- **Kick sohbet tekrarı.** Kick yayınının ya da klibinin sohbeti kendiliğinden indiriliyor ve
+  heyecan sinyali olarak sayılıyor; emojiler de dahil (KEKW yağmuru sayılır).
+- **Oyunu tanıyor.** Yayının Kick kategorisi, SharkyClips'in oyunu tanımasına yardım ediyor.
+- Kick sitesini değiştirir ve indirici bir linki okuyamazsa SharkyClips doğrudan Kick'e soruyor.
+  Yalnızca abonelere açık yayınlar indirilemiyor (SharkyClips sitelere hiç giriş yapmaz).
+
+### YouTube verilerin yalnızca gerektiği kadar saklanıyor
+- **Bağlantıyı kesince siliniyor.** YouTube bağlantısını kesmek artık SharkyClips'in YouTube'dan
+  okuduğu izlenme, beğeni ve izlenme süresi sayılarını da siliyor (önce soruyor). Kendi girdiğin
+  sayılar kalıyor.
+- **Eski veri kalmıyor.** 30 gün yenilenmeyen sayılar kendiliğinden siliniyor; Google oturumunu
+  kapatır ve 7 gün içinde yeniden bağlanmazsan onlar da siliniyor.
+
+### TikTok
+- **Bağlantıyı kesmek erişimi TikTok tarafında da bitiriyor**, yalnızca bilgisayarında değil.
+- Paylaşım ekranı her açılışta hesabının güncel TikTok ayarlarını yüklüyor; açıklama notları
+  TikTok'un kendi ifadelerini kullanıyor.
+
+### Daha sağlam
+- Windows'ta az önce paylaştığın bir klip, başka bir platformun yüklemesi kaydedilirken kısa
+  bir an "paylaşılmadı" görünebiliyordu. Düzeltildi.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Kick:** VODs (auch kurze `kick.com/video/…`-Links) und Clips importieren wie Twitch und YouTube, der Chat-Replay zählt als Hype-Signal (Emotes inklusive), die Kick-Kategorie hilft beim Erkennen des Spiels. Ein Kanal-Link erklärt, wo du ein VOD findest; Abonnenten-VODs gehen nicht (kein Login).
+- **YouTube-Daten:** Beim Trennen werden auch die von YouTube gelesenen Aufrufe, Likes und Zuschauerbindung gelöscht (mit Nachfrage); Zahlen, die 30 Tage nicht aktualisiert wurden, verschwinden von selbst.
+- **TikTok:** Trennen beendet den Zugriff auch bei TikTok. **Windows:** ein gerade geposteter Clip wirkt nicht mehr kurz „nicht gepostet“.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Kick:** a VOD-ok (a rövid `kick.com/video/…` linkek is) és a klipek úgy importálhatók, mint a Twitch és a YouTube linkek; a chat-visszajátszás hype-jelként számít (az emote-ok is), a Kick-kategória segít felismerni a játékot. Csatornalinknél megmondja, hol találsz VOD-ot; az előfizetői VOD-ok nem tölthetők le (nincs bejelentkezés).
+- **YouTube-adatok:** leválasztáskor a YouTube-ról beolvasott megtekintések, kedvelések és nézettség is törlődnek (előtte rákérdez); a 30 napig nem frissített számok maguktól törlődnek.
+- **TikTok:** a leválasztás a TikTok oldalán is megszünteti a hozzáférést. **Windows:** az épp közzétett klip már nem látszik egy pillanatra „nem közzétettnek”.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Kick:** VOD (и короткие ссылки `kick.com/video/…`) и клипы импортируются как ссылки Twitch и YouTube, повтор чата считается сигналом хайпа (вместе с эмоутами), категория Kick помогает узнать игру. Для ссылки на канал подскажет, где найти VOD; VOD только для подписчиков скачать нельзя (без входа).
+- **Данные YouTube:** при отключении удаляются и полученные от YouTube просмотры, лайки и удержание (сначала спросит); числа, не обновлявшиеся 30 дней, удаляются сами.
+- **TikTok:** отключение закрывает доступ и на стороне TikTok. **Windows:** только что опубликованный клип больше не мелькает как «не опубликован».
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **Kick:** تُستورد البثوث المسجلة (ومنها الروابط القصيرة `kick.com/video/…`) والمقاطع مثل روابط Twitch وYouTube، وتُحسب إعادة الدردشة إشارةً للحماس (مع الرموز التعبيرية)، وتساعد فئة Kick على معرفة اللعبة. رابط القناة يدلّك على مكان البث المسجل؛ وبثوث المشتركين فقط لا تُنزَّل (بلا تسجيل دخول).
+- **بيانات YouTube:** عند قطع الاتصال تُحذف أيضًا المشاهدات والإعجابات ونسب المشاهدة المقروءة من YouTube (بعد السؤال)، والأرقام التي لم تُحدَّث 30 يومًا تُحذف تلقائيًا.
+- **TikTok:** قطع الاتصال يُنهي الوصول لدى TikTok أيضًا. **ويندوز:** المقطع المنشور للتو لم يعد يظهر لحظةً «غير منشور».
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **Kick：** 直播回放（包括 `kick.com/video/…` 短链接）和剪辑可以像 Twitch、YouTube 链接一样导入；聊天回放会作为热度信号（表情也算），Kick 分类帮助识别游戏。粘贴频道链接时会告诉你去哪里找回放；仅限订阅者的回放无法下载（不登录任何网站）。
+- **YouTube 数据：** 断开连接时会一并删除从 YouTube 读取的观看量、点赞数和留存数据（会先询问）；30 天未更新的数据会自动删除。
+- **TikTok：** 断开连接也会在 TikTok 端撤销访问。**Windows：** 刚发布的剪辑不会再短暂显示为“未发布”。
+
+</details>
+
+
 ## [1.2.37] - 2026-11-10
 
 ### Instagram: tokens from a business portfolio work too
