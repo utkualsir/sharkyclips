@@ -63,6 +63,7 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   over on start and renames old Windows shortcuts / the Apps & features entry.
 - The dev PC (RTX 5070 Laptop, 8 GB) is a test machine only: never hardcode it. Whisper and the LLM
   never share the GPU. Browser tests: Playwright with `channel: "msedge"`, headless.
-- README media show only the user's own Delta Force project; `docs/capture.mjs` retakes them (on a
-  copy of the settings folder).
+- README media (screenshots, GIF, social preview) show only the synthetic demo stream from
+  `docs/demo/make_demo.py` (no third-party content); `docs/capture.mjs` retakes them from a server
+  on a FRESH settings folder.
 - Never make the GitHub repo public; the user does that.

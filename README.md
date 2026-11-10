@@ -7,16 +7,19 @@
 
 <h1 align="center">SharkyClips</h1>
 
-<p align="center"><i>Hunt your best moments.</i></p>
+<p align="center"><b>Your stream in, ready-to-post Shorts out. Free, and 100% on your own PC.</b></p>
 
-<p align="center"><b>Free, local, AI-powered Shorts clipper for streamers.</b><br>
-Point it at a stream VOD or a video file. It finds the best moments, writes the titles and the
-YouTube description, and renders ready-to-post 9:16 clips, all on your own computer.<br>
-<sub>Formerly ClipForge: old links redirect, and your settings move over by themselves.</sub></p>
+<p align="center">
+SharkyClips watches your Twitch, YouTube or Kick VOD (or any video file) the way an editor would:
+it hears the hype, reads the chat replay and the game's HUD, cuts the best moments, bleeps the
+swears, writes the titles and posts 9:16 clips to YouTube Shorts, TikTok and Instagram Reels.
+No account, no cloud, no credits, no watermark.<br>
+<sub>Formerly ClipForge: old links redirect, and your settings move over by themselves.</sub>
+</p>
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.37-1F6FE5" alt="Version 1.2.37"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.38-1F6FE5" alt="Version 1.2.38"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -24,11 +27,12 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
 </p>
 
 <p align="center">
-  <a href="#install">Install</a> ·
-  <a href="#features">Features</a> ·
+  <a href="#install"><b>Install</b></a> ·
+  <a href="#highlights">Highlights</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#all-features">All features</a> ·
   <a href="#faq">FAQ</a> ·
-  <a href="#troubleshooting">Troubleshooting</a> ·
-  <a href="docs/how-it-works.md">How it works</a> ·
+  <a href="docs/how-it-works.md">Technical guide</a> ·
   <a href="#türkçe">Türkçe</a>
 </p>
 
@@ -37,14 +41,108 @@ YouTube description, and renders ready-to-post 9:16 clips, all on your own compu
   <img src="docs/screenshots/project-dark.png" alt="SharkyClips project screen: the video with its Hype Map, a live 9:16 preview and the AI-ranked clip candidates">
 </picture>
 
+## Highlights
+
+<table>
+  <tr>
+    <td width="33%" valign="top"><b>🔒 Free &amp; local</b><br>Whisper, the language model, highlight detection and rendering run on your GPU or CPU. MIT-licensed, no subscription, no telemetry. Nothing leaves your PC unless you press Publish.</td>
+    <td width="33%" valign="top"><b>🎮 Game-aware clips</b><br>Loudness, laughter, reaction words, chat explosions and, for Delta Force and League of Legends, the HUD itself: kills, multikills, objectives. A pentakill is never cut in half.</td>
+    <td width="33%" valign="top"><b>🤐 Swears bleeped, checked</b><br>Swears in 7 languages are bleeped or muted, and every rendered clip is listened to again. A clip with an audible swear is held back instead of posted.</td>
+  </tr>
+  <tr>
+    <td valign="top"><b>📤 One Publish, three platforms</b><br>YouTube Shorts, TikTok and Instagram Reels from one button: per-platform captions and limits, planned times, retries, views coming back. TikTok's required post screen is built in.</td>
+    <td valign="top"><b>🌍 7 languages</b><br>Interface, speech recognition, titles and subtitles in English, Türkçe, Deutsch, Magyar, Русский, العربية (right-to-left) and 中文. Titles can be in another language than the one spoken.</td>
+    <td valign="top"><b>🦈 Stays out of your way</b><br>Silent mode pauses while you play or watch fullscreen and gives the game its VRAM back. Easy mode does everything by itself; Pro mode gives you every knob.</td>
+  </tr>
+</table>
+
 ## See it in action
 
 Review a candidate, accept it, render. The clips land in the Clips tab, ready to download.
 
 ![Demo: selecting clip candidates, accepting two of them and rendering them as 9:16 clips](docs/demo.gif)
 
-## Features
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/library-dark.png" alt="Library"><br><sub><b>Library</b>: every stream with live progress</sub></td>
+    <td width="50%"><img src="docs/screenshots/clips-light.png" alt="Rendered clips"><br><sub><b>Clips</b>: rendered 9:16 clips, playable and downloadable</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/bestof-light.png" alt="Best-of video"><br><sub><b>Best-of video</b>: 16:9 compilation with chapters</sub></td>
+    <td><img src="docs/screenshots/settings-dark.png" alt="Settings"><br><sub><b>Settings</b>: language, performance mode, accounts, local AI</sub></td>
+  </tr>
+</table>
 
+More screenshots, in both themes, are in [docs/screenshots](docs/screenshots).
+
+## How it works
+
+```mermaid
+flowchart LR
+    subgraph IN[Input]
+        A1[Twitch / YouTube / Kick link]
+        A2[Video file or OBS folder]
+    end
+    subgraph LOCAL[Your PC: Python backend]
+        B[Ingest<br/>yt-dlp · FFmpeg]
+        C[Transcribe<br/>faster-whisper · mlx-whisper]
+        D[Chat replay<br/>Twitch · YouTube · Kick]
+        E[Signals<br/>loudness · laughter · keywords<br/>speech · game HUD · chat]
+        F[Hype Map<br/>rank · snap to words · shape]
+        G[Local LLM via Ollama<br/>score · titles · descriptions]
+        H[Render 9:16<br/>FFmpeg · captions · bleeps · zoom]
+        I[Bleep check<br/>re-listen every clip]
+    end
+    subgraph OUT[Output]
+        J[MP4 / MOV / GIF<br/>SRT · FCPXML · Premiere XML]
+        K[YouTube · TikTok · Reels<br/>official APIs]
+    end
+    A1 --> B
+    A2 --> B
+    B --> C --> E
+    B --> D --> E
+    E --> F --> G --> H --> I
+    I --> J
+    I --> K
+```
+
+The web UI (React) talks to a local FastAPI server on `127.0.0.1`. A persistent job queue runs
+the heavy steps in lanes (GPU, CPU, I/O, network), and a resource governor decides how fast they
+may run from what you're doing (game in front, fullscreen video, away from the PC). Whisper and
+the language model never share the GPU. Every step caches its result, so a closed app resumes where
+it stopped. Details: **[docs/how-it-works.md](docs/how-it-works.md)**.
+
+## Tech stack
+
+| Layer | Built with |
+|---|---|
+| UI | React 18, TypeScript, Vite; 7 locales with a completeness check in CI; dark and light themes; axe-checked accessibility |
+| Server | Python 3.11-3.13, FastAPI + Uvicorn, a persistent multi-lane job queue, a resource governor (psutil, NVML) |
+| Speech | faster-whisper (CUDA / CPU), mlx-whisper (Apple Silicon), a CTC aligner for word timing, sherpa-onnx (laughter, voices) |
+| Analysis | NumPy / SciPy signal scoring, librosa (music mode), OpenCV (facecam), RapidOCR (game HUD) |
+| Language model | Ollama with Qwen 3.5 (4B / 9B, picked from your VRAM), structured JSON output |
+| Video | FFmpeg filter graphs, NVENC / VideoToolbox / QSV / AMF hardware encoding, yt-dlp |
+| Publishing | YouTube Data + Analytics APIs (OAuth + PKCE), TikTok Content Posting API, Instagram Graph API; tokens encrypted with DPAPI / Keychain |
+| Quality | 600+ pytest tests on Windows, Ubuntu and macOS; ruff; a Playwright layout check at 9 screen sizes (phone to 1920 px) in 3 languages and both themes; a pixel check that the live preview matches the render |
+| Install | One-click PowerShell (Windows) and shell (macOS) installers, in-app updates via git |
+
+
+## All features
+
+<details>
+<summary><b>Everything SharkyClips does</b> (click to open)</summary>
+
+- **Easy mode (the default).** Drop a video or paste a link: SharkyClips picks the best clips,
+  shapes them (smart cuts, length and pacing for Shorts, a hook check with a banner), renders them
+  and shows them as a grid with one Publish button each. Autopilot can even post them on a schedule
+  and send you a morning summary. Pro mode keeps every setting below.
+- **Swear check after every render.** Each rendered clip is listened to again; a swear that is still
+  audible is bleeped wider and re-rendered, and if it still can't be fixed the clip is held back from
+  automatic uploads until you listen to it.
+- **One Publish for YouTube, TikTok and Instagram Reels.** Per-platform captions with the limits
+  checked (and one-tap fixes), planned times, retries with backoff, crash-safe resumable posts, and
+  views flowing back from every platform. TikTok's required post screen (privacy, interactions,
+  content disclosure) is built in.
 - **Finds the moments worth posting.** Volume spikes, laughter and shouting, reaction words
   ("NO WAY", "allah allah", "KEKW"), fast talk, chat explosions from the chat replay and, in study
   mode, self-contained explanations. All of it goes into one **Hype Map** with ranked clip candidates.
@@ -100,29 +198,14 @@ Review a candidate, accept it, render. The clips land in the Clips tab, ready to
   down when it's done.
 - **Learns your channel.** Add the real YouTube views of published clips. After 10, SharkyClips
   calibrates the score to what works on *your* channel.
-- **Works with what you have.** Twitch, YouTube, Kick and most other sites (via yt-dlp), or any local
-  video file. Streams of 3-6 hours are processed in resumable chunks.
+- **Works with what you have.** Twitch, YouTube and Kick VODs and clips (with their chat replay), most
+  other sites (via yt-dlp), or any local video file. Streams of 3-6 hours are processed in resumable chunks.
 - **A clean web UI in 7 languages**, dark and light, usable from your phone on the same Wi-Fi.
 - **One-click install, one-click update.** A desktop shortcut opens it, and Settings → Updates
   installs new versions. A short setup on the first start (language, content types, performance
   mode + a hardware check), and a "What's new" note after every update.
 
-<table>
-  <tr>
-    <td width="50%"><img src="docs/screenshots/library-dark.png" alt="Library"><br><sub><b>Library</b>: every stream with live progress</sub></td>
-    <td width="50%"><img src="docs/screenshots/clips-light.png" alt="Rendered clips"><br><sub><b>Clips</b>: rendered 9:16 clips, playable and downloadable</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/bestof-light.png" alt="Best-of video"><br><sub><b>Best-of video</b>: 16:9 compilation with chapters</sub></td>
-    <td><img src="docs/screenshots/queue-dark.png" alt="Render queue"><br><sub><b>Queue</b>: batch renders that survive restarts</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/settings-light.png" alt="Settings"><br><sub><b>Settings</b>: language, theme, local AI model</sub></td>
-    <td><img src="docs/screenshots/project-light.png" alt="Project in light theme"><br><sub><b>Light theme</b>: every screen comes in dark and light</sub></td>
-  </tr>
-</table>
-
-More screenshots, in both themes, are in [docs/screenshots](docs/screenshots).
+</details>
 
 ## Privacy
 
@@ -318,12 +401,16 @@ them. Nothing is installed before you confirm the list.
 
 ## Roadmap
 
-- One-click installer for Linux
-- Signed Windows installer (.exe) and macOS app (.dmg)
-- Faster transcription on AMD and Intel GPUs
-- More languages for the interface and title examples
-- Smarter facecam tracking when the camera moves
-- Batch import of a whole channel's VODs
+- [x] Kick VOD + clip import with chat replay (1.2.38)
+- [x] One Publish for YouTube, TikTok and Instagram Reels (1.2.36)
+- [x] Easy mode with Autopilot (1.2.34)
+- [ ] Google verification + YouTube API audit (answers ready in [docs/audits](docs/audits/README.md))
+- [ ] TikTok app review, so TikTok posts can be public right away
+- [ ] One-click installer for Linux
+- [ ] Signed Windows installer (.exe) and macOS app (.dmg)
+- [ ] Faster transcription on AMD and Intel GPUs
+- [ ] Smarter facecam tracking when the camera moves
+- [ ] Batch import of a whole channel's VODs
 
 Ideas and votes are welcome in [Issues](https://github.com/utkualsir/sharkyclips/issues).
 

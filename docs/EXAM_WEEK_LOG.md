@@ -9,6 +9,70 @@ Ground rules: headless browser only, no visible windows, no heavy GPU jobs (Whis
 on clips of 30 s to 2 min), Silent mode, no questions. One commit per task, one version bump at the
 end.
 
+### Summary (read this first)
+
+Released as **1.2.38** (tag `v1.2.38`). No visible windows, browser checks headless, Whisper only
+on the CPU on clips of 30 s to 6 min, test runs at idle priority while you played.
+
+| # | Task | Result |
+|---|---|---|
+| 1 | Portfolio polish | README rebuilt (pitch, highlights, architecture diagram, tech stack, roadmap), GitHub description + homepage + 20 topics, synthetic demo generator + new capture script. **Fresh screenshots / GIF / social preview still to take**: the demo was paused by Silent mode while you played (see below) |
+| 2 | Stability | Both known test-order failures fixed at the root, a third one (a Windows app bug) found by running the suite in reverse; 10 dead functions removed; v1.2.33 tag left alone on purpose |
+| 3 | Audit prep | `docs/audits/`: Google OAuth + YouTube audit answers, TikTok review + Content Posting audit, demo-video shot lists, Turkish checklist. App: YouTube data retention (30 days / Disconnect), TikTok revoke, TikTok wording; privacy policy updated and published |
+| 4 | Kick | VOD + clip import (all link shapes, fallback when yt-dlp breaks), Kick chat replay, game category; tested on a real 30 s clip and a 2 min VOD |
+
+**Your decisions needed:**
+
+1. **TikTok review needs a shared SharkyClips TikTok app + a tiny token relay** (TikTok rejects
+   personal apps and forbids shipping the secret in open source). See
+   `docs/audits/tiktok-app-review.md`, section 0.
+2. Submit Google / YouTube (checklist in `docs/audits/README.md`; verify the site in Search
+   Console first).
+3. Upload `docs/social-preview.png` in GitHub settings once it exists (no API for it).
+
+### Task 1: portfolio polish
+
+**Done:**
+
+- **README** rebuilt for the public repo: a hero with a one-line pitch, six highlight cards (free &
+  local, game-aware clips, checked bleeps, one Publish for three platforms, 7 languages, stays out
+  of your way), a **Mermaid architecture diagram** (input → ingest → transcribe / chat → signals →
+  Hype Map → local LLM → render → bleep check → files / platforms) with a short runtime paragraph
+  (queue lanes, governor, caching), a **tech stack** table (every claim checked against the code:
+  encoders, layout-check sizes, test count), and a roadmap with done / next items. The long
+  feature list moved into a collapsible "All features" section, with Easy mode, the bleep check,
+  multi-platform Publish and Kick added. Install, FAQ, troubleshooting and the Turkish part stay.
+- **GitHub:** new description, homepage (the site), 20 topics (stream-highlights, video-clipper,
+  shorts, tiktok, youtube-shorts, instagram-reels, whisper, ffmpeg, local-ai, ollama, twitch,
+  kick, react, fastapi, python, typescript, content-creation, video-editing, privacy-first,
+  desktop-app).
+- **Synthetic demo project** (`docs/demo/make_demo.py`): a 6-minute "stream" of a made-up arena
+  shooter. ffmpeg draws the game (gradients, grid, moving targets, HUD with round / elims /
+  health, flashes on kills), the OS speech synthesizer reads a streamer script (7 rounds, one big
+  moment each, one swear for the bleep demo), the facecam is the SharkyClips logo, and the chat log
+  (377 messages, 14 made-up viewers, spikes after each moment) is generated. Nothing third-party.
+  Checked: all 7 moments should become candidates (rounds are 52 s, above gaming mode's 45 s
+  minimum gap; a first 43 s version merged neighbours into 3 candidates).
+- `docs/capture.mjs` rewritten for today's UI (Easy home / project / Publish dialog, Pro library /
+  project / clips / settings, both themes), an Easy-mode demo GIF, and the **social preview**
+  (`docs/demo/social-preview.html` → `docs/social-preview.png`, 1280×640).
+- CLAUDE.md: README media now come from the synthetic demo only.
+
+**Not done yet: fresh screenshots, GIF and social preview.** The demo project was imported into a
+throwaway SharkyClips (fresh settings folder, CPU Whisper, Silent mode), but its own governor
+paused all work for over 1.5 hours because League of Legends (and at times a fullscreen video)
+was running on this PC. Decision: no "resume anyway" and no CLI run around the governor (RAM was
+at 14 of 16 GB; a Whisper + render run would have risked stutter), because exam mode says never
+disturb. The README keeps pointing at the current screenshots until then, so no link is broken.
+
+**To finish (≈10 minutes of PC time, when idle):** start the demo server again
+(`SHARKYCLIPS_HOME=<fresh dir> python backend/cli.py serve --no-browser --port 8131`), import
+`neon-drift-demo.mp4` in Easy mode plus the chat log, wait for the renders, then from `frontend/`
+run `node ../docs/capture.mjs http://127.0.0.1:8131 <project-id> ../docs`, switch the README
+image names to `easy-project-*`, `publish-*`, `easy-home-*`, and upload `docs/social-preview.png`
+in GitHub → Settings → General → Social preview (GitHub has no API for that). Docs-only change,
+no version bump needed.
+
 ### Task 2: stability sprint
 
 **Test-order failures, both fixed at the root:**

@@ -4,10 +4,25 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from sharkyclips import abtest, calibration, youtube, ytdata
+import pytest
+
+from sharkyclips import config, abtest, calibration, youtube, ytdata
 from sharkyclips.project import project_for_id, read_json, write_json_atomic
 
 NOW = datetime(2026, 11, 10, 12, 0, tzinfo=timezone.utc)
+
+
+@pytest.fixture(autouse=True)
+def _no_leftover_projects():
+    """Other test files expect an empty shared workspace (test_web.test_projects_empty)."""
+    import shutil
+
+    yield
+    for pid in ['ytdata-test']:
+        shutil.rmtree(project_for_id(pid).dir, ignore_errors=True)
+    for p in config.workspace_dir().glob("*"):
+        if p.is_dir() and (p / "source.mp4").is_file() and p.name.startswith(("ranked-grind", "kick", "demo", "ace")):
+            shutil.rmtree(p, ignore_errors=True)
 
 
 def _iso(days_ago: float) -> str:

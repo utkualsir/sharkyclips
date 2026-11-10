@@ -1,22 +1,24 @@
-// Takes the README screenshots (dark + light) and the demo GIF from a running SharkyClips.
+// Takes the README screenshots (dark + light), the demo GIF and the social preview image from a
+// running SharkyClips with the synthetic demo project (docs/demo/make_demo.py). No real user data.
 //
-//   1. Start SharkyClips on a COPY of your workspace (the demo accepts and renders clips):
-//        SHARKYCLIPS_HOME=<copy of ~/.sharkyclips with workspace_dir set> python backend/cli.py serve --no-browser --port 8130
-//      (leave dev_in_progress.json out of the copy, or the "under construction" banner is in every shot)
-//   2. npm i playwright@1.56.0 (in any folder), then from there:
-//        node <repo>/docs/capture.mjs http://localhost:8130 <project-id> <repo>/docs
+//   1. python docs/demo/make_demo.py <dir>      -> a 6-minute synthetic stream + its chat log
+//   2. Start SharkyClips on a FRESH settings folder (no accounts, nothing personal in the shots):
+//        SHARKYCLIPS_HOME=<empty dir> python backend/cli.py serve --no-browser --port 8131
+//      Import the video in Easy mode, import the chat log (Project -> Chat) before the highlights
+//      run, and wait until Easy mode has rendered the clips.
+//   3. From frontend/ (it has Playwright):  node ../docs/capture.mjs http://127.0.0.1:8131 <project-id> ../docs
 //
-// Uses Microsoft Edge ("msedge" channel): Playwright's own Chromium can't play H.264 video.
+// Uses Microsoft Edge ("msedge" channel, headless): Playwright's own Chromium can't play H.264.
 // Needs ffmpeg on PATH for the GIF.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readdirSync, renameSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 
-// Playwright is loaded from the folder you run this in (it isn't a SharkyClips dependency).
 const { chromium } = createRequire(join(process.cwd(), "index.js"))("playwright");
 
-const [base = "http://localhost:8130", pid, outDir = "docs"] = process.argv.slice(2);
+const [base = "http://127.0.0.1:8131", pid, outDir = "docs"] = process.argv.slice(2);
 if (!pid) throw new Error("usage: node capture.mjs <base-url> <project-id> <out-dir>");
 const shots = join(outDir, "screenshots");
 mkdirSync(shots, { recursive: true });
@@ -44,103 +46,89 @@ async function settle(page, ms = 1800) {
   await sleep(ms);
 }
 
-// ------------------------------------------------------------- screenshots
+const mode = (m) => api("PUT", "/api/easy/settings", { mode: m, tour_done: true });
 const app = await api("GET", "/api/app");
 await api("POST", "/api/app/whats-new-seen", { version: app.version }); // no "What's new" popup
-const project = await api("GET", `/api/projects/${pid}`);
-const firstThree = project.highlights.candidates.slice(0, 3).map((c) => c.id);
-await api("PUT", `/api/projects/${pid}/review`, { accepted: firstThree });
 
+// ------------------------------------------------------------- Easy mode (the default UI)
+await mode("easy");
 for (const theme of ["dark", "light"]) {
   const ctx = await context(theme);
   const page = await ctx.newPage();
   const shot = (name) => page.screenshot({ path: join(shots, `${name}-${theme}.png`) });
-
   await page.goto(`${base}/#/`);
   await settle(page);
-  await shot("library");
-
+  await shot("easy-home");
   await page.goto(`${base}/#/p/${pid}`);
-  await settle(page, 3000);
-  await shot("project");
-
-  await page.getByRole("tab", { name: /Clips/ }).click();
+  await settle(page, 3500);
+  await shot("easy-project");
+  await page.getByRole("button", { name: /^Publish/ }).first().click();
   await settle(page, 2500);
-  await shot("clips");
-
-  await page.goto(`${base}/#/p/${pid}/bestof`);
-  await settle(page, 2500);
-  await shot("bestof");
-
-  await page.goto(`${base}/#/settings`);
-  await settle(page);
-  await shot("settings");
-  const updates = page.locator("#updates");
-  await updates.scrollIntoViewIfNeeded();
-  await updates.getByRole("button").click();
-  await page.waitForFunction(() => !/Checking/.test(document.querySelector("#updates")?.textContent ?? ""), null, {
-    timeout: 60000,
-  });
-  await sleep(400);
-  await updates.screenshot({ path: join(shots, `updates-${theme}.png`) });
+  await shot("publish");
   await ctx.close();
 }
 
-// ------------------------------------------------------------- demo GIF: review -> accept -> render
-await api("PUT", `/api/projects/${pid}/review`, { accepted: [] });
+// ------------------------------------------------------------- Pro mode
+await mode("pro");
+for (const theme of ["dark", "light"]) {
+  const ctx = await context(theme);
+  const page = await ctx.newPage();
+  const shot = (name) => page.screenshot({ path: join(shots, `${name}-${theme}.png`) });
+  await page.goto(`${base}/#/`);
+  await settle(page);
+  await shot("library");
+  await page.goto(`${base}/#/p/${pid}`);
+  await settle(page, 3500);
+  await shot("project");
+  await page.getByRole("tab", { name: /Clips/ }).click();
+  await settle(page, 2500);
+  await shot("clips");
+  await page.goto(`${base}/#/settings`);
+  await settle(page);
+  await shot("settings");
+  await ctx.close();
+}
+await mode("easy");
+
+// ------------------------------------------------------------- demo GIF: Easy mode, home -> clips -> publish
 const videoDir = join(outDir, ".video");
 rmSync(videoDir, { recursive: true, force: true });
-const ctx = await context("dark", { viewport: { width: 1280, height: 760 }, recordVideo: { dir: videoDir, size: { width: 1280, height: 760 } } });
+const W = 1280, H = 760;
+const ctx = await context("dark", { viewport: { width: W, height: H }, recordVideo: { dir: videoDir, size: { width: W, height: H } } });
 const page = await ctx.newPage();
 const t0 = Date.now();
-const at = () => (Date.now() - t0) / 1000;
-await page.goto(`${base}/#/p/${pid}`);
-await settle(page, 1500);
-const tStart = at();
-const cards = page.locator(".cand");
-for (const i of [1, 3]) {
-  await cards.nth(i).click(); // review: the player jumps to the clip, the 9:16 preview updates
-  await sleep(1800);
-  await cards.nth(i).locator("[role=switch]").click(); // accept
-  await sleep(900);
-}
-await page.getByRole("button", { name: /Render 2 clips/ }).click();
+await page.goto(`${base}/#/`);
+await settle(page, 1200);
+const tStart = (Date.now() - t0) / 1000;
 await sleep(1500);
-const tRender = at();
-await page.getByRole("tab", { name: /Clips/, selected: true }).waitFor({ timeout: 180000 }); // opens when done
-const tDone = at();
-await sleep(1200);
-await page.locator(".clip-card video, video").last().scrollIntoViewIfNeeded().catch(() => {});
+await page.goto(`${base}/#/p/${pid}`); // open the stream: its clips, already rendered
+await settle(page, 3500);
+const card = page.locator("video").first();
+await card.scrollIntoViewIfNeeded().catch(() => {});
+await card.hover().catch(() => {});
 await sleep(2500);
+await page.getByRole("button", { name: /^Publish/ }).first().click();
+await sleep(3500);
+await page.mouse.wheel(0, 400);
+await sleep(2000);
 await ctx.close();
-await api("PUT", `/api/projects/${pid}/review`, { accepted: firstThree });
-
 const webm = readdirSync(videoDir).find((f) => f.endsWith(".webm"));
 renameSync(join(videoDir, webm), join(videoDir, "demo.webm"));
-// Normal speed for the clicks, 5x while the clips render, then the result.
-const speedup = 5;
 const filter = [
-  `[0:v]trim=${tStart.toFixed(2)}:${tRender.toFixed(2)},setpts=PTS-STARTPTS[a]`,
-  `[0:v]trim=${tRender.toFixed(2)}:${tDone.toFixed(2)},setpts=(PTS-STARTPTS)/${speedup}[b]`,
-  `[0:v]trim=start=${tDone.toFixed(2)},setpts=PTS-STARTPTS[c]`,
-  "[a][b][c]concat=n=3:v=1[v]",
-  "[v]fps=10,scale=900:-1:flags=lanczos,split[x][y]",
+  `[0:v]trim=start=${tStart.toFixed(2)},setpts=PTS-STARTPTS,fps=10,scale=960:-1:flags=lanczos,split[x][y]`,
   "[x]palettegen=max_colors=128:stats_mode=diff[p]",
   "[y][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
 ].join(";");
 execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-i", join(videoDir, "demo.webm"), "-filter_complex", filter, join(outDir, "demo.gif")]);
 rmSync(videoDir, { recursive: true, force: true });
 
-// ------------------------------------------------------------- queue (while the re-render runs)
-await api("POST", "/api/queue/render", { project_ids: [pid], rerender: true });
-for (const theme of ["dark", "light"]) {
-  const c = await context(theme);
-  const p = await c.newPage();
-  await p.goto(`${base}/#/queue`);
-  await settle(p, 2500);
-  await p.screenshot({ path: join(shots, `queue-${theme}.png`) });
-  await c.close();
-}
-await api("POST", "/api/queue/cancel", { project_id: pid });
+// ------------------------------------------------------------- social preview (1280x640)
+const sp = await browser.newContext({ viewport: { width: 1280, height: 640 } });
+const spPage = await sp.newPage();
+await spPage.goto(pathToFileURL(resolve(outDir, "demo", "social-preview.html")).href);
+await settle(spPage, 800);
+await spPage.screenshot({ path: join(outDir, "social-preview.png") });
+await sp.close();
+
 await browser.close();
 console.log("done ->", outDir);

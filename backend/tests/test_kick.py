@@ -8,13 +8,26 @@ from pathlib import Path
 
 import pytest
 
-from sharkyclips import chat, ingest, kick
+from sharkyclips import config, chat, ingest, kick
 from sharkyclips.errors import SharkyClipsError
 from sharkyclips.project import project_for_id
 
 VOD = "01a1c1f6-5dd8-7684-ba8e-ea1737b63d0a"
 CLIP = "clip_01M6PNKW26FJF62TKZ6SA51BC5"
 START = datetime(2026, 11, 9, 20, 18, 31, tzinfo=timezone.utc)
+
+
+@pytest.fixture(autouse=True)
+def _no_leftover_projects():
+    """Other test files expect an empty shared workspace (test_web.test_projects_empty)."""
+    import shutil
+
+    yield
+    for pid in ['kick-chat-test', 'kick-game-test']:
+        shutil.rmtree(project_for_id(pid).dir, ignore_errors=True)
+    for p in config.workspace_dir().glob("*"):
+        if p.is_dir() and (p / "source.mp4").is_file() and p.name.startswith(("ranked-grind", "kick", "demo", "ace")):
+            shutil.rmtree(p, ignore_errors=True)
 
 
 def _iso(t: datetime) -> str:
