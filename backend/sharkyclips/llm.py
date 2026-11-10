@@ -154,11 +154,6 @@ def metadata_boost() -> bool:
     return governor.full_speed()
 
 
-def metadata_model() -> str | None:
-    """The model for a metadata run: the big one when boosted (None = the normal choice)."""
-    return choose_model(ignore_fast=True) if metadata_boost() else None
-
-
 def installed_models() -> list[str]:
     try:
         r = _http().get(f"{base_url()}/api/tags", timeout=10)

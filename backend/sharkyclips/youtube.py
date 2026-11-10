@@ -438,10 +438,6 @@ def mark_unlocked(video_id: str) -> None:
         (folder() / "locked.json").unlink(missing_ok=True)
 
 
-def clear_locked() -> None:
-    (folder() / "locked.json").unlink(missing_ok=True)
-
-
 def auth_url(redirect_uri: str) -> str:
     client = active_client()
     if not client:

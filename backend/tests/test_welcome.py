@@ -72,7 +72,9 @@ def test_dev_flag_fresh_and_stale():
     assert welcome.app_state()["dev"] is None
 
 
-def test_onboarding_then_whats_new():
+def test_onboarding_then_whats_new(monkeypatch):
+    # a brand-new user: no projects yet (other test files leave projects in the shared workspace)
+    monkeypatch.setattr(welcome, "has_projects", lambda: False)
     cfg = config.load()
     try:
         config.update(onboarding_done=False, seen_version=None)
@@ -88,6 +90,18 @@ def test_onboarding_then_whats_new():
         assert welcome.app_state()["whats_new"] == __version__
         welcome.mark_seen()
         assert welcome.app_state()["whats_new"] is None
+    finally:
+        config.save(cfg)
+
+
+def test_existing_user_skips_onboarding(monkeypatch):
+    monkeypatch.setattr(welcome, "has_projects", lambda: True)
+    cfg = config.load()
+    try:
+        config.update(onboarding_done=False, seen_version="1.0.0")
+        st = welcome.app_state()
+        assert st["onboarding"] is False and st["whats_new"] == __version__
+        assert config.load()["onboarding_done"] is True
     finally:
         config.save(cfg)
 

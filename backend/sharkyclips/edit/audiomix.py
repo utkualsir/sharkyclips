@@ -120,19 +120,6 @@ def _bleep_tone(n: int, sound: str, custom: np.ndarray | None) -> np.ndarray:
     return tone / rms
 
 
-def _voice_rms(y: np.ndarray, ia: int, ib: int) -> float:
-    """How loud the speaker is: the swear itself, or the speech around it when that's louder."""
-    seg = y[ia:ib]
-    own = float(np.sqrt(np.mean(seg ** 2) + 1e-12))
-    ctx = y[max(0, ia - _n(0.6)):min(len(y), ib + _n(0.6))]
-    if len(ctx) > _n(0.05):
-        hop = _n(0.05)
-        k = len(ctx) // hop
-        fr = np.sqrt(np.mean(ctx[:k * hop].reshape(k, hop, -1) ** 2, axis=(1, 2)))
-        own = max(own, float(np.percentile(fr, 75)) * 0.9)
-    return own
-
-
 def clip_voice_rms(y: np.ndarray) -> float:
     """How loud the speech of the whole clip is (the louder frames), for one bleep level."""
     hop = _n(0.05)

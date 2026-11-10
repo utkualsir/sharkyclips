@@ -53,3 +53,22 @@ def _fresh_length_target():
     lengthfit.clear_cache()
     yield
     lengthfit.clear_cache()
+
+
+@pytest.fixture(autouse=True)
+def _no_leaked_pause():
+    """A test that ticks a real Governor reads this PC's real state: while someone plays a game or
+    watches a fullscreen video it decides to pause, and procs.suspend_all() then suspends every
+    ffmpeg the NEXT tests start (an export hung forever). Never let a pause or an installed
+    governor outlive its test."""
+    from sharkyclips import governor, procs
+
+    gov = governor._gov
+    yield
+    if procs._paused or procs._suspended:
+        procs.resume_all()
+    if governor._gov is not gov:
+        if governor._gov is not None:
+            governor._gov._go.set()
+        governor._gov = gov
+    governor.set_current_job(None)

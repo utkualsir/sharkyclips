@@ -1,6 +1,55 @@
 # Exam week log
 
-## Summary (read this first)
+Autonomous work sessions while the user studies. Newest first. Every decision and open question is
+written down here so it can be reviewed later.
+
+## Session 2: 2026-11-10 (base 1.2.37)
+
+Ground rules: headless browser only, no visible windows, no heavy GPU jobs (Whisper ran on the CPU
+on clips of 30 s to 2 min), Silent mode, no questions. One commit per task, one version bump at the
+end.
+
+### Task 2: stability sprint
+
+**Test-order failures, both fixed at the root:**
+
+1. `test_easy.py` then `test_welcome.py`: `test_onboarding_then_whats_new` simulates a brand-new
+   user, but other test files leave projects in the shared test workspace, and a user with
+   projects (correctly) skips onboarding. The test now says "no projects" explicitly; a new test
+   covers the existing-user path (onboarding skipped, "What's new" shown).
+2. `test_governor*.py` + `test_publishing.py` (an export hung): a test that ticks a real
+   `Governor` reads this PC's real state. If the PC looked busy (a game, a fullscreen video), the
+   governor decided to pause and `procs.suspend_all()` set a module-wide "paused" flag that was
+   never cleared, so every ffmpeg a *later* test started was suspended at birth. Two tests already
+   undid this by hand; `test_idle_governor_samples_cheaply_and_wakes_for_jobs` didn't. That's why
+   it was rare and machine-dependent. Now an autouse fixture in `conftest.py` resumes any leaked
+   pause and restores the installed governor after every test, so no test can leak it again.
+3. Found by running the whole suite in **reverse file order**: `test_multipost` partial-failure
+   retry read TikTok as "idle" right after it was published. Cause in the app (Windows only):
+   `platforms.records()` and `multipost._store()` answered "no data" when they opened the file
+   during another thread's atomic replace (WinError 5/32). In the UI that briefly showed a posted
+   clip as unposted; for `save_clip_store` (read-modify-write) it could have wiped a clip's
+   drafts. New `project.read_json_shared()` waits that moment out; both readers use it.
+
+Both file orders now pass (613 tests, ~4.5 min each). There is no pytest-randomly in the venv, so
+"reverse order" was done by passing the files in reverse; worth repeating after big test changes.
+
+**v1.2.33 tag: left as it is (decision).** The tag points at `eb54d37`, one commit before the
+changelog fix `eb33d5c` (the Chinese summary was under the 100-character test minimum), so CI on
+the tag is red. Moving it would need a force-push of the tag, and the in-app updater runs
+`git fetch --tags`: on every install that already has the old v1.2.33, a moved tag makes that
+fetch fail ("would clobber existing tag"), which would stop updates for those users. A red CI
+run on an old tag hurts no one; broken updates would. (The 1.2.35 / 1.2.36 runs that failed after
+4-7 s were GitHub not starting jobs while the repo was private; nothing to fix.)
+
+**Dead code removed** (vulture, then every name checked with `git grep` across backend, tests,
+frontend scripts and CI; route handlers and test-only helpers kept): `audiomix._voice_rms`,
+`swear_eval.falses` / `baseline_metrics`, `facecam.detect_facecam`, `llm.metadata_model`,
+`publishing.split_key`, `taste.vote_of`, `style.socials_for_short`, `JobManager.tombstones`,
+`youtube.clear_locked`.
+
+## Session 1: 2026-10-27 (1.2.5 -> 1.2.6)
+### Summary (read this first)
 
 All 7 tasks are done, each in its own commit, released as **1.2.6** (tag `v1.2.6`), CI green.
 Nothing was published: the repo stays private and the GitHub Pages workflow is manual-only.
@@ -32,7 +81,7 @@ is written down here so it can be reviewed later. Nothing was published; the rep
 Ground rules followed: headless browser only, no Whisper/LLM/render runs on real videos, no GPU
 stress, one commit per task, one version bump at the end.
 
-## Task 1: public release readiness
+### Task 1: public release readiness
 
 **Sweep** (`git grep` over everything except `frontend/dist` and the lockfile, plus the full git
 history for keys/tokens):
@@ -68,7 +117,7 @@ history for keys/tokens):
 - The UI still stores the theme / language in `localStorage` keys `cf-theme` / `cf-lang` (old
   ClipForge prefix). Renaming them would reset every user's choice, so they stay.
 
-## Task 2: Google verification prep
+### Task 2: Google verification prep
 
 - `docs/site/`: static project site in the app's look (navy/gold, Instrument Serif + Geist, dark
   and light from the OS setting): `index.html` (what the app does + a table of exactly what it
@@ -106,7 +155,7 @@ history for keys/tokens):
 - **Stored statistics after Disconnect** stay in the project files. Google's policies want them
   deleted on revocation; suggested follow-up in the verification doc.
 
-## Task 3: LAN access PIN
+### Task 3: LAN access PIN
 
 - `backend/sharkyclips/lanauth.py`: PIN or password (digits only = PIN, 4-128 chars), stored as a
   salted **scrypt** hash in `~/.sharkyclips/lan_auth.json` (separate from `config.json`, so the
@@ -129,7 +178,7 @@ history for keys/tokens):
 after the update. No HTTPS (would need certificates); SECURITY.md says to use LAN mode only on
 trusted networks.
 
-## Task 4: code health
+### Task 4: code health
 
 **Coverage** (line coverage, measured locally with pytest-cov; total 49% → 52%):
 
@@ -163,7 +212,7 @@ helpers and FastAPI handlers that return files; not worth the churn.
 **Decision:** pytest-cov and vulture were installed into the local venv only, not added to
 `requirements-dev.txt` (CI doesn't need them).
 
-## Task 5: accessibility audit
+### Task 5: accessibility audit
 
 **How:** a throwaway SharkyClips with a tiny synthetic project (20 s test pattern, made with
 ffmpeg `ultrafast`), headless Edge, [axe-core](https://github.com/dequelabs/axe-core) 4.10 with
@@ -193,7 +242,7 @@ Fixed:
 
 Not automated: a real screen reader run (NVDA / VoiceOver). Worth doing once by hand.
 
-## Task 6: performance
+### Task 6: performance
 
 Measured headless on a throwaway settings folder (fake `APPDATA`, so the Ollama start-up
 shortcut logic never touched the real Startup folder), old code vs new, warm caches, 2 runs each:
@@ -221,7 +270,7 @@ Looked at, left alone: the remaining ~1.3 s before the server answers is the sup
 a second Python (needed for in-place updates) plus FastAPI's own import (~0.2 s). The idle server
 was already cheap (the governor does light ticks without GPU reads when nothing runs).
 
-## Task 7: macOS readiness
+### Task 7: macOS readiness
 
 Static review of every macOS path: `install.sh`, `installer/macos/*`, and the Python code behind
 `platform.system() == "Darwin"` / `IS_MAC` (procs: background priority via `setpriority`,
@@ -265,7 +314,7 @@ first green macOS run, remove that line** so it blocks merges like the others.
 - macOS has no fullscreen / video-playing detection in the governor (Windows only); Silent mode
   pauses on Mac only for listed games in front and when you're away/back.
 
-## Release
+### Release
 
 - 1.2.6 committed, tagged `v1.2.6`, pushed. CI on the release commit and the tag: all green
   (Backend Windows + Ubuntu, Frontend, Installer scripts; macOS skipped while private).

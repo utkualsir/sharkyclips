@@ -80,10 +80,6 @@ def truth(labels: dict, unsure_as: str = "yes") -> list[dict]:
     return sorted(out, key=lambda r: float(r["start"]))
 
 
-def falses(labels: dict) -> list[dict]:
-    return [r for r in (labels.get("items") or {}).values() if r.get("label") == "no"]
-
-
 def _covers(r: tuple[float, float], s: dict, slack: float = 0.05) -> bool:
     mid = (float(s["start"]) + float(s["end"])) / 2
     return r[0] - slack <= mid <= r[1] + slack
@@ -149,15 +145,3 @@ def fixture_metrics(fx: dict, strictness: str = "strict", learned: dict | None =
     pre, post = BLEEP_PAD[strictness]
     ranges = [(it["start"] - pre, it["end"] + post) for it in items if swears.bleeped(it, strictness)]
     return metrics(truth({"items": {str(i): r for i, r in enumerate(fx["labels"])}}), merge(ranges, BLEEP_MERGE_GAP))
-
-
-def baseline_metrics(fx: dict) -> dict:
-    """The 1.2.20 way: the main transcript only, list + fuzzy matching, 30 ms padding."""
-    from . import swears
-
-    lang = fx.get("language")
-    ws = [w for w in fx["base"]]
-    old = swears.detect(ws, lang, learned={})
-    ranges = [(it["start"] - 0.03, it["end"] + 0.03) for it in old
-              if it["status"] == "sure" or (it["score"] >= swears.BLEEP_MAYBE_AT and it["why"] in ("list", "masked", "phonetic", "fuzzy"))]
-    return metrics(truth({"items": {str(i): r for i, r in enumerate(fx["labels"])}}), ranges)

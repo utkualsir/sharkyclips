@@ -414,16 +414,6 @@ def analyze(path: Path, duration: float, count: int = SAMPLES, frame_out: Path |
     return res
 
 
-def detect_facecam(path: Path, duration: float) -> Facecam | None:
-    res = analyze(path, duration)
-    if not res["candidates"]:
-        return None
-    best = res["candidates"][0]
-    if best["confidence"] < 0.2:
-        return None
-    return to_facecam(best)
-
-
 def verify_box(path: Path, duration: float, box: dict, count: int = 10) -> float:
     """Share of sampled frames with a live face inside a remembered box (0..1)."""
     frames, _ = _sample_frames(path, duration, count)

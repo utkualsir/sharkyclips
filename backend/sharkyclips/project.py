@@ -62,6 +62,27 @@ def read_json(path: Path) -> Any:
         return json.load(f)
 
 
+def read_json_shared(path: Path, default: Any = None, seconds: float = 2.0) -> Any:
+    """read_json for files other threads rewrite with write_json_atomic: on Windows, opening a
+    file fails for a moment while it is being replaced (WinError 5 / 32). Waits that out instead
+    of answering "no data" (which made a published post look unposted, and a read-modify-write
+    lose everything). Missing or unreadable JSON -> `default`."""
+    import time
+
+    end = time.monotonic() + seconds
+    while True:
+        try:
+            return read_json(path)
+        except FileNotFoundError:
+            return default
+        except PermissionError:
+            if time.monotonic() >= end:
+                return default
+            time.sleep(0.02)
+        except (OSError, ValueError):
+            return default
+
+
 _TR_MAP = str.maketrans({"ı": "i", "İ": "I", "ş": "s", "Ş": "S", "ğ": "g", "Ğ": "G",
                          "ß": "ss", "ø": "o", "Ø": "O", "æ": "ae", "Æ": "AE"})
 

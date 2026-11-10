@@ -90,10 +90,6 @@ def vote(project_id: str, cand: dict, mode: str, value: int) -> dict:
         return {"vote": value, **status(data)}
 
 
-def vote_of(project_id: str, clip_id: str) -> int:
-    return int((_load()["votes"].get(key(project_id, clip_id)) or {}).get("value") or 0)
-
-
 def votes_for(project_id: str) -> dict[str, int]:
     pre = f"{project_id}:"
     return {k[len(pre):]: int(v.get("value") or 0) for k, v in _load()["votes"].items() if k.startswith(pre)}

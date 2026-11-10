@@ -285,10 +285,6 @@ class JobManager:
                 v.get("project_id") == project_id and v.get("clip_id") == clip_id and v.get("kind") in CLIP_KINDS))
                 for k, v in self._tombs.items())
 
-    def tombstones(self) -> list[dict]:
-        with self._lock:
-            return [{"key": k, **v} for k, v in self._tombs.items() if self._tombstoned(k)]
-
     def clear_tombstones(self, project_id: str, kinds: tuple[str, ...] | None = None,
                          clip_id: str | None = None) -> int:
         """Forget the cancels of a project's jobs (its clips were found again, or the user

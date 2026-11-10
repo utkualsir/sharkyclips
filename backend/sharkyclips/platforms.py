@@ -787,11 +787,10 @@ _rlock = threading.RLock()
 
 
 def records(project) -> dict:
-    p = record_path(project)
-    try:
-        return json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
-    except (OSError, ValueError):
-        return {}
+    from .project import read_json_shared
+
+    data = read_json_shared(record_path(project), {})
+    return data if isinstance(data, dict) else {}
 
 
 def record(project, cid: str, platform: str, **data) -> dict:

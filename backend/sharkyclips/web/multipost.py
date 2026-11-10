@@ -103,13 +103,10 @@ _slock = threading.RLock()
 
 
 def _store(project: Project) -> dict:
-    p = _store_path(project)
-    try:
-        import json
+    from ..project import read_json_shared
 
-        return json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
-    except (OSError, ValueError):
-        return {}
+    data = read_json_shared(_store_path(project), {})
+    return data if isinstance(data, dict) else {}
 
 
 def clip_store(project: Project, cid: str) -> dict:

@@ -64,11 +64,6 @@ def key_of(project_id: str, clip_id: str) -> str:
     return f"{project_id}:{clip_id}"
 
 
-def split_key(key: str) -> tuple[str, str]:
-    pid, _, cid = key.rpartition(":")
-    return pid, cid
-
-
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
 

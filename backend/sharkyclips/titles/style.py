@@ -224,11 +224,6 @@ def active(lang: str | None) -> dict | None:
     return p
 
 
-def socials_for_short() -> bool:
-    p = load()
-    return not p["enabled"] or p["shorts_socials"]
-
-
 _digest_cache: dict = {}
 
 
