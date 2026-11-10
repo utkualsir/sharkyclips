@@ -220,27 +220,17 @@ def test_everywhere_at_once_in_parallel_and_never_twice(yt, social):  # noqa: F8
     c = _client()
     v = c.get(f"/api/publish/{project.id}/c01").json()
     assert not v["problems"], v["problems"]
-    seen_parallel = threading.Event()
-
-    def watch():
-        from sharkyclips.web import app as A
-
-        end = time.time() + 30
-        while time.time() < end and not seen_parallel.is_set():
-            running = {j.params.get("platform") for j in A.jobs.jobs() if j.kind == "post" and j.status == "running"}
-            if {"tiktok", "reels"} <= running:
-                seen_parallel.set()
-            time.sleep(0.005)
-
-    w = threading.Thread(target=watch)
-    w.start()
     r = c.post(f"/api/publish/{project.id}/c01", json={"platforms": ["youtube", "tiktok", "reels"], "when": "now",
                                                        "consent": True}).json()
     assert {p: x["status"] for p, x in r["results"].items()} == {"youtube": "uploading", "tiktok": "uploading",
                                                                  "reels": "uploading"}
     _wait(_idle)
-    w.join()
-    assert seen_parallel.is_set(), "TikTok and Instagram should upload side by side"
+    from sharkyclips.web import app as A
+
+    posts = {j.params.get("platform"): j for j in A.jobs.jobs() if j.kind == "post" and j.project_id == project.id}
+    tt, ig = posts["tiktok"], posts["reels"]
+    # side by side: each started before the other finished (timestamps, so a fast machine can't miss it)
+    assert ig.started < tt.finished and tt.started < ig.finished, "TikTok and Instagram should upload side by side"
     sts = MP.clip_states(project, "c01")
     assert [sts[p]["status"] for p in ("youtube", "tiktok", "reels")] == ["published"] * 3, sts
     assert sts["everywhere"] and sts["reels"]["url"] == "https://www.instagram.com/reel/MC1/"

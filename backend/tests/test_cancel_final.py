@@ -32,6 +32,11 @@ def jm(tmp_path):
 
 
 def _saved(jm) -> dict:
+    for _ in range(50):  # Windows: the file is briefly locked while the queue replaces it atomically
+        try:
+            return json.loads(jm.store.read_text(encoding="utf-8"))
+        except PermissionError:
+            time.sleep(0.02)
     return json.loads(jm.store.read_text(encoding="utf-8"))
 
 
