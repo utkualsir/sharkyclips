@@ -428,7 +428,12 @@ function TikTokPanel({ view, onSet, innerRef }: { view: PublishView; onSet: (s: 
         >
           {tt.audited && <option value="">{t("mp.tt_privacy_pick")}</option>}
           {(tt.privacy_options ?? []).map((o) => (
-            <option key={o} value={o} disabled={o === "SELF_ONLY" && branded}>
+            <option
+              key={o}
+              value={o}
+              disabled={o === "SELF_ONLY" && branded}
+              title={o === "SELF_ONLY" && branded ? t("mp.tt_branded_private") : undefined}
+            >
               {t(PRIVACY_KEYS[o] ?? o)}
             </option>
           ))}

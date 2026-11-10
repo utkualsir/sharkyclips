@@ -2209,6 +2209,7 @@ const hu: Record<string, string> = {
   "acc.reconnect": "Újracsatlakozás",
   "acc.check": "Ellenőrzés",
   "acc.check_ok": "A kapcsolat működik.",
+  "acc.disconnect_yt_q": "Leválasztod a YouTube-ot? A SharkyClips a YouTube-ról beolvasott megtekintési, kedvelési és nézettségi számokat is törli (a saját magad által beírt számok megmaradnak).",
   "acc.disconnect": "Leválasztás",
   "acc.disconnect_q": "Leválasztod: {name}? A fejlesztői alkalmazásod kulcsai mentve maradnak, az újracsatlakozás egy kattintás.",
   "acc.audited_tiktok": "A TikTok auditálta az alkalmazásomat (nyilvános posztok engedélyezve)",

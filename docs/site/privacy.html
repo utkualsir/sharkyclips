@@ -30,7 +30,7 @@
 
 <main id="main" class="wrap doc">
   <h1>Privacy policy</h1>
-  <p class="meta">Effective 6 November 2026</p>
+  <p class="meta">Effective 10 November 2026</p>
 
   <p class="callout"><b>Short version:</b> SharkyClips runs on your computer. It has no server, no
     account and no telemetry. Your videos, transcripts, clips and YouTube data stay on your
@@ -90,7 +90,12 @@
       your own developer app, the app sends the clip and its caption directly to the TikTok Content
       Posting API or the Instagram Graph API and reads back the post's status and link. TikTok and
       Meta process this under their own privacy policies. The access tokens (and your TikTok app's
-      key) are stored encrypted on your computer; "Disconnect" deletes them.</li>
+      key) are stored encrypted on your computer; "Disconnect" deletes them.
+      With TikTok the app uses <code>user.info.basic</code> (your open id, display name and avatar,
+      to show which account a clip goes to), <code>video.publish</code> (to post the clip you set up,
+      with the privacy and interaction settings you choose on TikTok's post screen) and
+      <code>video.list</code> (views and likes of your own posts, shown next to each clip). Post
+      ids, links and these numbers are stored in each project's <code>platform_uploads.json</code>.</li>
   </ul>
   <p>The app contains no analytics, crash reporting, advertising or tracking code.</p>
 
@@ -122,6 +127,18 @@
     The app talks directly to Google's servers (<code>googleapis.com</code>); there is no
     SharkyClips server in between.</p>
 
+  <h3>How long it is kept</h3>
+  <ul>
+    <li>While YouTube is connected and the app runs, the numbers it read (views, likes, privacy,
+      retention) are refreshed every few hours.</li>
+    <li>Any number that was not refreshed for <b>30 days</b> is deleted automatically.</li>
+    <li><b>Disconnect</b> deletes every number the app read from YouTube, at once. If Google ends
+      the sign-in (for example because you removed access in your Google account) and you don't
+      reconnect, the app deletes them after 7 days.</li>
+    <li>What stays: the ids of the videos you uploaded with SharkyClips (so the app knows which
+      videos are its own) and numbers you typed in yourself.</li>
+  </ul>
+
   <h3>Sharing</h3>
   <p>We do not receive, sell, rent or share YouTube data or any other data. It is not used for
     advertising and not transferred to anyone. SharkyClips' use of information received from Google
@@ -130,8 +147,8 @@
 
   <h3>Revoking access and deleting data</h3>
   <ul>
-    <li><b>Disconnect</b> in Settings → YouTube revokes the token at Google and deletes it from your
-      computer.</li>
+    <li><b>Disconnect</b> in Settings → YouTube revokes the token at Google, deletes it from your
+      computer and deletes the numbers the app read from YouTube.</li>
     <li>You can also revoke access at any time on your
       <a href="https://myaccount.google.com/permissions">Google account permissions page</a>.</li>
     <li>Calibration data can be cleared on the Stats page. Deleting a project's folder from the

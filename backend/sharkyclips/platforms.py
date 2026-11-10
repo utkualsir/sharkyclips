@@ -118,12 +118,27 @@ def save_token(name: str, data: dict) -> None:
 def forget(name: str, everything: bool = True) -> None:
     """Sign out. everything=False (Disconnect in Accounts) keeps your developer app's keys, so
     Reconnect is one click."""
+    if name == "tiktok":
+        _tiktok_revoke()
     _token_path(name).unlink(missing_ok=True)
     for f in ("avatar.jpg", "problem.json", "quota.json"):
         (folder(name) / f).unlink(missing_ok=True)
     _creator_cache.clear()
     if everything:
         (folder(name) / "app.enc").unlink(missing_ok=True)
+
+
+def _tiktok_revoke() -> None:
+    """Disconnect also ends the access at TikTok (not just on this computer). Offline: best effort."""
+    tok, app = load_token("tiktok") or {}, load_app("tiktok") or {}
+    token = tok.get("access_token")
+    if not token or not app.get("client_key"):
+        return
+    try:
+        _http().post(f"{tiktok_api()}/v2/oauth/revoke/", timeout=10, data={
+            "client_key": app.get("client_key"), "client_secret": app.get("client_secret") or "", "token": token})
+    except Exception:  # noqa: BLE001 - forget it locally anyway
+        pass
 
 
 def load_app(name: str) -> dict | None:

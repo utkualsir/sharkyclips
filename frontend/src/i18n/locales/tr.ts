@@ -2203,6 +2203,7 @@ const tr: Record<string, string> = {
   "acc.reconnect": "Yeniden bağla",
   "acc.check": "Kontrol et",
   "acc.check_ok": "Bağlantı çalışıyor.",
+  "acc.disconnect_yt_q": "YouTube bağlantısı kesilsin mi? SharkyClips, YouTube'dan okuduğu izlenme, beğeni ve izlenme süresi sayılarını da siler (kendi girdiğin sayılar kalır).",
   "acc.disconnect": "Bağlantıyı kes",
   "acc.disconnect_q": "{name} bağlantısı kesilsin mi? Geliştirici uygulamanın anahtarları kayıtlı kalır, yeniden bağlamak tek tık.",
   "acc.audited_tiktok": "TikTok uygulamamı denetledi (herkese açık paylaşım serbest)",

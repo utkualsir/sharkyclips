@@ -747,6 +747,12 @@ class Scheduler:
                 from ..ui import console
 
                 console.print(f"[red]Multi-platform posting:[/]\n{traceback.format_exc()}")
+            try:  # YouTube API data retention: numbers older than 30 days (or after a sign-out) go
+                from .. import ytdata
+
+                ytdata.daily()
+            except Exception:  # noqa: BLE001 - never stops the publish loop
+                pass
             try:  # 1.2.34 Autopilot: sign-in health check + the morning summary
                 from .. import autopilot
 

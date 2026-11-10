@@ -2185,6 +2185,7 @@ const ar: Record<string, string> = {
   "acc.reconnect": "إعادة الربط",
   "acc.check": "تحقق",
   "acc.check_ok": "الاتصال يعمل.",
+  "acc.disconnect_yt_q": "قطع الاتصال بـ YouTube؟ سيحذف SharkyClips أيضًا أرقام المشاهدات والإعجابات ونسبة المشاهدة التي قرأها من YouTube (الأرقام التي أدخلتها بنفسك تبقى).",
   "acc.disconnect": "فصل",
   "acc.disconnect_q": "فصل {name}؟ تبقى مفاتيح تطبيق المطوّر محفوظة، فإعادة الربط بنقرة واحدة.",
   "acc.audited_tiktok": "دقّق تيك توك تطبيقي (المنشورات العامة مسموحة)",

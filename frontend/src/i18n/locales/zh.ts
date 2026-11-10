@@ -2179,6 +2179,7 @@ const zh: Record<string, string> = {
   "acc.reconnect": "重新连接",
   "acc.check": "检查",
   "acc.check_ok": "连接正常。",
+  "acc.disconnect_yt_q": "断开 YouTube？SharkyClips 也会删除从 YouTube 读取的观看量、点赞数和留存数据（你自己输入的数字会保留）。",
   "acc.disconnect": "断开",
   "acc.disconnect_q": "断开 {name}？你的开发者应用密钥会保留，重新连接只需一键。",
   "acc.audited_tiktok": "TikTok 已审核我的应用（允许公开发布）",

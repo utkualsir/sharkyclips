@@ -540,6 +540,9 @@ def disconnect() -> None:
     _forget_token()
     dismiss_signed_out()  # the user chose this: no "signed out" banner
     (folder() / "playlists.json").unlink(missing_ok=True)
+    from . import ytdata
+
+    ytdata.purge(all_=True)  # YouTube API policy: access revoked -> the fetched numbers go too
 
 
 def access_token() -> str:

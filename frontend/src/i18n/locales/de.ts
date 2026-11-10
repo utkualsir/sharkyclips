@@ -2234,6 +2234,7 @@ const de: Record<string, string> = {
   "acc.reconnect": "Neu verbinden",
   "acc.check": "Prüfen",
   "acc.check_ok": "Die Verbindung funktioniert.",
+  "acc.disconnect_yt_q": "YouTube trennen? SharkyClips löscht auch die Aufrufe, Likes und Zuschauerbindungs-Werte, die es von YouTube gelesen hat (selbst eingetragene Zahlen bleiben).",
   "acc.disconnect": "Trennen",
   "acc.disconnect_q": "{name} trennen? Die Schlüssel deiner Entwickler-App bleiben gespeichert, neu verbinden ist ein Klick.",
   "acc.audited_tiktok": "TikTok hat meine App geprüft (öffentliche Posts erlaubt)",

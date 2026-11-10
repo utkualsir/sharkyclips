@@ -436,7 +436,7 @@ function YoutubeCard({ a, quota, onChange }: { a: Account; quota: Quota | null |
       </header>
       {yt?.connected ? (
         <>
-          <YoutubeAccount yt={yt} onStatus={status} onDisconnect={() => api.youtubeDisconnect().then(status).catch(() => {})} />
+          <YoutubeAccount yt={yt} onStatus={status} onDisconnect={() => window.confirm(t("acc.disconnect_yt_q")) && api.youtubeDisconnect().then(status).catch(() => {})} />
           <span className="acc-meta">
             <Icon name="lock" size={12} /> {t("acc.encrypted")} · <QuotaLine p="youtube" q={quota} />
           </span>

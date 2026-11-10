@@ -196,6 +196,9 @@ class FakePlatforms:
                     if path is None:
                         return
                     u = u._replace(path=path)
+                if u.path == "/v2/oauth/revoke/":
+                    st.setdefault("tt_revoked", []).append(form.get("token"))
+                    return self._json(200, {})
                 if u.path == "/v2/oauth/token/":
                     if form.get("grant_type") == "authorization_code":
                         want = st["codes"].get(form.get("code"))

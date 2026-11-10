@@ -1,5 +1,9 @@
 # Google verification prep (YouTube uploads)
 
+> **Current, complete versions** of these answers (plus the TikTok review and demo-video shot
+> lists) are in [docs/audits/](audits/README.md). This page stays as the short overview the app
+> shows under Publish → Verification.
+
 Draft material for two separate Google reviews. **Nothing here has been submitted.** Fill in the
 `<...>` placeholders, check every answer against the app version you submit, then copy the text
 into the forms.
@@ -58,8 +62,8 @@ Settings; since 1.2.11 the shipped client is `production`) and `user_cap`
       Contact links go to that repo's issues and private security reports.
 - [x] Homepage `https://utkualsir.github.io/sharkyclips-site/`, privacy policy
       `https://utkualsir.github.io/sharkyclips-site/privacy.html`, terms `https://utkualsir.github.io/sharkyclips-site/terms.html` load without login (HTTP 200).
-- [ ] The homepage's Download / GitHub / guide links point at the main repo: they return 404
-      until it is public. Make it public before submitting for verification.
+- [x] The homepage's Download / GitHub / guide links point at the main repo, which is public
+      since 10 Nov 2026.
 - [ ] Verify `utkualsir.github.io` in [Google Search Console](https://search.google.com/search-console)
       (URL-prefix property for `https://utkualsir.github.io/sharkyclips-site/`, HTML file method: put the file into `docs/site/` and run
       `docs/publish-site.sh`). `github.io` is on the Public Suffix List, so this subdomain counts as your own
@@ -187,13 +191,11 @@ fields.
   YouTube player is embedded. Links to YouTube Terms of Service and Google Privacy Policy are shown
   next to the Connect button.
 
-## Known gaps to fix before (or explain in) the audit
+## Fixed for the audit (1.2.38)
 
-- **Stored statistics after disconnect.** Disconnect deletes the token, but the view counts
-  already fetched stay in `uploads.json` / `calibration.json` until the user clears them. The
-  YouTube Developer Policies ask clients to delete stored authorized data when access is revoked
-  (and to refresh or delete it regularly). Suggested follow-up: a "Also delete fetched
-  statistics" checkbox in the disconnect dialog, and dropping fetched numbers older than 30 days
-  that could not be refreshed.
-- **Shared quota.** One 10,000-unit pool for every user of the built-in client until the
+- **Stored statistics after disconnect / old statistics.** Disconnect now deletes every number
+  the app read from YouTube; numbers not refreshed for 30 days are deleted daily; if Google ends
+  the sign-in and the user doesn't reconnect, the numbers go after 7 days
+  (`backend/sharkyclips/ytdata.py`). The privacy policy says so.
+- **Shared quota.** Still one 10,000-unit pool for every user of the built-in client until the
   quota extension is granted (see "Quota requested").

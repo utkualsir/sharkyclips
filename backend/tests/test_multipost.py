@@ -572,3 +572,10 @@ def test_facebook_token_posts_and_a_revoked_one_signs_out(social):
     _wait(_idle)
     assert _rec(project, "c02", "reels")["status"] == "failed"
     assert _client().get("/api/accounts").json()["reels"]["health"]["pill"] == "signed_out"
+
+
+def test_disconnect_revokes_the_tiktok_token_at_tiktok(social):
+    assert PF.connected("tiktok")
+    PF.forget("tiktok", everything=False)
+    assert social.state.get("tt_revoked") == ["TT-ACCESS"] and not PF.connected("tiktok")
+    assert PF.load_app("tiktok")  # the app keys stay for a one-click reconnect

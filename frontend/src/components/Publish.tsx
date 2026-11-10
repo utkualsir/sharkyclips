@@ -763,7 +763,7 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
             <YoutubeAccount
               yt={yt}
               onStatus={setYt}
-              onDisconnect={isLocal ? () => run(api.youtubeDisconnect) : undefined}
+              onDisconnect={isLocal ? () => window.confirm(t("acc.disconnect_yt_q")) && run(api.youtubeDisconnect) : undefined}
               meta={
                 <div className="muted" style={{ fontSize: 12 }}>
                   {t("yt.connected_since", { when: relTime(yt.connected_at ?? "") })}

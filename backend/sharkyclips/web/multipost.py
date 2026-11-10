@@ -378,13 +378,13 @@ def _problem(platform: str, code: str, fix: str | None = None, **params) -> dict
     return {"platform": platform, "code": code, "fix": fix, "params": params}
 
 
-def _tiktok_view(settings: dict) -> dict:
+def _tiktok_view(settings: dict, fresh: bool = False) -> dict:
     """creator info + the rules the post screen needs (or why it isn't available)."""
     if not PF.connected("tiktok"):
         return {"ok": False, "audited": False}
     audited = bool((PF.load_app("tiktok") or {}).get("audited"))
     try:
-        info = PF.tiktok_creator_info()
+        info = PF.tiktok_creator_info(fresh=fresh)  # fresh: the post screen opens (TikTok's rule)
     except SharkyClipsError as exc:
         return {"ok": False, "audited": audited, "error": {"message": exc.message, "hint": exc.hint,
                                                             "code": getattr(exc, "code", None)}}
@@ -498,7 +498,7 @@ def cover_ms(cand: dict) -> int:
     return int(max(0.0, min(dur - 0.2, float(peak) - start)) * 1000)
 
 
-def view(project: Project, cid: str, want: list[str] | None = None) -> dict:
+def view(project: Project, cid: str, want: list[str] | None = None, fresh: bool = False) -> dict:
     """Everything the publish preview shows for one clip."""
     A = _app()
     review = state.load_review(project)
@@ -507,7 +507,7 @@ def view(project: Project, cid: str, want: list[str] | None = None) -> dict:
     d = drafts(project, cand)
     acc = accounts()
     store = clip_store(project, cid)
-    tt = _tiktok_view(store["tiktok"]) if "tiktok" in want or PF.connected("tiktok") else None
+    tt = _tiktok_view(store["tiktok"], fresh) if "tiktok" in want or PF.connected("tiktok") else None
     q = quotas()
     states = clip_states(project, cid)
     todo = [p for p in want if states[p]["status"] in ("idle", "failed", "cancelled")]
@@ -1112,7 +1112,7 @@ def api_targets_put(body: dict) -> dict:
 @router.get("/api/publish/{project_id}/{cid}")
 def api_view(project_id: str, cid: str, platforms: str | None = None) -> dict:
     want = [p for p in platforms.split(",") if p] if platforms is not None else None
-    return view(_project(project_id), cid, want)
+    return view(_project(project_id), cid, want, fresh=True)  # opening the post screen: new creator_info
 
 
 @router.put("/api/publish/{project_id}/{cid}")

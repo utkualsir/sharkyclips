@@ -48,6 +48,40 @@ frontend scripts and CI; route handlers and test-only helpers kept): `audiomix._
 `publishing.split_key`, `taste.vote_of`, `style.socials_for_short`, `JobManager.tombstones`,
 `youtube.clear_locked`.
 
+### Task 3: audit prep (Google OAuth, YouTube API audit, TikTok review + Content Posting audit)
+
+Everything is in **`docs/audits/`**: form answers in English, scope justifications, demo-video
+scripts with shot lists, and a short Turkish checklist (`docs/audits/README.md`). TikTok's
+answers were checked against its App Review Guidelines and Content Sharing Guidelines (both
+updated 4 Aug 2026). Nothing was submitted.
+
+**Your decision needed: TikTok.** SharkyClips users bring their own TikTok developer app today.
+That can't pass TikTok's review ("apps must not be for private or personal use"), and TikTok
+says the client secret must not ship in open-source code, while its token endpoint needs it. A
+reviewable setup is one shared SharkyClips TikTok app plus a tiny token relay (e.g. a free
+Cloudflare Worker that only forwards the token exchange / refresh / revoke and stores nothing).
+I didn't build it: it means a server under your accounts and a change to the "no SharkyClips
+server" promise. Details and options: `docs/audits/tiktok-app-review.md`, section 0.
+
+**App / site changes made for the reviews:**
+
+- **YouTube data retention** (new `ytdata.py`): numbers read from YouTube (views, likes,
+  retention in `uploads.json`, YouTube calibration entries, hook-test results) are deleted when
+  not refreshed for 30 days (daily, from the publish scheduler), all of them on Disconnect, and
+  7 days after Google ends a sign-in without a reconnect. Video ids and typed-in numbers stay.
+  This was the open "known gap" from session 1. Disconnect now asks first (new string, 7 languages).
+- **TikTok:** Disconnect revokes the token at TikTok (`/v2/oauth/revoke/`); opening the post
+  screen fetches creator info fresh (was cached 60 s; the post job already re-checked); the
+  disclosure hint and the "Only me" hover use TikTok's exact English sentences.
+- **Privacy policy** (`docs/site/privacy.html`, effective 10 Nov 2026): "How long it is kept"
+  section, Disconnect deletes the fetched numbers, TikTok scopes and what they're used for.
+  Published to the site repo with `docs/publish-site.sh`.
+- `docs/google-verification.md` (shown inside the app) points to `docs/audits/` and no longer
+  lists the fixed gap.
+
+Tests: `test_ytdata.py` (30-day rule, Disconnect, revoked sign-in), a TikTok revoke test in
+`test_multipost.py`.
+
 ### Task 4: Kick VOD / clip import
 
 **What I found:** yt-dlp (2026.10.21, already a dependency) has working `kick:vod` and `kick:clip`
