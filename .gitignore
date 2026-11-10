@@ -40,3 +40,4 @@ config.local.json
 .install-state.json
 installer/dist/
 docs/.video/
+.coverage
