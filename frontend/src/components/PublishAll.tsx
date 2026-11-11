@@ -9,6 +9,8 @@ import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import {
   busyState,
+  byHand,
+  openHandoff,
   publishApi,
   TARGET_NAME,
   TARGETS,
@@ -73,7 +75,7 @@ export function TargetSwitches({
       {ORDER.map((p) => {
         const on = value.includes(p);
         const done = posts?.[p]?.status === "published";
-        const off = acc && !acc[p].connected;
+        const off = acc && acc[p].mode !== "semi" && !acc[p].connected; // by hand needs no account
         return (
           <button
             key={p}
@@ -124,6 +126,9 @@ export function PostBadge({ s, pid, cid, onChanged }: { s: PostState; pid: strin
     case "processing":
       text = t("mp.st_processing");
       break;
+    case "ready":
+      text = t("mp.st_ready");
+      break;
     case "failed":
       text = s.next_try_at ? t("mp.st_retrying") : t("mp.st_failed");
       break;
@@ -161,6 +166,12 @@ export function PostBadge({ s, pid, cid, onChanged }: { s: PostState; pid: strin
         <span role="status" aria-label={label}>
           {inner}
         </span>
+      )}
+      {s.status === "ready" && (
+        <button type="button" className="mp-badge-act mp-badge-go" onClick={() => openHandoff({ pid, cid, platforms: [p] })}
+          aria-label={t("mp.share_now_on", { name })} title={t("mp.share_now_on", { name })}>
+          <Icon name="copy" size={12} />
+        </button>
       )}
       {(s.status === "failed" || s.status === "cancelled") && (
         <button type="button" className="mp-badge-act" disabled={busy} onClick={retry} aria-label={t("mp.retry_on", { name })}>
@@ -613,9 +624,25 @@ function useView(pid: string, cid: string, targets: Target[]) {
 
 function summary(r: Awaited<ReturnType<typeof publishApi.start>>, t: (k: string, v?: Record<string, string | number>) => string): string {
   const parts = Object.entries(r.results).map(([p, x]) =>
-    `${TARGET_NAME[p as Target]}: ${t(x?.error ? "mp.st_failed" : x?.status === "scheduled" ? "mp.r_planned" : x?.skipped ? "mp.r_already" : "mp.r_started")}`,
+    `${TARGET_NAME[p as Target]}: ${t(x?.error ? "mp.st_failed" : x?.mode === "semi" ? "mp.r_by_hand" : x?.status === "scheduled" ? "mp.r_planned" : x?.skipped ? "mp.r_already" : "mp.r_started")}`,
   );
   return parts.join(" · ");
+}
+
+/** After Publish: TikTok's API note, and the by-hand platforms go to the "post it yourself" steps. */
+function afterStart(
+  r: Awaited<ReturnType<typeof publishApi.start>>,
+  targets: Target[],
+  pid: string,
+  cid: string,
+  title: string | undefined,
+  t: (k: string, v?: Record<string, string | number>) => string,
+  toast: ReturnType<typeof useToast>,
+) {
+  const tt = r.results.tiktok;
+  if (tt && !tt.error && !tt.skipped && tt.mode !== "semi") toast({ kind: "info", text: t("mp.tt_after") });
+  const hand = byHand(targets, r.view.modes, r.view.states).filter((p) => !r.results[p]?.error);
+  openHandoff({ pid, cid, title, platforms: hand });
 }
 
 export function PublishDialog({
@@ -647,11 +674,16 @@ export function PublishDialog({
   const ttRef = useRef<HTMLFieldSetElement>(null);
   const pending = view ? todo(view.states, targets) : [];
   const branded = !!view?.tiktok?.settings?.disclose && !!view?.tiktok?.settings?.brand_content;
+  const ttApi = view?.modes?.tiktok === "api";
 
   useEffect(() => {
     const on = () => load();
     window.addEventListener("sc-accounts", on);
-    return () => window.removeEventListener("sc-accounts", on);
+    window.addEventListener("sc-posts-changed", on);
+    return () => {
+      window.removeEventListener("sc-accounts", on);
+      window.removeEventListener("sc-posts-changed", on);
+    };
   }, [load]);
 
   const save = async (body: { drafts?: Record<string, unknown>; tiktok?: Partial<TikTokSettings> }) => {
@@ -692,7 +724,7 @@ export function PublishDialog({
       const r = await publishApi.start(pid, cid, { platforms: targets, when: whenValue, consent: targets.includes("tiktok") });
       setView(r.view);
       toast({ kind: Object.values(r.results).some((x) => x?.error) ? "err" : "ok", text: summary(r, t) });
-      if (r.results.tiktok && !r.results.tiktok.error && !r.results.tiktok.skipped) toast({ kind: "info", text: t("mp.tt_after") });
+      afterStart(r, targets, pid, cid, title, t, toast);
       onDone?.();
       if (!Object.values(r.results).some((x) => x?.error)) onClose();
     } catch (e: any) {
@@ -717,7 +749,7 @@ export function PublishDialog({
       onClose={onClose}
       footer={
         <>
-          {targets.includes("tiktok") && pending.includes("tiktok") && <TikTokDeclaration view={view} branded={branded} />}
+          {targets.includes("tiktok") && pending.includes("tiktok") && ttApi && <TikTokDeclaration view={view} branded={branded} />}
           <button className="btn btn-ghost" onClick={onClose}>
             {t("common.cancel")}
           </button>
@@ -767,6 +799,11 @@ export function PublishDialog({
                 <header className="mp-preview-head">
                   <PlatformIcon p={p} size={16} /> <b>{TARGET_NAME[p]}</b>
                   <LengthChip p={p} view={view} />
+                  {p !== "youtube" && (
+                    <span className={`mp-chip mp-mode-${view.modes?.[p] ?? "semi"}`} title={t(view.modes?.[p] === "api" ? "mp.mode_api_hint" : "mp.mode_semi_hint", { name: TARGET_NAME[p] })}>
+                      <Icon name={view.modes?.[p] === "api" ? "zap" : "copy"} size={12} /> {t(view.modes?.[p] === "api" ? "mp.mode_api" : "mp.mode_semi")}
+                    </span>
+                  )}
                 </header>
                 <Phone p={p} view={view} video={video} handle={handle(p)} />
                 {pending.includes(p) ? <Editor p={p} view={view} onSave={(d) => save({ drafts: d })} /> : <PostBadge s={view.states[p]} pid={pid} cid={cid} onChanged={load} />}
@@ -819,8 +856,14 @@ export function PublishBlock({
   const [targets, setTargets] = useTargets();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [acc] = useAccounts();
   const pending = useMemo(() => todo(posts, targets), [posts, targets]);
   const moving = ORDER.filter((p) => busyState(posts?.[p]?.status));
+  const waiting = ORDER.filter((p) => posts?.[p]?.status === "ready");
+  useEffect(() => {
+    window.addEventListener("sc-posts-changed", onChanged);
+    return () => window.removeEventListener("sc-posts-changed", onChanged);
+  }, [onChanged]);
   const go = async () => {
     setBusy(true);
     try {
@@ -830,7 +873,7 @@ export function PublishBlock({
       } else {
         const r = await publishApi.start(pid, cid, { platforms: targets, when, consent: targets.includes("tiktok") });
         toast({ kind: Object.values(r.results).some((x) => x?.error) ? "err" : "ok", text: summary(r, t) });
-        if (r.results.tiktok && !r.results.tiktok.error && !r.results.tiktok.skipped) toast({ kind: "info", text: t("mp.tt_after") });
+        afterStart(r, targets, pid, cid, title, t, toast);
         onChanged();
       }
     } catch (e: any) {
@@ -842,6 +885,11 @@ export function PublishBlock({
   return (
     <div className="mp-block">
       <PostBadges posts={posts} pid={pid} cid={cid} onChanged={onChanged} />
+      {waiting.length > 0 && (
+        <button type="button" className="btn ez-big mp-resume" onClick={() => openHandoff({ pid, cid, title, platforms: waiting })}>
+          <Icon name="copy" /> {t("mp.ho_resume", { names: waiting.map((p) => TARGET_NAME[p]).join(" · ") })}
+        </button>
+      )}
       {moving.length > 0 && (
         <ProgressBar
           value={moving.length === 1 ? posts?.[moving[0]]?.progress ?? null : null}
@@ -868,7 +916,7 @@ export function PublishBlock({
               </button>
             ))}
           </div>
-          {pending.includes("tiktok") && <TikTokDeclaration />}
+          {pending.includes("tiktok") && acc?.tiktok.mode === "api" && <TikTokDeclaration />}
           {when === "auto" && pending.some((p) => p !== "youtube") && <p className="ez-hint">{t("mp.pc_on")}</p>}
         </>
       )}

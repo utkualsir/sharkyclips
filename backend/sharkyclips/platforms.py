@@ -159,11 +159,14 @@ def connected(name: str) -> bool:
 
 
 def mode(name: str) -> str:
-    """'api' only when connected AND the user turned automatic posting on; else 'semi'."""
+    """'api' only when automatic posting is on AND the token works (connected, not signed out);
+    else 'semi' (1.2.39: the default for TikTok and Instagram, also for the one Publish button)."""
     if name == "youtube":
         return "api"
     want = (config.get("platform_modes") or {}).get(name)
-    return "api" if want == "api" and connected(name) else "semi"
+    if want != "api" or not connected(name):
+        return "semi"
+    return "semi" if (problem(name) or {}).get("kind") == "signed_out" else "api"
 
 
 def status(name: str) -> dict:
@@ -947,7 +950,8 @@ def account(name: str) -> dict:
            "avatar": avatar_path(name).is_file(), "health": health(name), "audited": bool(app.get("audited")),
            "has_app": bool(app.get("client_key") or app.get("app_id")),
            "app_id": app.get("client_key") or app.get("app_id"), "expires_at": tok.get("expires_at"),
-           "connected_at": tok.get("connected_at") or tok.get("saved_at"), "encrypted": True}
+           "connected_at": tok.get("connected_at") or tok.get("saved_at"), "encrypted": True,
+           "mode": mode(name), "upload_page": UPLOAD_PAGE.get(name)}
     if name == "tiktok":
         out["scopes"] = [x for x in str(tok.get("scope") or "").split(",") if x]
         out["stats"] = "video.list" in out["scopes"]

@@ -17,6 +17,7 @@ import ProjectPage from "./pages/Project";
 import EasyHome from "./pages/EasyHome";
 import { EasyTour, ProSwitch } from "./components/Easy";
 import { useUiMode } from "./uimode";
+import { HandoffHost } from "./components/Handoff";
 const EasyProject = lazy(() => import("./pages/EasyProject"));
 const EasyLibrary = lazy(() => import("./pages/EasyLibrary"));
 const EasySettings = lazy(() => import("./pages/EasySettings"));
@@ -266,6 +267,7 @@ export default function App() {
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />
+      <HandoffHost />
       {(autoWhatsNew || manualWhatsNew) && state && (
         <WhatsNew version={state.whats_new ?? state.version} onClose={closeWhatsNew} />
       )}

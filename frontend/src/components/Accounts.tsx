@@ -3,6 +3,7 @@
 // Meta / TikTok developer app. Also opened inline from the Publish dialog.
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { api, type YoutubeStatus } from "../api";
+import { platformsApi } from "../extras";
 import { useI18n } from "../i18n";
 import { accountsApi, TARGET_NAME, type Account, type Accounts, type Quota, type Target } from "../multipost";
 import { useToast } from "../toast";
@@ -404,6 +405,28 @@ function SocialCard({ a, quota, onChange }: { a: Account; quota: Quota | null | 
             }}
           />
           <span>{t(p === "tiktok" ? "acc.audited_tiktok" : "acc.audited_reels")}</span>
+        </label>
+      )}
+      <p className="acc-note" role="note">
+        <Icon name={a.mode === "api" ? "zap" : "copy"} size={14} />{" "}
+        {t(a.mode === "api" ? "platform.mode_api" : "platform.mode_semi", { name: TARGET_NAME[p] })}
+      </p>
+      {a.connected && (
+        <label className="acc-audit">
+          <input
+            type="checkbox"
+            checked={a.mode === "api"}
+            onChange={async (e) => {
+              try {
+                await platformsApi.setMode(p, e.target.checked ? "api" : "semi");
+              } catch (err: any) {
+                toast({ kind: "err", text: err.message, hint: err.hint });
+              }
+              accountsChanged();
+              onChange();
+            }}
+          />
+          <span>{t("platform.auto_post")}</span>
         </label>
       )}
       {setup &&

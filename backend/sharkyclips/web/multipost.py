@@ -272,6 +272,8 @@ def _social_state(project: Project, cid: str, platform: str) -> dict:
         status = {"exporting": "preparing", "preparing": "preparing"}.get(j.stage or "", None) or (
             "uploading" if j.status == "running" and j.kind != "platform_export" else
             "preparing" if j.kind == "platform_export" else status if status in ("processing",) else "uploading")
+        if rec.get("mode") == "semi":  # by hand: the job only makes the file
+            status = "preparing"
     return {"platform": platform, "status": status, "progress": j.progress if j is not None and j.status == "running" else None,
             "url": rec.get("url"), "privacy": rec.get("privacy"), "publish_at": rec.get("publish_at"),
             "posted_at": rec.get("posted_at"), "late": bool(rec.get("late")), "error": rec.get("error") if status == "failed" else None,
@@ -279,7 +281,8 @@ def _social_state(project: Project, cid: str, platform: str) -> dict:
             "next_try_at": rec.get("next_try_at") if status == "failed" else None,
             "make_public_url": TIKTOK_STUDIO if platform == "tiktok" and rec.get("privacy") == "self_only"
             and status in ("published", "processing") else None,
-            "job": j.id if j is not None else None, "mode": rec.get("mode")}
+            "job": j.id if j is not None else None, "mode": rec.get("mode"), "manual": bool(rec.get("manual")),
+            "remind_at": rec.get("remind_at") if status == "ready" else None}
 
 
 def _youtube_state(project: Project, cid: str) -> dict:
@@ -343,7 +346,7 @@ def accounts() -> dict:
           "avatar": bool(ch.get("thumbnail") or next((c.get("thumbnail") for c in tok_channels if c.get("thumbnail")), None)),
           "health": {"pill": yt_pill, "reason": reason, "message": (so or {}).get("reason") if so else None},
           "audited": True, "has_app": bool(st.get("ready")), "connected_at": st.get("connected_at"),
-          "encrypted": True, "stats": bool(st.get("analytics")) or st["connected"]}
+          "encrypted": True, "stats": bool(st.get("analytics")) or st["connected"], "mode": "api"}
     return {"youtube": yt, "tiktok": PF.account("tiktok"), "reels": PF.account("reels")}
 
 
@@ -398,11 +401,14 @@ def _tiktok_view(settings: dict, fresh: bool = False) -> dict:
 
 
 def problems(project: Project, cand: dict, want: list[str], d: dict, tt: dict | None, acc: dict,
-             duration: float, quota: dict | None = None) -> list[dict]:
+             duration: float, quota: dict | None = None, modes: dict | None = None) -> list[dict]:
     out: list[dict] = []
     for p in want:
         a = acc[p]
-        if not a["connected"]:  # (the content checks still run: fix everything in one go)
+        semi = (modes or {}).get(p) == "semi"  # by hand: no account, no API quota, no API post screen
+        if semi:
+            pass
+        elif not a["connected"]:  # (the content checks still run: fix everything in one go)
             out.append(_problem(p, "not_connected", "connect"))
         elif a["health"]["pill"] == "signed_out":
             out.append(_problem(p, "signed_out", "connect"))
@@ -427,6 +433,8 @@ def problems(project: Project, cand: dict, want: list[str], d: dict, tt: dict | 
             out.append(_problem(p, "caption_too_long", "shorten_caption", n=len(cap), max=lim["caption"]))
         if p == "reels" and hashtag_count(cap) > lim["hashtags"]:
             out.append(_problem(p, "too_many_hashtags", "trim_hashtags", n=hashtag_count(cap), max=lim["hashtags"]))
+        if semi:
+            continue
         q = (quota or {}).get(p) or {}
         if q.get("total") and q.get("used", 0) >= q["total"]:
             out.append(_problem(p, "quota_full", "plan", used=q["used"], total=q["total"]))
@@ -507,11 +515,12 @@ def view(project: Project, cid: str, want: list[str] | None = None, fresh: bool 
     d = drafts(project, cand)
     acc = accounts()
     store = clip_store(project, cid)
-    tt = _tiktok_view(store["tiktok"], fresh) if "tiktok" in want or PF.connected("tiktok") else None
+    modes = modes_now()
+    tt = _tiktok_view(store["tiktok"], fresh) if modes["tiktok"] == "api" else None
     q = quotas()
     states = clip_states(project, cid)
     todo = [p for p in want if states[p]["status"] in ("idle", "failed", "cancelled")]
-    probs = problems(project, cand, todo, d, tt, acc, float(cand["duration"]), q)
+    probs = problems(project, cand, todo, d, tt, acc, float(cand["duration"]), q, modes)
     src = _source_info(project, cid)
     from . import publishing as pub
 
@@ -520,7 +529,13 @@ def view(project: Project, cid: str, want: list[str] | None = None, fresh: bool 
             "duration": float(cand["duration"]), "cover_ms": cover_ms(cand), "source": src["kind"],
             "ai_voice": ai_voice(project, cid), "cover_kind": pub.default_cover_kind(project, cid, review),
             "bleep_hold": state.bleep_hold(project, cid), "lead_s": LEAD_S,
-            "ready": src["kind"] != "rendering"}
+            "ready": src["kind"] != "rendering", "modes": modes}
+
+
+def modes_now() -> dict:
+    """semi (default): SharkyClips makes the file, copies the caption and opens the upload page,
+    you paste and post; api: posted by itself (automatic posting on + a working token)."""
+    return {"youtube": "api", "tiktok": PF.mode("tiktok"), "reels": PF.mode("reels")}
 
 
 # ===================================================================== start
@@ -593,7 +608,7 @@ def start(project: Project, cid: str, body: dict) -> dict:
     with _start_lock:
         v = view(project, cid, want)
         todo = [p for p in want if v["states"][p]["status"] in ("idle", "failed", "cancelled")]
-        if "tiktok" in todo and not body.get("consent"):
+        if "tiktok" in todo and v["modes"]["tiktok"] == "api" and not body.get("consent"):
             raise SharkyClipsError("Confirm TikTok's Music Usage Confirmation first.")
         if v["problems"]:
             e = SharkyClipsError("Fix the marked problems first.", None)
@@ -633,6 +648,13 @@ def _social_start(project: Project, cand: dict, platform: str, when: datetime | 
         return {"status": "uploading", "skipped": True}
     ai = v["ai_voice"]
     caption = v["drafts"][platform]["caption"]
+    if v["modes"][platform] == "semi":  # by hand: make the file now, whatever the planned time
+        PF.record(project, cid, platform, mode="semi", caption=caption, ai_voice=ai if ai["dub"] else None,
+                  error=None, attempts=0, next_try_at=None, late=False, status="preparing",
+                  publish_at=None, remind_at=_iso(when) if when else None, file=None, folder=None,
+                  shared_at=None, manual=None, url=None)
+        submit(project.id, cid, platform)
+        return {"status": "preparing", "mode": "semi", "upload_page": PF.UPLOAD_PAGE[platform]}
     settings = dict(v["tiktok"]["settings"]) if platform == "tiktok" and v.get("tiktok") else None
     if platform == "tiktok" and settings is not None and not v["tiktok"]["audited"]:
         settings["privacy"] = "SELF_ONLY"
@@ -723,6 +745,8 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
         return {"status": "published", "url": rec.get("url")}
     try:
         file = _file_for(project, cid, platform, rec, job)
+        if rec.get("mode") == "semi":
+            return _run_semi(project, cid, platform, file, rec)
         rec = PF.record(project, cid, platform, status="uploading", file=str(file), error=None)
         if job is not None:
             A.jobs.update(job, stage="uploading", progress=0.0)
@@ -742,7 +766,75 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
                                  "network", "transient", 60.0)
             _failed(project, cid, platform, e)
             raise e from exc
+        if rec.get("mode") == "semi":  # by hand: say so on the clip (Retry), never stuck "preparing"
+            _failed(project, cid, platform, SharkyClipsError(f"{type(exc).__name__}: {exc}", None))
         raise
+
+
+def _run_semi(project: Project, cid: str, platform: str, file: Path, rec: dict) -> dict:
+    """By hand: the file goes to Downloads/SharkyClips/<stream> with the caption next to it
+    (.txt); the UI copies the caption, opens the upload page and shows the file."""
+    import shutil
+
+    A = _app()
+    c = A._cand(project, cid)
+    folder = E.downloads_root() / E.safe_name(project.load_meta().get("title") or project.id, 80)
+    folder.mkdir(parents=True, exist_ok=True)
+    title = (clip_store(project, cid)["drafts"].get("youtube") or {}).get("title") or \
+        ((c.get("publish") or {}).get("titles") or [None])[0] or (c.get("text") or "")[:60] or cid
+    rank = f"{int(c.get('rank') or 0):02d}"
+    dest = folder / f"{rank} {E.safe_name(title, 60)} - {NAMES[platform]}.mp4"
+    for n in (40, 20):  # Windows paths stop at 260 characters (the .txt next to it is as long)
+        if len(str(dest)) <= 240:
+            break
+        dest = folder / f"{rank} {E.safe_name(title, n)} - {NAMES[platform]}.mp4"
+    if len(str(dest)) > 240:
+        folder = E.downloads_root()
+        folder.mkdir(parents=True, exist_ok=True)
+        import hashlib
+
+        tag = hashlib.sha1(project.id.encode()).hexdigest()[:6]  # short, still one per stream
+        dest = folder / f"{rank} {NAMES[platform]} {tag}.mp4"
+    try:
+        shutil.copyfile(file, dest)
+    except OSError as exc:
+        raise SharkyClipsError(f"Couldn't save the {NAMES[platform]} file in {folder}.",
+                               "Check that the Downloads folder exists and there's free space, then press Retry.") from exc
+    caption = rec.get("caption") or ""
+    (folder / f"{dest.stem}.txt").write_text(caption + "\n", encoding="utf-8")
+    PF.record(project, cid, platform, status="ready", file=str(dest), folder=str(folder), error=None,
+              ready_at=time.time())
+    return {"status": "ready", "file": str(dest), "folder": str(folder), "mode": "semi"}
+
+
+def shared(project: Project, cid: str, platform: str, url: str | None = None) -> dict:
+    """By hand: "I shared it" (the post is out; SharkyClips didn't post it, so no link unless given)."""
+    if platform not in SOCIAL:
+        raise SharkyClipsError("Unknown platform.")
+    rec = _rec(project, cid, platform)
+    if rec.get("mode") != "semi" or rec.get("status") not in ("ready", "published"):
+        raise SharkyClipsError("This post isn't waiting for you.", "Press Publish first.")
+    u = (url or "").strip()
+    PF.record(project, cid, platform, status="published", manual=True, posted_at=_iso(_now()),
+              shared_at=time.time(), url=u if u.startswith("https://") else rec.get("url"))
+    return clip_states(project, cid)
+
+
+def handoff(project: Project, cid: str, platforms: list[str] | None = None) -> dict:
+    """What the "post it yourself" steps need: per platform its state, the file, the caption to
+    copy (the newest edit) and the upload page."""
+    A = _app()
+    cand = state.effective_cand(A._cand(project, cid), state.load_review(project))
+    d = drafts(project, cand)
+    ai = ai_voice(project, cid)
+    out = {}
+    for p in [x for x in (platforms or list(SOCIAL)) if x in SOCIAL]:
+        rec = _rec(project, cid, p)
+        out[p] = {**_social_state(project, cid, p),
+                  "file": rec.get("file") if rec.get("status") in ("ready", "published") else None,
+                  "caption": d[p]["caption"], "upload_page": PF.UPLOAD_PAGE[p],
+                  "ai_label": bool(ai["dub"]) and bool(ai["label"])}
+    return {"project_id": project.id, "clip_id": cid, "platforms": out}
 
 
 def _failed(project: Project, cid: str, platform: str, exc: SharkyClipsError) -> None:
@@ -1147,6 +1239,19 @@ def api_retry(project_id: str, cid: str, platform: str) -> dict:
     project = _project(project_id)
     retry(project, cid, platform)
     return view(project, cid)
+
+
+@router.get("/api/publish/{project_id}/{cid}/handoff")
+def api_handoff(project_id: str, cid: str, platforms: str | None = None) -> dict:
+    want = [p for p in platforms.split(",") if p] if platforms else None
+    return handoff(_project(project_id), cid, want)
+
+
+@router.post("/api/publish/{project_id}/{cid}/shared/{platform}")
+def api_shared(project_id: str, cid: str, platform: str, body: dict | None = Body(default=None)) -> dict:
+    project = _project(project_id)
+    shared(project, cid, platform, str((body or {}).get("url") or "") or None)
+    return handoff(project, cid)
 
 
 @router.post("/api/publish/{project_id}/{cid}/unplan/{platform}")

@@ -4424,3 +4424,35 @@ a.edit-note:hover { text-decoration: underline; }
   .mp-title-clip { max-width: 100%; }
   .modal-foot .mp-declare { text-align: start; }
 }
+
+/* 1.2.39: by hand ("post it yourself") */
+.mp-chip.mp-mode-semi, .mp-chip.mp-mode-api { margin-inline-start: 0; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+.mp-chip.mp-mode-api { color: var(--success); background: var(--success-soft); border-color: transparent; }
+.mp-st-ready { border-color: var(--gold-line); }
+.mp-badge-go { color: var(--gold, inherit); }
+.ho-intro { margin: 0 0 12px; }
+.ho-track { list-style: none; margin: 0 0 14px; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.ho-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px 0 6px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); font-size: 13px; color: var(--muted); max-width: 100%; }
+.ho-pill.ho-now { color: var(--strong); border-color: color-mix(in srgb, var(--pf, var(--gold-line)) 60%, var(--border-strong)); background: color-mix(in srgb, var(--pf, transparent) 9%, var(--surface)); font-weight: 600; }
+.ho-pill.ho-done { color: var(--success); border-color: color-mix(in srgb, var(--success) 45%, var(--border)); }
+.ho-num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); font-size: 11px; font-weight: 700; }
+.ho-done .ho-num { background: var(--success-soft); border-color: transparent; color: var(--success); }
+.ho-pill-st { font-weight: 400; color: var(--muted); font-size: 12px; }
+.ho-pill-st::before { content: "·"; margin-inline-end: 6px; }
+.ho-card { display: grid; gap: 12px; padding: 16px; border-radius: var(--r-lg, 14px); border: 1px solid color-mix(in srgb, var(--pf, var(--border)) 40%, var(--border)); background: var(--surface); min-width: 0; }
+.ho-card-head { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+.ho-making, .ho-fail, .ho-ready { display: grid; gap: 10px; min-width: 0; }
+.ho-line { margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ho-fail .ho-line { color: var(--danger); }
+.ho-ready .field-hint, .ho-making .field-hint { margin: 0; }
+.ho-go { width: 100%; }
+.ho-copied { display: grid; gap: 8px; padding: 12px 14px; border-radius: var(--r-md); background: var(--success-soft); border: 1px solid color-mix(in srgb, var(--success) 35%, transparent); }
+.ho-copied > b { display: flex; align-items: center; gap: 8px; color: var(--success); font-size: 16px; }
+.ho-copied.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, transparent); }
+.ho-copied.warn > b { color: var(--warn); }
+.ho-steps { margin: 0; padding-inline-start: 22px; display: grid; gap: 4px; font-size: 14px; color: var(--text); }
+.ho-file { font-weight: 600; overflow-wrap: anywhere; }
+.ho-tools { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.ho-caption summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+.ho-caption textarea { margin-top: 6px; width: 100%; }
+.ho-all { display: flex; align-items: center; gap: 10px; padding: 16px; border-radius: var(--r-md); background: var(--success-soft); color: var(--success); font-size: 15px; }

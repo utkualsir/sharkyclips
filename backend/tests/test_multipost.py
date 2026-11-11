@@ -50,13 +50,15 @@ def social(monkeypatch, cfg):  # noqa: F811
     f.state["codes"]["CODE1"] = q["code_challenge"]
     PF.tiktok_finish("CODE1", q["state"])
     PF.ig_connect(IG_TOKEN)
+    PF.set_mode("tiktok", "api")  # automatic posting (1.2.39: semi is the default)
+    PF.set_mode("reels", "api")
     yield f
     _wait(_idle, 60)
     f.close()
     for p in ("tiktok", "reels"):
         PF.forget(p)
     PF._creator_cache.clear()
-    config.update(publish_targets=None)
+    config.update(publish_targets=None, platform_modes={})
     _clean_projects()
 
 

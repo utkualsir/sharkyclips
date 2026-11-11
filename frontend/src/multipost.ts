@@ -5,7 +5,11 @@ export type Target = "youtube" | "tiktok" | "reels";
 export const TARGETS: Target[] = ["youtube", "tiktok", "reels"];
 export const TARGET_NAME: Record<Target, string> = { youtube: "YouTube", tiktok: "TikTok", reels: "Instagram" };
 
-export type PostStatus = "idle" | "scheduled" | "preparing" | "uploading" | "processing" | "published" | "failed" | "cancelled";
+export type PostStatus = "idle" | "scheduled" | "preparing" | "uploading" | "processing" | "ready" | "published" | "failed" | "cancelled";
+
+/** 1.2.39: semi (default for TikTok / Instagram) = SharkyClips makes the file + copies the caption,
+ *  you paste and share; api = posted by itself (automatic posting on + a working token). */
+export type PostMode = "semi" | "api";
 
 export interface PostError {
   message: string;
@@ -31,6 +35,9 @@ export interface PostState {
   make_public_url: string | null;
   locked?: boolean;
   job: string | null;
+  mode?: PostMode | null;
+  manual?: boolean;
+  remind_at?: string | null;
 }
 
 export type ClipPosts = Record<Target, PostState> & { total_views: number | null; everywhere: boolean };
@@ -53,6 +60,8 @@ export interface Account {
   stats?: boolean;
   scopes?: string[];
   redirect?: string | null;
+  mode?: PostMode;
+  upload_page?: string | null;
 }
 
 export interface Quota {
@@ -125,10 +134,24 @@ export interface PublishView {
   bleep_hold: number;
   lead_s: number;
   ready: boolean;
+  modes: Record<Target, PostMode>;
+}
+
+export interface HandoffPlatform extends PostState {
+  file: string | null;
+  caption: string;
+  upload_page: string;
+  ai_label: boolean;
+}
+
+export interface Handoff {
+  project_id: string;
+  clip_id: string;
+  platforms: Partial<Record<"tiktok" | "reels", HandoffPlatform>>;
 }
 
 export interface StartResult {
-  results: Partial<Record<Target, { status: PostStatus; skipped?: boolean; publish_at?: string; moved?: boolean; error?: PostError }>>;
+  results: Partial<Record<Target, { status: PostStatus; skipped?: boolean; publish_at?: string; moved?: boolean; error?: PostError; mode?: PostMode; upload_page?: string }>>;
   view: PublishView;
 }
 
@@ -147,6 +170,8 @@ export const publishApi = {
   ) => req<StartResult>("POST", B(pid, cid), body),
   retry: (pid: string, cid: string, p: Target) => req<PublishView>("POST", `${B(pid, cid)}/retry/${p}`),
   unplan: (pid: string, cid: string, p: Target) => req<PublishView>("POST", `${B(pid, cid)}/unplan/${p}`),
+  handoff: (pid: string, cid: string, targets?: Target[]) => req<Handoff>("GET", `${B(pid, cid)}/handoff${q(targets)}`),
+  shared: (pid: string, cid: string, p: Target, url?: string) => req<Handoff>("POST", `${B(pid, cid)}/shared/${p}`, { url: url ?? "" }),
   targets: () => req<{ targets: Target[] }>("GET", "/api/publish/targets"),
   setTargets: (targets: Target[]) => req<{ targets: Target[] }>("PUT", "/api/publish/targets", { targets }),
 };
@@ -169,6 +194,25 @@ export const accountsApi = {
 /** Which platforms still need this post (idle / failed / cancelled). */
 export function todo(posts: ClipPosts | undefined | null, targets: Target[]): Target[] {
   return targets.filter((p) => !posts || ["idle", "failed", "cancelled"].includes(posts[p]?.status ?? "idle"));
+}
+
+/** The platforms that go "by hand" after Publish: semi mode and not out yet. */
+export function byHand(targets: Target[], modes: Partial<Record<Target, PostMode>> | null | undefined, posts?: ClipPosts | null): Target[] {
+  return (["reels", "tiktok"] as Target[]).filter(
+    (p) => targets.includes(p) && (modes?.[p] ?? "semi") === "semi" && posts?.[p]?.status !== "published",
+  );
+}
+
+export interface HandoffRequest {
+  pid: string;
+  cid: string;
+  title?: string;
+  platforms: Target[];
+}
+
+/** Opens the "post it yourself" steps (one platform after the other), wherever Publish was pressed. */
+export function openHandoff(d: HandoffRequest) {
+  if (d.platforms.length) window.dispatchEvent(new CustomEvent<HandoffRequest>("sc-handoff", { detail: d }));
 }
 
 export function busyState(s: PostStatus | undefined): boolean {

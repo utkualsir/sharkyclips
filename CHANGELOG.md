@@ -7,6 +7,79 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.39] - 2026-11-11
+
+### Instagram and TikTok: post them yourself, step by step
+- **Publish just works for Instagram and TikTok, no account needed.** YouTube still posts by
+  itself. For Instagram and TikTok, SharkyClips makes the right file for each platform and saves
+  it in Downloads/SharkyClips with the caption next to it.
+- **One platform after the other.** A small guide opens: press **Copy & open Instagram**. The
+  caption and hashtags go to the clipboard, the file shows up in its folder and Instagram's
+  upload page opens. Then **Copied, paste and share**: drop the file in, paste the caption and
+  press Share. Tap **I shared it** and the guide moves on to TikTok.
+- **Come back any time.** Closed the guide too early? The clip shows "Ready to post", with a
+  button that opens the guide again. Shared posts count as published in your Library.
+- **Automatic posting is still there.** If you connected Instagram or TikTok with a working
+  token, switch on "Post automatically through the API" on its account card. If the token stops
+  working, SharkyClips goes back to the step-by-step way by itself.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Instagram ve TikTok: adım adım kendin paylaş
+- **Instagram ve TikTok için Yayınla hesap bağlamadan çalışıyor.** YouTube yine kendiliğinden
+  yükleniyor. Instagram ve TikTok için SharkyClips her platforma uygun dosyayı hazırlıyor ve
+  açıklamasıyla birlikte İndirilenler/SharkyClips klasörüne kaydediyor.
+- **Platformlar sırayla.** Küçük bir rehber açılıyor: **Kopyala ve Instagram sayfasını aç**'a
+  bas. Açıklama ve etiketler panoya kopyalanıyor, dosya klasöründe gösteriliyor ve Instagram'ın
+  yükleme sayfası açılıyor. Sonra **Kopyalandı, yapıştır ve paylaş**: dosyayı bırak, açıklamayı
+  yapıştır ve Paylaş'a bas. **Paylaştım**'a dokununca rehber TikTok'a geçiyor.
+- **İstediğin zaman dönebilirsin.** Rehberi erken mi kapattın? Klipte "Paylaşmaya hazır" ve
+  rehberi yeniden açan bir düğme görünüyor. Paylaştıkların Kitaplık'ta yayınlanmış sayılıyor.
+- **Otomatik paylaşım duruyor.** Instagram'ı ya da TikTok'u çalışan bir token'la bağladıysan
+  hesap kartında "API ile otomatik paylaş"ı aç. Token çalışmayı bırakırsa SharkyClips
+  kendiliğinden adım adım yönteme dönüyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Instagram und TikTok ohne Konto:** Beim Veröffentlichen postet YouTube von allein; für Instagram und TikTok erstellt SharkyClips die passende Datei (Downloads/SharkyClips) und ein Assistent führt dich durch: „Kopieren & öffnen“ kopiert Beschreibung und Hashtags und öffnet die Upload-Seite, dann „Kopiert – einfügen und teilen“, „Geteilt“ geht weiter zu TikTok.
+- Automatisches Posten per API bleibt: auf der Kontokarte einschalten (mit funktionierendem Token).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Instagram és TikTok fiók nélkül:** közzétételkor a YouTube magától töltődik fel; Instagramhoz és TikTokhoz a SharkyClips elkészíti a megfelelő fájlt (Letöltések/SharkyClips), és egy útmutató végigvezet: a „Másolás és megnyitás” kimásolja a leírást és a hashtageket, megnyitja a feltöltő oldalt, aztán „Kimásolva – illeszd be és oszd meg”, a „Megosztottam” pedig a TikTokra lép.
+- Az automatikus API-s közzététel megmarad: a fiókkártyán kapcsolható be (működő tokennel).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Instagram и TikTok без аккаунта:** при публикации YouTube загружается сам; для Instagram и TikTok SharkyClips готовит нужный файл (Загрузки/SharkyClips), а помощник ведёт по шагам: «Скопировать и открыть» копирует подпись и хештеги и открывает страницу загрузки, затем «Скопировано — вставьте и опубликуйте», «Опубликовал» переходит к TikTok.
+- Автопубликация через API осталась: включается на карточке аккаунта (с рабочим токеном).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **Instagram وTikTok دون حساب:** عند النشر يُرفع YouTube تلقائيًا؛ أما Instagram وTikTok فيجهّز SharkyClips الملف المناسب (التنزيلات/SharkyClips) ويرشدك مساعد خطوة بخطوة: «انسخ وافتح» ينسخ الوصف والوسوم ويفتح صفحة الرفع، ثم «تم النسخ، الصق وانشر»، و«نشرته» ينتقل إلى TikTok.
+- النشر التلقائي عبر API باقٍ: فعّله من بطاقة الحساب (برمز يعمل).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **Instagram 和 TikTok 无需连接账号：** 发布时 YouTube 自动上传；Instagram 和 TikTok 由 SharkyClips 生成合适的文件（下载/SharkyClips），向导一步步带你完成：“复制并打开”复制文案和话题标签并打开上传页面，然后“已复制，粘贴并发布”，点“已发布”进入 TikTok。
+- 通过 API 自动发布仍然可用：在账号卡片上开启（需要有效令牌）。
+
+</details>
+
 ## [1.2.38] - 2026-11-10
 
 ### Kick VODs and clips
