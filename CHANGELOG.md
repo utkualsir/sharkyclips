@@ -7,6 +7,91 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.40] - 2026-11-11
+
+### Publish queue: everything ready for Claude in Chrome
+- **New "Publish queue" page.** It lists your approved clips (accepted, or rendered and not
+  thrown away) with the AI's title, description, tags and hashtags already filled in. Change any
+  of them, switch platforms on or off per clip, or pick your own time.
+- **"Prepare for Chrome"** makes a 9:16 MP4 **under 10 MB** of every picked clip (H.264 + AAC,
+  quality worked out from the clip's length), writes `queue.json` and a short brief next to the
+  files in `SharkyClips/publish_queue/<date>_batch`, plans the times and opens the folder.
+- **Times that make sense.** Set posts per day and the times for each platform (for example
+  12:00, 18:00, 21:00). At most 8 a day on YouTube, 10 on Instagram, and your own TikTok limit
+  (10 by default). Nothing is planned sooner than an hour from now, and a full day moves on to
+  the next one. All times are Budapest time.
+- **One calendar.** `SharkyClips/takvim.json` keeps every planned post, and `takvim.md` shows it
+  as an easy-to-read table. A clip that's already scheduled on a platform isn't queued there
+  again.
+- **Instagram account per clip.** Gaming clips go to @utkualsirr48 by default, others to
+  @utkualsirr; change it in the settings or per clip. #utkualsirr is on every post.
+- **"Copy for Claude in Chrome"** copies the brief with the whole queue, and **"Import status"**
+  reads back the JSON Claude answers with: the calendar and the queue show what got scheduled,
+  with links, and what failed.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Yayın Kuyruğu: her şey Claude in Chrome için hazır
+- **Yeni "Yayın Kuyruğu" sayfası.** Onaylanan kliplerini (kabul ettiklerin ya da render edilip
+  atılmayanlar) AI'ın başlık, açıklama, etiket ve hashtag önerileriyle dolu olarak listeler.
+  İstediğini değiştir, her klipte platformları aç/kapat ya da kendi saatini seç.
+- **"Chrome için hazırla"** seçtiğin her klibin **10 MB altında** 9:16 MP4'ünü yapar (H.264 +
+  AAC, kalite klibin süresine göre hesaplanır), dosyaların yanına `queue.json` ve kısa bir talimat
+  yazar (`SharkyClips/publish_queue/<tarih>_batch`), saatleri planlar ve klasörü açar.
+- **Mantıklı saatler.** Her platform için günlük gönderi sayısını ve saatleri ayarla (örneğin
+  12:00, 18:00, 21:00). YouTube'da günde en fazla 8, Instagram'da 10, TikTok'ta kendi sınırın
+  (varsayılan 10). Hiçbir gönderi şimdiden bir saat sonradan önceye planlanmaz, dolan gün ertesi
+  güne kayar. Tüm saatler Budapeşte saatidir.
+- **Tek takvim.** `SharkyClips/takvim.json` planlanan her gönderiyi tutar, `takvim.md` de kolay
+  okunur bir tablo olarak gösterir. Bir platformda zaten planlanmış bir klip oraya tekrar
+  kuyruğa alınmaz.
+- **Klip başına Instagram hesabı.** Oyun klipleri varsayılan olarak @utkualsirr48'e, diğerleri
+  @utkualsirr'a gider; ayarlardan ya da klip başına değiştir. #utkualsirr her gönderide var.
+- **"Claude in Chrome için kopyala"** talimatı tüm kuyrukla birlikte kopyalar, **"Durumu içe
+  aktar"** da Claude'un verdiği JSON'u okur: takvimde ve kuyrukta neyin planlandığı (linkleriyle)
+  ve neyin başarısız olduğu görünür.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Neue Seite „Veröffentlichungs-Warteschlange“:** freigegebene Clips mit den KI-Texten (änderbar), „Für Chrome vorbereiten“ macht 9:16-MP4s unter 10 MB, schreibt queue.json und eine Anleitung für Claude in Chrome und plant die Zeiten (Budapest, pro Tag und Plattform mit Obergrenzen, frühestens in 1 Stunde).
+- Ein Kalender (takvim.json + takvim.md) verhindert doppelte Planung; „Status importieren“ liest Claudes Antwort zurück.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Új „Közzétételi sor” oldal:** jóváhagyott klipek az MI szövegeivel (szerkeszthetők); az „Előkészítés Chrome-hoz” 10 MB alatti 9:16-os MP4-eket készít, megírja a queue.json-t és a Claude in Chrome utasítását, és ütemez (budapesti idő, napi korlátokkal, legkorábban 1 óra múlva).
+- Egy naptár (takvim.json + takvim.md) megakadályozza a dupla ütemezést; az „Állapot importálása” visszaolvassa Claude válaszát.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Новая страница «Очередь публикаций»:** одобренные клипы с текстами ИИ (можно править); «Подготовить для Chrome» делает MP4 9:16 до 10 МБ, пишет queue.json и инструкцию для Claude in Chrome и расставляет время (Будапешт, лимиты в день, не раньше чем через час).
+- Один календарь (takvim.json + takvim.md) не даёт запланировать дважды; «Импорт статуса» читает ответ Claude.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **صفحة جديدة «قائمة النشر»:** المقاطع المعتمدة مع نصوص الذكاء الاصطناعي (قابلة للتعديل)؛ «جهّز لـ Chrome» يصنع ملفات MP4 بنسبة 9:16 أقل من 10 ميغابايت، ويكتب queue.json وتعليمات Claude in Chrome، ويجدول الأوقات (بتوقيت بودابست، بحدود يومية، وليس قبل ساعة).
+- تقويم واحد (takvim.json وtakvim.md) يمنع الجدولة المكررة؛ و«استيراد الحالة» يقرأ رد Claude.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **新的“发布队列”页面：** 列出已通过的片段并预填 AI 文案（可修改）；“为 Chrome 准备”生成 10 MB 以下的 9:16 MP4，写好 queue.json 和给 Claude in Chrome 的说明，并按布达佩斯时间排期（每日上限，最早一小时后）。
+- 一个日历（takvim.json + takvim.md）防止重复排期；“导入状态”读回 Claude 的结果。
+
+</details>
+
 ## [1.2.39] - 2026-11-11
 
 ### Instagram and TikTok: post them yourself, step by step

@@ -52,6 +52,8 @@ const SCREENS = [
   { name: "studio-games", mode: "pro", hash: "#/studio/games", ready: ".games-json" },
   { name: "settings", mode: "pro", hash: "#/settings", ready: "main" },
   { name: "stats", mode: "pro", hash: "#/stats", ready: "main" },
+  { name: "pubqueue", mode: "pro", hash: "#/publish-queue", ready: ".pq-actions" },
+  { name: "easy-pubqueue", mode: "easy", hash: "#/publish-queue", ready: ".pq-actions" },
 ];
 
 /** Runs in the page. Returns a list of problems. */

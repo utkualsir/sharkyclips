@@ -2129,8 +2129,8 @@ h3.section-title {
   }
 }
 
-@media (max-width: 1240px) {
-  /* laptops at 125-150 % scaling: room for the nav, the pill and the buttons */
+@media (max-width: 1360px) {
+  /* laptops at 125-150 % scaling: room for the nav (7 links since 1.2.40), the pill and the buttons */
   .gov-state {
     display: none;
   }
@@ -4456,3 +4456,47 @@ a.edit-note:hover { text-decoration: underline; }
 .ho-caption summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 .ho-caption textarea { margin-top: 6px; width: 100%; }
 .ho-all { display: flex; align-items: center; gap: 10px; padding: 16px; border-radius: var(--r-md); background: var(--success-soft); color: var(--success); font-size: 15px; }
+
+/* 1.2.40: publish queue (Claude in Chrome) */
+.pq-page { max-width: 1100px; }
+.pq-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 14px 16px; min-width: 0; }
+.pq-progress { flex-basis: 100%; display: grid; gap: 4px; min-width: 0; }
+.pq-actions .mp-problem { flex-basis: 100%; }
+.pq-result { margin-top: 14px; padding: 14px 16px; display: grid; gap: 8px; border-color: color-mix(in srgb, var(--success) 40%, var(--border)); }
+.pq-result header { display: flex; align-items: center; gap: 8px; color: var(--success); }
+.pq-result-list { margin: 0; padding-inline-start: 18px; display: grid; gap: 2px; font-size: 13.5px; }
+.pq-section { margin-top: 24px; min-width: 0; }
+.pq-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.pq-section-head h2 { margin: 0; font-size: 18px; color: var(--strong); }
+.pq-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pq-row { padding: 10px 12px; min-width: 0; }
+.pq-row.picked { border-color: var(--gold-line); }
+.pq-row-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.pq-pick { padding-top: 3px; }
+.pq-pick input { width: 18px; height: 18px; }
+.pq-row-main { display: grid; gap: 3px; min-width: 0; }
+.pq-row-title { color: var(--strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pq-row-sub { font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pq-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+.pq-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); text-decoration: none; max-width: 100%; }
+.pq-chip.pq-scheduled { color: var(--success); background: var(--success-soft); border-color: transparent; }
+.pq-chip.pq-failed { color: var(--danger); background: var(--danger-soft); border-color: transparent; }
+.pq-chip.pq-skipped_duplicate { color: var(--muted); }
+.pq-chip.pq-plan { border-style: dashed; color: var(--muted); }
+.pq-editor { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: grid; gap: 10px; min-width: 0; }
+.pq-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 10px; }
+.pq-plats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 8px; }
+.pq-plat { display: grid; gap: 6px; padding: 10px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--surface-2); min-width: 0; }
+.pq-plat.off { opacity: .7; }
+.pq-time .input { width: 100%; min-width: 0; }
+.pq-empty { padding: 16px; color: var(--muted); margin: 0; }
+.pq-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.pq-table th, .pq-table td { text-align: start; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.pq-table th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.pq-settings { margin-top: 24px; padding: 12px 16px; }
+.pq-settings summary { cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--strong); }
+.pq-set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px; margin-top: 10px; }
+.pq-set { border: 1px solid var(--border); border-radius: var(--r-md); padding: 10px 12px; display: grid; gap: 8px; min-width: 0; margin: 0; }
+.pq-set legend { padding: 0 4px; }
+.pq-brand { margin-top: 10px; max-width: 320px; }
+.pq-import { width: 100%; font-size: 12.5px; }

@@ -2436,6 +2436,7 @@ from .covers_api import router as _covers_router  # noqa: E402 - cover studio (1
 from .platforms_api import router as _platforms_router  # noqa: E402 - TikTok / Reels (1.2.18)
 from .dub_api import router as _dub_router  # noqa: E402 - my-voice dubbing (1.2.18)
 from .multipost import router as _multipost_router  # noqa: E402 - one Publish button, 3 platforms (1.2.36)
+from .pubqueue_api import router as _pubqueue_router  # noqa: E402 - publish queue for Claude in Chrome (1.2.40)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2447,6 +2448,7 @@ app.include_router(_live_router)
 app.include_router(_phone_router)
 app.include_router(_covers_router)
 app.include_router(_multipost_router)
+app.include_router(_pubqueue_router)
 app.include_router(_platforms_router)
 app.include_router(_dub_router)
 
