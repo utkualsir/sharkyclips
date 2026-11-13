@@ -84,7 +84,7 @@ for (const theme of ["dark", "light"]) {
     const res = await page.evaluate(async () => {
       // eslint-disable-next-line no-undef
       const r = await axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "best-practice"] } });
-      return r.violations.map((v) => ({ id: v.id, impact: v.impact, n: v.nodes.length, target: v.nodes.slice(0, 3).map((x) => x.target.join(" ")) }));
+      return r.violations.map((v) => ({ id: v.id, impact: v.impact, n: v.nodes.length, target: v.nodes.slice(0, 3).map((x) => x.target.join(" ")), why: v.nodes[0]?.failureSummary?.slice(0, 300) }));
     });
     // region / landmark rules: toasts and dialogs live outside <main> by design (checked in 1.2.6 too)
     const bad = res.filter((v) => !["region"].includes(v.id));

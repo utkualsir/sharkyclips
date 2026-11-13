@@ -4513,7 +4513,7 @@ a.edit-note:hover { text-decoration: underline; }
 
 /* ---------- 1.2.41: delete + trash */
 .btn-danger { background: #b3261e; color: #ffffff; border-color: transparent; } /* 6.5:1 in every theme (Easy dark has its own --bg) */
-.btn-danger:hover:not(:disabled) { filter: brightness(1.08); }
+.btn-danger:hover:not(:disabled) { background: #9c2019; color: #ffffff; }
 .pcard-wrap { position: relative; display: flex; min-width: 0; }
 .pcard-wrap > .pcard { flex: 1; min-width: 0; }
 .pcard-del {
