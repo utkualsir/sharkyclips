@@ -13,6 +13,17 @@ try {
   ({ chromium } = req("@playwright/test"));
 }
 const AXE = readFileSync(req.resolve("axe-core/axe.min.js"), "utf8");
+/** Switch Easy / Pro on the server; a slow CI runner may stall one request: wait longer, try again. */
+async function putMode(request, url, mode) {
+  for (let i = 1; ; i++) {
+    try {
+      return await request.put(url, { data: { mode }, timeout: 60000 });
+    } catch (e) {
+      if (i >= 3) throw e;
+    }
+  }
+}
+
 const [base, pid] = process.argv.slice(2);
 if (!base || !pid) throw new Error("usage: node axe-check.mjs <base-url> <project-id>");
 const P = encodeURIComponent(pid);
@@ -59,7 +70,7 @@ for (const theme of ["dark", "light"]) {
   let mode = null;
   for (const [name, m, hash, ready, act] of SCREENS) {
     if (m !== mode) {
-      await page.request.put(`${base}/api/easy/settings`, { data: { mode: m } });
+      await putMode(page.request, `${base}/api/easy/settings`, m);
       await page.goto("about:blank");
       mode = m;
     }
@@ -92,7 +103,7 @@ for (const theme of ["dark", "light"]) {
     sessionStorage.setItem("sc-splash-shown", "1");
   }, LANG);
   const page = await ctx.newPage();
-  await page.request.put(`${base}/api/easy/settings`, { data: { mode: "pro" } });
+  await putMode(page.request, `${base}/api/easy/settings`, "pro");
   await page.goto(`${base}/#/p/${P}`, { waitUntil: "load" });
   await page.waitForSelector(".side-tabs", { timeout: 20000 });
   for (let k = 0; k < 3 && (await page.locator(".modal-backdrop").count()); k++) await page.keyboard.press("Escape");

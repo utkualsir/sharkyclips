@@ -4512,7 +4512,7 @@ a.edit-note:hover { text-decoration: underline; }
 .pq-import { width: 100%; font-size: 12.5px; }
 
 /* ---------- 1.2.41: delete + trash */
-.btn-danger { background: var(--danger); color: var(--bg); border-color: transparent; }
+.btn-danger { background: #b3261e; color: #ffffff; border-color: transparent; } /* 6.5:1 in every theme (Easy dark has its own --bg) */
 .btn-danger:hover:not(:disabled) { filter: brightness(1.08); }
 .pcard-wrap { position: relative; display: flex; min-width: 0; }
 .pcard-wrap > .pcard { flex: 1; min-width: 0; }

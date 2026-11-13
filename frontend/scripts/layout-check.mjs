@@ -21,6 +21,17 @@ try {
   ({ chromium } = req("playwright"));
 }
 
+/** Switch Easy / Pro on the server; a slow CI runner may stall one request: wait longer, try again. */
+async function putMode(request, url, mode) {
+  for (let i = 1; ; i++) {
+    try {
+      return await request.put(url, { data: { mode }, timeout: 60000 });
+    } catch (e) {
+      if (i >= 3) throw e;
+    }
+  }
+}
+
 const [base, pid, shotDir] = process.argv.slice(2);
 if (!base || !pid) throw new Error("usage: node layout-check.mjs <base-url> <project-id> [screenshot-dir]");
 if (shotDir) mkdirSync(shotDir, { recursive: true });
@@ -161,7 +172,7 @@ for (const lang of LANGS)
       for (const s of SCREENS) {
         if (s.mode !== mode) {
           // the app reads the mode once at start: switch it on the server, then load afresh
-          await page.request.put(`${base}/api/easy/settings`, { data: { mode: s.mode } });
+          await putMode(page.request, `${base}/api/easy/settings`, s.mode);
           await page.goto("about:blank");
           mode = s.mode;
         }

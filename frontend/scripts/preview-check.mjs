@@ -25,6 +25,17 @@ try {
   ({ chromium } = req("playwright"));
 }
 
+/** Switch Easy / Pro on the server; a slow CI runner may stall one request: wait longer, try again. */
+async function putMode(request, url, mode) {
+  for (let i = 1; ; i++) {
+    try {
+      return await request.put(url, { data: { mode }, timeout: 60000 });
+    } catch (e) {
+      if (i >= 3) throw e;
+    }
+  }
+}
+
 const [base, pid, shotDir] = process.argv.slice(2);
 if (!base || !pid) throw new Error("usage: node preview-check.mjs <base-url> <project-id> [screenshot-dir]");
 if (shotDir) mkdirSync(shotDir, { recursive: true });
@@ -36,7 +47,7 @@ const problems = [];
 
 const browser = await chromium.launch({ channel: process.env.LAYOUT_CHANNEL || undefined, headless: true });
 const api = (await browser.newContext()).request;
-await api.put(`${base}/api/easy/settings`, { data: { mode: "pro" } });
+await putMode(api, `${base}/api/easy/settings`, "pro");
 
 async function openProject(w, h) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
