@@ -31,6 +31,10 @@ os.environ["SHARKYCLIPS_NO_BROWSER"] = "1"  # "Connect with Google" must not ope
 os.environ["SHARKYCLIPS_NO_BLEEP_CHECK"] = "1"  # renders never load Whisper to re-listen to bleeps (tested directly)
 # no built-in Google client unless a test sets one (the shipped google_client.json may be filled in)
 os.environ["SHARKYCLIPS_SHARED_CLIENT"] = str(_home / "no-shared-client.json")
+# never the real Downloads/SharkyClips (semi-automatic posts) or ~/SharkyClips (publish queue):
+# 1.2.40's tests left 16 "Stream pub-mp-*" folders in a real Downloads folder
+os.environ["SHARKYCLIPS_DOWNLOADS"] = str(_home / "downloads" / "SharkyClips")
+os.environ["SHARKYCLIPS_QUEUE_HOME"] = str(_home / "queue-home")
 os.environ.pop("CLIPFORGE_HOME", None)
 os.environ.pop("SHARKYCLIPS_SUPERVISED", None)
 

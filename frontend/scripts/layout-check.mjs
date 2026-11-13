@@ -29,7 +29,10 @@ const quick = process.env.LAYOUT_QUICK === "1";
 const SIZES = quick
   ? [[1280, 720], [1536, 864], [390, 844]]
   : [[1024, 700], [1280, 720], [1280, 800], [1366, 768], [1536, 864], [1707, 960], [1920, 1080], [1280, 1000], [390, 844]];
-const LANGS = quick ? ["tr", "ar"] : ["tr", "ar", "en"];
+// LAYOUT_SIZES=1024x700,390x844 and LAYOUT_LANGS=tr: one failing case again, fast (local use)
+if (process.env.LAYOUT_SIZES)
+  SIZES.splice(0, SIZES.length, ...process.env.LAYOUT_SIZES.split(",").map((s) => s.split("x").map(Number)));
+const LANGS = process.env.LAYOUT_LANGS ? process.env.LAYOUT_LANGS.split(",") : quick ? ["tr", "ar"] : ["tr", "ar", "en"];
 const THEMES = ["light", "dark"];
 const P = encodeURIComponent(pid);
 // mode: Easy (the default) or Pro; switched on the server before the screen loads

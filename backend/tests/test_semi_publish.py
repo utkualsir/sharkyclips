@@ -100,7 +100,13 @@ def test_automatic_only_with_the_switch_and_a_working_token(semi):
 def test_long_paths_are_shortened_and_errors_show_on_the_clip(semi, monkeypatch, tmp_path):
     import shutil
 
-    deep = tmp_path / ("d" * 60) / ("e" * 60)  # a deep Downloads folder: Windows stops at 260 characters
+    # a deep Downloads folder: Windows stops at 260 characters. Exactly 200 characters, whatever
+    # this machine's temp folder is (CI's own temp path is ~100 characters on Windows and macOS, so
+    # a fixed "+120 characters" left no room even for the shortest name)
+    deep = tmp_path
+    while len(str(deep)) < 199:
+        deep = deep / ("d" * min(60, 200 - len(str(deep)) - 1))
+    assert len(str(deep)) <= 200
     monkeypatch.setenv("SHARKYCLIPS_DOWNLOADS", str(deep))
     project = _project("pub-semi-long")
     _rendered(project, "c01")
