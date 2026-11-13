@@ -15,6 +15,7 @@ import { CaptionFixer, CutRow, ReasonChips, SmartBanner, TasteButtons } from "..
 import { ConnectionPill, ShortsOverlay, usePhonePreview } from "../components/EasyAuto";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
+import { DeleteDialog, useUndoToast } from "../components/Trash";
 import { PublishBlock, useTargets } from "../components/PublishAll";
 import { publishApi } from "../multipost";
 import { Icon } from "../components/Icons";
@@ -56,6 +57,8 @@ export default function EasyProject({ id }: { id: string }) {
   const [missing, setMissing] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [editing, setEditing] = useState<EasyClip | null>(null);
+  const [deleteIds, setDeleteIds] = useState<string[] | null>(null);
+  const undoDelete = useUndoToast();
   const [connectFor, setConnectFor] = useState<string[] | null>(null);
   const [busy, setBusy] = useState<Record<string, "upload" | "download">>({});
   const [tracked, setTracked] = useState<Record<string, string>>({}); // cid -> title of uploads to report
@@ -330,6 +333,7 @@ export default function EasyProject({ id }: { id: string }) {
                 onDownload={() => download(c)}
                 onEdit={() => setEditing(c)}
                 onDiscard={() => discard(c)}
+                onDelete={() => setDeleteIds([c.id])}
                 onView={setView}
                 tasteNeed={view.taste?.need ?? 0}
                 channel={view.youtube.channel?.title}
@@ -399,6 +403,19 @@ export default function EasyProject({ id }: { id: string }) {
           />
         </Modal>
       )}
+      {deleteIds && (
+        <DeleteDialog
+          projectId={id}
+          clipIds={deleteIds}
+          onClose={() => setDeleteIds(null)}
+          onDeleted={(item) => {
+            setDeleteIds(null);
+            setSelected((s) => s.filter((x) => !item.clip_ids.includes(x)));
+            load();
+            undoDelete(item, load);
+          }}
+        />
+      )}
     </main>
   );
 }
@@ -417,6 +434,7 @@ function ClipCard({
   onDownload,
   onEdit,
   onDiscard,
+  onDelete,
   onView,
   tasteNeed,
   channel,
@@ -432,6 +450,7 @@ function ClipCard({
   onDownload: () => void;
   onEdit: () => void;
   onDiscard: () => void;
+  onDelete: () => void;
   onView: (v: EasyView) => void;
   tasteNeed: number;
   channel?: string | null;
@@ -556,7 +575,17 @@ function ClipCard({
                   }}
                   disabled={up.status === "published" || up.status === "scheduled"}
                 >
-                  <Icon name="trash" size={15} /> {t("easy.discard")}
+                  <Icon name="thumb-down" size={15} /> {t("easy.discard")}
+                </button>
+                <button
+                  role="menuitem"
+                  className="danger"
+                  onClick={() => {
+                    setMenu(false);
+                    onDelete();
+                  }}
+                >
+                  <Icon name="trash" size={15} /> {t("trash.delete_clip")}
                 </button>
               </div>
             )}

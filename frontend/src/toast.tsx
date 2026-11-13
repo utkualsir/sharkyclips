@@ -7,6 +7,8 @@ interface Toast {
   text: string;
   hint?: string | null;
   action?: { label: string; run: () => void };
+  /** how long it stays (an undo toast stays longer) */
+  ms?: number;
 }
 
 const Ctx = createContext<(t: Omit<Toast, "id">) => void>(() => {});
@@ -16,7 +18,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const push = useCallback((t: Omit<Toast, "id">) => {
     const id = Date.now() + Math.random();
     setToasts((ts) => [...ts.slice(-3), { ...t, id }]);
-    window.setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), t.kind === "err" ? 9000 : 4500);
+    window.setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), t.ms ?? (t.kind === "err" ? 9000 : 4500));
   }, []);
   return (
     <Ctx.Provider value={push}>
@@ -30,7 +32,13 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               {t.hint && <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>{t.hint}</div>}
             </div>
             {t.action && (
-              <button className="btn btn-sm btn-ghost" onClick={t.action.run}>
+              <button
+                className="btn btn-sm btn-ghost"
+                onClick={() => {
+                  setToasts((ts) => ts.filter((x) => x.id !== t.id));
+                  t.action!.run();
+                }}
+              >
                 {t.action.label}
               </button>
             )}

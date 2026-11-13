@@ -49,6 +49,7 @@ import { effectiveRange, maskWord, renderRange, typing, useHistory, usePlan, use
 import HookTestDialog from "../components/HookTest";
 import { gameReasonLabel, whyText } from "./GameDebug";
 import { DubSwitch } from "../components/MyVoice";
+import { DeleteDialog, useUndoToast } from "../components/Trash";
 
 const MODES: Mode[] = ["gaming", "study", "music"];
 const GAME_NAMES: Record<GameId, string> = { delta_force: "Delta Force", lol: "League of Legends" };
@@ -70,6 +71,9 @@ function CandidateRow({
   onSelect,
   onAccept,
   onDelete,
+  picking,
+  picked,
+  onPick,
 }: {
   c: Candidate;
   selected: boolean;
@@ -79,6 +83,10 @@ function CandidateRow({
   onSelect: () => void;
   onAccept: (v: boolean) => void;
   onDelete?: () => void;
+  /** 1.2.41: select several clips (to delete them together) */
+  picking?: boolean;
+  picked?: boolean;
+  onPick?: (v: boolean) => void;
 }) {
   const { t, num } = useI18n();
   const codes = [...new Set(c.reasons.map((r) => r.code))].slice(0, 4);
@@ -92,14 +100,19 @@ function CandidateRow({
     .sort((a, b) => b.strength - a.strength)[0]?.value;
   return (
     <div
-      className={`cand${rejected ? " rejected" : ""}`}
+      className={`cand${rejected ? " rejected" : ""}${picked ? " picked" : ""}`}
       role="listitem"
       aria-current={selected ? "true" : undefined}
       tabIndex={0}
-      onClick={onSelect}
-      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelect())}
+      onClick={picking ? () => onPick?.(!picked) : onSelect}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), picking ? onPick?.(!picked) : onSelect())}
       data-cand={c.id}
     >
+      {picking && (
+        <label className="cand-pick" onClick={(e) => e.stopPropagation()}>
+          <input type="checkbox" checked={!!picked} onChange={(e) => onPick?.(e.target.checked)} aria-label={`${t("trash.pick")} #${c.rank}`} />
+        </label>
+      )}
       <span className="cand-rank">#{String(c.rank).padStart(2, "0")}</span>
       <div className="cand-body">
         <p className="cand-title" dir="auto">
@@ -158,8 +171,8 @@ function CandidateRow({
       <div className="cand-accept" onClick={(e) => e.stopPropagation()}>
         <Toggle checked={accepted} onChange={onAccept} label={`${t("cands.accept")} #${c.rank}`} />
         <span className={accepted ? "ok" : ""}>{accepted ? <Icon name="check" size={13} /> : t("cands.accept")}</span>
-        {onDelete && (
-          <button className="btn btn-sm btn-ghost icon-btn" onClick={onDelete} aria-label={t("manual.delete")} title={t("manual.delete")}>
+        {onDelete && !picking && (
+          <button className="btn btn-sm btn-ghost icon-btn" onClick={onDelete} aria-label={`${t("trash.delete_clip")} #${c.rank}`} title={t("trash.delete_clip")}>
             <Icon name="trash" size={13} />
           </button>
         )}
@@ -330,6 +343,10 @@ export default function ProjectPage({ id }: { id: string }) {
   const [loopPlay, setLoopPlay] = useState(false);
   const [hookTests, setHookTests] = useState<HookTests | null>(null);
   const [hookFor, setHookFor] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [deleteIds, setDeleteIds] = useState<string[] | null>(null);
+  const undoDelete = useUndoToast();
   const history = useHistory<Snapshot>();
   useEffect(() => {
     api.music().then((m) => setTracks(m.tracks)).catch(() => {});
@@ -663,15 +680,6 @@ export default function ProjectPage({ id }: { id: string }) {
     }
   };
 
-  const deleteManual = async (c: Candidate) => {
-    if (!window.confirm(t("manual.delete_confirm", { n: c.rank }))) return;
-    try {
-      await api.deleteManualClip(id, c.id);
-      load();
-    } catch (e: any) {
-      toast({ kind: "err", text: e.message });
-    }
-  };
 
   const setOption = (o: Partial<ClipOptions>) => patchReview({ options: { ...options, ...o } });
 
@@ -883,6 +891,10 @@ export default function ProjectPage({ id }: { id: string }) {
                   {src}
                 </span>
               ))}
+            <button className="chip chip-outline chip-btn" onClick={() => setDeleteIds([])} title={t("trash.delete_project")}>
+              <Icon name="trash" size={12} />
+              {t("trash.delete_project")}
+            </button>
           </div>
         </div>
         {project.language && (
@@ -1236,6 +1248,22 @@ export default function ProjectPage({ id }: { id: string }) {
               )}
               {tab === "cands" && cands.length > 0 && (
                 <button
+                  className={`btn btn-sm btn-ghost icon-btn${picking ? " active" : ""}`}
+                  style={{ alignSelf: "center" }}
+                  aria-pressed={picking}
+                  data-testid="pick-toggle"
+                  onClick={() => {
+                    setPicking((v) => !v);
+                    setPicked(new Set());
+                  }}
+                  title={t("trash.select")}
+                  aria-label={t("trash.select")}
+                >
+                  <Icon name="list" />
+                </button>
+              )}
+              {tab === "cands" && cands.length > 0 && (
+                <button
                   className="btn btn-sm btn-ghost icon-btn"
                   style={{ alignSelf: "center" }}
                   onClick={() => {
@@ -1252,6 +1280,21 @@ export default function ProjectPage({ id }: { id: string }) {
 
             {tab === "cands" ? (
               <>
+                {picking && (
+                  <div className="pick-bar" role="toolbar" aria-label={t("trash.select")}>
+                    <span className="field-hint">{t("trash.picked", { n: num(picked.size) })}</span>
+                    <button type="button" className="link-btn" onClick={() => setPicked(new Set(cands.map((c) => c.id)))}>
+                      {t("pq.pick_all")}
+                    </button>
+                    <span style={{ flex: 1 }} />
+                    <button className="btn btn-sm btn-danger" disabled={!picked.size} onClick={() => setDeleteIds([...picked])}>
+                      <Icon name="trash" size={13} /> {t("trash.delete_picked", { n: num(picked.size) })}
+                    </button>
+                    <button className="btn btn-sm btn-ghost" onClick={() => (setPicking(false), setPicked(new Set()))}>
+                      {t("common.cancel")}
+                    </button>
+                  </div>
+                )}
                 <div className="side-scroll" role="list" aria-label={t("cands.tab")}>
                   {cands.map((c) => (
                     <CandidateRow
@@ -1263,7 +1306,17 @@ export default function ProjectPage({ id }: { id: string }) {
                       edited={!!review?.edits?.[c.id]}
                       onSelect={() => select(c)}
                       onAccept={(v) => setAccepted(c.id, v)}
-                      onDelete={c.manual ? () => deleteManual(c) : undefined}
+                      onDelete={() => setDeleteIds([c.id])}
+                      picking={picking}
+                      picked={picked.has(c.id)}
+                      onPick={(v) =>
+                        setPicked((s) => {
+                          const n = new Set(s);
+                          if (v) n.add(c.id);
+                          else n.delete(c.id);
+                          return n;
+                        })
+                      }
                     />
                   ))}
                 </div>
@@ -1651,6 +1704,25 @@ export default function ProjectPage({ id }: { id: string }) {
           }}
           onChanged={loadExports}
           onClose={() => setHookFor(null)}
+        />
+      )}
+      {deleteIds && (
+        <DeleteDialog
+          projectId={id}
+          clipIds={deleteIds.length ? deleteIds : null}
+          onClose={() => setDeleteIds(null)}
+          onDeleted={(item) => {
+            setDeleteIds(null);
+            setPicking(false);
+            setPicked(new Set());
+            if (item.kind === "project") {
+              window.location.hash = href.library;
+              return;
+            }
+            if (selectedId && item.clip_ids.includes(selectedId)) setSelectedId(null);
+            load();
+            undoDelete(item, load);
+          }}
         />
       )}
       {fastOpen && (

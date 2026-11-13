@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAppState } from "../appstate";
 import { api, type LlmInfo, type Mode, type PerfMode, type Settings as SettingsT, type UpdateStatus } from "../api";
 import { Icon } from "../components/Icons";
+import { href } from "../router";
 import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -424,6 +425,9 @@ export default function Settings() {
           <h1 className="display">{t("settings.title")}</h1>
           <p className="lede">{t("settings.lede")}</p>
         </div>
+        <a className="btn btn-ghost" href={href.trash}>
+          <Icon name="trash" size={15} /> {t("trash.disk_link")}
+        </a>
       </div>
 
       {!settings ? (

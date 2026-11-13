@@ -3,6 +3,7 @@ import { ConnectionPill } from "../components/EasyAuto";
 import { ApiError, easyApi, uploadEasyFile, urls, type EasyProjectRow, type Mode } from "../api";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { Icon } from "../components/Icons";
+import { DeleteDialog, useUndoToast } from "../components/Trash";
 import { ProgressBar } from "../components/ui";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
@@ -42,6 +43,8 @@ export default function EasyHome() {
   const [error, setError] = useState<ApiError | null>(null);
   const [pending, setPending] = useState<string | null>(readPending);
   const [recent, setRecent] = useState<EasyProjectRow[] | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const undoDelete = useUndoToast();
   const input = useRef<HTMLInputElement>(null);
   const abortRef = useRef<() => void>();
 
@@ -260,11 +263,32 @@ export default function EasyHome() {
                   </span>
                   <Icon name="chevron-right" size={18} className="flip-rtl" />
                 </a>
+                <button className="btn btn-ghost icon-btn ez-recent-del" onClick={() => setDeleting(p.id)}
+                  aria-label={t("trash.delete_named", { title: p.title })} title={t("trash.delete_project")}>
+                  <Icon name="trash" size={15} />
+                </button>
               </li>
             ))}
           </ul>
         </section>
       )}
+      {deleting && (
+        <DeleteDialog
+          projectId={deleting}
+          clipIds={null}
+          onClose={() => setDeleting(null)}
+          onDeleted={(item) => {
+            setDeleting(null);
+            load();
+            undoDelete(item, load);
+          }}
+        />
+      )}
+      <p className="ez-trash-link">
+        <a className="link-btn" href={href.trash}>
+          <Icon name="trash" size={13} /> {t("trash.title")}
+        </a>
+      </p>
     </main>
   );
 }

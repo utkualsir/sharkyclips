@@ -1076,6 +1076,10 @@ def tick(now: datetime | None = None) -> list[str]:
 
         if pubqueue_api.link_soon():
             acts.append("chrome:linked")
+        from .. import trash
+
+        if trash.purge_soon():  # 1.2.41: trash items older than 30 days
+            acts.append("trash:purged")
     except Exception:  # noqa: BLE001
         pass
     if time.time() - _stats_at["t"] > STATS_EVERY_S:

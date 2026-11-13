@@ -14,7 +14,8 @@ export type Route =
   | { name: "stats" }
   | { name: "publish"; view: "list" | "calendar" }
   | { name: "approve" }
-  | { name: "pubqueue" };
+  | { name: "pubqueue" }
+  | { name: "trash" };
 
 function parse(): Route {
   const h = window.location.hash.replace(/^#\/?/, "");
@@ -29,6 +30,7 @@ function parse(): Route {
   if (a === "queue") return { name: "queue" };
   if (a === "stats") return { name: "stats" };
   if (a === "publish-queue") return { name: "pubqueue" };
+  if (a === "trash") return { name: "trash" };
   if (a === "library") return { name: "publish", view: b === "calendar" ? "calendar" : "list" };
   return { name: "library" };
 }
@@ -54,6 +56,7 @@ export const href = {
   stats: "#/stats",
   approve: "#/approve",
   pubqueue: "#/publish-queue",
+  trash: "#/trash",
   publish: (view: "list" | "calendar" = "list") => (view === "calendar" ? "#/library/calendar" : "#/library"),
   project: (id: string) => `#/p/${encodeURIComponent(id)}`,
   bestof: (id: string) => `#/p/${encodeURIComponent(id)}/bestof`,

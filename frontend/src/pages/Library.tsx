@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError, uploadFile, urls, type Job, type Mode, type ProjectSummary } from "../api";
 import { Icon } from "../components/Icons";
+import { DeleteDialog, useUndoToast } from "../components/Trash";
+import { fmtBytes as fmtSize } from "../format";
+import { trashApi } from "../trash";
 import { jobLabel, Modal, ProgressBar } from "../components/ui";
 import { fmtTime, sourceLabel } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
@@ -11,7 +14,7 @@ import { useToast } from "../toast";
 
 const MODE_ICON: Record<string, string> = { gaming: "gamepad", study: "book", music: "music" };
 
-function ProjectCard({ p, job }: { p: ProjectSummary; job: Job | undefined }) {
+function ProjectCard({ p, job, size, onDelete }: { p: ProjectSummary; job: Job | undefined; size?: number; onDelete: () => void }) {
   const { t, num } = useI18n();
   const [imgOk, setImgOk] = useState(true);
   let status: JSX.Element;
@@ -46,6 +49,7 @@ function ProjectCard({ p, job }: { p: ProjectSummary; job: Job | undefined }) {
   }
   const src = p.source.type === "file" ? t("library.source_file") : sourceLabel(p.source.value);
   return (
+    <div className="pcard-wrap">
     <a className="card pcard" href={href.project(p.id)}>
       <div className="pcard-thumb">
         {imgOk && p.duration ? (
@@ -76,10 +80,15 @@ function ProjectCard({ p, job }: { p: ProjectSummary; job: Job | undefined }) {
         <div className="pcard-foot">
           {status}
           {p.clips > 0 && <span className="chip chip-gold">{t("library.clips", { n: p.clips })}</span>}
+          {size != null && size > 0 && <span className="pcard-size mono">{fmtSize(size)}</span>}
         </div>
         {job && <ProgressBar value={job.status === "queued" ? null : job.progress} />}
       </div>
     </a>
+      <button className="btn btn-ghost icon-btn pcard-del" onClick={onDelete} aria-label={t("trash.delete_named", { title: p.title })} title={t("trash.delete_project")}>
+        <Icon name="trash" size={15} />
+      </button>
+    </div>
   );
 }
 
@@ -297,6 +306,10 @@ export default function Library() {
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [sizes, setSizes] = useState<Record<string, number>>({});
+  const [trashCount, setTrashCount] = useState(0);
+  const undo = useUndoToast();
 
   const load = useCallback(() => {
     api.projects()
@@ -305,6 +318,13 @@ export default function Library() {
         setFailed(false);
       })
       .catch(() => setFailed(true));
+    trashApi
+      .disk()
+      .then((d) => {
+        setSizes(Object.fromEntries(d.projects.map((u) => [u.project_id, u.total])));
+        setTrashCount(d.trash_count);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(load, [load, finishedTick]);
@@ -342,10 +362,16 @@ export default function Library() {
           <h1 className="display">{t("library.title")}</h1>
           <p className="lede">{t("library.lede")}</p>
         </div>
-        <button className="btn btn-primary btn-lg" onClick={() => setShowNew(true)}>
-          <Icon name="plus" />
-          {t("library.new")}
-        </button>
+        <div className="inline-row" style={{ flexWrap: "wrap" }}>
+          <a className="btn btn-ghost" href={href.trash}>
+            <Icon name="trash" size={15} /> {t("trash.title")}
+            {trashCount > 0 && <span className="nav-count mono">{trashCount}</span>}
+          </a>
+          <button className="btn btn-primary btn-lg" onClick={() => setShowNew(true)}>
+            <Icon name="plus" />
+            {t("library.new")}
+          </button>
+        </div>
       </div>
 
       {failed && (
@@ -383,7 +409,7 @@ export default function Library() {
             <PendingImportCard key={j.id} job={j} />
           ))}
           {projects?.map((p) => (
-            <ProjectCard key={p.id} p={p} job={activeByProject.get(p.id)} />
+            <ProjectCard key={p.id} p={p} job={activeByProject.get(p.id)} size={sizes[p.id]} onDelete={() => setDeleting(p.id)} />
           ))}
           <button className="new-card" onClick={() => setShowNew(true)}>
             <span className="plus">
@@ -394,6 +420,18 @@ export default function Library() {
         </div>
       )}
       {showNew && <NewProjectModal onClose={() => setShowNew(false)} />}
+      {deleting && (
+        <DeleteDialog
+          projectId={deleting}
+          clipIds={null}
+          onClose={() => setDeleting(null)}
+          onDeleted={(item) => {
+            setDeleting(null);
+            load();
+            undo(item, load);
+          }}
+        />
+      )}
     </main>
   );
 }

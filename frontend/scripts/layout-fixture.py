@@ -145,6 +145,19 @@ def build(root: Path) -> str:
                                      "hook": {**hooks[i], "reasons": [], "options": []}, "flash": False}}
     _json(d / "easy.json", {"easy": True, "mode_auto": True, "shown": 6, "clips": shapes, "v2": True,
                             "notified_for": "2026-10-01T00:00:00+00:00"})
+    # 1.2.41: the trash holds a long-named project and two clips (the trash page and its rows)
+    for tid, kind, title, cids in (("20261001-000000-aaaaaa", "project", "LAYOUT CHECK: a deleted stream with a very long title (DELTA FORCE) that wraps", []),
+                                   ("20261001-000001-bbbbbb", "clips", "LAYOUT CHECK project", ["c09", "c10"])):
+        (ws / "_trash" / tid).mkdir(parents=True)
+        _json(ws / "_trash" / tid / "trash.json", {
+            "id": tid, "kind": kind, "project_id": "gone-" + tid, "project_title": title, "clip_ids": cids,
+            "titles": [TITLES[0], TITLES[1]] if cids else [], "deleted_at": "2026-10-01T00:00:00+00:00",
+            "expires_at": "2099-01-01T00:00:00+00:00", "bytes": 3_400_000_000 if kind == "project" else 12_000_000,
+            "files": [], "data": {}, "plans": {}, "posts": None,
+            "original": {"path": "C:/Users/me/Videos/a-very-long-recording-name-2026-10-01 19-12-58.mkv", "moved": True,
+                         "bytes": 5_000_000_000, "outside_workspace": True} if kind == "project" else None})
+    (d / "previews").mkdir()
+    _video(d / "previews" / "01_s100_00-00-01.mp4", "180x320", 1.0)
     return PID
 
 

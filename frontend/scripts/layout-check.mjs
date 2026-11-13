@@ -57,6 +57,8 @@ const SCREENS = [
   { name: "stats", mode: "pro", hash: "#/stats", ready: "main" },
   { name: "pubqueue", mode: "pro", hash: "#/publish-queue", ready: ".pq-actions" },
   { name: "easy-pubqueue", mode: "easy", hash: "#/publish-queue", ready: ".pq-actions" },
+  { name: "trash", mode: "pro", hash: "#/trash", ready: ".trash-usage" },
+  { name: "easy-trash", mode: "easy", hash: "#/trash", ready: ".trash-usage" },
 ];
 
 /** Runs in the page. Returns a list of problems. */

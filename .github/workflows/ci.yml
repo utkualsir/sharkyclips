@@ -162,6 +162,9 @@ jobs:
       - name: Preview matches the render plan
         working-directory: frontend
         run: node scripts/preview-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
+      - name: Accessibility (axe) + delete / undo flow
+        working-directory: frontend
+        run: node scripts/axe-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"
       - name: Screenshots of failing views
         if: failure()
         uses: actions/upload-artifact@v4

@@ -3,6 +3,7 @@ import { ApiError, liveApi, phoneApi, type PhoneStatus } from "../api";
 import { PhoneConnect } from "../components/Phone";
 import { AboutCard } from "../components/Licenses";
 import { Icon } from "../components/Icons";
+import { href } from "../router";
 import { useToast } from "../toast";
 import { Toggle } from "../components/ui";
 import { AutopilotCard } from "../components/EasyAuto";
@@ -50,6 +51,9 @@ export default function EasySettings() {
     <main className="page ez-page ez-settings">
       <div className="ez-hero">
         <h1 className="display">{t("nav.settings")}</h1>
+        <a className="btn btn-ghost" href={href.trash}>
+          <Icon name="trash" size={15} /> {t("trash.disk_link")}
+        </a>
       </div>
 
       <section className="card ez-set-card ez-set-accounts" id="accounts" aria-labelledby="ez-set-acc">

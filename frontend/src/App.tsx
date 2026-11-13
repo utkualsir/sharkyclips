@@ -30,6 +30,7 @@ const Stats = lazy(() => import("./pages/Stats"));
 const ClipLibrary = lazy(() => import("./pages/ClipLibrary"));
 const Stories = lazy(() => import("./pages/Stories"));
 const PublishQueue = lazy(() => import("./pages/PublishQueue"));
+const Trash = lazy(() => import("./pages/Trash"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Approve = lazy(() => import("./pages/Approve"));
 import { href, useRoute } from "./router";
@@ -59,7 +60,7 @@ function EasyTopBar() {
         <a href={href.pubqueue} aria-current={route.name === "pubqueue" ? "page" : undefined}>
           {t("nav.pubqueue")}
         </a>
-        <a href={href.settings} aria-current={route.name === "settings" ? "page" : undefined}>
+        <a href={href.settings} aria-current={route.name === "settings" || route.name === "trash" ? "page" : undefined}>
           {t("nav.settings")}
         </a>
       </nav>
@@ -137,7 +138,7 @@ function TopBar() {
         <a href={href.studio()} aria-current={route.name === "studio" ? "page" : undefined}>
           {t("nav.studio")}
         </a>
-        <a href={href.settings} aria-current={route.name === "settings" ? "page" : undefined}>
+        <a href={href.settings} aria-current={route.name === "settings" || route.name === "trash" ? "page" : undefined}>
           {t("nav.settings")}
         </a>
       </nav>
@@ -272,6 +273,7 @@ export default function App() {
         {route.name === "stats" && <Stats />}
         {route.name === "publish" && (easy ? <EasyLibrary /> : <ClipLibrary view={route.view} />)}
         {route.name === "pubqueue" && <PublishQueue />}
+        {route.name === "trash" && <Trash />}
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />

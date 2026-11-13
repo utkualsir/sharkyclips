@@ -57,6 +57,14 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   render plan (crop rects + zoom / shake samples) for split / crop / fit. The preview's cut and
   zoom math lives in `frontend/src/previewMath.ts`, a copy of `clips.split_rects`,
   `zoom.factor_out` and `fx.shake_at`: change both sides together (`test_preview_math.py`).
+- Accessibility check (same CI job, same server): `node frontend/scripts/axe-check.mjs
+  http://127.0.0.1:8799 <project-id>` runs axe-core (WCAG 2.1 A/AA + best practices) on the main
+  screens and dialogs in both themes and the delete -> undo flow. Re-run one layout case fast with
+  `LAYOUT_SIZES=1024x700 LAYOUT_LANGS=tr`.
+- Tests never write to real folders: `conftest.py` points `SHARKYCLIPS_DOWNLOADS` and
+  `SHARKYCLIPS_QUEUE_HOME` into the throwaway home (`test_isolation.py`).
+- Deleting goes through `trash.py` (30-day `<workspace>/_trash`, Restore, Empty): never remove
+  project files or originals directly, and never delete posts on the platforms unless the user ticks it.
 - Icons/logo come from `installer/make_icons.py` (one geometry; `frontend/src/components/Brand.tsx`
   and `backend/sharkyclips/web/splash.html` copy the same paths).
 - Settings folder: `~/.sharkyclips` (`config.config_dir()`); `migrate.py` moves an old `~/.clipforge`

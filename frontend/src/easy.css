@@ -742,3 +742,11 @@
   .ez-digest-stats { grid-template-columns: 1fr 1fr; }
   .ez-digest-best { grid-column: 1 / -1; }
 }
+
+/* 1.2.41: delete a project from the recent list, delete a clip from its menu */
+.ez-recent-list li { display: flex; align-items: center; gap: 6px; }
+.ez-recent-list li > .ez-recent-item { flex: 1; min-width: 0; }
+.ez-recent-del { flex: none; }
+.ez-menu-pop button.danger { color: var(--danger); }
+.ez-trash-link { margin-top: 18px; text-align: center; }
+.ez-settings .ez-hero { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
