@@ -7,6 +7,127 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.41] - 2026-11-13
+### New: delete clips and projects, with a 30-day trash
+- **Delete what you don't need.** A clip has **Delete clip** (Pro: the bin next to it, or
+  **Select clips** to delete several at once; Easy: in its **…** menu). A whole project has a bin
+  on its card and **Delete project** at the top of the project page.
+- **Nothing is gone at once.** Deleted clips and projects go to the new **Trash** for 30 days. Right
+  after a delete, **Undo** in the message brings it back; later, **Restore** in the Trash does.
+  **Empty trash** deletes everything for good after one clear question (how many items, how much
+  disk space). After 30 days, items leave the trash by themselves.
+- **Your original video is safe.** Deleting a project never touches the video you made it from,
+  unless you tick **Delete the original video too** (it then goes to the trash as well, and Restore
+  puts it back where it was).
+- **Your posts stay online.** YouTube, Instagram and TikTok posts are only deleted if you tick that
+  separate box (that can't be undone). TikTok can't delete posts through its API: you get the links
+  to delete them yourself.
+- **Stops what's running.** Renders and uploads of deleted clips are cancelled, and their planned
+  posts are taken off the plan (they come back with Restore if their time is still ahead).
+- **Disk space and clean-up.** The Trash page (also in Settings and next to your projects) shows how
+  much space each project takes, and a **Clean up** button for rendered files of rejected clips, old
+  previews and caches. The project list shows each project's size.
+### Publish queue
+- **Posts nobody reported on.** A planned post whose time has passed without a status shows
+  **time passed, no report**. Copy a check for Claude in Chrome (it looks them up in TikTok Studio,
+  Meta Business Suite and YouTube Studio and answers in the import format), set the status yourself
+  in the calendar, or **Plan them again** in one tap.
+- **Browser posts count.** YouTube, TikTok and Instagram posts made through the publish queue now
+  show in the Library with their platform badges, YouTube's views come back for them, the weekly
+  digest counts them, and SharkyClips never posts them a second time.
+- **Your accounts are settings.** The Instagram accounts, the hashtag on every post and the time zone
+  are now set in the queue settings. New users start with none of them and their computer's time
+  zone; yours were kept.
+### Fixes
+- At 1024 px wide in Turkish, the top bar pushed the page sideways by a few pixels. Fixed.
+- Speaker colours in the transcript are easier to read in the light theme.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Yeni: klip ve proje silme, 30 günlük çöp kutusu
+- **İstemediğini sil.** Her klipte **Klibi sil** var (Pro: yanındaki çöp kutusu simgesi ya da
+  birkaçını birden silmek için **Klip seç**; Kolay: **…** menüsünde). Her projenin kartında bir
+  çöp kutusu simgesi, proje sayfasının üstünde de **Projeyi sil** var.
+- **Hiçbir şey hemen yok olmaz.** Silinen klipler ve projeler 30 gün yeni **Çöp kutusu**nda
+  durur. Sildikten hemen sonra mesajdaki **Geri al** geri getirir; sonra da çöp kutusundaki
+  **Geri yükle**. **Çöpü boşalt** tek bir net sorudan sonra (kaç öğe, ne kadar disk alanı) her
+  şeyi kalıcı olarak siler. 30 gün dolan öğeler kendiliğinden gider.
+- **Orijinal videon güvende.** Proje silmek, projeyi yaptığın videoya asla dokunmaz; ancak
+  **Orijinal videoyu da sil**'i işaretlersen o da çöp kutusuna gider (geri yükleme eski yerine koyar).
+- **Gönderilerin yayında kalır.** YouTube, Instagram ve TikTok gönderileri sadece o ayrı kutuyu
+  işaretlersen silinir (bu geri alınamaz). TikTok'un API'si gönderi silemiyor: kendin silmen için
+  linkleri gösterilir.
+- **Çalışanı durdurur.** Silinen kliplerin render ve yüklemeleri iptal edilir, planlı gönderileri
+  plandan çıkar (geri yüklersen, saati hâlâ ilerideyse geri gelir).
+- **Disk alanı ve temizlik.** Çöp kutusu sayfası (Ayarlar'da ve projelerinin yanında da var) her
+  projenin ne kadar yer kapladığını gösterir; reddedilen kliplerin dosyaları, eski önizlemeler ve
+  önbellek için bir **Temizle** düğmesi var. Proje listesi her projenin boyutunu gösterir.
+### Yayın Kuyruğu
+- **Raporu gelmeyen gönderiler.** Zamanı geçtiği halde durumu bilinmeyen planlı bir gönderi
+  **zamanı geçti, rapor yok** olarak görünür. Claude in Chrome için bir kontrol metni kopyala
+  (TikTok Studio, Meta Business Suite ve YouTube Studio'da bakıp içe aktarma biçiminde cevap
+  verir), durumu takvimde kendin seç ya da tek dokunuşla **Yeniden planla**.
+- **Tarayıcıdan yapılan gönderiler sayılır.** Yayın Kuyruğu ile yapılan YouTube, TikTok ve
+  Instagram gönderileri artık platform rozetleriyle Kütüphane'de görünür, YouTube izlenmeleri
+  gelir, haftalık özet onları sayar ve SharkyClips onları ikinci kez paylaşmaz.
+- **Hesapların artık ayar.** Instagram hesapları, her gönderideki hashtag ve saat dilimi artık
+  kuyruk ayarlarında. Yeni kullanıcılar bunların hiçbiriyle ve kendi bilgisayarının saat
+  dilimiyle başlar; seninkiler korundu.
+### Düzeltmeler
+- 1024 px genişlikte Türkçede üst bar sayfayı birkaç piksel yana kaydırıyordu. Düzeltildi.
+- Açık temada metin dökümündeki konuşmacı renkleri daha kolay okunuyor.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Neu: Clips und Projekte löschen, mit 30-Tage-Papierkorb.** Einzeln, mehrere auf einmal oder ein ganzes Projekt; „Rückgängig“ direkt danach, „Wiederherstellen“ im Papierkorb, „Papierkorb leeren“ nach einer klaren Rückfrage (Anzahl + Speicherplatz).
+- Das Originalvideo und deine Posts auf YouTube / Instagram / TikTok bleiben, außer du hakst es ausdrücklich an. Laufende Renders gelöschter Clips werden abgebrochen.
+- Speicherplatz pro Projekt und „Aufräumen“ (abgelehnte Clips, alte Vorschauen, Caches).
+- Veröffentlichungs-Warteschlange: Posts ohne Meldung werden markiert (prüfen lassen, Status setzen, neu planen); Browser-Posts erscheinen in der Bibliothek und im Wochenrückblick; Konten, Hashtag und Zeitzone sind jetzt Einstellungen.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Új: klipek és projektek törlése 30 napos lomtárral.** Egyenként, többet egyszerre vagy egész projektet; közvetlenül utána „Visszavonás”, később „Visszaállítás” a lomtárban, az „Ürítés” egy egyértelmű kérdés után (darabszám + lemezterület).
+- Az eredeti videó és a YouTube / Instagram / TikTok bejegyzéseid maradnak, hacsak külön be nem jelölöd. A törölt klipek futó renderelése leáll.
+- Projektenkénti lemezhasználat és „Takarítás” (elutasított klipek, régi előnézetek, gyorsítótár).
+- Közzétételi sor: a jelentés nélküli bejegyzések megjelölve (ellenőrzés, állapot beállítása, újratervezés); a böngészős bejegyzések megjelennek a Könyvtárban és a heti összefoglalóban; a fiókok, a hashtag és az időzóna mostantól beállítások.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Новое: удаление клипов и проектов с корзиной на 30 дней.** По одному, несколько сразу или весь проект; «Отменить» сразу после, «Восстановить» в корзине, «Очистить корзину» после одного понятного вопроса (сколько и сколько места).
+- Исходное видео и посты на YouTube / в Instagram / TikTok остаются, если вы явно не отметите иное. Рендеры удалённых клипов отменяются.
+- Место на диске по проектам и «Очистка» (отклонённые клипы, старые превью, кэш).
+- Очередь публикаций: посты без отчёта отмечаются (проверить, указать статус, запланировать заново); посты из браузера видны в Библиотеке и в недельной сводке; аккаунты, хэштег и часовой пояс теперь в настройках.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **جديد: حذف المقاطع والمشاريع مع سلة محذوفات لمدة 30 يومًا.** مقطع واحد أو عدة مقاطع أو مشروع كامل؛ «تراجع» مباشرة بعد الحذف، و«استعادة» من السلة، و«إفراغ السلة» بعد سؤال واضح واحد (العدد والمساحة).
+- يبقى الفيديو الأصلي ومنشوراتك على YouTube وInstagram وTikTok ما لم تحدد ذلك صراحة. تُلغى عمليات تصيير المقاطع المحذوفة.
+- مساحة القرص لكل مشروع و«تنظيف» (المقاطع المرفوضة والمعاينات القديمة والذاكرة المؤقتة).
+- قائمة النشر: تُعلَّم المنشورات بلا تقرير (تحقق أو تعيين الحالة أو إعادة الجدولة)؛ تظهر منشورات المتصفح في المكتبة والملخص الأسبوعي؛ والحسابات والوسم والمنطقة الزمنية أصبحت إعدادات.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **新功能：删除片段和项目，并有保留 30 天的回收站。** 可以删除单个片段、一次删除多个或删除整个项目；删除后立即可“撤销”，之后可在回收站“恢复”；“清空回收站”前会明确询问一次（数量和磁盘空间）。
+- 原始视频以及你在 YouTube、Instagram、TikTok 上的帖子都会保留，除非你明确勾选。被删除片段正在进行的渲染会被取消。
+- 每个项目的磁盘占用和“清理”（已拒绝的片段、旧预览、缓存）。
+- 发布队列：没有回报的帖子会被标出（核查、设置状态或重新安排）；浏览器发布的帖子会出现在资料库和每周总结中；账号、话题标签和时区现在都在设置里。
+
+</details>
+
 ## [1.2.40] - 2026-11-11
 
 ### Publish queue: everything ready for Claude in Chrome
