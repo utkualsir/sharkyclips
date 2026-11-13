@@ -161,7 +161,7 @@ def _youtube_meta(project: Project, cand: dict) -> dict:
 
 
 def _hashtags_first(tags: list[str]) -> list[str]:
-    """The channel's own hashtags (#utkualsirr) lead every social caption."""
+    """The channel's own hashtags (e.g. #mychannel) lead every social caption."""
     from ..edit import brand
 
     chan = [h.lstrip("#") for h in brand.channel_hashtags()]
@@ -1071,6 +1071,13 @@ def tick(now: datetime | None = None) -> list[str]:
                         acts.append(f"{go}:{p}:{project.id}:{cid}")
                     except Exception:  # noqa: BLE001 - a gone project / clip
                         continue
+    try:  # 1.2.41: posts planned in the browser (Claude in Chrome) turn "published" when due
+        from . import pubqueue_api
+
+        if pubqueue_api.link_soon():
+            acts.append("chrome:linked")
+    except Exception:  # noqa: BLE001
+        pass
     if time.time() - _stats_at["t"] > STATS_EVERY_S:
         _stats_at["t"] = time.time()
         if PF.connected("tiktok") or PF.connected("reels"):

@@ -4,7 +4,7 @@ import { req, type Job } from "./api";
 export type QPlatform = "youtube" | "tiktok" | "instagram";
 export const QPLATFORMS: QPlatform[] = ["youtube", "tiktok", "instagram"];
 export const QNAME: Record<QPlatform, string> = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram" };
-export type QStatus = "pending" | "scheduled" | "failed" | "skipped_duplicate";
+export type QStatus = "pending" | "scheduled" | "published" | "failed" | "skipped_duplicate";
 
 export interface QPlatformSettings {
   on: boolean;
@@ -15,6 +15,9 @@ export interface QPlatformSettings {
 export interface QSettings {
   root: string;
   brand_hashtag: string;
+  /** IANA name; "" = this computer's time zone (1.2.41) */
+  timezone: string;
+  timezone_in_use?: string;
   tiktok_cap: number;
   instagram_account: string;
   instagram_accounts: string[];
@@ -41,6 +44,8 @@ export interface QSlot {
   note: string | null;
   batch?: string | null;
   account?: string | null;
+  /** still "pending" after its time: nobody reported it (1.2.41) */
+  overdue?: boolean;
 }
 
 export interface QClip {
@@ -89,6 +94,7 @@ export interface QOverview {
   clips: QClip[];
   calendar: QEntry[];
   batches: QBatch[];
+  overdue?: number;
   job: (Job & { result?: QResult | null }) | null;
   now: string;
 }
@@ -115,10 +121,15 @@ export const pqApi = {
     req<{ updated: number; unmatched: unknown[]; rows: number; overview: QOverview }>("POST", "/api/pubqueue/import", { text }),
   brief: (batch?: string) =>
     req<{ batch: string; folder: string; text: string }>("GET", `/api/pubqueue/brief${batch ? `?batch=${encodeURIComponent(batch)}` : ""}`),
+  mark: (e: { id: string; platform: QPlatform; batch?: string | null; status: "pending" | "scheduled" | "published" | "failed"; url?: string | null }) =>
+    req<{ entry: QEntry; overview: QOverview }>("POST", "/api/pubqueue/mark", e),
+  replan: (items?: { id: string; platform: QPlatform; batch?: string | null }[]) =>
+    req<{ replanned: number; overview: QOverview }>("POST", "/api/pubqueue/replan", { items: items ?? null }),
+  verify: () => req<{ text: string; count: number }>("GET", "/api/pubqueue/verify"),
   open: (batch?: string) => req<{ opened: boolean; folder: string }>("POST", "/api/pubqueue/open", { batch: batch ?? null }),
 };
 
-/** "2026-11-12T18:00:00+01:00" -> "12.11 18:00" (the ISO already holds the Budapest wall time). */
+/** "2026-11-12T18:00:00+01:00" -> "12.11 18:00" (the ISO already holds the queue's wall time). */
 export function wall(iso: string | null | undefined, withYear = false): string {
   if (!iso) return "";
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso);
@@ -126,7 +137,7 @@ export function wall(iso: string | null | undefined, withYear = false): string {
   return `${m[3]}.${m[2]}${withYear ? `.${m[1]}` : ""} ${m[4]}:${m[5]}`;
 }
 
-/** ISO -> the value of an <input type="datetime-local"> in Budapest wall time. */
+/** ISO -> the value of an <input type="datetime-local"> in the queue's wall time. */
 export function toInput(iso: string | null | undefined): string {
   return iso ? iso.slice(0, 16) : "";
 }

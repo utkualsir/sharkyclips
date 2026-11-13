@@ -21,12 +21,17 @@ from test_publishing import _clean_projects, _idle, _project, _wait, cfg  # noqa
 @pytest.fixture
 def pq(monkeypatch, tmp_path, cfg):  # noqa: F811
     monkeypatch.setenv("SHARKYCLIPS_QUEUE_HOME", str(tmp_path / "SharkyClips"))
-    config.update(pubqueue=None)
+    config.update(pubqueue=MINE)
     _clean_projects()
     yield tmp_path / "SharkyClips"
     _wait(_idle, 120)
     config.update(pubqueue=None)
     _clean_projects()
+
+
+# a creator with two Instagram accounts, a brand tag and a fixed zone (1.2.41: settings, not code)
+MINE = {"timezone": "Europe/Budapest", "brand_hashtag": "#mychan", "instagram_accounts": ["mychan", "mychan.gaming"],
+        "instagram_default": "mychan", "instagram_gaming": "mychan.gaming"}
 
 
 def bud(y, mo, d, h, mi=0):
@@ -36,7 +41,7 @@ def bud(y, mo, d, h, mi=0):
 # ------------------------------------------------------------------ time zone
 
 
-def test_budapest_offsets_and_the_fallback_rule_match():
+def test_budapest_offsets_and_the_fallback_rule_match(pq):
     assert bud(2026, 1, 10, 12).utcoffset() == timedelta(hours=1)
     assert bud(2026, 7, 10, 12).utcoffset() == timedelta(hours=2)
     fb = PQ._EuCentral()
@@ -87,11 +92,11 @@ def test_scheduler_times_lead_caps_and_next_day(pq):
 
 def test_instagram_account_and_brand_hashtag(pq):
     s = PQ.settings()
-    assert PQ.instagram_account("gaming", s) == "utkualsirr48"
-    assert PQ.instagram_account("podcast", s) == "utkualsirr"
-    s = PQ.save_settings({"instagram_account": "utkualsirr"})
-    assert PQ.instagram_account("gaming", s) == "utkualsirr"
-    assert PQ.with_brand(["gaming", "#DeltaForce", "#utkualsirr"], "#utkualsirr") == ["#utkualsirr", "#gaming", "#DeltaForce"]
+    assert PQ.instagram_account("gaming", s) == "mychan.gaming"
+    assert PQ.instagram_account("podcast", s) == "mychan"
+    s = PQ.save_settings({"instagram_account": "mychan"})
+    assert PQ.instagram_account("gaming", s) == "mychan"
+    assert PQ.with_brand(["gaming", "#DeltaForce", "#mychan"], "#mychan") == ["#mychan", "#gaming", "#DeltaForce"]
 
 
 def test_bitrate_comes_from_the_length():
@@ -109,7 +114,7 @@ def test_bitrate_comes_from_the_length():
 def _item(i, sha=None, **kw):
     return {"id": f"proj_c0{i}", "source": f"proj:c0{i}", "sha256": sha or f"sha{i}", "file": f"/x/proj_c0{i}.mp4",
             "size_mb": 4.2, "duration_s": 30, "title": f"Clip {i}", "description": "d", "tags": ["a"],
-            "hashtags": ["#utkualsirr"], "mode": "gaming", **kw}
+            "hashtags": ["#mychan"], "mode": "gaming", **kw}
 
 
 def test_calendar_duplicates_and_status_import(pq):
@@ -122,13 +127,14 @@ def test_calendar_duplicates_and_status_import(pq):
     q = json.loads((folder / "queue.json").read_text(encoding="utf-8"))
     c1 = q["clips"][0]
     assert set(c1["platforms"]) == {"youtube", "tiktok", "instagram"}
-    assert c1["platforms"]["instagram"]["account"] == "utkualsirr48"
+    assert c1["platforms"]["instagram"]["account"] == "mychan.gaming"
     assert c1["platforms"]["youtube"] == {"scheduled_at": "2026-11-11T12:00:00+01:00", "status": "pending",
                                           "url": None, "note": None}
     assert q["clips"][1]["platforms"]["youtube"]["scheduled_at"] == "2026-11-11T18:00:00+01:00"
     assert (folder / "CHROME.md").read_text(encoding="utf-8").count("Europe/Budapest") >= 1
+    assert "Saatler: Europe/Budapest" in PQ.calendar_md_path().read_text(encoding="utf-8") or         "Times: Europe/Budapest" in PQ.calendar_md_path().read_text(encoding="utf-8")
     md = PQ.calendar_md_path().read_text(encoding="utf-8")
-    assert "| 2026-11-11 | 12:00 | YouTube | Clip 1 |" in md and "Instagram (@utkualsirr48)" in md
+    assert "| 2026-11-11 | 12:00 | YouTube | Clip 1 |" in md and "Instagram (@mychan.gaming)" in md
 
     # Claude in Chrome answers (in a code block, with synonyms and a typo'd row)
     answer = ("Done!\n```json\n" + json.dumps({"batch": folder.name, "results": [
@@ -207,11 +213,11 @@ def test_prepare_for_chrome_end_to_end(pq):
     ov = c.get("/api/pubqueue").json()
     rows = [r for r in ov["clips"] if r["project_id"] == project.id]
     assert [r["clip_id"] for r in rows] == ["c01", "c02"]
-    assert "#utkualsirr" in rows[0]["draft"]["hashtags"] and rows[0]["draft"]["title"]
-    assert rows[0]["instagram_account"] == "utkualsirr48"
+    assert "#mychan" in rows[0]["draft"]["hashtags"] and rows[0]["draft"]["title"]
+    assert rows[0]["instagram_account"] == "mychan.gaming"
     r = c.put(f"/api/pubqueue/clips/{project.id}/c01", json={"title": "My own title", "hashtags": "#gaming #fun"})
     assert r.json()["draft"]["title"] == "My own title"
-    assert r.json()["draft"]["hashtags"] == ["#utkualsirr", "#gaming", "#fun"]
+    assert r.json()["draft"]["hashtags"] == ["#mychan", "#gaming", "#fun"]
     items = [{"project_id": project.id, "clip_id": x} for x in ("c01", "c02")]
     pv = c.post("/api/pubqueue/preview", json={"items": items}).json()
     assert pv["ok"] and pv["clips"][0]["platforms"]["youtube"]["scheduled_at"]
@@ -227,7 +233,7 @@ def test_prepare_for_chrome_end_to_end(pq):
     for clip in q["clips"]:
         f = folder / f"{clip['id']}.mp4"
         assert f.is_file() and f.stat().st_size < 10_000_000 and clip["size_mb"] < 10
-        assert clip["sha256"] == PQ.sha256(f) and "#utkualsirr" in clip["hashtags"]
+        assert clip["sha256"] == PQ.sha256(f) and "#mychan" in clip["hashtags"]
         assert all(v["status"] == "pending" and v["scheduled_at"] for v in clip["platforms"].values())
     assert (pq / "takvim.md").read_text(encoding="utf-8").count("My own title") == 3
     b = c.get("/api/pubqueue/brief").json()

@@ -71,6 +71,35 @@ def shorts(now: datetime) -> list[dict]:
     return out
 
 
+def social(now: datetime, days: int = WEEK) -> dict:
+    """TikTok / Instagram posts of the last days (by SharkyClips, by hand or in the browser):
+    {"tiktok": n, "reels": n, "views": known views or None}."""
+    from . import platforms as PF
+    from .project import list_projects
+
+    since = now - timedelta(days=days)
+    out = {"tiktok": 0, "reels": 0, "views": None}
+    for project in list_projects():
+        try:
+            recs = PF.records(project)
+        except Exception:  # noqa: BLE001
+            continue
+        for plats in recs.values():
+            for p in ("tiktok", "reels"):
+                r = (plats or {}).get(p) or {}
+                if r.get("status") != "published":
+                    continue
+                at = _when({"published_at": r.get("posted_at")})
+                if at is None and r.get("at"):
+                    at = datetime.fromtimestamp(float(r["at"]), timezone.utc)
+                if at is None or not (since <= at <= now):
+                    continue
+                out[p] += 1
+                if isinstance(r.get("views"), int):
+                    out["views"] = (out["views"] or 0) + r["views"]
+    return out
+
+
 def _worked(items: list[dict]) -> list[dict]:
     known = [s for s in items if s.get("views") is not None]
     if len(known) < 3:
@@ -138,5 +167,6 @@ def weekly(now: datetime | None = None) -> dict:
         "likes": sum(int(s["likes"] or 0) for s in with_views if s.get("likes") is not None),
         "best": {k: best[k] for k in ("project_id", "clip_id", "title", "url", "views", "duration", "hook")} if best else None,
         "worked": worked, "suggestion": sug, "daily_limit": limit, "connected": connected,
+        "elsewhere": social(now),
         "length_target": {"mode": mode, **tgt} if tgt else None,
     }

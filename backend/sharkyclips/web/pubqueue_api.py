@@ -4,13 +4,16 @@ Chrome); this only prepares files, texts and the calendar."""
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import threading
+import time
+from datetime import timezone
 from pathlib import Path
 
 from fastapi import APIRouter, Body, Request
 
-from .. import easy as E, pubqueue as PQ
+from .. import easy as E, platforms as PF, pubqueue as PQ
 from ..errors import SharkyClipsError
 from ..project import Project, get_project, list_projects, write_json_atomic
 from . import state
@@ -25,6 +28,92 @@ def _app():
     from . import app as appmod  # lazy: app.py imports this module
 
     return appmod
+
+
+YT_ID = re.compile(r"(?:youtu\.be/|/shorts/|[?&]v=|/live/|/video/)([A-Za-z0-9_-]{11})")
+SOCIAL_KEY = {"tiktok": "tiktok", "instagram": "reels"}  # the calendar's name -> the clip records' name
+_link_at = {"t": 0.0}
+
+
+def _utc(dt) -> str:
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _source(e: dict) -> tuple[Project, str] | None:
+    src = str(e.get("source") or "")
+    if ":" not in src:
+        return None
+    pid, cid = src.rsplit(":", 1)
+    try:
+        return get_project(pid), cid
+    except Exception:  # noqa: BLE001 - the project is gone (or in the trash)
+        return None
+
+
+def link_library(entries: list[dict] | None = None) -> int:
+    """Posts made in the browser (Claude in Chrome) become the clip's own records, so the Library,
+    the digest, the views sync and "already posted" all know them:
+      YouTube   -> uploads.json (video id from the link; views / privacy come from YouTube later)
+      TikTok /  -> platform_uploads.json (by hand, via "chrome"; never posted again by SharkyClips)
+      Instagram
+    A planned post counts as published once its time has passed. Idempotent. -> records written"""
+    n = 0
+    now = PQ.now_local()
+    for e in (entries if entries is not None else PQ.load_calendar()["entries"]):
+        if e.get("status") not in PQ.LIVE:
+            continue
+        found = _source(e)
+        if found is None:
+            continue
+        project, cid = found
+        when = PQ.parse_time(e.get("scheduled_at"))
+        past = e.get("status") == "published" or when is None or when <= now
+        try:
+            if e["platform"] == "youtube":
+                m = YT_ID.search(str(e.get("url") or ""))
+                if not m:
+                    continue
+                vid = m.group(1)
+                if any(u.get("video_id") == vid for u in state.load_uploads(project).get(cid, [])):
+                    continue  # linked before: YouTube's own numbers keep it up to date
+                stamp = PQ.parse_time(e.get("reported_at") or e.get("updated_at")) or now
+                state.save_upload(project, cid, {
+                    "video_id": vid, "url": f"https://youtu.be/{vid}", "title": e.get("title"),
+                    "privacy": "public" if past else "private", "requested_privacy": "public",
+                    "publish_at": None if past or when is None else _utc(when),
+                    "published_at": _utc(when or stamp) if past else None,
+                    "file": Path(str(e.get("file") or "")).name or None, "uploaded_at": _utc(stamp),
+                    "made_for_kids": False, "thumbnail_error": None, "hook_style": None, "via": "chrome",
+                    "batch": e.get("batch")})
+                n += 1
+            elif e["platform"] in SOCIAL_KEY:
+                key = SOCIAL_KEY[e["platform"]]
+                rec = (PF.records(project).get(cid) or {}).get(key) or {}
+                if rec.get("via") != "chrome" and rec.get("status") in ("published", "scheduled", "uploading",
+                                                                         "processing", "preparing"):
+                    continue  # posted (or being posted) another way: that record wins
+                want = {"status": "published" if past else "scheduled", "mode": "semi", "manual": True,
+                        "via": "chrome", "url": e.get("url") or rec.get("url"), "batch": e.get("batch"),
+                        "publish_at": None if past or when is None else _utc(when),
+                        "posted_at": _utc(when or now) if past else None, "account": e.get("account")}
+                if all(rec.get(k) == v for k, v in want.items()):
+                    continue
+                PF.record(project, cid, key, **want, error=None)
+                n += 1
+        except Exception:  # noqa: BLE001 - one broken project never stops the others
+            continue
+    return n
+
+
+def link_soon(every: float = 600.0) -> int:
+    """From the publish loop: planned browser posts turn "published" when their time comes."""
+    if time.time() - _link_at["t"] < every:
+        return 0
+    _link_at["t"] = time.time()
+    try:
+        return link_library()
+    except Exception:  # noqa: BLE001
+        return 0
 
 
 def _store_path(project: Project) -> Path:
@@ -118,7 +207,9 @@ def _status_map() -> dict[str, dict]:
             continue
         cur = out.setdefault(src, {}).get(e["platform"])
         if cur is None or (e.get("created_at") or "") >= (cur.get("created_at") or ""):
-            out[src][e["platform"]] = {k: e.get(k) for k in ("status", "scheduled_at", "url", "note", "batch", "created_at", "account")}
+            out[src][e["platform"]] = {**{k: e.get(k) for k in ("status", "scheduled_at", "url", "note", "batch",
+                                                               "created_at", "account")},
+                                       "overdue": PQ.is_overdue(e)}
     return out
 
 
@@ -147,8 +238,10 @@ def overview() -> dict:
                          "uid": clip_uid(project.id, c["id"]), "draft": d,
                          "instagram_account": d.get("instagram_account") or PQ.instagram_account(meta.get("mode"), s),
                          "status": status.get(source_key(project.id, c["id"]), {})})
-    return {"settings": s, "caps": {p: PQ.cap(p, s) for p in PQ.PLATFORMS}, "timezone": PQ.TZ_NAME,
-            "root": str(PQ.root()), "clips": rows, "calendar": PQ.upcoming(), "batches": PQ.batches(),
+    cal = PQ.upcoming()
+    return {"settings": s, "caps": {p: PQ.cap(p, s) for p in PQ.PLATFORMS}, "timezone": PQ.zone_name(s),
+            "root": str(PQ.root()), "clips": rows, "calendar": cal, "batches": PQ.batches(),
+            "overdue": sum(1 for e in cal if e.get("overdue")),
             "job": _job_view(), "now": PQ.iso(PQ.now_local())}
 
 
@@ -305,7 +398,30 @@ def api_import(body: dict) -> dict:
     if payload is None:
         raise SharkyClipsError("Paste the status JSON first.")
     res = PQ.import_status(payload)
+    res["linked"] = link_library()
     return {**res, "overview": overview()}
+
+
+@router.post("/api/pubqueue/mark")
+def api_mark(body: dict) -> dict:
+    """By hand: what really happened to one post."""
+    e = PQ.mark(str(body.get("id") or ""), str(body.get("platform") or ""), str(body.get("status") or ""),
+                body.get("url"), body.get("note"), body.get("batch"))
+    link_library([e])
+    return {"entry": e, "overview": overview()}
+
+
+@router.post("/api/pubqueue/replan")
+def api_replan(body: dict | None = Body(default=None)) -> dict:
+    """Overdue posts (or the given ones) get the next free times."""
+    rows = PQ.replan((body or {}).get("items") or None)
+    return {"replanned": len(rows), "entries": rows, "overview": overview()}
+
+
+@router.get("/api/pubqueue/verify")
+def api_verify() -> dict:
+    """The brief for Claude in Chrome: check the overdue posts on the platforms."""
+    return PQ.verify_brief()
 
 
 @router.get("/api/pubqueue/brief")

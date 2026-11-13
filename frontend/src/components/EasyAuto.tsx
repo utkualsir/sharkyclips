@@ -245,6 +245,12 @@ export function WeeklyDigestCard() {
           )}
         </div>
       </div>
+      {d.elsewhere && d.elsewhere.tiktok + d.elsewhere.reels > 0 && (
+        <p className="muted ez-digest-target">
+          {t("easy2.dg_elsewhere", { tt: num(d.elsewhere.tiktok), ig: num(d.elsewhere.reels) })}
+          {d.elsewhere.views != null && ` · ${t("easy2.real_views", { n: compact(d.elsewhere.views) })}`}
+        </p>
+      )}
       {d.worked.length > 0 && (
         <div className="ez-digest-worked">
           <span className="muted">{t("easy2.dg_worked")}</span>

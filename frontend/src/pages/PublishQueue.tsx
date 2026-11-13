@@ -5,29 +5,39 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { copyText } from "../extras";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
-import { pqApi, QNAME, QPLATFORMS, toInput, wall, type QClip, type QOverview, type QPlatform, type QResult, type QSlot } from "../pubqueue";
+import { pqApi, QNAME, QPLATFORMS, toInput, wall, type QClip, type QEntry, type QOverview, type QPlatform, type QResult, type QSlot } from "../pubqueue";
 import { useToast } from "../toast";
 import { Icon } from "../components/Icons";
 import { Modal, ProgressBar, Toggle } from "../components/ui";
 
 const key = (c: { project_id: string; clip_id: string }) => `${c.project_id}/${c.clip_id}`;
 
+/** "Europe/Berlin", or "this computer's time" for the local zone. */
+function useZone(ov: QOverview | null) {
+  const { t } = useI18n();
+  const z = ov?.timezone ?? "local";
+  return z === "local" ? t("pq.tz_local") : z;
+}
+
 function StatusChip({ p, s }: { p: QPlatform; s: QSlot | undefined }) {
   const { t } = useI18n();
   if (!s) return null;
-  const text = `${QNAME[p]} · ${t(`pq.st_${s.status}`)}${s.scheduled_at ? ` · ${wall(s.scheduled_at)}` : ""}`;
+  const st = s.overdue ? "overdue" : s.status;
+  const text = `${QNAME[p]} · ${t(`pq.st_${st}`)}${s.scheduled_at ? ` · ${wall(s.scheduled_at)}` : ""}`;
+  const icon =
+    st === "scheduled" || st === "published" ? "check" : st === "failed" || st === "overdue" ? "alert" : st === "skipped_duplicate" ? "repeat" : "clock";
   const inner = (
     <>
-      <Icon name={s.status === "scheduled" ? "check" : s.status === "failed" ? "alert" : s.status === "skipped_duplicate" ? "repeat" : "clock"} size={12} />
+      <Icon name={icon} size={12} />
       {text}
     </>
   );
   return s.url ? (
-    <a className={`pq-chip pq-${s.status}`} href={s.url} target="_blank" rel="noreferrer" title={s.note ?? undefined}>
+    <a className={`pq-chip pq-${st}`} href={s.url} target="_blank" rel="noreferrer" title={s.note ?? undefined}>
       {inner}
     </a>
   ) : (
-    <span className={`pq-chip pq-${s.status}`} title={s.note ?? undefined}>
+    <span className={`pq-chip pq-${st}`} title={s.note ?? undefined}>
       {inner}
     </span>
   );
@@ -36,6 +46,7 @@ function StatusChip({ p, s }: { p: QPlatform; s: QSlot | undefined }) {
 function ClipEditor({ clip, ov, auto, onSaved }: { clip: QClip; ov: QOverview; auto: Partial<Record<QPlatform, QSlot>> | undefined; onSaved: () => void }) {
   const { t } = useI18n();
   const toast = useToast();
+  const zone = useZone(ov);
   const d = clip.draft;
   const [title, setTitle] = useState(d.title);
   const [desc, setDesc] = useState(d.description);
@@ -79,7 +90,7 @@ function ClipEditor({ clip, ov, auto, onSaved }: { clip: QClip; ov: QOverview; a
           <span className="field-label">{t("pq.hashtags")}</span>
           <input className="input" dir="auto" value={tagsH} onChange={(e) => setTagsH(e.target.value)}
             onBlur={() => tagsH !== d.hashtags.join(" ") && save({ hashtags: tagsH.split(/[\s,]+/).filter(Boolean) })} />
-          <span className="field-hint">{t("pq.brand_always", { tag: ov.settings.brand_hashtag })}</span>
+          {ov.settings.brand_hashtag && <span className="field-hint">{t("pq.brand_always", { tag: ov.settings.brand_hashtag })}</span>}
         </label>
       </div>
       <div className="pq-plats">
@@ -92,19 +103,21 @@ function ClipEditor({ clip, ov, auto, onSaved }: { clip: QClip; ov: QOverview; a
                   onChange={(e) => save({ platforms: e.target.checked ? [...on, p] : on.filter((x) => x !== p) })} />
                 <span>
                   <b>{QNAME[p]}</b>
-                  {p === "instagram" && <span className="muted"> @{clip.instagram_account}</span>}
+                  {p === "instagram" && (
+                    <span className="muted"> {clip.instagram_account ? `@${clip.instagram_account}` : t("pq.ig_signed_in")}</span>
+                  )}
                 </span>
               </label>
               {enabled && (
                 <label className="field pq-time">
-                  <span className="field-hint">{t("pq.time_budapest")}</span>
+                  <span className="field-hint">{t("pq.time_zone", { tz: zone })}</span>
                   <input
                     className="input"
                     type="datetime-local"
                     value={toInput(d.times[p])}
                     placeholder={wall(auto?.[p]?.scheduled_at)}
                     onChange={(e) => save({ times: { ...d.times, [p]: e.target.value || undefined } })}
-                    aria-label={`${QNAME[p]} ${t("pq.time_budapest")}`}
+                    aria-label={`${QNAME[p]} ${t("pq.time_zone", { tz: zone })}`}
                   />
                   <span className="field-hint">
                     {d.times[p] ? (
@@ -122,7 +135,7 @@ function ClipEditor({ clip, ov, auto, onSaved }: { clip: QClip; ov: QOverview; a
               {enabled && p === "instagram" && ov.settings.instagram_accounts.length > 1 && (
                 <select className="select" value={d.instagram_account ?? ""} onChange={(e) => save({ instagram_account: e.target.value || null })}
                   aria-label={t("pq.ig_account")}>
-                  <option value="">{t("pq.ig_auto_short", { name: clip.instagram_account })}</option>
+                  <option value="">{t("pq.ig_auto_short", { name: clip.instagram_account || "?" })}</option>
                   {ov.settings.instagram_accounts.map((a) => (
                     <option key={a} value={a}>
                       @{a}
@@ -146,7 +159,10 @@ function ClipEditor({ clip, ov, auto, onSaved }: { clip: QClip; ov: QOverview; a
 function SettingsCard({ ov, onChange }: { ov: QOverview; onChange: (o: QOverview) => void }) {
   const { t } = useI18n();
   const toast = useToast();
+  const zone = useZone(ov);
   const s = ov.settings;
+  const [accounts, setAccounts] = useState(s.instagram_accounts.join(", "));
+  const [tz, setTz] = useState(s.timezone);
   const [times, setTimes] = useState<Record<QPlatform, string>>(() => ({
     youtube: s.platforms.youtube.times.join(", "),
     tiktok: s.platforms.tiktok.times.join(", "),
@@ -164,7 +180,7 @@ function SettingsCard({ ov, onChange }: { ov: QOverview; onChange: (o: QOverview
       <summary>
         <Icon name="settings" size={16} /> {t("pq.settings")}
       </summary>
-      <p className="field-hint">{t("pq.settings_hint", { tz: ov.timezone })}</p>
+      <p className="field-hint">{t("pq.settings_hint", { tz: zone })}</p>
       <div className="pq-set-grid">
         {QPLATFORMS.map((p) => {
           const c = s.platforms[p];
@@ -195,26 +211,78 @@ function SettingsCard({ ov, onChange }: { ov: QOverview; onChange: (o: QOverview
                 </label>
               )}
               {p === "instagram" && (
-                <label className="field">
-                  <span className="field-label">{t("pq.ig_account")}</span>
-                  <select className="select" value={s.instagram_account} onChange={(e) => put({ instagram_account: e.target.value })}>
-                    <option value="auto">{t("pq.ig_auto", { gaming: s.instagram_gaming, other: s.instagram_default })}</option>
-                    {s.instagram_accounts.map((a) => (
-                      <option key={a} value={a}>
-                        @{a}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <>
+                  <label className="field">
+                    <span className="field-label">{t("pq.ig_accounts")}</span>
+                    <input className="input" dir="ltr" value={accounts} placeholder="@mychannel, @mychannel.gaming"
+                      onChange={(e) => setAccounts(e.target.value)}
+                      onBlur={() => accounts !== s.instagram_accounts.join(", ") && put({ instagram_accounts: accounts.split(/[\s,;]+/).filter(Boolean) })} />
+                    <span className="field-hint">{t("pq.ig_accounts_hint")}</span>
+                  </label>
+                  {s.instagram_accounts.length > 0 && (
+                    <label className="field">
+                      <span className="field-label">{t("pq.ig_account")}</span>
+                      <select className="select" value={s.instagram_account} onChange={(e) => put({ instagram_account: e.target.value })}>
+                        <option value="auto">
+                          {t("pq.ig_auto", { gaming: s.instagram_gaming || s.instagram_accounts[0], other: s.instagram_default || s.instagram_accounts[0] })}
+                        </option>
+                        {s.instagram_accounts.map((a) => (
+                          <option key={a} value={a}>
+                            @{a}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  {s.instagram_accounts.length > 1 && s.instagram_account === "auto" && (
+                    <>
+                      <label className="field">
+                        <span className="field-label">{t("pq.ig_for_gaming")}</span>
+                        <select className="select" value={s.instagram_gaming} onChange={(e) => put({ instagram_gaming: e.target.value })}>
+                          {s.instagram_accounts.map((a) => (
+                            <option key={a} value={a}>
+                              @{a}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="field">
+                        <span className="field-label">{t("pq.ig_for_rest")}</span>
+                        <select className="select" value={s.instagram_default} onChange={(e) => put({ instagram_default: e.target.value })}>
+                          {s.instagram_accounts.map((a) => (
+                            <option key={a} value={a}>
+                              @{a}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </>
+                  )}
+                </>
               )}
             </fieldset>
           );
         })}
       </div>
-      <label className="field pq-brand">
-        <span className="field-label">{t("pq.brand")}</span>
-        <input className="input" defaultValue={s.brand_hashtag} onBlur={(e) => e.target.value !== s.brand_hashtag && put({ brand_hashtag: e.target.value })} />
-      </label>
+      <div className="pq-two">
+        <label className="field pq-brand">
+          <span className="field-label">{t("pq.brand")}</span>
+          <input className="input" dir="ltr" placeholder="#mychannel" defaultValue={s.brand_hashtag}
+            onBlur={(e) => e.target.value !== s.brand_hashtag && put({ brand_hashtag: e.target.value })} />
+          <span className="field-hint">{t("pq.brand_hint")}</span>
+        </label>
+        <label className="field">
+          <span className="field-label">{t("pq.timezone")}</span>
+          <input className="input" dir="ltr" list="pq-zones" placeholder={t("pq.tz_local")} value={tz}
+            onChange={(e) => setTz(e.target.value)} onBlur={() => tz !== s.timezone && put({ timezone: tz.trim() })} />
+          <datalist id="pq-zones">
+            {ZONES.map((z) => (
+              <option key={z} value={z} />
+            ))}
+          </datalist>
+          <span className="field-hint">{t("pq.timezone_hint", { tz: zone })}</span>
+        </label>
+      </div>
       <p className="field-hint">
         <Icon name="file" size={12} /> {t("pq.folder", { path: ov.root })}
       </p>
@@ -266,10 +334,86 @@ function ImportDialog({ onClose, onDone }: { onClose: () => void; onDone: (o: QO
   );
 }
 
+const ZONES = [
+  "Europe/Istanbul", "Europe/Budapest", "Europe/Berlin", "Europe/London", "Europe/Moscow", "Asia/Dubai", "Asia/Riyadh",
+  "Asia/Shanghai", "America/New_York", "America/Chicago", "America/Los_Angeles", "UTC",
+];
+
+type Mark = "pending" | "scheduled" | "published" | "failed";
+
+function CalendarStatus({ e, onChange }: { e: QEntry; onChange: (o: QOverview) => void }) {
+  const { t } = useI18n();
+  const toast = useToast();
+  const set = async (status: Mark) => {
+    try {
+      const r = await pqApi.mark({ id: e.id, platform: e.platform, batch: e.batch ?? null, status });
+      onChange(r.overview);
+    } catch (err: any) {
+      toast({ kind: "err", text: err.message, hint: err.hint });
+    }
+  };
+  return (
+    <span className="pq-status-cell">
+      <StatusChip p={e.platform} s={{ ...e, scheduled_at: null }} />
+      {e.status !== "skipped_duplicate" && (
+        <select className="select select-sm pq-mark" value="" aria-label={t("pq.mark", { title: e.title ?? "" })}
+          onChange={(ev) => ev.target.value && set(ev.target.value as Mark)}>
+          <option value="">{t("pq.mark_short")}</option>
+          {(["published", "scheduled", "pending", "failed"] as const).map((st) => (
+            <option key={st} value={st} disabled={st === e.status && !e.overdue}>
+              {t(`pq.st_${st}`)}
+            </option>
+          ))}
+        </select>
+      )}
+    </span>
+  );
+}
+
+function OverdueBar({ ov, onChange }: { ov: QOverview; onChange: (o: QOverview) => void }) {
+  const { t, num } = useI18n();
+  const toast = useToast();
+  const n = ov.overdue ?? 0;
+  if (!n) return null;
+  const check = async () => {
+    try {
+      const r = await pqApi.verify();
+      if (await copyText(r.text)) toast({ kind: "ok", text: t("pq.verify_copied", { n: num(r.count) }) });
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+  const replan = async () => {
+    try {
+      const r = await pqApi.replan();
+      onChange(r.overview);
+      toast({ kind: "ok", text: t("pq.replanned", { n: num(r.replanned) }) });
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    }
+  };
+  return (
+    <div className="card pq-overdue" role="status">
+      <p>
+        <Icon name="alert" size={16} /> <b>{t("pq.overdue_title", { n: num(n) })}</b> <span className="muted">{t("pq.overdue_hint")}</span>
+      </p>
+      <div className="inline-row" style={{ flexWrap: "wrap" }}>
+        <button className="btn btn-sm btn-primary" onClick={check}>
+          <Icon name="copy" /> {t("pq.verify")}
+        </button>
+        <button className="btn btn-sm" onClick={replan}>
+          <Icon name="calendar" /> {t("pq.replan_all")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function PublishQueue() {
   const { t, num } = useI18n();
   const toast = useToast();
   const [ov, setOv] = useState<QOverview | null>(null);
+  const zone = useZone(ov);
   const [err, setErr] = useState<string | null>(null);
   const [picked, setPicked] = useState<Set<string> | null>(null);
   const [open, setOpen] = useState<string | null>(null);
@@ -503,8 +647,9 @@ export default function PublishQueue() {
       <section className="pq-section" aria-labelledby="pq-cal">
         <div className="pq-section-head">
           <h2 id="pq-cal">{t("pq.calendar")}</h2>
-          <span className="field-hint">{t("pq.calendar_hint", { tz: ov.timezone })}</span>
+          <span className="field-hint">{t("pq.calendar_hint", { tz: zone })}</span>
         </div>
+        <OverdueBar ov={ov} onChange={setOv} />
         {ov.calendar.length === 0 ? (
           <p className="card pq-empty">{t("pq.calendar_empty")}</p>
         ) : (
@@ -530,7 +675,7 @@ export default function PublishQueue() {
                     </td>
                     <td dir="auto">{e.title}</td>
                     <td>
-                      <StatusChip p={e.platform} s={{ ...e, scheduled_at: null }} />
+                      <CalendarStatus e={e} onChange={setOv} />
                     </td>
                   </tr>
                 ))}

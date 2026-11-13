@@ -2101,6 +2101,8 @@ export interface WeeklyDigest {
   connected: boolean;
   /** 1.2.35: the Easy clip length target set by the channel's views (null = built-in targets). */
   length_target: { mode: string; min: number; max: number; source: "channel" | "learned"; ratio?: number; n?: number } | null;
+  /** 1.2.41: TikTok / Instagram posts this week (SharkyClips, by hand or in the browser). */
+  elsewhere?: { tiktok: number; reels: number; views: number | null };
 }
 
 export interface CaptionWord {
