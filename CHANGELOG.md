@@ -7,6 +7,121 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.42] - 2026-11-14
+### New: one Publish, three platforms, TikTok automatic too
+- **TikTok posts by itself now.** Settings → Accounts → TikTok → **Log in to TikTok** opens a
+  window of SharkyClips' own browser (not your Chrome profile). You log in yourself, once.
+  SharkyClips keeps only that browser profile on this PC, never your password. The card shows the
+  account it's logged in as and a status light.
+- **Publish posts everywhere.** With TikTok on **Automatic**, the one **Publish** button (Easy and
+  Pro) sends the clip to YouTube Shorts, Instagram Reels and TikTok side by side, each with its own
+  status. If one platform fails, **Retry** redoes only that one. A clip is never posted twice.
+- **Planned times go into TikTok's own planner.** A time 20 minutes to 10 days ahead is planned
+  in TikTok Studio, so your PC doesn't have to be on then. Later times are planned when they come
+  into reach. When the time has passed, the Library shows the post as live with its link.
+- **Careful by design.** It works in a real window off the screen, with pauses like a person's
+  and never two uploads at once. At most 3 automatic TikTok posts a day (you can change this). A
+  full day moves the next post to the day after.
+- **It never fights TikTok.** If TikTok shows a CAPTCHA, a verification, a login page or a screen
+  SharkyClips doesn't know, it stops at once and never tries to solve it. It saves a screenshot and
+  tells you (tray notice, plus Telegram if your phone is paired). That clip is then ready for you
+  to post by hand. Automatic TikTok pauses for a few hours, and **Check** brings it back.
+- **Automatic or Semi-automatic per platform.** Instagram and TikTok each have the switch in their
+  account card. The swear check, the AI-voice label for dubbed clips, the daily limits and the best
+  times all work as before.
+### Publish queue
+- **Check on TikTok + Instagram.** Overdue posts ("time passed, no report") can now be looked up
+  for you: Instagram through its connection, TikTok in TikTok Studio. A post that's there becomes
+  "published" (with its link) or "scheduled". One that isn't becomes "failed (never posted)", so
+  you can plan it again without posting it twice. This check also runs by itself right after your
+  first TikTok login.
+- Posts made with the Publish button also update the calendar, and the Publish button skips clips
+  the queue has already posted.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Yeni: tek Yayınla, üç platform, TikTok da otomatik
+- **TikTok artık kendiliğinden paylaşıyor.** Ayarlar → Hesaplar → TikTok → **TikTok'a giriş yap**
+  SharkyClips'in kendi tarayıcısında bir pencere açar (Chrome profilin değil). Girişi bir kez sen
+  yaparsın. SharkyClips bu bilgisayarda yalnızca o tarayıcı profilini saklar, şifreni asla. Kartta
+  giriş yapılan hesap ve bir durum ışığı görünür.
+- **Yayınla her yere gönderir.** TikTok **Otomatik**'teyken tek **Yayınla** düğmesi (Kolay ve Pro)
+  klibi YouTube Shorts, Instagram Reels ve TikTok'a yan yana gönderir, her birinin kendi durumu
+  vardır. Bir platform başarısız olursa **Tekrar dene** yalnızca onu yeniden yapar. Bir klip asla
+  iki kez paylaşılmaz.
+- **Planlı saatler TikTok'un kendi planlayıcısına girer.** 20 dakika ile 10 gün ilerideki bir saat
+  TikTok Studio'da planlanır, o saatte bilgisayarın açık olması gerekmez. Daha ileri saatler
+  yaklaştıkça planlanır. Saat geçince Kitaplık gönderiyi linkiyle yayında gösterir.
+- **Dikkatli çalışır.** Ekranın dışında gerçek bir pencerede, insan gibi aralar vererek çalışır ve
+  asla aynı anda iki yükleme yapmaz. Günde en fazla 3 otomatik TikTok gönderisi (değiştirebilirsin).
+  Dolu bir gün sıradaki gönderiyi ertesi güne kaydırır.
+- **TikTok'la asla uğraşmaz.** TikTok CAPTCHA, doğrulama, giriş sayfası ya da SharkyClips'in
+  tanımadığı bir ekran gösterirse hemen durur ve asla çözmeye çalışmaz. Ekran görüntüsü alır ve
+  sana haber verir (sistem bildirimi, telefonun eşliyse Telegram). O klip elle paylaşman için
+  hazır olur. Otomatik TikTok birkaç saat durur, **Kontrol et** geri açar.
+- **Platform başına Otomatik ya da Yarı otomatik.** Instagram ve TikTok'un hesap kartında bu anahtar
+  var. Küfür kontrolü, dublajlı kliplerde yapay zeka ses etiketi, günlük sınırlar ve en iyi saatler
+  eskisi gibi çalışır.
+### Yayın kuyruğu
+- **TikTok + Instagram'da kontrol et.** Zamanı geçmiş gönderiler ("zamanı geçti, rapor yok") artık
+  senin yerine kontrol edilebilir: Instagram bağlantısı üzerinden, TikTok ise TikTok Studio'da.
+  Orada olan gönderi linkiyle "yayında" ya da "planlandı" olur. Olmayan "başarısız (hiç
+  paylaşılmamış)" olur, böylece iki kez paylaşmadan yeniden planlayabilirsin. Bu kontrol ilk TikTok
+  girişinden hemen sonra kendiliğinden de çalışır.
+- Yayınla ile yapılan gönderiler takvimi de günceller, Yayınla da kuyruğun zaten paylaştığı
+  klipleri atlar.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Neu: TikTok postet automatisch.** Einstellungen → Konten → TikTok → „Bei TikTok anmelden“ öffnet ein Fenster in SharkyClips' eigenem Browser. Du meldest dich einmal selbst an; gespeichert wird nur dieses Browserprofil, nie dein Passwort.
+- Ein „Veröffentlichen“ schickt den Clip parallel zu YouTube Shorts, Instagram Reels und TikTok, mit eigenem Status pro Plattform, „Erneut versuchen“ nur für die fehlgeschlagene und nie doppelt. Geplante Zeiten (20 Minuten bis 10 Tage voraus) landen in TikToks eigenem Planer.
+- Höchstens 3 automatische TikTok-Posts pro Tag (einstellbar), nie zwei Uploads gleichzeitig. Bei CAPTCHA, Bestätigung, Anmeldeseite oder unbekanntem Bildschirm hält es sofort an, löst nichts, meldet sich (Benachrichtigung + Telegram) und der Clip liegt zum Posten von Hand bereit.
+- Veröffentlichungs-Warteschlange: „Auf TikTok + Instagram prüfen“ klärt überfällige Posts (veröffentlicht mit Link, geplant oder nie gepostet).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Új: a TikTok magától posztol.** Beállítások → Fiókok → TikTok → „Bejelentkezés a TikTokra” megnyit egy ablakot a SharkyClips saját böngészőjében. Egyszer te jelentkezel be; csak ez a böngészőprofil marad meg, a jelszavad soha.
+- Egy „Közzététel” egyszerre küldi a klipet a YouTube Shortsra, az Instagram Reelsre és a TikTokra, platformonként saját állapottal; az „Újra” csak a sikertelent ismétli, és soha nem posztol kétszer. A 20 perc és 10 nap közötti időpontok a TikTok saját ütemezőjébe kerülnek.
+- Naponta legfeljebb 3 automatikus TikTok-poszt (állítható), soha két feltöltés egyszerre. CAPTCHA, ellenőrzés, bejelentkezési oldal vagy ismeretlen képernyő esetén azonnal leáll, semmit nem old meg, szól (értesítés + Telegram), a klip pedig kézi posztolásra kész.
+- Közzétételi sor: az „Ellenőrzés a TikTokon + Instagramon” rendbe teszi a lejárt bejegyzéseket (közzétéve linkkel, ütemezve vagy soha nem posztolva).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Новое: TikTok публикует сам.** Настройки → Аккаунты → TikTok → «Войти в TikTok» открывает окно собственного браузера SharkyClips. Вы входите сами один раз; хранится только этот профиль браузера, пароль — никогда.
+- Одна кнопка «Опубликовать» отправляет клип в YouTube Shorts, Instagram Reels и TikTok параллельно, у каждой платформы свой статус; «Повторить» — только для неудавшейся, дважды — никогда. Время от 20 минут до 10 дней вперёд попадает в собственный планировщик TikTok.
+- Не больше 3 автоматических публикаций TikTok в день (настраивается), никогда две загрузки сразу. При CAPTCHA, проверке, странице входа или незнакомом экране — сразу стоп, ничего не решает, сообщает (уведомление + Telegram), а клип готов к ручной публикации.
+- Очередь публикаций: «Проверить в TikTok + Instagram» разбирает просроченные посты (опубликован со ссылкой, запланирован или не публиковался).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **جديد: TikTok ينشر تلقائيًا.** الإعدادات ← الحسابات ← TikTok ← «تسجيل الدخول إلى TikTok» يفتح نافذة في متصفح SharkyClips الخاص. تسجّل الدخول بنفسك مرة واحدة؛ يُحفظ ملف المتصفح فقط ولا تُحفظ كلمة المرور أبدًا.
+- زر «نشر» واحد يرسل المقطع إلى YouTube Shorts وInstagram Reels وTikTok معًا، ولكل منصة حالتها؛ «إعادة المحاولة» للمنصة الفاشلة فقط، ولا نشر مكرر أبدًا. الأوقات من 20 دقيقة إلى 10 أيام تدخل مخطِّط TikTok نفسه.
+- 3 منشورات TikTok تلقائية يوميًا كحد أقصى (قابل للتغيير)، ولا رفعين في وقت واحد. عند CAPTCHA أو تحقق أو صفحة دخول أو شاشة غير معروفة يتوقف فورًا ولا يحل شيئًا ويُبلغك (إشعار + Telegram)، ويصبح المقطع جاهزًا للنشر اليدوي.
+- قائمة النشر: «تحقق على TikTok + Instagram» يحسم المنشورات المتأخرة (منشور مع الرابط أو مجدول أو لم يُنشر قط).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **新功能：TikTok 也能自动发布。** 设置 → 账号 → TikTok →“登录 TikTok”会在 SharkyClips 自己的浏览器中打开一个窗口。你只需亲自登录一次；本机只保存该浏览器配置文件，从不保存密码。
+- 一个“发布”按钮即可把剪辑同时发到 YouTube Shorts、Instagram Reels 和 TikTok，每个平台各有状态；“重试”只重做失败的平台，绝不重复发布。20 分钟到 10 天之后的计划时间会进入 TikTok 自己的定时发布。
+- 每天最多 3 条自动 TikTok（可调整），绝不同时上传两条。遇到验证码、验证、登录页或未知页面会立即停止，绝不尝试破解，并通知你（系统通知 + Telegram），该剪辑随即准备好供你手动发布。
+- 发布队列：“在 TikTok + Instagram 上检查”会核实过期的帖子（已发布并附链接、已排期，或从未发布）。
+
+</details>
+
 ## [1.2.41] - 2026-11-13
 ### New: delete clips and projects, with a 30-day trash
 - **Delete what you don't need.** A clip has **Delete clip** (Pro: the bin next to it, or

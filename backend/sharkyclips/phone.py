@@ -210,6 +210,19 @@ def disconnect() -> None:
         cards_path().unlink(missing_ok=True)
 
 
+def send_text(text: str) -> bool:
+    """A plain message to the paired phone (1.2.42: "TikTok post stopped"). False: no phone paired
+    or sending is off (never raises)."""
+    d = _load()
+    if not d.get("chat_id") or config.get("phone_send") is False:
+        return False
+    try:
+        call("sendMessage", chat_id=d["chat_id"], text=str(text)[:3500])
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def send_test() -> None:
     d = _load()
     if not d.get("chat_id"):

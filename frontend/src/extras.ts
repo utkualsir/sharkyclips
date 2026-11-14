@@ -87,7 +87,7 @@ export type PostPlatform = "tiktok" | "reels";
 
 export interface PlatformStatus {
   platform: Platform;
-  mode: "semi" | "api";
+  mode: "semi" | "api" | "browser";
   connected: boolean;
   account: string | null;
   audited?: boolean;
@@ -120,7 +120,7 @@ export interface PlatformAiFlags {
 
 export interface PostResult {
   job: Job;
-  mode: "semi" | "api";
+  mode: "semi" | "api" | "browser";
   caption: string;
   upload_page: string;
   local: boolean;
@@ -133,7 +133,7 @@ const PC = (p: PostPlatform, pid: string, cid: string) =>
 export const platformsApi = {
   overview: () => req<PlatformsOverview>("GET", "/api/platforms"),
   choose: (platform: Platform) => req<PlatformsOverview>("PUT", "/api/platforms/choice", { platform }),
-  setMode: (p: PostPlatform, mode: "semi" | "api") => req<PlatformStatus>("PUT", `/api/platforms/${p}/mode`, { mode }),
+  setMode: (p: PostPlatform, mode: "semi" | "api" | "browser") => req<PlatformStatus>("PUT", `/api/platforms/${p}/mode`, { mode }),
   setAudited: (p: PostPlatform, audited: boolean) => req<PlatformStatus>("PUT", `/api/platforms/${p}/audited`, { audited }),
   forget: (p: PostPlatform) => req<PlatformStatus>("DELETE", `/api/platforms/${p}`),
   tiktokRedirect: () => req<{ redirect_uri: string }>("GET", "/api/platforms/tiktok/redirect"),
@@ -141,7 +141,7 @@ export const platformsApi = {
     req<{ url: string; redirect_uri: string }>("POST", "/api/platforms/tiktok/connect", { client_key, client_secret }),
   reelsConnect: (token: string) => req<PlatformStatus>("POST", "/api/platforms/reels/connect", { token }),
   clip: (p: PostPlatform, pid: string, cid: string, flags?: PlatformAiFlags) =>
-    req<{ caption: string; ai_voice: PlatformAiVoice; mode: "semi" | "api"; upload_page: string; record: any; job: Job | null }>(
+    req<{ caption: string; ai_voice: PlatformAiVoice; mode: "semi" | "api" | "browser"; upload_page: string; record: any; job: Job | null }>(
       "GET",
       PC(p, pid, cid) + (flags ? `?ai_voice_note=${flags.ai_voice_note}&ai_label=${flags.ai_label}` : ""),
     ),

@@ -25,3 +25,5 @@ rapidocr>=3.4,<4
 pystray>=0.19; platform_system == "Windows"
 # 1.2.18 - study cards: formulas rendered with matplotlib's mathtext (no LaTeX install needed)
 matplotlib>=3.8
+# 1.2.42 - automatic TikTok posts through TikTok Studio (uses the installed Chrome / Edge)
+playwright>=1.48

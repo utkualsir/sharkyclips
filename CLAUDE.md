@@ -65,6 +65,13 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   `SHARKYCLIPS_QUEUE_HOME` into the throwaway home (`test_isolation.py`).
 - Deleting goes through `trash.py` (30-day `<workspace>/_trash`, Restore, Empty): never remove
   project files or originals directly, and never delete posts on the platforms unless the user ticks it.
+- Automatic TikTok (1.2.42) = `tiktok_browser.py` driving TikTok Studio in SharkyClips' own
+  Playwright profile (`<settings>/browser/tiktok-profile`, headed, off-screen). Selectors are
+  TikTok's `data-e2e` attributes, never texts. On a CAPTCHA / verification / login wall / unknown
+  screen it stops and falls back to by hand: never add code that solves or bypasses those. Tests
+  run against `backend/tests/fake_tiktok_studio.py` (keep it in step with real TikTok Studio
+  changes); env `SHARKYCLIPS_TT_STUDIO`, `SHARKYCLIPS_TT_HEADLESS=1` (tests only), `_TT_PACE`,
+  `_TT_TYPE_MS`, `_TT_TIMEOUT_SCALE`.
 - Icons/logo come from `installer/make_icons.py` (one geometry; `frontend/src/components/Brand.tsx`
   and `backend/sharkyclips/web/splash.html` copy the same paths).
 - Settings folder: `~/.sharkyclips` (`config.config_dir()`); `migrate.py` moves an old `~/.clipforge`

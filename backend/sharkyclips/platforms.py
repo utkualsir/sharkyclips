@@ -164,6 +164,10 @@ def mode(name: str) -> str:
     if name == "youtube":
         return "api"
     want = (config.get("platform_modes") or {}).get(name)
+    if name == "tiktok" and want == "browser":  # 1.2.42: TikTok Studio in SharkyClips' own browser
+        from . import tiktok_browser
+
+        return "browser" if tiktok_browser.ready() else "semi"
     if want != "api" or not connected(name):
         return "semi"
     return "semi" if (problem(name) or {}).get("kind") == "signed_out" else "api"
@@ -185,8 +189,13 @@ def status(name: str) -> dict:
 
 
 def set_mode(name: str, value: str) -> dict:
-    if name not in ("tiktok", "reels") or value not in ("semi", "api"):
+    if name not in ("tiktok", "reels") or value not in ("semi", "api", "browser") or             (value == "browser" and name != "tiktok"):
         raise SharkyClipsError("Unknown platform or mode.")
+    if value == "browser":
+        from . import tiktok_browser
+
+        if not tiktok_browser.logged_in():
+            raise SharkyClipsError("Log in to TikTok first.", "Settings > Accounts > TikTok > Log in to TikTok.")
     if value == "api" and not connected(name):
         raise SharkyClipsError("Connect the account first.", "Follow the guided setup, or keep the semi-automatic mode.")
     modes = dict(config.get("platform_modes") or {})
@@ -955,6 +964,17 @@ def account(name: str) -> dict:
     if name == "tiktok":
         out["scopes"] = [x for x in str(tok.get("scope") or "").split(",") if x]
         out["stats"] = "video.list" in out["scopes"]
+        from . import tiktok_browser
+
+        b = tiktok_browser.status()
+        out["browser"] = b
+        if not out["connected"] and b["login_at"]:  # the TikTok Studio login stands in for the API
+            blk = b.get("blocked") or {}
+            out.update(connected=bool(b["logged_in"]), handle=b["username"], name=b["username"], via="browser",
+                       avatar=False, connected_at=b["login_at"], audited=True,
+                       health={"pill": b["pill"], "reason": "blocked" if blk else
+                               ("signed_out" if b["pill"] == "signed_out" else None),
+                               "message": blk.get("message")})
     if name == "reels":
         out["stats"] = "insights" in str(tok.get("scope") or "insights")
         out["redirect"] = app.get("redirect")

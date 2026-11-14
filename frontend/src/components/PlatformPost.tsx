@@ -267,7 +267,7 @@ export function PlatformRow({ pid, cid }: { pid: string; cid: string }) {
       </div>
       <span className="field-hint">
         {(["tiktok", "reels"] as PostPlatform[])
-          .map((p) => `${NAMES[p]}: ${overview?.[p].mode === "api" ? t("platform.now_api") : t("platform.now_semi")}`)
+          .map((p) => `${NAMES[p]}: ${overview?.[p].mode !== "semi" ? t("platform.now_api") : t("platform.now_semi")}`)
           .join(" · ")}
       </span>
     </fieldset>

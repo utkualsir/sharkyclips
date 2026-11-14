@@ -30,7 +30,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue" | "reconcile" | "post";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;

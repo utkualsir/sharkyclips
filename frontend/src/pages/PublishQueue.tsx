@@ -8,6 +8,7 @@ import { useI18n } from "../i18n";
 import { pqApi, QNAME, QPLATFORMS, toInput, wall, type QClip, type QEntry, type QOverview, type QPlatform, type QResult, type QSlot } from "../pubqueue";
 import { useToast } from "../toast";
 import { Icon } from "../components/Icons";
+import { ReconcileButton } from "../components/TikTokStudio";
 import { Modal, ProgressBar, Toggle } from "../components/ui";
 
 const key = (c: { project_id: string; clip_id: string }) => `${c.project_id}/${c.clip_id}`;
@@ -398,7 +399,8 @@ function OverdueBar({ ov, onChange }: { ov: QOverview; onChange: (o: QOverview) 
         <Icon name="alert" size={16} /> <b>{t("pq.overdue_title", { n: num(n) })}</b> <span className="muted">{t("pq.overdue_hint")}</span>
       </p>
       <div className="inline-row" style={{ flexWrap: "wrap" }}>
-        <button className="btn btn-sm btn-primary" onClick={check}>
+        <ReconcileButton onDone={() => pqApi.overview().then(onChange).catch(() => {})} />
+        <button className="btn btn-sm" onClick={check}>
           <Icon name="copy" /> {t("pq.verify")}
         </button>
         <button className="btn btn-sm" onClick={replan}>

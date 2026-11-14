@@ -9,7 +9,32 @@ export type PostStatus = "idle" | "scheduled" | "preparing" | "uploading" | "pro
 
 /** 1.2.39: semi (default for TikTok / Instagram) = SharkyClips makes the file + copies the caption,
  *  you paste and share; api = posted by itself (automatic posting on + a working token). */
-export type PostMode = "semi" | "api";
+export type PostMode = "semi" | "api" | "browser"; // 1.2.42 browser: TikTok Studio in SharkyClips' own browser
+
+/** 1.2.42: why an automatic TikTok post stopped (it then went "by hand"). */
+export interface AutoStop {
+  reason: "captcha" | "verify" | "login" | "unknown" | "ui_changed" | "upload_failed" | "no_browser" | "error";
+  message: string;
+  hint: string | null;
+  shot: string | null;
+  at: number;
+}
+
+/** 1.2.42: the TikTok Studio login (SharkyClips' own browser profile). */
+export interface TikTokBrowser {
+  available: boolean;
+  missing: string | null;
+  logged_in: boolean;
+  username: string | null;
+  login_at: number | null;
+  checked_at: number | null;
+  pill: Pill | "not_connected";
+  blocked: { reason: string; message: string; shot: string | null; at: number } | null;
+  login: { state: "idle" | "opening" | "waiting" | "done" | "cancelled" | "error"; error: string | null; started_at: number | null };
+  daily_cap: number;
+  channel: string | null;
+  busy: boolean;
+}
 
 export interface PostError {
   message: string;
@@ -38,6 +63,9 @@ export interface PostState {
   mode?: PostMode | null;
   manual?: boolean;
   remind_at?: string | null;
+  remote?: boolean;
+  fallback?: AutoStop | null;
+  shot?: string | null;
 }
 
 export type ClipPosts = Record<Target, PostState> & { total_views: number | null; everywhere: boolean };
@@ -58,6 +86,8 @@ export interface Account {
   connected_at?: number | string | null;
   encrypted: boolean;
   stats?: boolean;
+  via?: "browser";
+  browser?: TikTokBrowser;
   scopes?: string[];
   redirect?: string | null;
   mode?: PostMode;
@@ -68,6 +98,7 @@ export interface Quota {
   used: number;
   total: number;
   approx?: boolean;
+  auto?: boolean;
   uploads_left?: number;
   resets_at?: string;
 }
@@ -189,7 +220,18 @@ export const accountsApi = {
   igOauth: (app_id: string, app_secret: string) => req<{ url: string; redirect_uri: string }>("POST", "/api/platforms/reels/oauth", { app_id, app_secret }),
   igFinish: (url: string) => req<Accounts>("POST", "/api/platforms/reels/oauth/finish", { url }),
   setAudited: (p: "tiktok" | "reels", audited: boolean) => req<unknown>("PUT", `/api/platforms/${p}/audited`, { audited }),
+  tbStatus: () => req<TikTokBrowser>("GET", "/api/accounts/tiktok/browser"),
+  tbLogin: () => req<TikTokBrowser>("POST", "/api/accounts/tiktok/browser/login"),
+  tbCancel: () => req<TikTokBrowser>("POST", "/api/accounts/tiktok/browser/login/cancel"),
+  tbCheck: () => req<TikTokBrowser>("POST", "/api/accounts/tiktok/browser/check"),
+  tbLogout: () => req<TikTokBrowser>("POST", "/api/accounts/tiktok/browser/logout"),
+  tbSettings: (body: { daily_cap?: number; auto?: boolean }) => req<TikTokBrowser>("PUT", "/api/accounts/tiktok/browser/settings", body),
+  setMode: (p: "tiktok" | "reels", mode: PostMode) => req<unknown>("PUT", `/api/platforms/${p}/mode`, { mode }),
+  reconcile: () => req<{ job: { id: string } }>("POST", "/api/pubqueue/reconcile", {}),
 };
+
+/** Automatic = posted by SharkyClips itself (the API, or TikTok Studio in its own browser). */
+export const isAuto = (m: PostMode | null | undefined) => m === "api" || m === "browser";
 
 /** Which platforms still need this post (idle / failed / cancelled). */
 export function todo(posts: ClipPosts | undefined | null, targets: Target[]): Target[] {

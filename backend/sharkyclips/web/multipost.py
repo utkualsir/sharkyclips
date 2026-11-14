@@ -20,6 +20,12 @@ carry on, and Retry only redoes the failed one.
 
 Planned posts: YouTube gets publishAt; TikTok / Instagram are posted by this app at that time
 (the PC must be on; a time missed while it was off is caught up at the next start).
+
+1.2.42: TikTok "automatic" = TikTok Studio in SharkyClips' own browser (tiktok_browser.py, mode
+"browser"): a planned time inside TikTok's window (20 min .. ~10 days) goes into TikTok's own
+planner, so the PC needn't be on then; other times are posted by the publish loop at that time.
+At most `tiktok_auto_daily` posts a day (a full day moves to the next one). A stop (CAPTCHA,
+verification, login wall, unknown screen) falls back to "by hand" for that clip.
 """
 
 from __future__ import annotations
@@ -282,7 +288,9 @@ def _social_state(project: Project, cid: str, platform: str) -> dict:
             "make_public_url": TIKTOK_STUDIO if platform == "tiktok" and rec.get("privacy") == "self_only"
             and status in ("published", "processing") else None,
             "job": j.id if j is not None else None, "mode": rec.get("mode"), "manual": bool(rec.get("manual")),
-            "remind_at": rec.get("remind_at") if status == "ready" else None}
+            "remind_at": rec.get("remind_at") if status == "ready" else None,
+            "remote": bool(rec.get("remote")), "fallback": rec.get("fallback"),
+            "shot": (rec.get("fallback") or {}).get("shot") or (rec.get("auto_error") or {}).get("shot")}
 
 
 def _youtube_state(project: Project, cid: str) -> dict:
@@ -367,9 +375,13 @@ def quotas(fetch: bool = True) -> dict:
     q = youtube.quota_view()
     tt = _posts_last_day("tiktok")
     ig = PF.ig_quota() if fetch and PF.connected("reels") else None
+    from .. import tiktok_browser as TB
+
+    browser = PF.mode("tiktok") == "browser"
     return {"youtube": {"used": q["used"], "total": q["limit"], "uploads_left": q["uploads_left"],
                         "resets_at": q["resets_at"]},
-            "tiktok": {"used": tt, "total": PF.TIKTOK_DAILY_CAP, "approx": True},
+            "tiktok": {"used": _tiktok_day_count(_now()), "total": TB.daily_cap(), "approx": False, "auto": True}
+            if browser else {"used": tt, "total": PF.TIKTOK_DAILY_CAP, "approx": True},
             "reels": ig and {"used": ig["used"], "total": ig["total"]} or {"used": _posts_last_day("reels"),
                                                                            "total": 50, "approx": True}}
 
@@ -405,7 +417,8 @@ def problems(project: Project, cand: dict, want: list[str], d: dict, tt: dict | 
     out: list[dict] = []
     for p in want:
         a = acc[p]
-        semi = (modes or {}).get(p) == "semi"  # by hand: no account, no API quota, no API post screen
+        semi = (modes or {}).get(p) in ("semi", "browser")  # by hand / TikTok Studio: no API account,
+        # no API quota, no API post screen (the browser lane keeps its own daily limit)
         if semi:
             pass
         elif not a["connected"]:  # (the content checks still run: fix everything in one go)
@@ -644,6 +657,18 @@ def _social_start(project: Project, cand: dict, platform: str, when: datetime | 
     if rec.get("status") in ("published", "processing") or rec.get("media_id") or \
             (rec.get("publish_id") and rec.get("status") not in ("failed", "cancelled")):
         return {"status": rec.get("status") or "processing", "skipped": True}  # never twice
+    if rec.get("status") == "scheduled" and (rec.get("via") == "chrome" or rec.get("remote")):
+        return {"status": "scheduled", "skipped": True}  # planned on the platform already
+    if rec.get("submitted_at") and rec.get("status") not in ("cancelled",) and not rec.get("cleared"):
+        return {"status": rec.get("status") or "processing", "skipped": True}  # pressed "Post" once: look it up
+    try:
+        from . import pubqueue_api
+
+        live = pubqueue_api.live_elsewhere(project.id, cid, platform)
+    except Exception:  # noqa: BLE001
+        live = None
+    if live:  # posted / planned through the publish queue (Claude in Chrome): not again
+        return {"status": live, "skipped": True}
     if active_job(project.id, cid, platform) is not None:
         return {"status": "uploading", "skipped": True}
     ai = v["ai_voice"]
@@ -655,6 +680,8 @@ def _social_start(project: Project, cand: dict, platform: str, when: datetime | 
                   shared_at=None, manual=None, url=None)
         submit(project.id, cid, platform)
         return {"status": "preparing", "mode": "semi", "upload_page": PF.UPLOAD_PAGE[platform]}
+    if v["modes"][platform] == "browser":
+        return _browser_start(project, cand, when, v, caption)
     settings = dict(v["tiktok"]["settings"]) if platform == "tiktok" and v.get("tiktok") else None
     if platform == "tiktok" and settings is not None and not v["tiktok"]["audited"]:
         settings["privacy"] = "SELF_ONLY"
@@ -707,7 +734,8 @@ def _wait(job: Job | None, seconds: float) -> None:
 def _file_for(project: Project, cid: str, platform: str, rec: dict, job: Job | None) -> Path:
     """The video this post sends: the one an earlier step of this post used, else the rendered
     clip, else a fresh export with the platform preset (made here, in the job)."""
-    if rec.get("file") and Path(rec["file"]).is_file() and (rec.get("publish_id") or rec.get("container_id")):
+    if rec.get("file") and Path(rec["file"]).is_file() and (rec.get("publish_id") or rec.get("container_id")
+                                                             or rec.get("submitted_at") or rec.get("remote")):
         return Path(rec["file"])  # resuming: exactly the bytes TikTok / Instagram already got
     A = _app()
     src = _source_info(project, cid)
@@ -744,9 +772,13 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
     if rec.get("status") == "published":
         return {"status": "published", "url": rec.get("url")}
     try:
+        if rec.get("mode") == "browser" and (rec.get("remote") or rec.get("submitted_at")):
+            return _browser_verify(project, cid, rec)  # sent before: look it up, never post twice
         file = _file_for(project, cid, platform, rec, job)
         if rec.get("mode") == "semi":
             return _run_semi(project, cid, platform, file, rec)
+        if rec.get("mode") == "browser":
+            return _run_browser(project, cid, file, rec, job)
         rec = PF.record(project, cid, platform, status="uploading", file=str(file), error=None)
         if job is not None:
             A.jobs.update(job, stage="uploading", progress=0.0)
@@ -918,6 +950,7 @@ def _tiktok_done(project: Project, cid: str, rec: dict, st: dict) -> dict:
         f"https://www.tiktok.com/@{handle}" if handle else "https://www.tiktok.com/")
     out = PF.record(project, cid, "tiktok", status="published", url=url, post_id=ids[0] if ids else None,
                     posted_at=rec.get("posted_at") or _iso(_now()), error=None, next_try_at=None)
+    _calendar(project, cid, "tiktok", "published", out.get("url"))
     return {"status": "published", "url": out.get("url"), "privacy": out.get("privacy")}
 
 
@@ -997,8 +1030,247 @@ def _reels_done(project: Project, cid: str, rec: dict, media: str, url: str | No
     url = url or PF.ig_permalink(media)
     PF.record(project, cid, "reels", status="published", media_id=media, url=url, privacy="public",
               posted_at=rec.get("posted_at") or _iso(_now()), error=None, next_try_at=None)
+    _calendar(project, cid, "reels", "published", url)
     return {"status": "published", "url": url, "media_id": media}
 
+
+
+# ===================================================================== 1.2.42: TikTok Studio (browser)
+
+
+def _post_day(r: dict):
+    at = P.parse(r.get("publish_at")) or P.parse(r.get("posted_at"))
+    return at.astimezone().date() if at is not None else None
+
+
+def _tiktok_day_count(day_of: datetime, skip: tuple[str, str] | None = None) -> int:
+    """TikTok posts that go live on this (local) day: planned, being posted or out, any way."""
+    day = day_of.astimezone().date()
+    n = 0
+    for project in _app().list_projects():
+        for cid, plats in PF.records(project).items():
+            if skip and (project.id, cid) == skip:
+                continue
+            r = (plats or {}).get("tiktok") or {}
+            if r.get("status") not in ("scheduled", "preparing", "uploading", "processing", "published"):
+                continue
+            if r.get("mode") == "semi" and r.get("status") != "published" and r.get("via") != "chrome":
+                continue
+            if _post_day(r) == day or (_post_day(r) is None and r.get("status") != "scheduled"
+                                       and float(r.get("init_at") or r.get("auto_started_at") or 0) > time.time() - 86400
+                                       and day == _now().astimezone().date()):
+                n += 1
+    return n
+
+
+def browser_slot(when: datetime | None, skip: tuple[str, str] | None = None) -> datetime | None:
+    """The daily limit: None (post now) / the planned time if that day has room, else the same
+    time on the next day with room."""
+    from .. import tiktok_browser as TB
+
+    cap = TB.daily_cap()
+    base = when or _now()
+    for i in range(60):
+        at = base + timedelta(days=i)
+        if _tiktok_day_count(at, skip) < cap:
+            return when if i == 0 else at
+    raise SharkyClipsError("Every day of the next two months is full on TikTok.", "Raise the daily limit in Settings > Accounts.")
+
+
+def _clip_title(project: Project, cid: str, rec: dict | None = None) -> str:
+    """The first caption line (what TikTok Studio's content list shows)."""
+    from .. import tiktok_browser as TB
+
+    body, _ = TB.split_caption((rec or _rec(project, cid, "tiktok")).get("caption") or "")
+    return (body.split("\n")[0] if body else "").strip() or cid
+
+
+def _log(project: Project, cid: str, step: str, message: str, shot: str | None = None) -> None:
+    rec = _rec(project, cid, "tiktok")
+    log = list(rec.get("auto_log") or [])[-19:]
+    log.append({"at": _iso(_now()), "step": step, "message": message[:300], "shot": shot})
+    PF.record(project, cid, "tiktok", auto_log=log)
+
+
+def _calendar(project: Project, cid: str, platform: str, status: str, url: str | None, when: str | None = None) -> None:
+    try:
+        from . import pubqueue_api
+
+        pubqueue_api.note_auto(project.id, cid, platform, status, url, when)
+    except Exception:  # noqa: BLE001 - the calendar is a mirror: never fails a post
+        pass
+
+
+def _browser_start(project: Project, cand: dict, when: datetime | None, v: dict, caption: str) -> dict:
+    cid = cand["id"]
+    ai = v["ai_voice"]
+    at = browser_slot(when, (project.id, cid))
+    PF.record(project, cid, "tiktok", mode="browser", caption=caption, ai_label=bool(ai["dub"]) and bool(ai["label"]),
+              error=None, attempts=0, next_try_at=None, late=False, status="scheduled" if at else "preparing",
+              publish_at=_iso(at) if at else None, remote=False, native=None, submitted_at=None, cleared=None,
+              verify_tries=0, fallback=None, auto_error=None, url=None, remind_at=None, manual=None, via=None,
+              file=None, scheduled_text=None)
+    from .. import tiktok_browser as TB
+
+    if at is None or TB.in_window(at) or at <= _now():
+        submit(project.id, cid, "tiktok")
+    out = {"status": "scheduled" if at else "uploading", "mode": "browser"}
+    if at:
+        out.update(publish_at=_iso(at), moved=bool(when is None or at != when))
+    return out
+
+
+def _run_browser(project: Project, cid: str, file: Path, rec: dict, job: Job | None) -> dict:
+    from .. import tiktok_browser as TB
+
+    A = _app()
+    now = _now()
+    at = P.parse(rec.get("publish_at"))
+    native = at is not None and rec.get("native") is not False and TB.in_window(at, now)
+    if at is not None and not native and at > now + timedelta(seconds=30):
+        PF.record(project, cid, "tiktok", status="scheduled")  # the publish loop posts it at that time
+        return {"status": "scheduled", "publish_at": rec.get("publish_at")}
+    title = _clip_title(project, cid, rec)
+
+    def step(name: str, frac: float) -> None:
+        if job is not None:
+            A.jobs.update(job, stage=name if name in ("uploading", "processing") else "uploading", progress=frac)
+        _check_cancel(job)
+
+    PF.record(project, cid, "tiktok", status="uploading", file=str(file), auto_started_at=time.time(), error=None)
+    try:
+        from . import pubqueue_api
+
+        if pubqueue_api.unsure(project.id, cid, "tiktok"):  # maybe posted by hand already: look first
+            row = TB.find_posts([title])[0]
+            if row.get("found"):
+                PF.record(project, cid, "tiktok", submitted_at=time.time(), remote=bool(row.get("scheduled")))
+                return _browser_verify(project, cid, _rec(project, cid, "tiktok"))
+    except TB.Blocked as exc:
+        return _browser_blocked(project, cid, file, exc, title)
+    except Exception:  # noqa: BLE001 - the look-up is extra care: the post itself decides
+        pass
+    try:
+        res = TB.post(file, rec.get("caption") or "", when=at if native else None, ai_label=bool(rec.get("ai_label")),
+                      title=title, shots_dir=project.dir / "logs" / "tiktok", tag=cid, on_step=step,
+                      on_submit=lambda: PF.record(project, cid, "tiktok", submitted_at=time.time()))
+    except TB.ScheduleUnavailable as exc:
+        _log(project, cid, "schedule", exc.message)
+        PF.record(project, cid, "tiktok", status="scheduled", native=False)
+        if at is not None and at <= _now() + timedelta(minutes=1):
+            return _run_browser(project, cid, file, _rec(project, cid, "tiktok"), job)
+        return {"status": "scheduled", "publish_at": rec.get("publish_at")}
+    except TB.Blocked as exc:
+        return _browser_blocked(project, cid, file, exc, title)
+    except JobCancelled:
+        raise
+    except Exception as exc:  # noqa: BLE001 - browser trouble (closed, timed out): stop, never loop
+        sent = bool(_rec(project, cid, "tiktok").get("submitted_at"))
+        return _browser_blocked(project, cid, file, TB.Blocked(
+            "error", f"TikTok Studio: {type(exc).__name__}: {str(exc).splitlines()[0][:160] if str(exc) else ''}",
+            "The clip is ready for you to post by hand.", None, sent, "browser"), title)
+    handle = res.get("username") or (TB.status().get("username"))
+    if res["status"] == "scheduled":
+        PF.record(project, cid, "tiktok", status="scheduled", remote=True, scheduled_text=res.get("row"),
+                  confirmed=res.get("confirmed"), handle=handle, privacy="public", error=None, checked_at=time.time(),
+                  init_at=time.time())
+        _log(project, cid, "scheduled", res.get("row") or "planned in TikTok Studio")
+        _calendar(project, cid, "tiktok", "scheduled", None, rec.get("publish_at"))
+        return {"status": "scheduled", "publish_at": rec.get("publish_at"), "row": res.get("row")}
+    url = res.get("url") or (f"https://www.tiktok.com/@{handle}" if handle else None)
+    PF.record(project, cid, "tiktok", status="published", url=url, posted_at=_iso(_now()), handle=handle,
+              privacy="public", error=None, next_try_at=None, init_at=time.time(),
+              verify_tries=0 if res.get("url") else 1)
+    _log(project, cid, "published", res.get("row") or "posted")
+    _calendar(project, cid, "tiktok", "published", url)
+    return {"status": "published", "url": url}
+
+
+def _browser_blocked(project: Project, cid: str, file: Path, exc, title: str) -> dict:
+    from .. import tiktok_browser as TB
+
+    TB.note_block(exc.reason, exc.message, exc.shot)
+    _log(project, cid, exc.step or exc.reason, exc.message, exc.shot)
+    err = {"reason": exc.reason, "message": exc.message, "hint": exc.hint, "shot": exc.shot, "at": time.time()}
+    TB.notify(exc.reason, title)
+    if exc.submitted:  # "Post" was pressed: never again by itself; the publish loop looks it up
+        PF.record(project, cid, "tiktok", status="processing", checked_at=time.time(), auto_error=err)
+        return {"status": "processing"}
+    rec = PF.record(project, cid, "tiktok", mode="semi", fallback=err, status="preparing", error=None,
+                    remind_at=_rec(project, cid, "tiktok").get("publish_at"), publish_at=None, remote=False)
+    return _run_semi(project, cid, "tiktok", file, rec)
+
+
+def _browser_verify(project: Project, cid: str, rec: dict) -> dict:
+    """A post sent through TikTok Studio before: is it planned / live? (never posts again)"""
+    from .. import tiktok_browser as TB
+
+    at = P.parse(rec.get("publish_at"))
+    if rec.get("remote") and at is not None and at > _now():
+        PF.record(project, cid, "tiktok", status="scheduled")
+        return {"status": "scheduled"}
+    title = _clip_title(project, cid, rec)
+    try:
+        row = TB.find_posts([title])[0]
+    except TB.Blocked as exc:
+        _log(project, cid, "check", exc.message)
+        PF.record(project, cid, "tiktok", checked_at=time.time())
+        return {"status": rec.get("status")}
+    tries = int(rec.get("verify_tries") or 0) + 1
+    handle = rec.get("handle") or TB.status().get("username")
+    if row.get("found") and row.get("scheduled") and (at is None or at > _now() - timedelta(hours=1)):
+        PF.record(project, cid, "tiktok", status="scheduled", remote=True, checked_at=time.time(), verify_tries=tries,
+                  scheduled_text=row.get("text", "")[:300])
+        return {"status": "scheduled"}
+    if row.get("found"):
+        url = row.get("href") or rec.get("url") or (f"https://www.tiktok.com/@{handle}" if handle else None)
+        PF.record(project, cid, "tiktok", status="published", url=url, verify_tries=tries, checked_at=time.time(),
+                  posted_at=rec.get("posted_at") or _iso(at or _now()), remote=False, error=None)
+        _calendar(project, cid, "tiktok", "published", url)
+        return {"status": "published", "url": url}
+    if tries < 3:
+        PF.record(project, cid, "tiktok", verify_tries=tries, checked_at=time.time(),
+                  status="scheduled" if rec.get("remote") else "processing")
+        return {"status": "processing"}
+    if rec.get("remote"):  # TikTok showed it as planned: it went out (the list didn't show it yet)
+        url = rec.get("url") or (f"https://www.tiktok.com/@{handle}" if handle else None)
+        PF.record(project, cid, "tiktok", status="published", url=url, unverified=True, verify_tries=tries,
+                  posted_at=rec.get("posted_at") or _iso(at or _now()), remote=False)
+        _calendar(project, cid, "tiktok", "published", url)
+        return {"status": "published", "url": url}
+    PF.record(project, cid, "tiktok", status="failed", verify_tries=tries, error={
+        "message": "TikTok Studio didn't show this post after \"Post\" was pressed.",
+        "hint": "Look in TikTok Studio. If it isn't there, press Retry to post it again.", "kind": "fatal",
+        "code": "not_found"})
+    return {"status": "failed"}
+
+
+def _browser_tick(project: Project, cid: str, r: dict, now: datetime) -> str | None:
+    """What the publish loop does for a TikTok Studio post (None: nothing now)."""
+    from .. import tiktok_browser as TB
+
+    st = r.get("status")
+    t = now.timestamp()
+    at = P.parse(r.get("publish_at"))
+    if st == "scheduled" and r.get("remote"):
+        if at is not None and at <= now - timedelta(minutes=5) and t - float(r.get("checked_at") or 0) > 600:
+            return "check"
+        return None
+    if st == "scheduled":
+        if at is None or at <= now:
+            if at is not None and (now - at).total_seconds() > 600:
+                PF.record(project, cid, "tiktok", late=True)
+            return "due" if TB.ready() else None
+        if r.get("native") is not False and TB.in_window(at, now) and TB.ready():
+            return "plan"
+        return None
+    if st == "processing" and t - float(r.get("checked_at") or 0) > 600:
+        return "check"
+    if st in ("uploading", "preparing"):
+        return "resume"
+    if st == "failed" and r.get("next_try_at") and float(r["next_try_at"]) <= t             and int(r.get("attempts") or 0) < MAX_TRIES:
+        return "retry"
+    return None
 
 # ===================================================================== retry / cancel
 
@@ -1015,6 +1287,8 @@ def retry(project: Project, cid: str, platform: str) -> dict:
         return {"status": "uploading"}
     if not rec:
         raise SharkyClipsError("Nothing to try again here.", "Press Publish.")
+    if rec.get("mode") == "browser":  # your Retry: post again (also after "not found")
+        PF.record(project, cid, platform, submitted_at=None, remote=False, verify_tries=0, cleared=True)
     PF.record(project, cid, platform, status="preparing", error=None, next_try_at=None)
     submit(project.id, cid, platform)
     return {"status": "uploading"}
@@ -1025,6 +1299,9 @@ def unplan(project: Project, cid: str, platform: str) -> dict:
     rec = _rec(project, cid, platform)
     if rec.get("status") != "scheduled":
         raise SharkyClipsError("This post isn't planned.")
+    if rec.get("remote"):
+        raise SharkyClipsError("This post is planned in TikTok Studio.",
+                               "Delete it there (TikTok Studio > Posts > Scheduled); SharkyClips sees it at the next check.")
     PF.record(project, cid, platform, status="idle", publish_at=None)
     return clip_states(project, cid)
 
@@ -1049,7 +1326,11 @@ def tick(now: datetime | None = None) -> list[str]:
                 if not st or r.get("mode") == "semi" or active_job(project.id, cid, p) is not None:
                     continue
                 go = None
-                if st == "scheduled":
+                if r.get("mode") == "browser":
+                    go = _browser_tick(project, cid, r, now)
+                    if go in ("due", "plan"):
+                        PF.record(project, cid, p, status="preparing" if go == "due" else "scheduled")
+                elif st == "scheduled":
                     at = P.parse(r.get("publish_at"))
                     if at is not None and at <= now:
                         late = (now - at).total_seconds() > 600
@@ -1357,3 +1638,79 @@ def api_ig_callback(code: str = "", state: str = "", error: str = "", error_desc
                         f"<body style='font-family:system-ui;background:#0e1a33;color:#fff;display:grid;place-items:center;height:100vh;margin:0'>"
                         f"<div style='max-width:460px;text-align:center'><h1 style='color:{color}'>{'✓' if ok else '!'}</h1>"
                         f"<p>{html.escape(msg)}</p><p><a style='color:#d9b56a' href='/#/settings'>SharkyClips</a></p></div>")
+
+
+# ===================================================================== 1.2.42: TikTok Studio login
+
+
+def _tb():
+    from .. import tiktok_browser
+
+    return tiktok_browser
+
+
+def _after_login(d: dict) -> None:
+    """The first TikTok Studio login turns automatic TikTok on (unless you chose by hand before)
+    and checks the publish calendar's overdue TikTok posts."""
+    modes = dict(config.get("platform_modes") or {})
+    if "tiktok" not in modes:
+        modes["tiktok"] = "browser"
+        config.update(platform_modes=modes)
+    try:
+        from . import pubqueue_api
+
+        pubqueue_api.submit_reconcile()
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _local_only(request: Request) -> None:
+    if not _app()._is_local(request):
+        raise SharkyClipsError("Only the computer running SharkyClips can open the TikTok window.")
+
+
+@router.get("/api/accounts/tiktok/browser")
+def api_tb_status() -> dict:
+    return _tb().status()
+
+
+@router.post("/api/accounts/tiktok/browser/login")
+def api_tb_login(request: Request) -> dict:
+    _local_only(request)
+    _tb().on_login(_after_login)
+    return _tb().login_start()
+
+
+@router.post("/api/accounts/tiktok/browser/login/cancel")
+def api_tb_login_cancel() -> dict:
+    return _tb().login_cancel()
+
+
+@router.post("/api/accounts/tiktok/browser/check")
+def api_tb_check() -> dict:
+    TB = _tb()
+    if TB.status()["busy"]:
+        return TB.status()  # a post (or the login window) has the browser now
+    if not TB.status()["login_at"]:
+        raise SharkyClipsError("Log in to TikTok first.")
+    TB.clear_block()
+    return TB.check()
+
+
+@router.post("/api/accounts/tiktok/browser/logout")
+def api_tb_logout() -> dict:
+    modes = dict(config.get("platform_modes") or {})
+    if modes.get("tiktok") == "browser":
+        modes["tiktok"] = "semi"
+        config.update(platform_modes=modes)
+    return _tb().logout()
+
+
+@router.put("/api/accounts/tiktok/browser/settings")
+def api_tb_settings(body: dict) -> dict:
+    TB = _tb()
+    if body.get("daily_cap") is not None:
+        TB.set_daily_cap(int(body["daily_cap"]))
+    if body.get("auto") is not None:
+        PF.set_mode("tiktok", "browser" if body["auto"] else "semi")
+    return TB.status()

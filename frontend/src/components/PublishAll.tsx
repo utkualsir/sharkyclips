@@ -21,6 +21,7 @@ import {
   type PublishView,
   type Target,
   type TikTokSettings,
+  isAuto,
 } from "../multipost";
 import { useToast } from "../toast";
 import { accountsChanged, ConnectDialog, useAccounts } from "./Accounts";
@@ -205,6 +206,11 @@ export function PostBadges({ posts, pid, cid, onChanged, all }: { posts: ClipPos
         <a className="mp-make-public" href={tt.make_public_url} target="_blank" rel="noreferrer">
           <PlatformIcon p="tiktok" size={13} /> {t("mp.tt_make_public")}
         </a>
+      )}
+      {tt.fallback && tt.status === "ready" && (
+        <p className="mp-fail-line" role="note">
+          <PlatformIcon p="tiktok" size={13} /> {t(`tts.stop_${tt.fallback.reason}`)} {t("tts.fallback_ready")}
+        </p>
       )}
       {ORDER.filter((p) => posts[p].status === "failed" && posts[p].error).map((p) => (
         <p key={p} className="mp-fail-line" role="alert">
@@ -800,8 +806,8 @@ export function PublishDialog({
                   <PlatformIcon p={p} size={16} /> <b>{TARGET_NAME[p]}</b>
                   <LengthChip p={p} view={view} />
                   {p !== "youtube" && (
-                    <span className={`mp-chip mp-mode-${view.modes?.[p] ?? "semi"}`} title={t(view.modes?.[p] === "api" ? "mp.mode_api_hint" : "mp.mode_semi_hint", { name: TARGET_NAME[p] })}>
-                      <Icon name={view.modes?.[p] === "api" ? "zap" : "copy"} size={12} /> {t(view.modes?.[p] === "api" ? "mp.mode_api" : "mp.mode_semi")}
+                    <span className={`mp-chip mp-mode-${isAuto(view.modes?.[p]) ? "api" : "semi"}`} title={t(view.modes?.[p] === "browser" ? "tts.chip_hint" : view.modes?.[p] === "api" ? "mp.mode_api_hint" : "mp.mode_semi_hint", { name: TARGET_NAME[p] })}>
+                      <Icon name={isAuto(view.modes?.[p]) ? "zap" : "copy"} size={12} /> {t(isAuto(view.modes?.[p]) ? "mp.mode_api" : "mp.mode_semi")}
                     </span>
                   )}
                 </header>

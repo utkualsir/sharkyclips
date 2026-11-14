@@ -116,6 +116,152 @@ def link_soon(every: float = 600.0) -> int:
         return 0
 
 
+# ===================================================================== 1.2.42: automatic posts + reconcile
+
+CAL_KEY = {v: k for k, v in SOCIAL_KEY.items()} | {"youtube": "youtube"}  # clip records' name -> calendar's
+
+
+def live_elsewhere(project_id: str, cid: str, platform: str) -> str | None:
+    """'scheduled' / 'published' when the calendar has this clip out there (or planned) on that
+    platform: posted through the publish queue, so the one Publish button skips it."""
+    src = f"{project_id}:{cid}"
+    name = CAL_KEY.get(platform, platform)
+    for e in PQ.load_calendar()["entries"]:
+        if e.get("source") == src and e.get("platform") == name and e.get("status") in PQ.LIVE:
+            return str(e["status"])
+    return None
+
+
+def unsure(project_id: str, cid: str, platform: str) -> bool:
+    """The calendar can't tell whether this clip is out there (overdue, nobody reported it)."""
+    src = f"{project_id}:{cid}"
+    name = CAL_KEY.get(platform, platform)
+    return any(e.get("source") == src and e.get("platform") == name and PQ.is_overdue(e)
+               for e in PQ.load_calendar()["entries"])
+
+
+def note_auto(project_id: str, cid: str, platform: str, status: str, url: str | None, when: str | None = None) -> int:
+    """A post made by the one Publish button (API or TikTok Studio) also shows in the calendar,
+    so the browser queue never posts it again. Only existing entries change."""
+    src = f"{project_id}:{cid}"
+    name = CAL_KEY.get(platform, platform)
+    n = 0
+    for e in PQ.load_calendar()["entries"]:
+        if e.get("source") != src or e.get("platform") != name:
+            continue
+        if e.get("status") == "published" or (e.get("status") == "scheduled" and status != "published"):
+            continue
+        PQ.set_result(e["id"], name, status, url, "SharkyClips posted it" if status == "published"
+                      else "SharkyClips planned it on the platform", e.get("batch"), by="auto")
+        n += 1
+    return n
+
+
+def _norm(text: str) -> str:
+    import unicodedata
+
+    t = unicodedata.normalize("NFKC", text or "").casefold()
+    return re.sub(r"\s+", " ", re.sub(r"[\W_]+", " ", t)).strip()
+
+
+def title_match(title: str, text: str) -> bool:
+    w = _norm(title)[:32].strip()
+    t = _norm(text)
+    return len(w) >= 6 and (t.startswith(w) or w in t[:240])
+
+
+def _checkable(e: dict, now) -> bool:
+    if e.get("platform") not in ("tiktok", "instagram"):
+        return False
+    if PQ.is_overdue(e, now):
+        return True
+    when = PQ.parse_time(e.get("scheduled_at"))
+    return e.get("status") == "scheduled" and not e.get("url") and when is not None and when <= now
+
+
+def reconcile(use_browser: bool = True, now=None) -> dict:
+    """Looks up what really happened to the overdue posts (and planned ones whose time passed):
+    Instagram through the API (the connected account's newest posts), TikTok in TikTok Studio's
+    content list (the SharkyClips browser, when logged in). Found -> published / scheduled with the
+    link; not found while it was due -> failed ("not on <platform>"), so it can be planned again
+    without ever being posted twice. Entries it can't check stay as they are."""
+    from .. import tiktok_browser as TB
+
+    now = now or PQ.now_local()
+    entries = [e for e in PQ.load_calendar()["entries"] if _checkable(e, now)]
+    out = {"checked": 0, "published": 0, "scheduled": 0, "missing": 0, "skipped": [], "entries": []}
+    stamp = now.strftime("%Y-%m-%d %H:%M")
+
+    def done(e, status, url, note):
+        PQ.set_result(e["id"], e["platform"], status, url, note, e.get("batch"), by="reconcile")
+        out["checked"] += 1
+        out["published" if status == "published" else "scheduled" if status == "scheduled" else "missing"] += 1
+        out["entries"].append({"id": e["id"], "platform": e["platform"], "title": e.get("title"), "status": status,
+                               "url": url})
+
+    ig = [e for e in entries if e["platform"] == "instagram"]
+    if ig:
+        acc = PF.account("reels")
+        if not acc.get("connected"):
+            out["skipped"].append({"platform": "instagram", "reason": "not_connected", "n": len(ig)})
+        else:
+            try:
+                media = PF.ig_recent(50)
+            except SharkyClipsError as exc:
+                media = None
+                out["skipped"].append({"platform": "instagram", "reason": "error", "message": exc.message, "n": len(ig)})
+            handle = str(acc.get("handle") or "").lstrip("@").lower()
+            for e in ig if media is not None else []:
+                m = next((x for x in media if title_match(e.get("title") or "", x.get("caption") or "")), None)
+                if m:
+                    done(e, "published", m.get("permalink"), f"Instagram @{handle}: found ({stamp})")
+                elif not e.get("account") or str(e["account"]).lstrip("@").lower() == handle:
+                    if PQ.is_overdue(e, now):
+                        done(e, "failed", None, f"Not on Instagram @{handle} (checked {stamp}): never posted")
+                else:
+                    out["skipped"].append({"platform": "instagram", "reason": "other_account", "id": e["id"],
+                                           "account": e.get("account")})
+    tt = [e for e in entries if e["platform"] == "tiktok"]
+    if tt:
+        if not (use_browser and TB.logged_in() and TB.available()[0]):
+            out["skipped"].append({"platform": "tiktok", "reason": "login", "n": len(tt)})
+        else:
+            try:
+                rows = TB.find_posts([e.get("title") or "" for e in tt])
+            except SharkyClipsError as exc:
+                rows = None
+                out["skipped"].append({"platform": "tiktok", "reason": getattr(exc, "reason", "error"),
+                                       "message": exc.message, "n": len(tt)})
+            for e, r in zip(tt, rows or []):
+                if r.get("found"):
+                    if r.get("scheduled"):
+                        done(e, "scheduled", None, f"TikTok Studio: planned - {(r.get('text') or '')[:120]}")
+                    else:
+                        done(e, "published", r.get("href"), f"TikTok Studio: found ({stamp})")
+                elif PQ.is_overdue(e, now):
+                    done(e, "failed", None, f"Not in TikTok Studio (checked {stamp}): never posted")
+    out["linked"] = link_library()
+    return out
+
+
+def submit_reconcile(use_browser: bool = True) -> Job:
+    A = _app()
+
+    def run(job: Job):
+        A.jobs.update(job, stage="checking", progress=None)
+        return reconcile(use_browser)
+
+    # the TikTok slot: never at the same time as a TikTok post (one browser on the profile)
+    return A.jobs.submit("reconcile", "net", None, {"platform": "tiktok", "title": "reconcile"}, run,
+                         key="reconcile")
+
+
+@router.post("/api/pubqueue/reconcile")
+def api_reconcile(body: dict | None = Body(default=None)) -> dict:
+    job = submit_reconcile(bool((body or {}).get("browser", True)))
+    return {"job": job.to_dict()}
+
+
 def _store_path(project: Project) -> Path:
     return project.dir / "pubqueue.json"
 

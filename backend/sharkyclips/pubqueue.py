@@ -878,6 +878,27 @@ def mark(eid: str, platform: str, status: str, url: str | None = None, note: str
         return view(e)
 
 
+def set_result(eid: str, platform: str, status: str, url: str | None = None, note: str | None = None,
+               batch: str | None = None, by: str = "sharkyclips") -> dict:
+    """What SharkyClips itself found out (1.2.42: posted automatically, or checked on the platform)."""
+    if status not in ("pending", "scheduled", "published", "failed"):
+        raise SharkyClipsError("Unknown status.")
+    with _lock:
+        cal = load_calendar()
+        e = _entry(cal, eid, platform, batch)
+        e["status"] = status
+        if url is not None:
+            u = str(url).strip()
+            e["url"] = u if u.startswith("https://") else e.get("url")
+        if note is not None:
+            e["note"] = str(note)[:500] or None
+        e["updated_at"] = e["reported_at"] = iso(now_local())
+        e["checked_by"] = by
+        save_calendar(cal)
+        _sync_queue_files([e])
+        return view(e)
+
+
 def replan(keys: list[dict] | None = None, now: datetime | None = None) -> list[dict]:
     """Overdue posts (or the given [{id, platform, batch?}]) get the next free time again."""
     s = settings()

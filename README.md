@@ -19,7 +19,7 @@ No account, no cloud, no credits, no watermark.<br>
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.41-1F6FE5" alt="Version 1.2.41"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.42-1F6FE5" alt="Version 1.2.42"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -403,6 +403,7 @@ them. Nothing is installed before you confirm the list.
 
 - [x] Publish queue for Claude in Chrome: <10 MB files, calendar, status import (1.2.40)
 - [x] Delete clips and projects with a 30-day trash, undo, disk usage and clean-up (1.2.41)
+- [x] Automatic TikTok through TikTok Studio, one Publish for YouTube + Instagram + TikTok, publish-queue check (1.2.42)
 - [x] Instagram + TikTok step-by-step posting without an account (1.2.39)
 - [x] Kick VOD + clip import with chat replay (1.2.38)
 - [x] One Publish for YouTube, TikTok and Instagram Reels (1.2.36)

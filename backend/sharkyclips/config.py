@@ -99,7 +99,10 @@ DEFAULTS: dict[str, Any] = {
     "obs_websocket": "auto",  # auto (OBS's own websocket config) | off
     "phone_send": True,  # ready clips go to the paired Telegram bot
     "phone_send_top": 3,
-    "phone_lan": False,  # the phone approval page on the Wi-Fi (needs an access PIN)
+    "phone_lan": False,
+    # 1.2.42: automatic TikTok through TikTok Studio in SharkyClips' own browser profile
+    "tiktok_auto_daily": 3,  # at most this many automatic TikTok posts a day
+    "tiktok_browser": "auto",  # auto (Chrome, then Edge, then Playwright's Chromium) | chrome | msedge | chromium  # the phone approval page on the Wi-Fi (needs an access PIN)
     "replay_smooth": "auto",  # instant replay frames: auto | motion | blend
     # Easy mode clip length target per mode, set from the channel's own views (lengthfit.py):
     # {"gaming": {"min": 30, "max": 45}}. Empty = the built-in targets until enough published

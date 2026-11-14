@@ -3,12 +3,12 @@
 // Meta / TikTok developer app. Also opened inline from the Publish dialog.
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { api, type YoutubeStatus } from "../api";
-import { platformsApi } from "../extras";
 import { useI18n } from "../i18n";
 import { accountsApi, TARGET_NAME, type Account, type Accounts, type Quota, type Target } from "../multipost";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
 import { PlatformIcon } from "./PlatformIcons";
+import { AutoSwitch, TikTokStudioBox } from "./TikTokStudio";
 import { CopyButton, Modal } from "./ui";
 import { ConnectYoutube, YoutubeAccount } from "./YoutubeConnect";
 
@@ -323,8 +323,10 @@ function SocialCard({ a, quota, onChange }: { a: Account; quota: Quota | null | 
   const { t } = useI18n();
   const toast = useToast();
   const p = a.platform as "tiktok" | "reels";
-  const [setup, setSetup] = useState(!a.connected);
-  useEffect(() => setSetup(!a.connected), [a.connected]);
+  // 1.2.42: TikTok's own login is TikTok Studio in SharkyClips' browser; the API is the advanced way
+  const viaBrowser = p === "tiktok" && (a.via === "browser" || !a.connected);
+  const [setup, setSetup] = useState(!a.connected && p !== "tiktok");
+  useEffect(() => setSetup(!a.connected && p !== "tiktok"), [a.connected, p]);
   const disconnect = async () => {
     if (!window.confirm(t("acc.disconnect_q", { name: TARGET_NAME[p] }))) return;
     try {
@@ -352,7 +354,8 @@ function SocialCard({ a, quota, onChange }: { a: Account; quota: Quota | null | 
         <h3 id={`acc-${p}`}>{TARGET_NAME[p]}</h3>
         <StatusPill a={a} />
       </header>
-      {a.connected && (
+      {p === "tiktok" && <TikTokStudioBox a={a} onChange={() => (accountsChanged(), onChange())} />}
+      {a.connected && !viaBrowser && (
         <div className="acc-who">
           <Avatar a={a} />
           <div className="acc-who-text">
@@ -370,7 +373,7 @@ function SocialCard({ a, quota, onChange }: { a: Account; quota: Quota | null | 
           <Icon name="alert" size={14} /> {a.health.message || t(`acc.why_${a.health.reason === "expires" ? "expires" : a.health.reason === "scope" ? "scope" : "attention"}`, { name: TARGET_NAME[p] })}
         </p>
       )}
-      {p === "tiktok" && a.connected && !a.audited && (
+      {p === "tiktok" && a.connected && !viaBrowser && !a.audited && (
         <p className="acc-note" role="note">
           <Icon name="eye" size={14} /> {t("acc.tt_unaudited")}
         </p>
@@ -380,7 +383,7 @@ function SocialCard({ a, quota, onChange }: { a: Account; quota: Quota | null | 
           <Icon name="eye" size={14} /> {t("acc.ig_dev_mode")}
         </p>
       )}
-      {a.connected && (
+      {a.connected && !viaBrowser && (
         <div className="acc-actions">
           <button className="btn btn-sm" onClick={() => setSetup((v) => !v)} aria-expanded={setup}>
             <Icon name="refresh" /> {t("acc.reconnect")}
@@ -393,7 +396,7 @@ function SocialCard({ a, quota, onChange }: { a: Account; quota: Quota | null | 
           </button>
         </div>
       )}
-      {a.connected && (
+      {a.connected && !viaBrowser && (
         <label className="acc-audit">
           <input
             type="checkbox"
@@ -407,31 +410,16 @@ function SocialCard({ a, quota, onChange }: { a: Account; quota: Quota | null | 
           <span>{t(p === "tiktok" ? "acc.audited_tiktok" : "acc.audited_reels")}</span>
         </label>
       )}
-      <p className="acc-note" role="note">
-        <Icon name={a.mode === "api" ? "zap" : "copy"} size={14} />{" "}
-        {t(a.mode === "api" ? "platform.mode_api" : "platform.mode_semi", { name: TARGET_NAME[p] })}
-      </p>
-      {a.connected && (
-        <label className="acc-audit">
-          <input
-            type="checkbox"
-            checked={a.mode === "api"}
-            onChange={async (e) => {
-              try {
-                await platformsApi.setMode(p, e.target.checked ? "api" : "semi");
-              } catch (err: any) {
-                toast({ kind: "err", text: err.message, hint: err.hint });
-              }
-              accountsChanged();
-              onChange();
-            }}
-          />
-          <span>{t("platform.auto_post")}</span>
-        </label>
+      <AutoSwitch a={a} onChange={() => (accountsChanged(), onChange())} />
+      {p === "tiktok" && viaBrowser && (
+        <details className="tts-api">
+          <summary>{t("tts.api_advanced")}</summary>
+          <TikTokSetup a={a} onDone={() => (accountsChanged(), onChange())} />
+        </details>
       )}
       {setup &&
         (p === "tiktok" ? (
-          <TikTokSetup a={a} onDone={() => (accountsChanged(), onChange())} />
+          !viaBrowser && <TikTokSetup a={a} onDone={() => (accountsChanged(), onChange())} />
         ) : (
           <InstagramSetup a={a} onDone={() => (accountsChanged(), onChange())} />
         ))}
