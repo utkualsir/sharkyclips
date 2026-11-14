@@ -7,6 +7,99 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.43] - 2026-11-14
+### Fixed: the TikTok login said "too many attempts" every time
+- **The login now opens your own Google Chrome.** Settings → Accounts → TikTok → **Log in to
+  TikTok** starts your installed Chrome as a normal window on the TikTok login page. It uses
+  SharkyClips' separate TikTok profile, not your everyday Chrome profile, and nothing else is
+  attached to it. TikTok had recognised the old login window as automated and refused every
+  attempt, the QR code too. Log in the way you always do: your password manager, the QR code or
+  your phone.
+- **Close the window when you're in.** The card says "I'll continue once you close the login
+  window". When you close it, SharkyClips checks the login and shows the account it found. If you
+  closed it before logging in, it tells you so.
+- **A clean start.** The old TikTok browser folder from 1.2.42 had never been logged in, so it is
+  replaced with a fresh one. Leftover lock files from a crashed browser are removed before each
+  start, and a broken folder is rebuilt by itself.
+- **Automatic posts use the same Chrome.** They now open the same installed Chrome with that
+  profile and without the "controlled by automated test software" switch. Pacing, the daily
+  limit and the hard stop on any CAPTCHA or verification stay exactly as before: SharkyClips never
+  tries to solve one.
+- The login window is no longer tied to SharkyClips. It keeps normal speed while SharkyClips is
+  in a quiet mode, and an app restart doesn't close it.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Düzeltildi: TikTok girişi her seferinde "çok fazla deneme" diyordu
+- **Giriş artık kendi Google Chrome'unu açıyor.** Ayarlar → Hesaplar → TikTok → **TikTok'a giriş
+  yap**, yüklü Chrome'unu TikTok giriş sayfasında normal bir pencere olarak başlatır. SharkyClips'in
+  ayrı TikTok profilini kullanır (her gün kullandığın Chrome profilini değil) ve pencereye başka
+  hiçbir şey bağlanmaz. TikTok eski giriş penceresini otomatik bir pencere olarak tanıyıp her
+  denemeyi (QR kodu dahil) reddediyordu. Her zamanki gibi giriş yap: şifre yöneticin, QR kodu ya da
+  telefonunla.
+- **Girince pencereyi kapat.** Kartta "Giriş penceresini kapattığında devam edeceğim" yazar.
+  Pencereyi kapatınca SharkyClips girişi kontrol eder ve bulduğu hesabı gösterir. Giriş yapmadan
+  kapattıysan bunu da söyler.
+- **Temiz başlangıç.** 1.2.42'den kalan TikTok tarayıcı klasöründe hiç giriş yapılmamıştı, yerine
+  yenisi açılır. Çöken bir tarayıcıdan kalan kilit dosyaları her açılıştan önce silinir, bozuk bir
+  klasör kendiliğinden yeniden kurulur.
+- **Otomatik gönderiler aynı Chrome'u kullanır.** Aynı yüklü Chrome'u bu profille ve "otomatik test
+  yazılımı tarafından kontrol ediliyor" anahtarı olmadan açarlar. Aralar, günlük sınır ve her
+  CAPTCHA ya da doğrulamada hemen durma kuralı aynen kalır: SharkyClips asla çözmeye çalışmaz.
+- Giriş penceresi artık SharkyClips'e bağlı değil. SharkyClips sessiz moddayken de normal hızda
+  çalışır, uygulama yeniden başlayınca kapanmaz.
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Behoben: Die TikTok-Anmeldung meldete jedes Mal „zu viele Versuche“.** „Bei TikTok anmelden“ startet jetzt dein installiertes Google Chrome als normales Fenster. Es nutzt das eigene TikTok-Profil von SharkyClips und hat nichts angehängt (TikTok hatte das alte Fenster als automatisiert erkannt, auch beim QR-Code).
+- Melde dich wie gewohnt an (Passwortmanager oder QR-Code) und schließe das Fenster. „Ich mache weiter, sobald du das Anmeldefenster schließt“: danach prüft SharkyClips die Anmeldung und zeigt das Konto.
+- Der alte, nie angemeldete TikTok-Browserordner aus 1.2.42 wird durch einen neuen ersetzt. Alte Sperrdateien werden entfernt, ein defekter Ordner wird neu angelegt.
+- Automatische Posts nutzen dasselbe Chrome ohne den Schalter „von automatisierter Software gesteuert“. Pausen, Tageslimit und der sofortige Stopp bei CAPTCHA oder Bestätigung bleiben unverändert.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Javítva: a TikTok-bejelentkezés minden alkalommal „túl sok próbálkozást” írt.** A „Bejelentkezés a TikTokra” most a telepített Google Chrome-ot indítja normál ablakként. A SharkyClips külön TikTok-profilját használja, és semmi nincs hozzá csatolva (a TikTok a régi ablakot automatizáltnak ismerte fel, QR-kóddal is).
+- Jelentkezz be a szokott módon (jelszókezelő vagy QR-kód), majd zárd be az ablakot. „Amint bezárod a bejelentkezési ablakot, folytatom”: ezután a SharkyClips ellenőrzi a bejelentkezést, és megmutatja a fiókot.
+- Az 1.2.42-es, soha be nem jelentkezett TikTok-böngészőmappa helyére új kerül. A régi zárolófájlok törlődnek, egy sérült mappa magától újraépül.
+- Az automatikus posztok ugyanezt a Chrome-ot használják, az „automatizált szoftver vezérli” kapcsoló nélkül. A szünetek, a napi korlát és a CAPTCHA vagy ellenőrzés esetén azonnali leállás változatlan.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Исправлено: вход в TikTok каждый раз писал «слишком много попыток».** «Войти в TikTok» теперь запускает ваш установленный Google Chrome обычным окном. Он работает с отдельным профилем TikTok в SharkyClips, и к нему ничего не подключено (TikTok распознавал старое окно как автоматическое, даже с QR-кодом).
+- Войдите как обычно (менеджер паролей или QR-код) и закройте окно. «Я продолжу, когда вы закроете окно входа»: после этого SharkyClips проверит вход и покажет аккаунт.
+- Старая папка браузера TikTok из 1.2.42, в которой ни разу не было входа, заменяется новой. Старые файлы блокировки удаляются, повреждённая папка пересоздаётся сама.
+- Автоматические публикации используют тот же Chrome без переключателя «управляется автоматизированным ПО». Паузы, дневной лимит и немедленная остановка при CAPTCHA или проверке остаются прежними.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **تم الإصلاح: كان تسجيل الدخول إلى TikTok يقول «محاولات كثيرة جدًا» في كل مرة.** يفتح «تسجيل الدخول إلى TikTok» الآن متصفح Google Chrome المثبت لديك كنافذة عادية. يستخدم ملف TikTok المنفصل في SharkyClips ولا يرتبط به أي شيء آخر (كان TikTok يتعرف على النافذة القديمة كنافذة آلية، حتى مع رمز QR).
+- سجّل الدخول كالمعتاد (مدير كلمات المرور أو رمز QR) ثم أغلق النافذة. «سأتابع عندما تغلق نافذة تسجيل الدخول»: بعدها يتحقق SharkyClips من الدخول ويعرض الحساب.
+- يُستبدل مجلد متصفح TikTok القديم من 1.2.42، الذي لم يُسجَّل الدخول فيه قط، بمجلد جديد. تُحذف ملفات القفل القديمة، ويُعاد بناء المجلد التالف تلقائيًا.
+- تستخدم المنشورات التلقائية Chrome نفسه دون مفتاح «يتحكم به برنامج آلي». تبقى فترات التوقف والحد اليومي والتوقف الفوري عند CAPTCHA أو التحقق كما هي.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **已修复：TikTok 登录每次都提示“尝试次数过多”。**“登录 TikTok”现在会以普通窗口启动你电脑上安装的 Google Chrome，使用 SharkyClips 单独的 TikTok 配置文件，不附加任何自动化（TikTok 之前把旧登录窗口识别为自动化窗口，连二维码登录也被拒绝）。
+- 像平时一样登录（密码管理器或二维码），然后关闭窗口。卡片会显示“你关闭登录窗口后我会继续”，关闭后 SharkyClips 会检查登录并显示账号；如果你没登录就关了窗口，它也会告诉你。
+- 1.2.42 留下的、从未登录过的 TikTok 浏览器文件夹会换成全新的；每次启动前清除残留的锁文件，损坏的文件夹会自动重建。
+- 自动发布使用同一个 Chrome，并去掉“受自动测试软件控制”开关；节奏、每日上限以及遇到验证码或验证立即停止的规则保持不变，绝不尝试破解。
+
+</details>
+
 ## [1.2.42] - 2026-11-14
 ### New: one Publish, three platforms, TikTok automatic too
 - **TikTok posts by itself now.** Settings → Accounts → TikTok → **Log in to TikTok** opens a

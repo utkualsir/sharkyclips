@@ -1691,7 +1691,7 @@ def api_tb_check() -> dict:
     TB = _tb()
     if TB.status()["busy"]:
         return TB.status()  # a post (or the login window) has the browser now
-    if not TB.status()["login_at"]:
+    if not TB.status()["login_at"] and not TB.status()["profile"]:  # profile: a login window closed after a restart
         raise SharkyClipsError("Log in to TikTok first.")
     TB.clear_block()
     return TB.check()

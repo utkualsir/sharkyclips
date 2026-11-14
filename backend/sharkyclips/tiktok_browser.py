@@ -4,9 +4,13 @@ SharkyClips drives TikTok Studio (https://www.tiktok.com/tiktokstudio/upload) in
 profile, the way you would post by hand:
 
   profile   <settings>/browser/tiktok-profile: a separate Chrome / Edge / Chromium profile just for
-            SharkyClips (never your own browser profile). You log in yourself once, in a visible
-            window ("Log in to TikTok"); SharkyClips keeps only that browser profile (its cookies),
-            never your password.
+            SharkyClips (never your own browser profile). You log in yourself once ("Log in to
+            TikTok"); SharkyClips keeps only that browser profile (its cookies), never your password.
+  login     (1.2.43) your INSTALLED Google Chrome, started as a plain program on that profile with
+            the TikTok login page: no remote debugging, no automation attached, so TikTok sees an
+            ordinary Chrome (the 1.2.42 Playwright window got "too many attempts" every time, QR
+            included). Once you close that window, SharkyClips opens the profile with the
+            automation (off the screen) and checks that TikTok knows you.
   window    always a real (headed) window, moved off the screen while it posts; one browser at a
             time on the profile (a lock), so two TikTok posts never run at once
   pacing    a pause of 1-3 s between steps, typing with real key presses
@@ -35,7 +39,9 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
 
-from . import config
+import psutil
+
+from . import config, procs
 from .errors import SharkyClipsError
 from .project import write_json_atomic
 
@@ -44,8 +50,12 @@ MAX_AHEAD = timedelta(days=9, hours=20)  # ... and up to ~10 days ahead
 DEFAULT_DAILY = 3
 BLOCK_COOLDOWN_S = 6 * 3600  # after a CAPTCHA / verification: no automatic posts for a while
 UPLOAD_TIMEOUT_S = 15 * 60
-LOGIN_TIMEOUT_S = 15 * 60
+LOGIN_TIMEOUT_S = 30 * 60  # waiting for you to close the login window
+LOGIN_OPEN_S = 25  # the Chrome window must show up within this
+PROFILE_V = 2  # 2 = the profile was first logged in by a plain Chrome (1.2.43), never under automation
+LOCK_FILES = ("SingletonLock", "SingletonCookie", "SingletonSocket", "lockfile")
 CHANNELS = ("chrome", "msedge", "chromium")
+NO_AUTOMATION_FLAG = ["--enable-automation"]  # Playwright's default "controlled by automated software" flag
 WINDOW = (1280, 900)
 
 SEL = {
@@ -75,7 +85,8 @@ SCHEDULED_ROW = re.compile(r"(\(GMT|planlan|zamanlan|scheduled|geplant|ütemez|�
 COMMENT_WORDS = re.compile(r"(yorum|comment|kommentar|hozzászól|коммент|评论|تعليق)", re.I)
 
 _lock = threading.RLock()  # one browser on the profile at a time: posts, checks, the login window
-_login = {"thread": None, "cancel": threading.Event(), "state": "idle", "error": None, "started_at": None}
+_login = {"thread": None, "cancel": threading.Event(), "state": "idle", "error": None, "started_at": None,
+          "reset": None}
 _on_login: list[Callable[[dict], None]] = []
 
 
@@ -195,9 +206,10 @@ def status() -> dict:
         pill = "ok"
     return {"available": ok, "missing": why, "logged_in": bool(d.get("logged_in")), "username": d.get("username"),
             "login_at": d.get("login_at"), "checked_at": d.get("checked_at"), "pill": pill, "blocked": b,
-            "login": {"state": _login["state"], "error": _login["error"], "started_at": _login["started_at"]},
+            "login": {"state": _login["state"], "error": _login["error"], "started_at": _login["started_at"],
+                      "reset": _login["reset"]},
             "daily_cap": daily_cap(), "channel": d.get("channel"), "busy": _is_busy(),
-            "last_error": d.get("last_error")}
+            "profile": profile_dir().is_dir(), "last_error": d.get("last_error")}
 
 
 def _is_busy() -> bool:
@@ -221,6 +233,7 @@ def note_block(reason: str, message: str, shot: str | None = None) -> None:
 def logout() -> dict:
     """Forget the TikTok login: the browser profile is removed (cookies and all)."""
     with _lock:
+        _close_profile_browser()
         shutil.rmtree(profile_dir(), ignore_errors=True)
         _save(logged_in=False, username=None, login_at=None, checked_at=time.time(), blocked=None, channel=None)
     return status()
@@ -263,6 +276,170 @@ def _scale_timeout(seconds: float) -> float:
         return seconds
 
 
+# ===================================================================== the profile folder
+
+
+def _norm(path: str) -> str:
+    return os.path.normcase(os.path.abspath(path.strip().strip('"')))
+
+
+def _profile_pids() -> list[int]:
+    """Browser processes that have the SharkyClips TikTok profile open now (the login window, a
+    post): their command line holds --user-data-dir=<profile>."""
+    want = _norm(str(profile_dir()))
+    out = []
+    for proc in psutil.process_iter(["pid", "cmdline"]):
+        try:
+            args = proc.info.get("cmdline") or []
+        except (psutil.Error, OSError):
+            continue
+        for a in args:
+            if isinstance(a, str) and a.startswith("--user-data-dir=") and _norm(a.split("=", 1)[1]) == want:
+                out.append(proc.pid)
+                break
+    return out
+
+
+def _close_profile_browser() -> int:
+    """Close a browser still running on the profile (Cancel / Log out). Returns how many processes."""
+    pids = _profile_pids()
+    procs_ = []
+    for pid in pids:
+        try:
+            procs_.append(psutil.Process(pid))
+        except psutil.Error:
+            pass
+    for pr in procs_:
+        try:
+            pr.terminate()
+        except psutil.Error:
+            pass
+    psutil.wait_procs(procs_, timeout=5)
+    return len(procs_)
+
+
+def _json_ok(path: Path) -> bool:
+    """A browser state file is fine when it is missing (not written yet) or valid JSON."""
+    try:
+        raw = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return True
+    except OSError:
+        return False
+    try:
+        json.loads(raw)
+        return True
+    except ValueError:
+        return False
+
+
+def _clear_locks(prof: Path) -> list[str]:
+    """Lock files a crashed / killed browser left behind (only called when no browser has the
+    profile open: then they are stale and make the next start fail or hand off)."""
+    removed = []
+    for name in LOCK_FILES:
+        f = prof / name
+        if f.exists() or f.is_symlink():
+            try:
+                f.unlink()
+                removed.append(name)
+            except OSError:
+                pass
+    return removed
+
+
+def _writable(prof: Path) -> None:
+    probe = prof / ".sharkyclips-write-test"
+    try:
+        probe.write_text("ok", encoding="utf-8")
+        probe.unlink()
+    except OSError as exc:
+        raise Blocked("no_browser", "SharkyClips can't write to its TikTok browser folder.",
+                      f"{prof}: {exc}") from exc
+
+
+def prepare_profile(for_login: bool = False) -> dict:
+    """Make the profile folder ready for a browser: there and writable, no stale lock files. For
+    the login also a fresh start when the folder is corrupted (unreadable Local State /
+    Preferences) or was made by the 1.2.42 automated login window and never logged in (TikTok had
+    flagged that "device"). Does nothing while a browser has the profile open."""
+    prof = profile_dir()
+    report: dict = {"reset": None, "removed_locks": [], "in_use": False}
+    if _profile_pids():
+        report["in_use"] = True
+        return report
+    d = _load()
+    if for_login and prof.exists():
+        reason = None
+        if not (_json_ok(prof / "Local State") and _json_ok(prof / "Default" / "Preferences")):
+            reason = "corrupted"
+        elif int(d.get("profile_v") or 1) < PROFILE_V and not d.get("logged_in"):
+            reason = "automation"
+        if reason:
+            shutil.rmtree(prof, ignore_errors=True)
+            if prof.exists():
+                raise Blocked("no_browser", "SharkyClips couldn't clear its old TikTok browser folder.",
+                              f"Close every Chrome window, then try again ({prof}).")
+            _save(channel=None, logged_in=False)
+            report["reset"] = reason
+    prof.mkdir(parents=True, exist_ok=True)
+    report["removed_locks"] = _clear_locks(prof)
+    _writable(prof)
+    return report
+
+
+def _installed() -> list[tuple[str, str]]:
+    """(channel, executable) of the installed Google Chrome, then Microsoft Edge."""
+    found: list[tuple[str, str]] = []
+    names = {"chrome": ("Google", "Chrome", "chrome.exe"), "msedge": ("Microsoft", "Edge", "msedge.exe")}
+    for ch, (vendor, app, exe) in names.items():
+        cands: list[str] = []
+        if sys.platform == "win32":
+            try:
+                import winreg
+
+                for hive in (winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE):
+                    try:
+                        with winreg.OpenKey(hive, rf"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\{exe}") as k:
+                            cands.append(str(winreg.QueryValue(k, None)))
+                    except OSError:
+                        pass
+            except ImportError:
+                pass
+            for env in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"):
+                base = os.environ.get(env)
+                if base:
+                    cands.append(str(Path(base) / vendor / app / "Application" / exe))
+        elif sys.platform == "darwin":
+            bundle = "Google Chrome" if ch == "chrome" else "Microsoft Edge"
+            for base in ("/Applications", str(Path.home() / "Applications")):
+                cands.append(f"{base}/{bundle}.app/Contents/MacOS/{bundle}")
+        else:
+            for name in (("google-chrome-stable", "google-chrome") if ch == "chrome"
+                         else ("microsoft-edge-stable", "microsoft-edge")):
+                w = shutil.which(name)
+                if w:
+                    cands.append(w)
+        for c in cands:
+            c = c.strip().strip('"')
+            if c and Path(c).is_file():
+                found.append((ch, c))
+                break
+    return found
+
+
+def find_browser() -> tuple[str | None, list[str]] | None:
+    """(channel, command) for the plain login window: the installed Google Chrome (Edge when there
+    is no Chrome). SHARKYCLIPS_TT_LOGIN_CMD (a JSON list, tests only) replaces it."""
+    raw = os.environ.get("SHARKYCLIPS_TT_LOGIN_CMD")
+    if raw:
+        return None, [str(x) for x in json.loads(raw)]
+    want = str(config.get("tiktok_browser") or "auto")
+    got = _installed()
+    got.sort(key=lambda x: 0 if x[0] == want else 1)
+    return (got[0][0], [got[0][1]]) if got else None
+
+
 # ===================================================================== the browser
 
 
@@ -288,8 +465,11 @@ class _Session:
                           "Run `python cli.py doctor` (or pip install playwright), then try again.")
         from playwright.sync_api import sync_playwright
 
+        prep = prepare_profile()
+        if prep["in_use"]:
+            raise Blocked("in_use", "The TikTok login window is still open.",
+                          "Close the Chrome window with TikTok, then try again.")
         self.pw = sync_playwright().start()
-        profile_dir().mkdir(parents=True, exist_ok=True)
         w, h = WINDOW
         args = [f"--window-size={w},{h}", "--no-first-run", "--no-default-browser-check"]
         if not self.visible:
@@ -305,7 +485,7 @@ class _Session:
                 kw = {"channel": ch} if ch != "chromium" else {}
                 self.ctx = self.pw.chromium.launch_persistent_context(
                     str(profile_dir()), headless=_headless(), args=args, no_viewport=True,
-                    accept_downloads=False, **kw)
+                    accept_downloads=False, ignore_default_args=NO_AUTOMATION_FLAG, **kw)
                 self.channel = ch
                 break
             except Exception as exc:  # noqa: BLE001 - that browser isn't installed: the next one
@@ -494,8 +674,9 @@ def _read_username(page) -> str | None:
 
 
 def login_start() -> dict:
-    """Opens a visible SharkyClips browser window on TikTok's login page; you log in yourself.
-    The window closes by itself once TikTok knows you (or after 15 minutes)."""
+    """Opens your installed Google Chrome (a plain window, nothing attached) on TikTok's login page
+    in the SharkyClips profile; you log in yourself (password manager, QR code, ...). When you close
+    that window, SharkyClips checks the login."""
     ok, why = available()
     if not ok:
         raise SharkyClipsError("Automatic TikTok posting needs Playwright.",
@@ -504,7 +685,7 @@ def login_start() -> dict:
     if t is not None and t.is_alive():
         return status()
     _login["cancel"] = threading.Event()
-    _login.update(state="opening", error=None, started_at=time.time())
+    _login.update(state="opening", error=None, started_at=time.time(), reset=None)
     th = threading.Thread(target=_login_run, name="tiktok-login", daemon=True)
     _login["thread"] = th
     th.start()
@@ -516,45 +697,91 @@ def login_cancel() -> dict:
     return status()
 
 
+def _probe() -> tuple[str, str | None]:
+    """Opens TikTok Studio with the automation (off the screen) on the profile.
+    ('ok' | 'login' | captcha / verify, username)."""
+    with _Session() as s:
+        page = s.page
+        page.goto(content_url(), wait_until="domcontentloaded")
+        try:
+            page.wait_for_load_state("networkidle", timeout=_scale_timeout(15_000))
+        except Exception:  # noqa: BLE001
+            pass
+        g = _guard(page)
+        if g == "login" or not s.session_cookie():
+            return "login", None
+        if g:
+            return g, None
+        return "ok", _read_username(page)
+
+
+def _wait_closed(cancel: threading.Event) -> str:
+    """Waits until the login window shows up and then until every window on the profile is closed.
+    'closed' | 'cancelled' | 'timeout' | 'never_opened'."""
+    t0 = time.time()
+    seen = False
+    while True:
+        if cancel.is_set():
+            return "cancelled"
+        if _profile_pids():
+            seen = True
+        elif seen:
+            return "closed"
+        elif time.time() - t0 > _scale_timeout(LOGIN_OPEN_S):
+            return "never_opened"
+        if time.time() - t0 > LOGIN_TIMEOUT_S:
+            return "timeout"
+        cancel.wait(1.0)
+
+
 def _login_run() -> None:
     cancel = _login["cancel"]
     try:
         with _lock:
-            with _Session(visible=True) as s:
-                page = s.page
-                _login["state"] = "waiting"
-                page.goto(login_url(), wait_until="domcontentloaded")
-                end = time.time() + LOGIN_TIMEOUT_S
-                user = None
-                while time.time() < end and not cancel.is_set():
-                    if page.is_closed():
-                        break
-                    if s.session_cookie() and "/login" not in (page.url or ""):
-                        try:
-                            page.goto(content_url(), wait_until="domcontentloaded")
-                            page.wait_for_timeout(1500)
-                        except Exception:  # noqa: BLE001
-                            pass
-                        if "/login" not in (page.url or ""):
-                            user = _read_username(page)
-                            break
+            prep = prepare_profile(for_login=True)
+            _login["reset"] = prep["reset"]
+            if not prep["in_use"]:  # a login window from before (e.g. before a restart) is still open: wait for it
+                found = find_browser()
+                if found is None:
+                    raise Blocked("no_browser", "Google Chrome was not found.",
+                                  "Install Google Chrome (or Microsoft Edge), then try again.")
+                channel, cmd = found
+                procs.launch_app([*cmd, f"--user-data-dir={profile_dir()}", "--no-first-run",
+                                  "--no-default-browser-check", "--new-window", login_url()])
+                _save(profile_v=PROFILE_V, **({"channel": channel} if channel else {}))
+            _login["state"] = "waiting"  # "I'll continue once you close the login window"
+            how = _wait_closed(cancel)
+            if how == "cancelled":
+                _close_profile_browser()
+                _login["state"] = "cancelled"
+                return
+            if how == "timeout":
+                _login["state"] = "cancelled"
+                return
+            if how == "never_opened":
+                raise Blocked("no_browser", "The Chrome window for the TikTok login didn't open.",
+                              "Try again; if it keeps happening, start Google Chrome once by hand.")
+            _login["state"] = "checking"
+            time.sleep(1.0)  # the browser finishes writing its cookies as it quits
+            prepare_profile()  # stale locks if it was closed the hard way
+            result, user = _probe()
+            if result == "ok":
+                d = _save(logged_in=True, username=user or _load().get("username"), login_at=time.time(),
+                          checked_at=time.time(), blocked=None, last_error=None, profile_v=PROFILE_V)
+                _login["state"] = "done"
+                for fn in list(_on_login):
                     try:
-                        page.wait_for_timeout(2000)
-                    except Exception:  # noqa: BLE001 - you closed the window
-                        break
-                if user is not None or (s.session_cookie() and not page.is_closed() and "/login" not in page.url):
-                    d = _save(logged_in=True, username=user or _load().get("username"), login_at=time.time(),
-                              checked_at=time.time(), blocked=None, last_error=None)
-                    _login["state"] = "done"
-                    for fn in list(_on_login):
-                        try:
-                            fn(d)
-                        except Exception:  # noqa: BLE001
-                            pass
-                else:
-                    _login["state"] = "cancelled"
+                        fn(d)
+                    except Exception:  # noqa: BLE001
+                        pass
+            elif result == "login":
+                _save(logged_in=False, checked_at=time.time())
+                _login["state"] = "not_logged_in"
+            else:
+                note_block(result, _WORDS[result])
+                _login.update(state="error", error=_WORDS[result])
     except Blocked as exc:
-        _login.update(state="error", error=exc.message)
+        _login.update(state="error", error=exc.message + (f" {exc.hint}" if exc.hint else ""))
     except Exception as exc:  # noqa: BLE001
         _login.update(state="error", error=f"{type(exc).__name__}: {str(exc)[:200]}")
 
@@ -562,22 +789,15 @@ def _login_run() -> None:
 def check() -> dict:
     """Is the saved login still good? (opens TikTok Studio off the screen, reads the username)"""
     with _lock:
-        with _Session() as s:
-            page = s.page
-            page.goto(content_url(), wait_until="domcontentloaded")
-            try:
-                page.wait_for_load_state("networkidle", timeout=_scale_timeout(15_000))
-            except Exception:  # noqa: BLE001
-                pass
-            g = _guard(page)
-            if g == "login" or not s.session_cookie():
-                _save(logged_in=False, checked_at=time.time())
-                return status()
-            if g:
-                note_block(g, _WORDS[g])
-                return status()
-            user = _read_username(page)
-            _save(logged_in=True, username=user or _load().get("username"), checked_at=time.time(), blocked=None)
+        result, user = _probe()
+        if result == "login":
+            _save(logged_in=False, checked_at=time.time())
+        elif result != "ok":
+            note_block(result, _WORDS[result])
+        else:
+            d = _load()
+            _save(logged_in=True, username=user or d.get("username"), checked_at=time.time(), blocked=None,
+                  **({} if d.get("login_at") else {"login_at": time.time()}))
     return status()
 
 

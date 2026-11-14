@@ -159,6 +159,103 @@ def test_login_wall_stops_and_marks_signed_out(fresh, video):
     assert fresh.posts == []
 
 
+# ---------------------------------------------------------------- 1.2.43: the plain-Chrome login
+
+
+@pytest.fixture
+def own_root(tmp_path, monkeypatch):
+    """A browser folder of its own (the module's fake account stays logged in elsewhere)."""
+    channel = TB._load().get("channel")
+    monkeypatch.setattr(TB, "root", lambda: tmp_path / "browser")
+    if channel:
+        TB._save(channel=channel)
+    return tmp_path / "browser"
+
+
+def _fake_cmd(*extra: str) -> str:
+    import json
+    import sys
+
+    exe = Path(sys.executable)
+    if os.name == "nt" and exe.with_name("pythonw.exe").is_file():
+        exe = exe.with_name("pythonw.exe")  # a GUI-less python: no console window for the fake "Chrome"
+    return json.dumps([str(exe), str(Path(__file__).with_name("fake_login_browser.py")), *extra])
+
+
+def _login_and_wait(seconds: float = 120) -> list[str]:
+    TB.login_start()
+    seen = []
+    end = time.time() + seconds
+    while time.time() < end:
+        st = TB.status()["login"]["state"]
+        if not seen or seen[-1] != st:
+            seen.append(st)
+        if st not in ("opening", "waiting", "checking"):
+            return seen
+        time.sleep(0.2)
+    raise AssertionError(f"login still running: {seen}")
+
+
+def test_prepare_profile_clears_stale_locks_and_old_automation_profiles(own_root):
+    prof = TB.profile_dir()
+    (prof / "Default").mkdir(parents=True)
+    (prof / "Local State").write_text("{}", encoding="utf-8")
+    for name in ("SingletonLock", "lockfile"):
+        (prof / name).write_text("", encoding="utf-8")
+    TB._save(logged_in=False, profile_v=None)  # made by the 1.2.42 automated window, never logged in
+    rep = TB.prepare_profile(for_login=True)
+    assert rep["reset"] == "automation" and prof.is_dir() and not any(prof.iterdir())
+
+    TB._save(profile_v=TB.PROFILE_V)
+    (prof / "Local State").write_text('{"broken', encoding="utf-8")
+    assert TB.prepare_profile(for_login=True)["reset"] == "corrupted"
+
+    (prof / "Local State").write_text("{}", encoding="utf-8")
+    (prof / "SingletonLock").write_text("", encoding="utf-8")
+    rep = TB.prepare_profile(for_login=True)
+    assert rep["reset"] is None and rep["removed_locks"] == ["SingletonLock"]
+    assert (prof / "Local State").is_file()  # a good profile is kept
+
+    TB._save(logged_in=True, profile_v=None)  # logged in before: never thrown away
+    assert TB.prepare_profile(for_login=True)["reset"] is None
+
+
+def test_login_is_a_plain_browser_and_is_checked_after_the_window_closes(studio, own_root, monkeypatch):
+    ch = TB._load().get("channel") or "chromium"
+    monkeypatch.setenv("SHARKYCLIPS_TT_LOGIN_CMD", _fake_cmd("--stay=2", f"--channel={ch}"))
+    TB._save(logged_in=False, login_at=None, profile_v=None)
+    seen = _login_and_wait()
+    assert "waiting" in seen and seen[-1] == "done", (seen, TB.status()["login"])
+    st = TB.status()
+    assert st["logged_in"] and st["login_at"] and st["pill"] == "ok"
+    assert TB._load()["profile_v"] == TB.PROFILE_V
+    assert TB._profile_pids() == []  # nothing left open on the profile
+
+
+def test_closing_the_window_without_logging_in_says_so(studio, own_root, monkeypatch):
+    ch = TB._load().get("channel") or "chromium"
+    monkeypatch.setenv("SHARKYCLIPS_TT_LOGIN_CMD", _fake_cmd("--stay=1", "--no-login", f"--channel={ch}"))
+    TB._save(logged_in=False, login_at=None, profile_v=TB.PROFILE_V)
+    seen = _login_and_wait()
+    assert seen[-1] == "not_logged_in", (seen, TB.status()["login"])
+    assert not TB.status()["logged_in"]
+
+
+def test_the_login_command_has_no_automation_attached(own_root, monkeypatch):
+    calls = []
+    monkeypatch.setattr(TB, "find_browser", lambda: ("chrome", ["C:/Chrome/chrome.exe"]))
+    monkeypatch.setattr(TB.procs, "launch_app", lambda cmd: calls.append(cmd) or 1)
+    monkeypatch.setattr(TB, "_wait_closed", lambda cancel: "cancelled")
+    monkeypatch.setattr(TB, "_close_profile_browser", lambda: 0)
+    TB._login["cancel"] = __import__("threading").Event()
+    TB._login_run()
+    (cmd,) = calls
+    assert cmd[0] == "C:/Chrome/chrome.exe" and cmd[-1] == TB.login_url()
+    assert f"--user-data-dir={TB.profile_dir()}" in cmd
+    assert not [a for a in cmd if "remote-debugging" in a or "automation" in a or "headless" in a]
+    assert TB._load()["channel"] == "chrome"  # the automation later opens the same Chrome
+
+
 def test_find_posts_reads_the_content_list(fresh):
     fresh.seed[:] = [{"caption": "Bu kadar şansa mı güvendi? 😱\nalt satır", "scheduled": None, "id": "7311"},
                      {"caption": "50 PİNG'li saldırı, Miss Fortune'un sonu! 💀", "scheduled": "14 Kas, 18:00 (GMT+1) Budapest",

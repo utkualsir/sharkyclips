@@ -72,6 +72,7 @@ if IS_WIN:
 
     _KILL_ON_CLOSE = 0x2000
     _DIE_ON_UNHANDLED = 0x400  # no "program stopped working" dialogs from crashed children
+    _BREAKAWAY_OK = 0x800  # a child may leave the job, but only when it asks (launch_app)
     _LIMIT_PRIORITY = 0x20
     _LIMIT_AFFINITY = 0x10
     _EXTENDED_INFO = 9
@@ -91,7 +92,7 @@ class Job:
         if not h:
             return
         self.handle = h
-        self.flags = (_KILL_ON_CLOSE if kill_on_close else 0) | _DIE_ON_UNHANDLED
+        self.flags = (_KILL_ON_CLOSE if kill_on_close else 0) | _DIE_ON_UNHANDLED | _BREAKAWAY_OK
         self._apply()
 
     @property
@@ -465,6 +466,44 @@ def run_streamed(cmd: list[str], **kwargs) -> int:
         except (OSError, ValueError, AttributeError):  # pythonw: no stdout
             pass
     return proc.wait()
+
+
+def launch_app(cmd: list[str]) -> int:
+    """Start a GUI program the user works in (their own Chrome for the TikTok login) as a plain,
+    VISIBLE process and return its pid. Windows: CreateProcessW with SW_SHOWNORMAL (the Popen
+    safety net would hide its window) and outside the server's job when allowed, so it keeps
+    normal priority (no governor limits) and survives a SharkyClips restart. Elsewhere: its own
+    session, so it isn't killed with the server's process group."""
+    if not IS_WIN:
+        return subprocess.Popen(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                start_new_session=True, **no_window()).pid
+
+    class _SI(ctypes.Structure):
+        _fields_ = [("cb", wintypes.DWORD), ("lpReserved", wintypes.LPWSTR), ("lpDesktop", wintypes.LPWSTR),
+                    ("lpTitle", wintypes.LPWSTR), ("dwX", wintypes.DWORD), ("dwY", wintypes.DWORD),
+                    ("dwXSize", wintypes.DWORD), ("dwYSize", wintypes.DWORD), ("dwXCountChars", wintypes.DWORD),
+                    ("dwYCountChars", wintypes.DWORD), ("dwFillAttribute", wintypes.DWORD),
+                    ("dwFlags", wintypes.DWORD), ("wShowWindow", wintypes.WORD), ("cbReserved2", wintypes.WORD),
+                    ("lpReserved2", ctypes.c_void_p), ("hStdInput", wintypes.HANDLE),
+                    ("hStdOutput", wintypes.HANDLE), ("hStdError", wintypes.HANDLE)]
+
+    class _PI(ctypes.Structure):
+        _fields_ = [("hProcess", wintypes.HANDLE), ("hThread", wintypes.HANDLE),
+                    ("dwProcessId", wintypes.DWORD), ("dwThreadId", wintypes.DWORD)]
+
+    create = _k32.CreateProcessW
+    create.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, ctypes.c_void_p, ctypes.c_void_p, wintypes.BOOL,
+                       wintypes.DWORD, ctypes.c_void_p, wintypes.LPCWSTR, ctypes.c_void_p, ctypes.c_void_p]
+    line = ctypes.create_unicode_buffer(subprocess.list2cmdline(cmd), 32768)
+    si = _SI(cb=ctypes.sizeof(_SI), dwFlags=_STARTF_USESHOWWINDOW, wShowWindow=1)  # SW_SHOWNORMAL
+    pi = _PI()
+    breakaway, new_group, unicode_env = 0x01000000, 0x00000200, 0x00000400
+    for flags in (breakaway | new_group | unicode_env, new_group | unicode_env):  # no breakaway: still runs
+        if create(cmd[0], line, None, None, False, flags, None, None, ctypes.byref(si), ctypes.byref(pi)):
+            _k32.CloseHandle(pi.hThread)
+            _k32.CloseHandle(pi.hProcess)
+            return int(pi.dwProcessId)
+    raise OSError(ctypes.get_last_error(), f"could not start {cmd[0]}")
 
 
 _hidden = False

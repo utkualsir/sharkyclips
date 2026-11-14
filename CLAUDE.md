@@ -66,7 +66,12 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
 - Deleting goes through `trash.py` (30-day `<workspace>/_trash`, Restore, Empty): never remove
   project files or originals directly, and never delete posts on the platforms unless the user ticks it.
 - Automatic TikTok (1.2.42) = `tiktok_browser.py` driving TikTok Studio in SharkyClips' own
-  Playwright profile (`<settings>/browser/tiktok-profile`, headed, off-screen). Selectors are
+  Playwright profile (`<settings>/browser/tiktok-profile`, headed, off-screen, `--enable-automation`
+  dropped). The LOGIN (1.2.43) is never automated: the installed chrome.exe started plain via
+  `procs.launch_app` (visible, out of the server's job) on that profile; the automation only checks
+  after every process on the profile is gone (TikTok answers an automated login window with
+  "too many attempts"; navigator.webdriver stays true under Playwright's --remote-debugging-pipe even
+  without --enable-automation). Fake browser for tests: `SHARKYCLIPS_TT_LOGIN_CMD`. Selectors are
   TikTok's `data-e2e` attributes, never texts. On a CAPTCHA / verification / login wall / unknown
   screen it stops and falls back to by hand: never add code that solves or bypasses those. Tests
   run against `backend/tests/fake_tiktok_studio.py` (keep it in step with real TikTok Studio

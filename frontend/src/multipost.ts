@@ -30,10 +30,16 @@ export interface TikTokBrowser {
   checked_at: number | null;
   pill: Pill | "not_connected";
   blocked: { reason: string; message: string; shot: string | null; at: number } | null;
-  login: { state: "idle" | "opening" | "waiting" | "done" | "cancelled" | "error"; error: string | null; started_at: number | null };
+  login: {
+    state: "idle" | "opening" | "waiting" | "checking" | "done" | "not_logged_in" | "cancelled" | "error";
+    error: string | null;
+    started_at: number | null;
+    reset?: string | null;
+  };
   daily_cap: number;
   channel: string | null;
   busy: boolean;
+  profile?: boolean;
 }
 
 export interface PostError {

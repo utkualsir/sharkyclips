@@ -29,18 +29,20 @@ export function TikTokStudioBox({ a, onChange }: { a: Account; onChange: () => v
   useEffect(() => () => {
     if (poll.current) window.clearInterval(poll.current);
   }, []);
-  const waiting = b?.login.state === "opening" || b?.login.state === "waiting";
+  const LIVE = ["opening", "waiting", "checking"];
+  const waiting = LIVE.includes(b?.login.state ?? "");
   const watch = () => {
     if (poll.current) window.clearInterval(poll.current);
     poll.current = window.setInterval(async () => {
       try {
         const s = await accountsApi.tbStatus();
         setB(s);
-        if (!["opening", "waiting"].includes(s.login.state)) {
+        if (!LIVE.includes(s.login.state)) {
           if (poll.current) window.clearInterval(poll.current);
           poll.current = null;
           if (s.login.state === "done") toast({ kind: "ok", text: t("tts.login_ok", { name: s.username ? `@${s.username}` : "TikTok" }) });
           if (s.login.state === "error") toast({ kind: "err", text: s.login.error || t("tts.login_failed") });
+          if (s.login.state === "not_logged_in") toast({ kind: "err", text: t("tts.not_logged_in") });
           onChange();
         }
       } catch {
@@ -48,6 +50,10 @@ export function TikTokStudioBox({ a, onChange }: { a: Account; onChange: () => v
       }
     }, 2000);
   };
+  useEffect(() => {
+    if (waiting && !poll.current) watch(); // the page was reloaded while the login window is open
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waiting]);
   const run = async (fn: () => Promise<TikTokBrowser>, ok?: string) => {
     setBusy(true);
     try {
@@ -90,7 +96,7 @@ export function TikTokStudioBox({ a, onChange }: { a: Account; onChange: () => v
       )}
       {waiting && (
         <p className="acc-note" role="status">
-          <Icon name="clock" size={14} /> {t("tts.waiting")}
+          <Icon name="clock" size={14} /> {t(b.login.state === "checking" ? "tts.checking" : "tts.waiting")}
         </p>
       )}
       <div className="acc-actions">
@@ -110,7 +116,7 @@ export function TikTokStudioBox({ a, onChange }: { a: Account; onChange: () => v
             <Icon name="x" /> {t("tts.cancel")}
           </button>
         )}
-        {b.login_at && !waiting && (
+        {(b.login_at || b.profile) && !waiting && (
           <button className="btn btn-sm btn-ghost" disabled={busy || b.busy} onClick={() => run(() => accountsApi.tbCheck(), t("tts.check_ok"))}>
             <Icon name="check" /> {t("tts.check")}
           </button>
