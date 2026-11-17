@@ -1,7 +1,7 @@
 # Development / CI only (not needed to use SharkyClips).
-pytest>=8.0
-ruff>=0.6
-httpx>=0.27          # FastAPI TestClient
-lxml>=5.0             # tests: DTD validation of the editor timelines (FCPXML)
-pillow>=10.0         # installer/make_icons.py
-shellcheck-py>=0.10   # lint the macOS scripts
+pytest>=9.2.0
+ruff>=0.17.5
+httpx>=0.28.1          # FastAPI TestClient
+lxml>=6.1.3             # tests: DTD validation of the editor timelines (FCPXML)
+pillow>=13.0.0         # installer/make_icons.py
+shellcheck-py>=0.11.0.1   # lint the macOS scripts
