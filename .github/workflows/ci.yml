@@ -213,8 +213,8 @@ jobs:
         shell: pwsh
         run: |
           $csc = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
-          & $csc -nologo -target:winexe -out:"$env:RUNNER_TEMP\SharkyClips.exe" -win32icon:assets/icon/sharkyclips.ico `
-            -r:System.Windows.Forms.dll -r:System.Drawing.dll installer/windows/launcher/SharkyClips.cs
+          & $csc -nologo -target:winexe -out:"$env:RUNNER_TEMP\SharkyClips.exe" -win32icon:"$PWD\assets\icon\sharkyclips.ico" `
+            -r:System.Windows.Forms.dll -r:System.Drawing.dll "$PWD\installer\windows\launcher\SharkyClips.cs"
           if ($LASTEXITCODE -ne 0) { exit 1 }
       - name: Installer dry run (Windows PowerShell 5.1)
         shell: powershell
