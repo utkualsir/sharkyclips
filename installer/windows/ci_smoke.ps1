@@ -78,11 +78,11 @@ Check ($page.StatusCode -eq 200 -and $page.Content -match 'id="root"') "UI page 
 $asset = [regex]::Match($page.Content, '/assets/[^"]+\.js').Value
 Check ($asset -ne '') "UI page references its script"
 Check ((Invoke-WebRequest -Uri "http://127.0.0.1:$port$asset" -UseBasicParsing).StatusCode -eq 200) "UI script loads ($asset)"
-$setupRaw = (Invoke-WebRequest -Uri "http://127.0.0.1:$port/api/setup" -UseBasicParsing -TimeoutSec 120).Content
-Write-Host $setupRaw
-$setup = $setupRaw | ConvertFrom-Json
-Check (@($setup.items | Where-Object { $_.id -eq 'whisper' }).Count -eq 1) "first-run download plan lists Whisper"
-$result.setup_plan = @($setup.items | ForEach-Object { "$($_.id)=$($_.size_mb)MB" + $(if ($_.present) { '(present)' } else { '' }) })
+$planRaw = (Invoke-WebRequest -Uri "http://127.0.0.1:$port/api/setup" -UseBasicParsing -TimeoutSec 120).Content
+Write-Host $planRaw
+$plan = $planRaw | ConvertFrom-Json
+Check (@($plan.items | Where-Object { $_.id -eq 'whisper' }).Count -eq 1) "first-run download plan lists Whisper"
+$result.setup_plan = @($plan.items | ForEach-Object { "$($_.id)=$($_.size_mb)MB" + $(if ($_.present) { '(present)' } else { '' }) })
 $ws = Join-Path ([Environment]::GetFolderPath('MyVideos')) 'SharkyClips'
 Check (Test-Path $ws) "projects folder created in Videos ($ws)"
 
