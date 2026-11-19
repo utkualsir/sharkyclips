@@ -277,18 +277,21 @@ namespace SharkyClips
             this.startError = startError;
             Text = Launcher.T("SharkyClips couldn't start", "SharkyClips açılamadı");
             try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch (Exception) { }
+            // Sizes are in 96-DPI units; WinForms scales them for the screen (125 %, 150 % ...).
+            AutoScaleDimensions = new SizeF(96f, 96f);
+            AutoScaleMode = AutoScaleMode.Dpi;
             Font = new Font("Segoe UI", 9.5f);
             StartPosition = FormStartPosition.CenterScreen;
-            ClientSize = new Size(640, 460);
-            MinimumSize = new Size(520, 360);
+            ClientSize = new Size(680, 470);
+            MinimumSize = new Size(560, 380);
+            Padding = new Padding(14);
 
             Label head = new Label();
             head.Text = Launcher.T("Something went wrong while starting SharkyClips.",
                                    "SharkyClips başlatılırken bir sorun oluştu.");
             head.Font = new Font("Segoe UI Semibold", 12f);
-            head.AutoSize = false;
-            head.SetBounds(16, 14, 608, 28);
-            head.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            head.AutoSize = true;
+            head.Margin = new Padding(0, 0, 0, 6);
 
             Label body = new Label();
             body.Text = startError != null && startError.StartsWith("missing files")
@@ -296,9 +299,8 @@ namespace SharkyClips
                              "Bazı SharkyClips dosyaları eksik. Kurulum dosyasını yeniden indirip çalıştırın: projeleriniz ve ayarlarınız korunur.")
                 : Launcher.T("Try again. If it keeps happening, press \"Copy diagnostic info\" and paste it into a bug report on GitHub (it contains no passwords or tokens).",
                              "Tekrar deneyin. Sorun sürerse \"Tanılama bilgisini kopyala\"ya basıp GitHub'da bir hata kaydına yapıştırın (şifre veya anahtar içermez).");
-            body.AutoSize = false;
-            body.SetBounds(16, 46, 608, 44);
-            body.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            body.AutoSize = true;
+            body.Margin = new Padding(0, 0, 0, 10);
 
             TextBox log = new TextBox();
             log.Multiline = true;
@@ -306,8 +308,8 @@ namespace SharkyClips
             log.ScrollBars = ScrollBars.Both;
             log.WordWrap = false;
             log.Font = new Font("Consolas", 9f);
-            log.SetBounds(16, 96, 608, 300);
-            log.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            log.Dock = DockStyle.Fill;
+            log.Margin = new Padding(0, 0, 0, 10);
             string tail = Launcher.LogTail("sharkyclips.log", 30);
             log.Text = Launcher.Anonymize((startError != null ? startError + Environment.NewLine : "") +
                                           (tail.Length > 0 ? tail : Launcher.T("(no log yet)", "(henüz kayıt yok)")) +
@@ -316,8 +318,11 @@ namespace SharkyClips
 
             FlowLayoutPanel buttons = new FlowLayoutPanel();
             buttons.FlowDirection = FlowDirection.RightToLeft;
-            buttons.SetBounds(16, 404, 608, 40);
-            buttons.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            buttons.WrapContents = true;  // narrow window / big text: a second row, never a hidden button
+            buttons.AutoSize = true;
+            buttons.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            buttons.Dock = DockStyle.Fill;
+            buttons.Margin = new Padding(0);
 
             Button close = MakeButton(Launcher.T("Close", "Kapat"));
             close.Click += delegate { Close(); };
@@ -345,7 +350,29 @@ namespace SharkyClips
             buttons.Controls.AddRange(new Control[] { close, again, logs, copy });
             AcceptButton = again;
             CancelButton = close;
-            Controls.AddRange(new Control[] { head, body, log, buttons });
+            TableLayoutPanel table = new TableLayoutPanel();
+            table.Dock = DockStyle.Fill;
+            table.ColumnCount = 1;
+            table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+            table.RowCount = 4;
+            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            table.RowStyles.Add(new RowStyle(SizeType.Percent, 100f));
+            table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            table.Controls.Add(head, 0, 0);
+            table.Controls.Add(body, 0, 1);
+            table.Controls.Add(log, 0, 2);
+            table.Controls.Add(buttons, 0, 3);
+            Controls.Add(table);
+            // labels wrap at the window width (an AutoSize label alone would stay on one line)
+            EventHandler wrap = delegate
+            {
+                int w = Math.Max(100, table.ClientSize.Width - 4);
+                head.MaximumSize = new Size(w, 0);
+                body.MaximumSize = new Size(w, 0);
+            };
+            table.Resize += wrap;
+            Load += wrap;
         }
 
         private static Button MakeButton(string text)
