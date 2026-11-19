@@ -103,3 +103,9 @@ def test_overwatch_death_is_not_a_kill_and_checked_moments_are_listed():
     assert [e["code"] for e in events.build_events("overwatch", obs)] == ["ow_elim", "ow_death"]
     s = gameprofiles.summary("valorant")
     assert s["beta"] and "ACE" in s["checked"]
+
+
+def test_marvel_rivals_real_banners():
+    """Real footage (1.2.55): 'ACE!' and 'N PLAYER KO STREAK!' (not double / triple kill)."""
+    assert presets.match_rules("marvel_rivals", "banner", "ACE!") == ["mr_ace"]
+    assert presets.match_rules("marvel_rivals", "banner", "15 PLAYER KO STREAK!") == ["mr_ko_streak"]

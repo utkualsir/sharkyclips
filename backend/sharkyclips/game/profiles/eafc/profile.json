@@ -179,6 +179,6 @@
     "pre": 7,
     "post": 3
   },
-  "notes": "HUD boxes and texts come from game knowledge, not from real footage yet (verify).",
+  "notes": "Not checked yet: the tested video was an esports broadcast with its own overlay (no in-game GOAL / FULL TIME banner). Normal gameplay footage is needed.",
   "tr_hud": "verify"
 }

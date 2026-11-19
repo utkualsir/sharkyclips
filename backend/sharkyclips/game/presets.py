@@ -172,7 +172,8 @@ def _phrase_in(phrase: str, words: list[str], fuzzy: bool = True) -> bool:
 def match_rules(game: str, region: str, text: str) -> list[str]:
     """Event codes whose phrases occur in the OCR text."""
     norm = re.sub(r"[+/]?\d+", " ", normalize(text))  # drop "+100", "DP" stays a word
-    words = [w for w in norm.split() if w not in ("dp", "p", "op", "0p")]
+    # "ACE!" is the word "ace": a trailing "!" (banners love it) must not hide a short word
+    words = [w.rstrip("!") for w in norm.split() if w.rstrip("!") and w not in ("dp", "p", "op", "0p")]
     if not words:
         return []
     out = []

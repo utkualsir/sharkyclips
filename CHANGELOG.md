@@ -7,6 +7,88 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.55] - 2026-11-19
+### Marvel Rivals moments
+- **Marvel Rivals: ACE and KO streaks are found.** Tested on real gameplay videos: SharkyClips now
+  reads the "ACE!" banner and "5 / 10 / 15 PLAYER KO STREAK!" and puts those moments in your clips.
+- **Short banner words with "!" are read correctly** in every game ("ACE!" was missed before).
+- EA Sports FC and ARC Raiders stay **beta**: the test videos had no goal banner or extraction screen.
+  A clip with one helps (see docs/ADDING_A_GAME.md).
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Marvel Rivals anları
+- **Marvel Rivals: ACE ve KO serileri bulunuyor.** Gerçek oyun videolarında denendi: SharkyClips
+  artık "ACE!" yazısını ve "5 / 10 / 15 PLAYER KO STREAK!" serilerini okuyor ve bu anları kliplerine
+  koyuyor.
+- **Sonunda "!" olan kısa ekran yazıları** artık her oyunda doğru okunuyor (önce "ACE!" kaçıyordu).
+- EA Sports FC ve ARC Raiders **beta** olarak kalıyor: deneme videolarında gol yazısı ya da tahliye
+  ekranı yoktu. Böyle bir klip çok yardımcı olur (bkz. docs/ADDING_A_GAME.md).
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+- **Marvel Rivals: ahora se detectan ACE y las rachas de KO** ("ACE!", "5 / 10 / 15 PLAYER KO STREAK!"), probado con videos reales.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+- **Marvel Rivals: ACE e sequências de KO agora são detectados** ("ACE!", "5 / 10 / 15 PLAYER KO STREAK!"), testado em vídeos reais.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Marvel Rivals: ACE und KO-Serien werden erkannt** („ACE!“, „5 / 10 / 15 PLAYER KO STREAK!“), an echten Videos getestet.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+- **Marvel Rivals : les ACE et les séries de KO sont détectés** (« ACE! », « 5 / 10 / 15 PLAYER KO STREAK! »), testé sur de vraies vidéos.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Marvel Rivals: az ACE és a KO-sorozatok felismerése** („ACE!”, „5 / 10 / 15 PLAYER KO STREAK!”), valódi videókon tesztelve.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Marvel Rivals: теперь находятся ACE и серии KO** («ACE!», «5 / 10 / 15 PLAYER KO STREAK!»), проверено на настоящих видео.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **Marvel Rivals: يتم الآن اكتشاف ACE وسلاسل KO** ("ACE!" و"5 / 10 / 15 PLAYER KO STREAK!")، تم الاختبار على فيديوهات حقيقية.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **Marvel Rivals：现在能识别 ACE 和 KO 连杀**（“ACE!”、“5 / 10 / 15 PLAYER KO STREAK!”），已在真实视频上测试。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+- **Marvel Rivals：ACE と KO ストリークを検出**（「ACE!」「5 / 10 / 15 PLAYER KO STREAK!」）。実際の動画でテスト済み。
+
+</details>
+
 ## [1.2.54] - 2026-11-19
 ### Game detection checked on real videos
 - **New game profiles were tested on real gameplay videos.** SharkyClips now reliably reads ACE,

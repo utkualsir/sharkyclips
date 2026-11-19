@@ -121,6 +121,6 @@
     "pre": 7,
     "post": 3
   },
-  "notes": "HUD boxes and texts come from game knowledge, not from real footage yet (verify).",
+  "notes": "Not checked yet: two tested raids showed only inventory and item texts, no extraction screen. A video with an extraction is needed.",
   "tr_hud": "verify"
 }

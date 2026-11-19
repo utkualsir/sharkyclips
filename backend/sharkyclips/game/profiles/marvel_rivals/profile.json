@@ -57,6 +57,15 @@
       "mr_hexa": [
         "hexa kill",
         "hexakill"
+      ],
+      "mr_ace": [
+        "ace",
+        "-team ace"
+      ],
+      "mr_ko_streak": [
+        "player ko streak",
+        "ko streak",
+        "oyuncu ko serisi"
       ]
     },
     "center": {
@@ -130,6 +139,20 @@
       "dedupe": 300,
       "pre": 7,
       "post": 3
+    },
+    "mr_ace": {
+      "strength": 1.0,
+      "label": "Ace",
+      "dedupe": 20,
+      "pre": 10,
+      "post": 3
+    },
+    "mr_ko_streak": {
+      "strength": 0.7,
+      "label": "KO streak",
+      "dedupe": 10,
+      "pre": 8,
+      "post": 3
     }
   },
   "audio_cues": [],
@@ -186,6 +209,13 @@
     "pre": 7,
     "post": 3
   },
-  "notes": "HUD boxes and texts come from game knowledge, not from real footage yet (verify).",
-  "tr_hud": "verify"
+  "notes": "Real banners are 'ACE!' and 'N PLAYER KO STREAK!' (checked on real footage). The double / triple / hexa names are a guess and not seen yet; MVP / VICTORY screens are not checked yet.",
+  "tr_hud": "verify",
+  "checked": {
+    "events": [
+      "mr_ace",
+      "mr_ko_streak"
+    ],
+    "on": "2026-11-19, a public 1080p English-client compilation"
+  }
 }
