@@ -30,6 +30,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:es -->
 - **Marvel Rivals: ahora se detectan ACE y las rachas de KO** ("ACE!", "5 / 10 / 15 PLAYER KO STREAK!"), probado con videos reales.
+- **Las palabras cortas con "!" en pantalla ahora se leen bien en todos los juegos** (antes se perdía "ACE!").
 
 </details>
 
@@ -37,6 +38,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:pt -->
 - **Marvel Rivals: ACE e sequências de KO agora são detectados** ("ACE!", "5 / 10 / 15 PLAYER KO STREAK!"), testado em vídeos reais.
+- **Palavras curtas com "!" na tela agora são lidas em todos os jogos** (antes "ACE!" passava despercebido).
 
 </details>
 
@@ -44,6 +46,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:de -->
 - **Marvel Rivals: ACE und KO-Serien werden erkannt** („ACE!“, „5 / 10 / 15 PLAYER KO STREAK!“), an echten Videos getestet.
+- **Kurze Banner-Wörter mit „!“ werden jetzt in allen Spielen erkannt** (vorher wurde „ACE!“ übersehen).
 
 </details>
 
@@ -51,6 +54,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:fr -->
 - **Marvel Rivals : les ACE et les séries de KO sont détectés** (« ACE! », « 5 / 10 / 15 PLAYER KO STREAK! »), testé sur de vraies vidéos.
+- **Les mots courts avec « ! » à l'écran sont maintenant lus dans tous les jeux** (avant, « ACE! » était raté).
 
 </details>
 
@@ -58,6 +62,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:hu -->
 - **Marvel Rivals: az ACE és a KO-sorozatok felismerése** („ACE!”, „5 / 10 / 15 PLAYER KO STREAK!”), valódi videókon tesztelve.
+- **A rövid, „!”-lel végződő képernyőszavakat most minden játékban felismeri** (korábban az „ACE!” kimaradt).
 
 </details>
 
@@ -65,6 +70,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:ru -->
 - **Marvel Rivals: теперь находятся ACE и серии KO** («ACE!», «5 / 10 / 15 PLAYER KO STREAK!»), проверено на настоящих видео.
+- **Короткие слова с «!» на экране теперь распознаются во всех играх** (раньше «ACE!» пропускалось).
 
 </details>
 
@@ -72,6 +78,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:ar -->
 - **Marvel Rivals: يتم الآن اكتشاف ACE وسلاسل KO** ("ACE!" و"5 / 10 / 15 PLAYER KO STREAK!")، تم الاختبار على فيديوهات حقيقية.
+- **الكلمات القصيرة التي تنتهي بـ "!" على الشاشة تُقرأ الآن في كل الألعاب** (كانت "ACE!" تُفوَّت من قبل).
 
 </details>
 
@@ -79,6 +86,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:zh -->
 - **Marvel Rivals：现在能识别 ACE 和 KO 连杀**（“ACE!”、“5 / 10 / 15 PLAYER KO STREAK!”），已在真实视频上测试。
+- **所有游戏中带“!”的屏幕短词现在都能正确识别**（以前会漏掉“ACE!”）。EA Sports FC 和 ARC Raiders 仍为 beta：测试视频中没有进球或撤离画面。
 
 </details>
 
@@ -86,6 +94,7 @@ Each entry is in English, then Turkish; short summaries in the other UI language
 
 <!-- lang:ja -->
 - **Marvel Rivals：ACE と KO ストリークを検出**（「ACE!」「5 / 10 / 15 PLAYER KO STREAK!」）。実際の動画でテスト済み。
+- **「!」付きの短い画面の文字を全ゲームで正しく読み取ります**（以前は「ACE!」を見逃していました）。EA Sports FC と ARC Raiders はベータのままです。
 
 </details>
 

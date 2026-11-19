@@ -52,7 +52,7 @@ def test_changelog_entry_per_language(tmp_path):
 
 
 def test_this_version_has_a_changelog_entry_in_every_language():
-    for lang in ("en", "tr", "de", "hu", "ru", "ar", "zh"):
+    for lang in ("en", "tr", "es", "pt", "ru", "de", "fr", "ar", "zh", "ja", "hu"):  # 1.2.53: all 11
         entry = welcome.changelog_entry(__version__, lang)
         assert entry and entry["lang"] == lang and len(entry["markdown"]) > 100, lang
 
