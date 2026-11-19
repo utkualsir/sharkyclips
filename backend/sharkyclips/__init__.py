@@ -32,3 +32,13 @@ def _prefer_full_ffmpeg() -> None:
 
 
 _prefer_full_ffmpeg()
+
+
+def _installed_paths() -> None:
+    """1.2.56: the bundled FFmpeg and the first-run downloads (Deno, GPU libraries) on PATH."""
+    from . import appinstall
+
+    appinstall.setup_paths()
+
+
+_installed_paths()

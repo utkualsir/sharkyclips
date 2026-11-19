@@ -273,7 +273,14 @@ class Doctor:
         if not all(libs.values()) and self.fix:
             console.print("[yellow]NVIDIA GPU found but the CUDA pip libraries are missing - "
                           "installing them (one time, ~1 GB) ...[/]")
-            _pip_install(GPU_FIX_PACKAGES[2:])
+            from . import appinstall
+
+            if appinstall.is_installer():  # 1.2.56: into the runtime folder, which updates keep
+                from . import components
+
+                components.install(["cuda"], lambda _d: None)
+            else:
+                _pip_install(GPU_FIX_PACKAGES[2:])
             importlib.invalidate_caches()
             libs = hardware.nvidia_libs_installed()
         missing = [k for k, v in libs.items() if not v]

@@ -22,3 +22,11 @@ def test_every_output_folder_is_the_throwaway_home():
         assert _inside(p, home), p
     assert not _inside(easy.downloads_root(), Path.home() / "Downloads")
     assert not _inside(pubqueue.root(), Path.home() / "SharkyClips")
+
+
+def test_runtime_and_update_downloads_are_in_the_throwaway_home():
+    from sharkyclips import appinstall, config
+
+    home = config.config_dir()
+    for p in (appinstall.runtime_dir(), appinstall.gpu_dir(), appinstall.tools_dir(), appinstall.updates_dir()):
+        assert _inside(p, home), p

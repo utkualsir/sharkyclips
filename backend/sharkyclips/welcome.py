@@ -159,7 +159,19 @@ def app_state() -> dict:
             "onboarding": onboarding_needed(cfg), "whats_new": whats_new(cfg),
             "dev": dev if dev and not dev["stale"] else None, "dev_stale": dev if dev and dev["stale"] else None,
             "content_types": cfg.get("content_types") or [cfg.get("default_mode") or "gaming"],
-            "youtube_signed_out": _yt_signed_out(), "instagram_manual": _ig_manual()}
+            "youtube_signed_out": _yt_signed_out(), "instagram_manual": _ig_manual(),
+            **_install_state()}
+
+
+def _install_state() -> dict:
+    """1.2.56: how this copy was installed, and whether the first-run downloads are still missing."""
+    try:
+        from . import appinstall, components
+
+        kind = appinstall.kind()
+        return {"install_kind": kind, "setup_needed": components.needs_setup_cached() if kind == "installer" else False}
+    except Exception:  # noqa: BLE001 - never break the app shell
+        return {"install_kind": None, "setup_needed": False}
 
 
 def _ig_manual() -> dict | None:

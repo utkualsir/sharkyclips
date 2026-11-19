@@ -120,7 +120,7 @@ def slot(job: "Job") -> str:
     if job.lane != "net":
         return job.lane
     p = job.params.get("platform")
-    return p if p in ("tiktok", "reels", "stats") else "youtube"
+    return p if p in ("tiktok", "reels", "stats", "setup") else "youtube"
 
 
 @dataclass

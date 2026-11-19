@@ -2516,7 +2516,8 @@ def _supervised() -> bool:
 def api_update_status(fetch: bool = True) -> dict:
     from .. import updater
 
-    return {**updater.status(fetch=fetch), "can_restart": _supervised()}
+    return {**updater.status(fetch=fetch), "can_restart": _supervised(),
+            "pending_install": dict(_PENDING_INSTALL) if _PENDING_INSTALL else None}
 
 
 @app.post("/api/update")
@@ -2530,9 +2531,41 @@ def api_update_apply(request: Request) -> dict:
                                                    "then update.")
 
     def run(job: Job):
-        return updater.apply(lambda s: jobs.update(job, stage=s, progress=None))
+        res = updater.apply(lambda s: jobs.update(job, stage=s, progress=None))
+        if res.get("pending_install"):  # 1.2.56 installed copy: the new installer, checked
+            _install_when_idle(res["installer"], res["version"])
+        return res
 
     return jobs.submit("update", "io", None, {}, run, key="update").to_dict()
+
+
+_PENDING_INSTALL: dict = {}
+
+
+def _install_when_idle(path: str, version: str, poll: float = 5.0) -> None:
+    """Run the downloaded installer once no other job is queued or running (an update never
+    interrupts a render or an upload). The installer closes SharkyClips and starts it again."""
+    import threading
+
+    from .. import updater
+
+    if _PENDING_INSTALL.get("path") == path:
+        return
+    _PENDING_INSTALL.update(path=path, version=version, since=time.time(), started=None)
+
+    def wait() -> None:
+        while True:
+            busy = [j for j in jobs.jobs() if j.status in ACTIVE and j.kind != "update"]
+            if not busy:
+                try:
+                    updater.run_installer(path)
+                    _PENDING_INSTALL["started"] = time.time()
+                except Exception as exc:  # noqa: BLE001
+                    _PENDING_INSTALL["error"] = str(exc)[:300]
+                return
+            time.sleep(poll)
+
+    threading.Thread(target=wait, name="sharkyclips-install-when-idle", daemon=True).start()
 
 
 @app.post("/api/update/restart")
@@ -2563,9 +2596,11 @@ from .multipost import router as _multipost_router  # noqa: E402 - one Publish b
 from .pubqueue_api import router as _pubqueue_router  # noqa: E402 - publish queue for Claude in Chrome (1.2.40)
 from .trash_api import router as _trash_router  # noqa: E402 - delete + trash + disk usage (1.2.41)
 from .fullvideo_api import router as _fullvideo_router  # noqa: E402 - full video + Channel style (1.2.51)
+from .setup_api import router as _setup_router  # noqa: E402 - first-run downloads + diagnostics (1.2.56)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
+app.include_router(_setup_router)
 app.include_router(_voices_router)
 app.include_router(_retention_router)
 app.include_router(_publishing_router)

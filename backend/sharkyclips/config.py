@@ -20,7 +20,7 @@ DEFAULT_WORKSPACE = REPO_ROOT / "workspace"
 
 DEFAULTS: dict[str, Any] = {
     "config_version": 1,
-    "workspace_dir": None,  # None -> <repo>/workspace
+    "workspace_dir": None,  # None -> <repo>/workspace (installed copy: Videos/SharkyClips)
     "ui_language": languages.DEFAULT_UI_LANGUAGE,
     "output_language": languages.DEFAULT_OUTPUT_LANGUAGE,
     # 1.2.53: the "content language" (= output_language, kept under both names) drives AI titles,
@@ -186,6 +186,11 @@ def update(**values: Any) -> dict[str, Any]:
 
 def workspace_dir() -> Path:
     custom = get("workspace_dir")
-    path = Path(custom).expanduser() if custom else DEFAULT_WORKSPACE
+    if custom:
+        path = Path(custom).expanduser()
+    else:  # 1.2.56: an installed copy keeps its projects in Videos/SharkyClips (appinstall.py)
+        from . import appinstall
+
+        path = appinstall.default_workspace()
     path.mkdir(parents=True, exist_ok=True)
     return path

@@ -270,13 +270,20 @@ def cleanup_old_package(root: Path = config.REPO_ROOT) -> bool:
     return True
 
 
+def migrate_installer() -> dict:
+    """1.2.56: the first start of the Windows installer's copy on a PC with an old git install."""
+    from . import appinstall
+
+    return appinstall.migrate_from_git()
+
+
 def run_all() -> dict:
     """Everything above; never raises (a failed step is retried on the next start)."""
     out: dict = {}
     if os.environ.get("SHARKYCLIPS_NO_MIGRATE") == "1":  # tests: never touch the real shortcuts
         return out
     for name, fn in (("home", migrate_home), ("windows", rebrand_windows), ("macos", rebrand_macos),
-                     ("package", cleanup_old_package)):
+                     ("package", cleanup_old_package), ("installer", migrate_installer)):
         try:
             res = fn()
         except Exception as exc:  # noqa: BLE001

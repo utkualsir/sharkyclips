@@ -39,6 +39,7 @@ config.local.json
 # Installer state, release build output, capture temp files
 .install-state.json
 installer/dist/
+installer/build/
 docs/.video/
 .coverage
 

@@ -22,6 +22,16 @@ The server then restarts itself (see `cli.py serve`, exit code RESTART_CODE).
     checked is exactly what gets installed (a commit pushed in between is never picked up).
   * Settings key "update_require_signed": true also needs `git verify-tag` to pass (a signed tag).
   * git itself checks every object's hash, and the transport is https to github.com.
+
+1.2.56 installed copies (the Windows installer, appinstall.is_installer()):
+  * the latest GitHub release of the official repository (api.github.com, https only) with a tag
+    v<semver> strictly higher than the running version, carrying SharkyClips-Setup-<v>.exe and
+    SharkyClips-Setup-<v>.exe.sha256
+  * download with resume into %LOCALAPPDATA%/SharkyClips/updates; the SHA-256 must match the .sha256
+    file AND GitHub's own asset digest; a signed file must have a valid Authenticode signature, and
+    with "update_require_signed" an unsigned one is refused
+  * the web layer runs it silently once no job is queued or running (web/app.py); the installer
+    closes SharkyClips, installs over it, refuses older versions itself and starts SharkyClips again
 """
 
 from __future__ import annotations
@@ -197,8 +207,168 @@ def _requirements_hash(root: Path = REPO_ROOT) -> str:
     return h.hexdigest()
 
 
+# ------------------------------------------------------------------ installed copies (1.2.56)
+
+RELEASE_API = "https://api.github.com/repos/utkualsir/sharkyclips/releases/latest"
+SETUP_NAME = "SharkyClips-Setup-{version}.exe"
+_TAG_RE = re.compile(r"^v(\d+\.\d+\.\d+)$")
+
+
+def _release_api() -> str:
+    from .components import _check_url
+
+    url = os.environ.get("SHARKYCLIPS_UPDATE_API") or RELEASE_API  # tests: a local fake GitHub
+    _check_url(url)
+    return url
+
+
+def latest_release() -> dict:
+    """{"version", "setup": {name, url, size, digest}, "sha256_url", "notes", "url"}; raises."""
+    import requests
+
+    try:
+        r = requests.get(_release_api(), timeout=30, headers={"Accept": "application/vnd.github+json",
+                                                              "User-Agent": "SharkyClips-updater"})
+    except requests.RequestException as exc:
+        raise SharkyClipsError(f"Couldn't reach GitHub: {type(exc).__name__}",
+                               "Check your internet connection and try again.") from exc
+    if r.status_code == 404:
+        raise SharkyClipsError("No published release was found on GitHub.", f"See {RELEASES_URL}.")
+    if r.status_code != 200:
+        raise SharkyClipsError(f"GitHub answered HTTP {r.status_code}.", "Try again in a few minutes.")
+    rel = r.json()
+    m = _TAG_RE.match(str(rel.get("tag_name") or ""))
+    if not m or rel.get("draft") or rel.get("prerelease"):
+        raise SharkyClipsError("The latest release has no version tag.", f"See {RELEASES_URL}.")
+    version = m.group(1)
+    want = SETUP_NAME.format(version=version)
+    assets = {a.get("name"): a for a in rel.get("assets", [])}
+    setup, sums = assets.get(want), assets.get(want + ".sha256")
+    out = {"version": version, "notes": str(rel.get("body") or ""), "url": rel.get("html_url") or RELEASES_URL,
+           "setup": None, "sha256_url": None}
+    if setup and sums:
+        out["setup"] = {"name": want, "url": setup.get("browser_download_url"), "size": int(setup.get("size") or 0),
+                        "digest": str(setup.get("digest") or "")}
+        out["sha256_url"] = sums.get("browser_download_url")
+    return out
+
+
+def _installer_status() -> dict:
+    out: dict = {"current": __version__, "latest": None, "available": False, "behind": 0, "changes": [],
+                 "supported": True, "reason": None, "releases_url": RELEASES_URL, "kind": "installer"}
+    try:
+        rel = latest_release()
+    except SharkyClipsError as exc:
+        out.update(reason="fetch_failed", error=exc.message)
+        return out
+    out["latest"] = rel["version"]
+    out["changes"] = [ln.strip().lstrip("-*").strip() for ln in rel["notes"].splitlines()
+                      if ln.strip().startswith(("-", "*"))][:15]
+    if not is_newer(rel["version"], __version__):
+        out["reason"] = None if rel["version"] == __version__ else "not_newer"
+        return out
+    if rel["setup"] is None:
+        out["reason"] = "not_released"  # tagged, but CI hasn't attached the installer yet
+        return out
+    out.update(available=True, behind=1, size=rel["setup"]["size"])
+    return out
+
+
+def parse_sha256_file(text: str, name: str) -> str | None:
+    for line in (text or "").splitlines():
+        parts = line.strip().split()
+        if parts and re.fullmatch(r"[0-9a-fA-F]{64}", parts[0]):
+            if len(parts) == 1 or parts[-1].lstrip("*") == name:
+                return parts[0].lower()
+    return None
+
+
+def authenticode(path: Path) -> dict:
+    """{"status": "Valid" | "NotSigned" | "HashMismatch" | ..., "signer": ...} (Windows only)."""
+    if os.name != "nt":
+        return {"status": "Unsupported"}
+    script = ("$s = Get-AuthenticodeSignature -LiteralPath $env:SC_FILE; "
+              "$s.Status.ToString(); if ($s.SignerCertificate) { $s.SignerCertificate.Subject } else { '' }")
+    try:
+        res = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
+                             capture_output=True, text=True, timeout=60, env={**os.environ, "SC_FILE": str(path)},
+                             **no_window())
+        lines = (res.stdout or "").strip().splitlines()
+        return {"status": lines[0].strip() if lines else "Unknown",
+                "signer": lines[1].strip() if len(lines) > 1 else ""}
+    except (OSError, subprocess.SubprocessError):
+        return {"status": "Unknown"}
+
+
+SIGNATURE_OK = ("Valid", "NotSigned", "Unsupported", "Unknown")
+
+
+def _installer_apply(on_stage: Callable[[str], None]) -> dict:
+    import requests
+
+    from . import appinstall, components, config
+    from .components import _check_url
+
+    rel = latest_release()
+    if not is_newer(rel["version"], __version__):
+        raise SharkyClipsError(f"The version on GitHub ({rel['version']}) isn't newer than this one ({__version__}).",
+                               "SharkyClips never goes back to an older version. Nothing was changed.")
+    if rel["setup"] is None:
+        raise SharkyClipsError("The new version's installer isn't on GitHub yet.", "Try again in a few minutes.")
+    setup = rel["setup"]
+    on_stage("update_download")
+    try:
+        _check_url(rel["sha256_url"] or "")
+        sums = requests.get(rel["sha256_url"], timeout=30, headers={"User-Agent": "SharkyClips-updater"})
+        sums.raise_for_status()
+    except requests.RequestException as exc:
+        raise SharkyClipsError("Couldn't download the installer's checksum file.", "Try again later.") from exc
+    want = parse_sha256_file(sums.text, setup["name"])
+    if not want:
+        raise SharkyClipsError("The installer's checksum file is unreadable. Nothing was changed.")
+    digest = setup["digest"]
+    if digest.startswith("sha256:") and digest[7:].lower() != want:
+        raise SharkyClipsError("The checksum file and GitHub's own checksum don't agree. Nothing was changed.")
+    dest = appinstall.updates_dir() / setup["name"]
+    components.download(setup["url"], dest, sha256=want, size=setup["size"] or None)
+    on_stage("update_verify")
+    sig = authenticode(dest)
+    if sig["status"] not in SIGNATURE_OK:
+        dest.unlink(missing_ok=True)
+        raise SharkyClipsError(f"The installer's signature is not valid ({sig['status']}). It was deleted.",
+                               f"Download SharkyClips from {RELEASES_URL} instead.")
+    if config.get("update_require_signed") is True and sig["status"] != "Valid":
+        raise SharkyClipsError("The new installer isn't signed, and Settings require signed updates.",
+                               f"Download it from {RELEASES_URL} if you trust it.")
+    for old in appinstall.updates_dir().glob("SharkyClips-Setup-*.exe"):
+        if old != dest:
+            old.unlink(missing_ok=True)
+    return {"version": rel["version"], "installer": str(dest), "signature": sig["status"], "changed": True,
+            "packages_updated": False, "restart_needed": True, "pending_install": True}
+
+
+def run_installer(path: str | Path) -> int:
+    """Start the downloaded installer silently, outside SharkyClips' job (it closes SharkyClips,
+    installs and starts it again: /RELAUNCH=1). Returns its pid."""
+    from . import procs
+
+    exe = Path(path)
+    if not exe.is_file():
+        raise SharkyClipsError("The downloaded installer is gone.", "Press Update again.")
+    log = exe.with_suffix(".log")
+    return procs.launch_app([str(exe), "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/SP-",
+                             "/RELAUNCH=1", f"/LOG={log}"])
+
+
 def status(fetch: bool = True, root: Path = REPO_ROOT) -> dict:
     """Current vs. latest version. Never raises: problems come back as `reason`."""
+    from . import appinstall
+
+    if appinstall.is_installer(root):
+        if fetch:
+            return _installer_status()
+        return {"current": __version__, "latest": None, "available": False, "behind": 0, "changes": [],
+                "supported": True, "reason": None, "releases_url": RELEASES_URL, "kind": "installer"}
     out: dict = {"current": __version__, "latest": None, "available": False, "behind": 0,
                  "changes": [], "supported": False, "reason": None, "releases_url": RELEASES_URL}
     if shutil.which("git") is None:
@@ -253,8 +423,13 @@ def status(fetch: bool = True, root: Path = REPO_ROOT) -> dict:
 
 def apply(on_stage: Callable[[str], None] | None = None, root: Path = REPO_ROOT,
           python: str = sys.executable) -> dict:
-    """git pull, then reinstall Python packages if the requirements changed."""
+    """git pull, then reinstall Python packages if the requirements changed.
+    An installed copy (1.2.56) downloads and checks the new installer instead (`_installer_apply`)."""
+    from . import appinstall
+
     stage = on_stage or (lambda _s: None)
+    if appinstall.is_installer(root):
+        return _installer_apply(stage)
     if official_remote(root):
         raise SharkyClipsError("This copy of SharkyClips doesn't come from the official GitHub repository, "
                                "so it isn't updated automatically.",

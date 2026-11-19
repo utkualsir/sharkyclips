@@ -891,6 +891,70 @@ def cmd_launch(args) -> int:
     return cmd_serve(args)
 
 
+def cmd_diag(args) -> int:
+    """1.2.56: the diagnostic report (redacted), what the launcher's error screen copies."""
+    from sharkyclips import diag
+
+    print(diag.report_text(with_hardware=not args.quick))
+    return 0
+
+
+def cmd_selftest(args) -> int:
+    """1.2.56: render a tiny generated clip on the CPU (the installer's smoke test)."""
+    import json
+
+    from sharkyclips import selftest
+
+    res = selftest.run(cpu=True)
+    print(json.dumps(res))
+    return 0 if res.get("ok") else 1
+
+
+def cmd_setup(args) -> int:
+    """1.2.56: the first-run downloads from the command line (the app shows the same list)."""
+    import json
+
+    from sharkyclips import components
+
+    p = components.plan()
+    if args.list or not args.ids:
+        for it in p["items"]:
+            state = "present" if it["present"] else ("default" if it["selected"] else "optional")
+            console.print(f"{it['id']:13} {it['size_mb']:>6} MB  {state}  {it['detail']}")
+        return 0
+    ids = [i["id"] for i in p["items"] if i["selected"]] if args.ids == ["auto"] else args.ids
+
+    def report(d: dict) -> None:
+        if d.get("fraction") is not None:
+            console.print(f"{d['current']}: {d['fraction'] * 100:5.1f}%", end="")
+
+    res = components.install(ids, report)
+    console.print()
+    print(json.dumps(res))
+    return 0 if res["ok"] else 1
+
+
+def cmd_installer_paths(args) -> int:
+    """1.2.56: the folders the uninstaller offers to delete (key=value lines, nothing else)."""
+    from sharkyclips import appinstall
+
+    try:
+        from huggingface_hub import constants
+
+        hf = constants.HF_HUB_CACHE
+    except Exception:  # noqa: BLE001
+        hf = ""
+    try:
+        ws = str(config.workspace_dir())
+    except OSError:
+        ws = ""
+    print(f"workspace={ws}")
+    print(f"settings={config.config_dir()}")
+    print(f"runtime={appinstall.runtime_dir().parent}")
+    print(f"hf_cache={hf}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="sharkyclips",
                                 description=f"SharkyClips {__version__} - local stream & video highlight clipper")
@@ -980,6 +1044,15 @@ def build_parser() -> argparse.ArgumentParser:
     la.add_argument("--tray", action="store_true", help="show a tray icon (automatic without a console)")
     la.set_defaults(func=cmd_launch)
 
+    dg = sub.add_parser("diag", help="print the diagnostic report (no secrets) to paste into a bug report")
+    dg.add_argument("--quick", action="store_true", help="skip the hardware check")
+    dg.set_defaults(func=cmd_diag)
+    sub.add_parser("selftest", help="render a tiny generated test clip on the CPU").set_defaults(func=cmd_selftest)
+    su = sub.add_parser("setup", help="first-run downloads (Whisper models, GPU libraries, Deno, Ollama + AI model)")
+    su.add_argument("ids", nargs="*", help="component ids, or 'auto' for the default picks (none: list them)")
+    su.add_argument("--list", action="store_true")
+    su.set_defaults(func=cmd_setup)
+    sub.add_parser("installer-paths", help=argparse.SUPPRESS).set_defaults(func=cmd_installer_paths)
     sub.add_parser("list", help="list projects").set_defaults(func=cmd_list)
     sub.add_parser("languages", help="show supported languages").set_defaults(func=cmd_languages)
     return p
