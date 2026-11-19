@@ -270,11 +270,11 @@ subtitles are then translated with their timing kept.
 
 ### Windows 10 / 11: one-click installer
 
-1. Download **`SharkyClips-Setup-<version>.exe`** (about __SETUP_MB__ MB) from the
+1. Download **`SharkyClips-Setup-<version>.exe`** (about 375 MB) from the
    [latest release](https://github.com/utkualsir/sharkyclips/releases/latest).
 2. Double-click it, press **Next** and **Install**. No administrator rights are needed: SharkyClips
    installs for your user only (`%LOCALAPPDATA%\Programs\SharkyClips`), with a Start menu entry and,
-   if you tick it, a desktop shortcut. Installing takes about __INSTALL_S__ seconds.
+   if you tick it, a desktop shortcut. Installing takes about 70 seconds.
 3. SharkyClips opens in your browser. The first start asks for your language and checks your PC,
    then downloads the AI parts that fit it (speech-to-text model, GPU libraries on an NVIDIA PC,
    the local AI for titles), with a progress bar and the time left. After that it works offline.
@@ -567,7 +567,7 @@ Twitch / YouTube canlı sohbetinizi okumak (sadece "!clip" ve sohbet balonları 
 ### Kurulum (Windows 10 / 11)
 
 1. [Son sürüm](https://github.com/utkualsir/sharkyclips/releases/latest) sayfasından
-   **`SharkyClips-Setup-<sürüm>.exe`** dosyasını (yaklaşık __SETUP_MB__ MB) indirin.
+   **`SharkyClips-Setup-<sürüm>.exe`** dosyasını (yaklaşık 375 MB) indirin.
 2. Çift tıklayın, **İleri** ve **Kur**'a basın. Yönetici izni gerekmez; SharkyClips yalnızca sizin
    kullanıcınıza kurulur, Başlat menüsüne ve isterseniz masaüstüne kısayol ekler.
 3. SharkyClips tarayıcıda açılır. İlk açılışta dili sorar, bilgisayarınızı kontrol eder ve ona uygun

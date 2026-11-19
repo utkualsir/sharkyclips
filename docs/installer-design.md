@@ -1,6 +1,42 @@
 # One-click Windows installer - design and decision log
 
-<!-- REPORT-TR -->
+## Kısa rapor (Türkçe, gece çalışması 19-20 Kasım 2026, sürüm 1.2.56)
+
+**Ne yapıldı**
+- **Gerçek tek tık Windows kurulumu:** `SharkyClips-Setup-1.2.56.exe` (Inno Setup). Yönetici izni
+  istemez, `%LOCALAPPDATA%\Programs\SharkyClips`'e kurar, Başlat menüsü + isteğe bağlı masaüstü
+  kısayolu, simgeli ve sürümlü "Uygulamalar" kaydı. İçinde kendi Python'u (3.12.10 gömülü) ve FFmpeg'i
+  var; konsol penceresi hiç açılmaz.
+- **Başlatıcı (SharkyClips.exe, C#):** sunucuyu gizli başlatır, tek örnek, tepsi simgesi (mevcut
+  Python tarafı), açılmazsa net hata penceresi + "Tanılama bilgisini kopyala" (şifre/anahtar yok).
+- **İlk açılış sihirbazına "İndirmeler" adımı:** donanıma göre seçilen parçalar (Whisper modeli,
+  NVIDIA'da CUDA kütüphaneleri, Deno, Ollama + model; zayıf PC'de Hafif kurulum), boyut, ilerleme
+  çubuğu, hız, kalan süre, devam ettirme ve SHA-256 kontrolü. Ayarlar > İndirmeler'de de var. 11 dil.
+- **Kaldırıcı:** uygulamayı siler; projeler, ayarlar ve modeller için önce sorar (varsayılan: sakla).
+- **Eski install.bat / git kullanıcıları:** ayarlar aynen kullanılır, projeler olduğu yerde kalır
+  (hiçbir şey taşınmaz/silinmez), eski kısayollar yeni uygulamaya yönlenir.
+- **Güncelleyici (kurulu kopya):** yalnızca resmî GitHub sürümünden yeni kurulum dosyasını indirir,
+  SHA-256'yı hem `.sha256` dosyası hem GitHub özeti ile doğrular (imza varsa onu da), iş yokken arka
+  planda kurar ve kendiliğinden yeniden açılır. Asla eski sürüme dönmez (kurulum dosyası da reddeder).
+- **CI:** her sürüm etiketinde temiz Windows makinesinde derleme → sessiz kurulum → çift tık gibi
+  başlatma → arayüz + doctor + CPU'da küçük klip render → sessiz kaldırma; `.exe` + `.sha256`
+  sürüme eklenir. Temiz makinede test **geçti**.
+- README: en üstte "Download for Windows" düğmesi, kurulum adımları, gereksinimler (8 GB RAM, GPU
+  gerekmez), SmartScreen adımı (görsel bir çizimdir), SSS. Git/geliştirici akışı değişmedi.
+
+**Ölçümler:** kurulum dosyası **375 MB** (CI derlemesi 357 MB), kurulu boyut **~1,35 GB**, sessiz
+kurulum **~70 sn**, ilk açılışta arayüz **~25 sn**, kaldırma 8-32 sn. Yapay zekâ modelleri ilk
+açılışta ayrıca iner (CPU'da ~0,5 GB; GPU'da ~2,8 GB; isteğe bağlı Ollama + model 5-8 GB).
+
+**Sizin yapmanız gerekenler**
+1. **Depoyu herkese açmak** (ben yapmadım): depo gizliyken "Download for Windows" düğmesi ve kurulu
+   kopyaların otomatik güncellemesi yalnızca erişimi olanlarda çalışır.
+2. **Kod imzalama:** önerim **SignPath Foundation** (ücretsiz, ama depo herkese açık olmalı). Adımlar
+   aşağıda bölüm 11'de. Depo açılmadan imza isterseniz: Certum Open Source sertifikası (~30-70 €/yıl).
+   İmza gelene kadar kullanıcılar SmartScreen'de **Ek bilgi → Yine de çalıştır** der (README'de var).
+3. İsterseniz README'deki SmartScreen çizimini gerçek bir ekran görüntüsüyle değiştirin.
+
+Kararların tamamı aşağıda "Decision log" bölümünde.
 
 ## 1. Goal
 
@@ -158,3 +194,44 @@ projects are kept, then attach `SharkyClips-Setup-<v>.exe` + `.sha256` to the Gi
    tools); a silent uninstall keeps everything.
 9. **Update = the full new installer** (simple, verifiable). Delta updates are a possible later
    optimisation.
+10. **Measured (1.2.56):** installer **375 MB** (LZMA2 ultra), **1.35 GB** installed. Biggest parts:
+    FFmpeg 200 MB, Playwright 117 MB (TikTok automation), llvmlite/numba 147 MB (librosa), SciPy
+    115 MB, OpenCV 111 MB, PyAV 65 MB, CTranslate2 63 MB, .pyc files 150 MB (precompiled: faster
+    first start). Silent install: **70 s** on the CI runner, 72 s on the dev PC; UI answers 24 s
+    after the first double-click (CI runner), uninstall 8 s.
+11. **Inno Setup 7.1.1** used locally (portable copy in a temp folder, nothing installed on the PC);
+    CI uses the runner's preinstalled Inno Setup 6 (or installs it with choco). The script is
+    compatible with both.
+12. **SmartScreen picture in the README is an illustration** (`docs/screenshots/smartscreen.png`,
+    labelled as such). A real SmartScreen prompt could not be captured from the unattended session:
+    the prompt blocks the starting process and isn't reachable through UI Automation there.
+    The owner can replace it with a real screenshot later (same file name).
+13. **The launcher's error window follows the Windows / SharkyClips language (English, Turkish)**;
+    it was checked at 125 % scaling (all four buttons visible, text wraps).
+14. **Builds use only committed files** (`git ls-files`): a local, uncommitted change can never
+    ship, and no `google_client.json` / token can leak into an installer (the build also scans).
+15. **The first-run step also shows for git copies that miss their models** (`setup_needed`), not
+    only for installer copies; the old `install.bat` path is unchanged.
+
+## 11. What the owner must do (could not be done unattended)
+
+1. **Make the repository public when you are ready** (never done by Claude). Until then:
+   the "Download for Windows" button and the in-app updater of installed copies only work for
+   people with access to the private repository (GitHub answers 404 to anonymous downloads of
+   private releases). Everything else works.
+2. **Code signing (recommended: SignPath Foundation, free):**
+   1. Make the repo public (SignPath only signs public OSI-licensed projects).
+   2. Turn on 2FA/MFA on GitHub for every maintainer.
+   3. Add a short code-signing policy page (e.g. `docs/code-signing-policy.md`: "Free code signing
+      provided by SignPath.io, certificate by SignPath Foundation"; who approves releases: you).
+   4. Apply at https://signpath.org/apply (project name, repo URL, license MIT, release URL).
+   5. After approval: create the SignPath project + signing policy, add `SIGNPATH_API_TOKEN` as a
+      GitHub secret, and add the `signpath/github-action-submit-signing-request` step to
+      `.github/workflows/installer.yml` between "Build the installer" and "Smoke test".
+   6. When releases are signed, set `"update_require_signed": true` as the default
+      (`config.DEFAULTS`) so unsigned installers are refused by the updater.
+   If you want signing **before** going public: buy a Certum Open Source Code Signing certificate
+   (identity check with your ID, ~EUR 30-70/year, SimplySign cloud key) and add a `signtool` step.
+3. **Optional: a real SmartScreen screenshot** for the README (replace
+   `docs/screenshots/smartscreen.png`): download the installer from the release page in Edge, run
+   it, press Win+Shift+S on the blue window, click "More info" and capture again.
