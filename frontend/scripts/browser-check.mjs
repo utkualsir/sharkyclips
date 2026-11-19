@@ -25,6 +25,24 @@ async function setMode(request, mode) {
   await request.put(`${base}/api/easy/settings`, { data: { mode }, headers: H, timeout: 60000 });
 }
 
+
+/** goto that says which requests were still open when a page load hangs (seen in WebKit on CI). */
+function tracked(page) {
+  const open = new Map();
+  page.on("request", (r) => open.set(r, Date.now()));
+  page.on("requestfinished", (r) => open.delete(r));
+  page.on("requestfailed", (r) => open.delete(r));
+  return async (url) => {
+    try {
+      await page.goto(url, { timeout: 45000 });
+    } catch (e) {
+      const now = Date.now();
+      const list = [...open].map(([r, t]) => `${r.resourceType()} ${r.url().replace(base, "")} (${Math.round((now - t) / 1000)} s)`);
+      throw new Error(`${e.message.split(/\r?\n/)[0]} | still open: ${list.join(" ; ") || "nothing"}`);
+    }
+  };
+}
+
 for (const name of wanted) {
   let browser;
   try {
@@ -43,12 +61,13 @@ for (const name of wanted) {
     sessionStorage.setItem("sc-splash-shown", "1");
   });
   const page = await ctx.newPage();
+  const go = tracked(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
   await setMode(page.request, "easy");
 
   // 1. edit the title: select all, Backspace, Delete, type - also after the page polled again
-  await page.goto(`${base}/#/p/${P}`);
+  await go(`${base}/#/p/${P}`);
   await page.waitForSelector('[data-testid="ez-edit"]', { timeout: 30000 });
   await page.locator('[data-testid="ez-edit"]').first().click();
   const input = page.locator('[data-testid="ez-title-input"]');
@@ -85,7 +104,7 @@ for (const name of wanted) {
   if (await page.locator(".modal").count()) fail(name, "Escape did not close the edit window");
 
   // 3. UI language switcher (flag + name), incl. Arabic right-to-left
-  await page.goto(`${base}/#/`);
+  await go(`${base}/#/`);
   await page.waitForSelector(".lang-btn");
   for (const [code, dir] of [["es", "ltr"], ["ar", "rtl"], ["ja", "ltr"], ["en", "ltr"]]) {
     await page.locator(".lang-btn").first().click();
@@ -97,8 +116,8 @@ for (const name of wanted) {
 
   // 4. content language is separate from the UI language and reaches the server
   // (Easy mode's Settings has the same card: the default UI must reach it too)
-  await page.goto(`${base}/#/settings`);
-  await page.reload();
+  await go(`${base}/#/settings`);
+  await page.reload({ waitUntil: "domcontentloaded" });
   const sel = page.locator('#content-language select');
   await sel.waitFor();
   await sel.selectOption("es");
@@ -108,26 +127,11 @@ for (const name of wanted) {
   if (s.ui_language === "es") fail(name, "changing the content language changed the UI language");
   await page.request.put(`${base}/api/settings`, { data: { output_language: "en" }, headers: H });
 
-  // 5. render: the button starts a job (Pro mode). Only in the first browser, and the job is
-  //    cancelled right away: real renders on a small CI runner slow every later check down.
+  // 5. publish dialog (Pro mode): the title field takes Backspace too
   await setMode(page.request, "pro");
-  await page.goto(`${base}/#/p/${P}`);
-  await page.reload();
+  await go(`${base}/#/p/${P}`);
+  await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForSelector(".side-tabs", { timeout: 30000 });
-  const renderBtn = page.locator('[data-testid="render-btn"]').first();
-  if (name === wanted[0] && (await renderBtn.count()) && (await renderBtn.isEnabled())) {
-    await renderBtn.click();
-    let job = null;
-    for (let i = 0; i < 40 && !job; i++) {
-      const j = await (await page.request.get(`${base}/api/jobs`)).json();
-      job = (j.jobs || j).find((x) => x.kind === "render" && x.project_id === pid && ["queued", "running"].includes(x.status));
-      if (!job) await page.waitForTimeout(500);
-    }
-    if (!job) fail(name, "the render button started no render job");
-    else await page.request.post(`${base}/api/jobs/${job.id}/cancel`, { headers: H });
-  }
-
-  // 6. publish dialog: the title field takes Backspace too
   const pubBtn = page.locator('[data-testid="publish-btn"]').first();
   if ((await pubBtn.count()) && (await pubBtn.isEnabled())) {
     await pubBtn.click();
@@ -142,6 +146,40 @@ for (const name of wanted) {
   }
 
   if (errors.length) fail(name, `page errors: ${errors.slice(0, 3).join(" | ")}`);
+  await setMode(page.request, "easy");
+  await browser.close();
+}
+
+// 6. render: the button starts a job. Once, in the first browser, after every other check: a real
+//    render keeps a small CI runner busy until its next safe point, even when cancelled at once,
+//    and that made the next browser's checks time out.
+if (wanted.length) {
+  const name = wanted[0];
+  const browser = await pw[name].launch(name === "chromium" && process.env.BROWSER_CHANNEL ? { channel: process.env.BROWSER_CHANNEL } : {});
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  await ctx.addInitScript(() => {
+    localStorage.setItem("cf-lang", "en");
+    localStorage.setItem("cf-lang-set", "1");
+    sessionStorage.setItem("sc-splash-shown", "1");
+  });
+  const page = await ctx.newPage();
+  const go = tracked(page);
+  console.log(`${name} (render):`);
+  await setMode(page.request, "pro");
+  await go(`${base}/#/p/${P}`);
+  await page.waitForSelector(".side-tabs", { timeout: 30000 });
+  const renderBtn = page.locator('[data-testid="render-btn"]').first();
+  if ((await renderBtn.count()) && (await renderBtn.isEnabled())) {
+    await renderBtn.click();
+    let job = null;
+    for (let i = 0; i < 40 && !job; i++) {
+      const j = await (await page.request.get(`${base}/api/jobs`)).json();
+      job = (j.jobs || j).find((x) => x.kind === "render" && x.project_id === pid && ["queued", "running"].includes(x.status));
+      if (!job) await page.waitForTimeout(500);
+    }
+    if (!job) fail(name, "the render button started no render job");
+    else await page.request.post(`${base}/api/jobs/${job.id}/cancel`, { headers: H });
+  }
   await setMode(page.request, "easy");
   await browser.close();
 }
