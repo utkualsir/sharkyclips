@@ -7,6 +7,130 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.56] - 2026-11-20
+### A real Windows installer
+- **Install SharkyClips like any app:** download `SharkyClips-Setup.exe`, double-click, Next, done.
+  No Python, no console windows, no admin rights. It brings its own Python and FFmpeg, adds a Start
+  menu entry (and a desktop shortcut if you want) and shows up in Apps & features.
+- **First start: the AI parts for your PC.** A new "Downloads" step picks what your PC needs (the
+  speech-to-text model, the GPU libraries on an NVIDIA PC, the local AI for titles; the Light setup on
+  slower PCs), shows the size, then downloads it with a progress bar and the time left. Stopped
+  downloads continue where they stopped, every file is checked, and afterwards it all works offline.
+  You find the same list later in **Settings > Downloads**.
+- **Updates for the installed app** come only from the official GitHub release: the new installer is
+  checked (SHA-256) and installed in the background as soon as no job is running, then SharkyClips
+  opens again by itself. It never goes back to an older version.
+- **If SharkyClips can't start,** a clear error window shows what happened, with "Copy diagnostic
+  info" for a bug report (no passwords or tokens in it).
+- **Uninstalling** removes the app and asks before deleting your projects, settings or AI models
+  (the default keeps them).
+- **Coming from install.bat / a git copy?** Just run the installer: your settings are used and your
+  projects stay where they are. Nothing is moved or deleted.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Gerçek bir Windows kurulum dosyası
+- **SharkyClips'i her uygulama gibi kurun:** `SharkyClips-Setup.exe`'yi indirin, çift tıklayın,
+  İleri, bitti. Python yok, konsol penceresi yok, yönetici izni yok. Kendi Python'unu ve FFmpeg'ini
+  getirir, Başlat menüsüne (isterseniz masaüstüne) kısayol ekler ve Uygulamalar listesinde görünür.
+- **İlk açılış: bilgisayarınıza uygun yapay zekâ parçaları.** Yeni "İndirmeler" adımı bilgisayarınızın
+  neye ihtiyacı olduğunu seçer (konuşmayı yazıya çevirme modeli, NVIDIA kartta GPU kütüphaneleri,
+  başlıklar için yerel yapay zekâ; yavaş bilgisayarlarda Hafif kurulum), boyutunu gösterir ve ilerleme
+  çubuğu ile kalan süreyle indirir. Yarıda kalan indirme kaldığı yerden devam eder, her dosya kontrol
+  edilir; sonrasında her şey internetsiz çalışır. Aynı liste **Ayarlar > İndirmeler**'de de var.
+- **Kurulu uygulamanın güncellemeleri** yalnızca resmî GitHub sürümünden gelir: yeni kurulum dosyası
+  kontrol edilir (SHA-256), çalışan bir iş kalmayınca arka planda kurulur ve SharkyClips kendiliğinden
+  yeniden açılır. Asla eski bir sürüme dönmez.
+- **SharkyClips açılamazsa** ne olduğunu gösteren net bir hata penceresi çıkar; hata kaydı için
+  "Tanılama bilgisini kopyala" düğmesi vardır (şifre veya anahtar içermez).
+- **Kaldırırken** uygulama silinir; projeleriniz, ayarlarınız ve yapay zekâ modelleri için önce sorulur
+  (varsayılan: saklanır).
+- **install.bat / git kurulumundan mı geliyorsunuz?** Kurulum dosyasını çalıştırmanız yeterli:
+  ayarlarınız kullanılır, projeleriniz olduğu yerde kalır. Hiçbir şey taşınmaz veya silinmez.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+- **Instalador real para Windows:** descarga `SharkyClips-Setup.exe`, doble clic, Siguiente y listo. Sin Python, sin ventanas de consola, sin permisos de administrador.
+- **Primer inicio:** un nuevo paso "Descargas" elige las partes de IA para tu PC y las descarga con barra de progreso y tiempo restante; las descargas continúan donde se quedaron y después todo funciona sin internet.
+- **Actualizaciones** solo desde la versión oficial de GitHub, comprobadas (SHA-256) e instaladas cuando no hay tareas. Al desinstalar se pregunta antes de borrar tus proyectos (por defecto se conservan).
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+- **Instalador de verdade para Windows:** baixe `SharkyClips-Setup.exe`, clique duas vezes, Avançar e pronto. Sem Python, sem janelas de console, sem permissão de administrador.
+- **Primeira abertura:** a nova etapa "Downloads" escolhe as partes de IA para o seu PC e baixa com barra de progresso e tempo restante; downloads interrompidos continuam de onde pararam e depois tudo funciona offline.
+- **Atualizações** só da versão oficial do GitHub, verificadas (SHA-256) e instaladas quando nenhuma tarefa está rodando. Ao desinstalar, ele pergunta antes de apagar seus projetos (o padrão é manter).
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Echtes Windows-Setup:** `SharkyClips-Setup.exe` herunterladen, doppelklicken, Weiter, fertig. Kein Python, keine Konsolenfenster, keine Adminrechte.
+- **Erster Start:** Der neue Schritt „Downloads“ wählt die KI-Teile für deinen PC und lädt sie mit Fortschrittsbalken und Restzeit; abgebrochene Downloads machen weiter, danach läuft alles offline.
+- **Updates** nur vom offiziellen GitHub-Release, geprüft (SHA-256) und installiert, wenn kein Auftrag läuft. Beim Deinstallieren wird vor dem Löschen deiner Projekte gefragt (Standard: behalten).
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+- **Un vrai installateur Windows :** télécharge `SharkyClips-Setup.exe`, double-clic, Suivant, c'est fini. Pas de Python, pas de fenêtre de console, pas de droits administrateur.
+- **Premier lancement :** la nouvelle étape « Téléchargements » choisit les éléments d'IA pour ton PC et les télécharge avec une barre de progression et le temps restant ; un téléchargement interrompu reprend, ensuite tout fonctionne hors ligne.
+- **Mises à jour** uniquement depuis la version officielle GitHub, vérifiées (SHA-256) et installées quand aucune tâche ne tourne. La désinstallation demande avant de supprimer tes projets (par défaut ils sont gardés).
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Valódi Windows-telepítő:** töltsd le a `SharkyClips-Setup.exe` fájlt, dupla kattintás, Tovább, kész. Nem kell Python, nincs konzolablak, nem kell rendszergazdai jog.
+- **Első indítás:** az új „Letöltések” lépés kiválasztja a gépedhez illő MI-részeket, és folyamatjelzővel, hátralévő idővel tölti le őket; a megszakadt letöltés folytatódik, utána minden internet nélkül működik.
+- **Frissítések** csak a hivatalos GitHub-kiadásból, ellenőrizve (SHA-256), és akkor települnek, amikor nem fut feladat. Eltávolításkor a projektek törlése előtt rákérdez (alapból megmaradnak).
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Настоящий установщик для Windows:** скачайте `SharkyClips-Setup.exe`, дважды щёлкните, «Далее» — готово. Без Python, без окон консоли, без прав администратора.
+- **Первый запуск:** новый шаг «Загрузки» выбирает части ИИ для вашего ПК и скачивает их с индикатором и оставшимся временем; прерванная загрузка продолжается, потом всё работает без интернета.
+- **Обновления** только из официального релиза на GitHub, с проверкой (SHA-256), ставятся, когда нет задач. При удалении спрашивает, прежде чем удалить проекты (по умолчанию они сохраняются).
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **مثبّت حقيقي لويندوز:** نزّل `SharkyClips-Setup.exe` وانقر نقرًا مزدوجًا ثم التالي وانتهى. دون Python ودون نوافذ أوامر ودون صلاحيات مسؤول.
+- **أول تشغيل:** خطوة "التنزيلات" الجديدة تختار أجزاء الذكاء الاصطناعي المناسبة لجهازك وتنزّلها مع شريط تقدم والوقت المتبقي؛ التنزيل المتوقف يكمل، وبعدها يعمل كل شيء دون إنترنت.
+- **التحديثات** من إصدار GitHub الرسمي فقط، مع التحقق (SHA-256)، وتُثبَّت عندما لا تعمل أي مهمة. عند الإزالة يسأل قبل حذف مشاريعك (الافتراضي الإبقاء عليها).
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **真正的 Windows 安装程序：**下载 `SharkyClips-Setup.exe`，双击，下一步，完成。无需 Python，没有控制台窗口，也不需要管理员权限。
+- **首次启动：**新的“下载”步骤会为你的电脑挑选 AI 组件，并显示进度条和剩余时间进行下载；中断的下载会继续，之后一切都可以离线使用。
+- **更新**只来自官方 GitHub 发布，经过校验（SHA-256），在没有任务运行时安装。卸载时会先询问是否删除你的项目（默认保留）。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+- **本格的な Windows インストーラー：**`SharkyClips-Setup.exe` をダウンロードしてダブルクリック、次へで完了。Python もコンソール画面も管理者権限も不要です。
+- **初回起動：**新しい「ダウンロード」ステップが PC に合った AI パーツを選び、進捗バーと残り時間を表示してダウンロードします。中断しても続きから再開し、その後はすべてオフラインで動きます。
+- **アップデート**は公式 GitHub リリースからのみ。SHA-256 で確認し、ジョブが動いていないときにインストールします。アンインストール時はプロジェクトを削除する前に確認します（既定は保持）。
+
+</details>
+
+
 ## [1.2.55] - 2026-11-19
 ### Marvel Rivals moments
 - **Marvel Rivals: ACE and KO streaks are found.** Tested on real gameplay videos: SharkyClips now

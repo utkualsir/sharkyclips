@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAppState } from "../appstate";
 import { api, type LlmInfo, type Mode, type PerfMode, type Settings as SettingsT, type UpdateStatus } from "../api";
+import { SetupCard } from "../components/SetupDownloads";
 import { Icon } from "../components/Icons";
 import { href } from "../router";
 import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
@@ -89,6 +90,23 @@ async function reloadWhenBack() {
   }
 }
 
+/** 1.2.56 installed copy: the installer closes the old server and starts the new one; reload once
+ * the server answers with a different version (up to 15 minutes: it waits for running jobs). */
+async function reloadWhenNewVersion(old: string) {
+  for (let i = 0; i < 900; i++) {
+    await new Promise((r) => setTimeout(r, 1000));
+    try {
+      const res = await fetch("/api/meta", { cache: "no-store" });
+      if (res.ok && (await res.json()).version !== old) {
+        window.location.reload();
+        return;
+      }
+    } catch {
+      // closed for the update, not back yet
+    }
+  }
+}
+
 function UpdatesCard() {
   const { t } = useI18n();
   const toast = useToast();
@@ -97,7 +115,7 @@ function UpdatesCard() {
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [checking, setChecking] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"idle" | "restarting" | "manual">("idle");
+  const [phase, setPhase] = useState<"idle" | "restarting" | "manual" | "installing">("idle");
   const job = jobs.find((j) => j.kind === "update" && (j.id === jobId || isActive(j)));
 
   const check = () => {
@@ -118,7 +136,10 @@ function UpdatesCard() {
   useEffect(() => {
     if (!job || job.id !== jobId || phase !== "idle") return;
     if (job.status === "done") {
-      if (status?.can_restart) {
+      if (job.result?.pending_install) {
+        setPhase("installing");
+        reloadWhenNewVersion(meta?.version ?? "");
+      } else if (status?.can_restart) {
         setPhase("restarting");
         api
           .updateRestart()
@@ -129,14 +150,22 @@ function UpdatesCard() {
       toast({ kind: "err", text: job.error?.message ?? t("update.failed"), hint: job.error?.hint });
       setJobId(null);
     }
-  }, [job, jobId, phase, status, t, toast]);
+  }, [job, jobId, phase, status, t, toast, meta?.version]);
 
   let body: React.ReactNode = null;
   if (phase === "restarting") body = <span className="status status-running"><span className="dot" />{t("update.restarting")}</span>;
   else if (phase === "manual") body = <p>{t("update.done_manual")}</p>;
+  else if (phase === "installing" || status?.pending_install)
+    body = (
+      <span className="status status-running">
+        <span className="dot" />
+        {t("update.installing")}
+      </span>
+    );
   else if (job && isActive(job)) body = <JobLine job={job} />;
   else if (status) {
     if (status.reason === "fetch_failed") body = <p className="muted">{t("update.fetch_failed")}</p>;
+    else if (status.reason === "not_released") body = <p className="muted">{t("update.not_released")}</p>;
     else if (status.reason && status.reason !== "not_newer")
       body = (
         <p className="muted">
@@ -768,6 +797,8 @@ export default function Settings() {
           <CoverAiCard />
 
           <MyVoiceCard />
+
+          <SetupCard />
 
           <UpdatesCard />
 

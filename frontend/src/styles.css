@@ -4769,3 +4769,35 @@ a.edit-note:hover { text-decoration: underline; }
 @media (max-width: 1100px) { header .lang-btn > span[lang] { display: none; } }
 /* 1.2.53: long labels (es / pt / fr) wrap to a second row instead of being cut off */
 .segmented { flex-wrap: wrap; }
+
+/* 1.2.56 first-run downloads (SetupDownloads.tsx): onboarding step, Settings > Downloads, banner */
+.setup { display: grid; gap: 12px; min-width: 0; }
+.setup-pc { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 13.5px; color: var(--muted); }
+.setup-pc svg { flex: none; margin-top: 2px; }
+.setup-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.setup-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface);
+}
+.setup-item.present { opacity: 0.8; }
+.setup-check { display: flex; align-items: flex-start; gap: 10px; min-width: 0; flex: 1 1 260px; cursor: pointer; }
+.setup-check input { margin-top: 3px; flex: none; }
+.setup-name { display: grid; gap: 2px; min-width: 0; }
+.setup-name b { font-size: 14px; overflow-wrap: anywhere; }
+.setup-name .muted { font-size: 12.5px; }
+.setup-size { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; white-space: nowrap; }
+.setup-ok, .setup-done { display: inline-flex; align-items: center; gap: 6px; color: var(--success); font-weight: 600; }
+.setup-done { margin: 0; font-size: 14px; }
+.setup-st { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.setup-st.st-done, .setup-st.st-present { color: var(--success); }
+.setup-st.st-error { color: var(--danger); }
+.setup-st.st-downloading, .setup-st.st-installing { color: var(--text); }
+.setup-progress { display: grid; gap: 8px; }
+.setup-progress-line { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.setup-actions { display: grid; gap: 8px; }
+.setup-total, .setup-offline { margin: 0; font-size: 13.5px; }
+.setup-offline { font-size: 12.5px; }
+.setup-banner { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 16px 0; }
+.setup-banner span { flex: 1 1 200px; min-width: 0; }
+.setup-welcome .setup-item { background: #ffffff; border-color: var(--w-line); }
+.setup-welcome .setup-pc, .setup-welcome .muted { color: var(--w-muted); }

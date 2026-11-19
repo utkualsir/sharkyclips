@@ -31,7 +31,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue" | "reconcile" | "post" | "full_prepare" | "full_upload" | "channel_style" | "style_preview";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue" | "reconcile" | "post" | "full_prepare" | "full_upload" | "channel_style" | "style_preview" | "setup";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -1553,6 +1553,35 @@ export interface AppState {
   youtube_signed_out: YoutubeSignedOut | null;
   /** 1.2.50: Instagram posts waiting for you (Manual mode) / paused automatic ones */
   instagram_manual?: { due: number; paused: number; upcoming: number; next: string | null } | null;
+  /** 1.2.56: "installer" (the Windows installer), "git" or "folder" */
+  install_kind?: "installer" | "git" | "folder" | null;
+  /** 1.2.56: an installed copy still misses required downloads (null = not checked yet) */
+  setup_needed?: boolean | null;
+}
+
+/** 1.2.56 first-run downloads (components.py) */
+export interface SetupItem {
+  id: "whisper" | "whisper_tiny" | "cuda" | "deno" | "ollama" | "llm";
+  size_mb: number;
+  present: boolean;
+  selected: boolean;
+  optional: boolean;
+  available: boolean;
+  detail: Record<string, any>;
+}
+
+export interface SetupPlan {
+  items: SetupItem[];
+  total_mb: number;
+  free_mb: number | null;
+  light: boolean;
+  device: "gpu" | "cpu";
+  weak_reasons: string[];
+  machine: { ram_gb: number; threads: number; gpu: string | null; vram_gb: number | null; cpu: string };
+  install_kind: string;
+  ready: boolean;
+  missing_required: string[];
+  job: Job | null;
 }
 
 export interface ChangelogEntry {
@@ -1587,6 +1616,9 @@ export const api = {
   finishOnboarding: (body: { ui_language?: string; content_types?: string[]; performance_mode?: string }) =>
     req<AppState & { settings: Settings }>("POST", "/api/app/onboarding", body),
   hardwareCheck: () => req<HardwareCheck>("GET", "/api/app/hardware"),
+  setupPlan: () => req<SetupPlan>("GET", "/api/setup"),
+  setupDownload: (ids: string[]) => req<Job>("POST", "/api/setup/download", { ids }),
+  diag: () => req<{ text: string }>("GET", "/api/diag"),
   clearDevFlag: () => req<AppState>("DELETE", "/api/app/dev"),
   meta: () => req<Meta>("GET", "/api/meta"),
   settings: () => req<Settings>("GET", "/api/settings"),
@@ -1842,7 +1874,11 @@ export interface UpdateStatus {
   behind: number;
   changes: string[];
   supported: boolean;
-  reason: null | "no_git" | "not_git_checkout" | "no_upstream" | "fetch_failed" | "not_newer";
+  reason: null | "no_git" | "not_git_checkout" | "no_upstream" | "fetch_failed" | "not_newer" | "not_released" | "unofficial_remote" | "unofficial_branch";
+  /** 1.2.56: "installer" = updates come as a new installer from the GitHub release */
+  kind?: "installer";
+  size?: number;
+  pending_install?: { path: string; version: string; since: number; started: number | null; error?: string } | null;
   error?: string;
   releases_url: string;
   can_restart: boolean;

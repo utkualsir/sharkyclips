@@ -7,6 +7,7 @@ import { Icon } from "./components/Icons";
 import { DevBanner, Footer, StaleServerBar, WhatsNew } from "./components/Shell";
 import { IgManualBar } from "./components/IgManual";
 import { YoutubeSignedOutBanner } from "./components/YoutubeConnect";
+import { SetupBanner } from "./components/SetupDownloads";
 import Launch from "./components/Launch";
 import { Onboarding } from "./components/Welcome";
 import { jobLabel } from "./components/ui";
@@ -236,6 +237,7 @@ export default function App() {
       <StaleServerBar />
       <DevBanner />
       <YoutubeSignedOutBanner />
+      <SetupBanner />
       <IgManualBar />
       <ShutdownBanner />
       <div className="page-fx" key={mode + route.name + ("id" in route ? `:${route.id}` : "")}>

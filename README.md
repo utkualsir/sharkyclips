@@ -19,12 +19,17 @@ No account, no cloud, no credits, no watermark.<br>
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.55-1F6FE5" alt="Version 1.2.55"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.56-1F6FE5" alt="Version 1.2.56"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
   <img src="https://img.shields.io/badge/UI-11%20languages-D9B56A" alt="11 languages">
 </p>
+
+<p align="center">
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/Download%20for%20Windows-SharkyClips--Setup.exe-1F6FE5?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows"></a>
+</p>
+<p align="center"><sub>Windows 10 / 11, 64-bit · 8 GB RAM · no GPU needed · <a href="#windows-10--11-one-click-installer">install steps</a></sub></p>
 
 <p align="center">
   <a href="#install"><b>Install</b></a> ·
@@ -263,19 +268,41 @@ subtitles are then translated with their timing kept.
 
 ## Install
 
-### Windows 10 / 11: one click
+### Windows 10 / 11: one-click installer
 
-1. Download **`SharkyClips-Setup.bat`** from the [latest release](https://github.com/utkualsir/sharkyclips/releases/latest).
-2. Double-click it. If Windows warns that the file is from the internet, choose **Run**. If
-   SmartScreen says "Windows protected your PC", click **More info → Run anyway**.
-3. The installer lists what it will set up (Python, FFmpeg, Git, Deno, Ollama, the Python packages
-   and the AI models, ~12 GB at most). Things you already have are reused. Press **Enter** to start.
-4. When it's done, double-click **SharkyClips** on your desktop (or in the Start menu). It opens in
-   your browser. No console window stays open: the SharkyClips icon next to the clock opens it again,
-   switches the performance mode or quits it.
+1. Download **`SharkyClips-Setup-<version>.exe`** (about __SETUP_MB__ MB) from the
+   [latest release](https://github.com/utkualsir/sharkyclips/releases/latest).
+2. Double-click it, press **Next** and **Install**. No administrator rights are needed: SharkyClips
+   installs for your user only (`%LOCALAPPDATA%\Programs\SharkyClips`), with a Start menu entry and,
+   if you tick it, a desktop shortcut. Installing takes about __INSTALL_S__ seconds.
+3. SharkyClips opens in your browser. The first start asks for your language and checks your PC,
+   then downloads the AI parts that fit it (speech-to-text model, GPU libraries on an NVIDIA PC,
+   the local AI for titles), with a progress bar and the time left. After that it works offline.
 
-Already cloned the repository? Double-click `install.bat` in the folder instead. Messages are in
-Turkish or English, following your Windows language.
+Everything SharkyClips needs (its own Python, FFmpeg, all libraries) is inside the installer:
+nothing else is installed on your PC, and no console window ever opens. The SharkyClips icon next
+to the clock opens it again, switches the performance mode or quits it.
+
+**"Windows protected your PC"?** The installer is not code-signed yet (see
+[docs/installer-design.md](docs/installer-design.md#8-code-signing)), so Microsoft SmartScreen may
+warn about a new download. Click **More info**, then **Run anyway**:
+
+<p align="center"><img src="docs/screenshots/smartscreen.png" width="640" alt="SmartScreen: click More info, then Run anyway"></p>
+
+The SHA-256 of every installer is attached to its release (`.sha256` file) if you want to check it:
+`Get-FileHash SharkyClips-Setup-<version>.exe` in PowerShell.
+
+**System requirements:** Windows 10 (1809+) or 11, 64-bit · 8 GB RAM (4 GB works with the Light
+setup, slowly) · no GPU needed (an NVIDIA GPU with 4 GB+ makes it much faster) · about 3 GB of disk
+for the app and 2-10 GB for the AI models, plus room for your videos.
+
+**Coming from `install.bat` / a git copy?** Just run the installer. It uses your existing settings
+(`%USERPROFILE%\.sharkyclips`) and keeps your projects where they are (the old `workspace` folder);
+nothing is moved or deleted. Your old shortcuts open the new app. The old folder stays (it is listed
+as "SharkyClips (old git copy)" in Apps & features) and can be removed when you no longer need it.
+
+Developers: `install.bat` in a cloned repository still sets up the git-based copy (Python, FFmpeg,
+Git, Deno, Ollama through winget).
 
 ### macOS: one command
 
@@ -306,13 +333,15 @@ python cli.py serve                       # opens http://localhost:8000
 
 ### Update
 
-**Settings → Updates → Check for updates.** If a new version exists, click **Update now**: SharkyClips
-downloads it, installs any new packages and restarts by itself. Your projects and settings are
-kept. (Running the installer again does the same.)
+**Settings → Updates → Check for updates.** If a new version exists, click **Update now**. The
+installed app downloads the new installer from the official GitHub release only, checks its SHA-256,
+installs it in the background as soon as no job is running and opens again by itself. A git copy
+pulls the release tag instead. SharkyClips never goes back to an older version. Your projects and
+settings are kept.
 
 ### Uninstall
 
-- **Windows:** Settings → Apps → **SharkyClips** → Uninstall, or run `installer\windows\uninstall.bat`.
+- **Windows:** Settings → Apps → **SharkyClips** → Uninstall (a git copy: `installer\windows\uninstall.bat`).
 - **macOS:** `bash ~/SharkyClips/installer/macos/uninstall.sh` (use your SharkyClips folder).
 
 The uninstaller removes the app, its Python packages and the shortcuts. It **asks before deleting
@@ -350,6 +379,23 @@ folder) and open the address it prints. Set an **access PIN** first (Settings �
 details are in **[docs/how-it-works.md](docs/how-it-works.md)**.
 
 ## FAQ
+
+**Windows says "Windows protected your PC". Is it safe?**
+That is SmartScreen warning about a new, not-yet-signed download. Click **More info → Run anyway**.
+The installer is built by GitHub Actions from this repository's code, and its SHA-256 is published
+next to it on the release page. Code signing is planned (see the installer design notes).
+
+**Do I need Python, FFmpeg or anything else?**
+No. The Windows installer brings its own Python and FFmpeg. The AI models are downloaded inside the
+app on the first start, picked for your PC.
+
+**Where are my projects and settings?**
+Projects: `Videos\SharkyClips` (Settings shows the folder). Settings: `%USERPROFILE%\.sharkyclips`.
+Updates and uninstalling never delete them; the uninstaller asks, and keeps them by default.
+
+**SharkyClips doesn't start.**
+You'll see an error window with **Copy diagnostic info**: paste that into a
+[bug report](https://github.com/utkualsir/sharkyclips/issues). It contains no passwords or tokens.
 
 **Is it really free?**
 Yes. SharkyClips is MIT-licensed and uses only free, open-source tools and models. There are no
@@ -521,17 +567,21 @@ Twitch / YouTube canlı sohbetinizi okumak (sadece "!clip" ve sohbet balonları 
 ### Kurulum (Windows 10 / 11)
 
 1. [Son sürüm](https://github.com/utkualsir/sharkyclips/releases/latest) sayfasından
-   **`SharkyClips-Setup.bat`** dosyasını indirin.
-2. Çift tıklayın. Windows uyarı verirse **Çalıştır**'ı, SmartScreen çıkarsa **Ek bilgi → Yine de
-   çalıştır**'ı seçin.
-3. Kurulum aracı neleri kuracağını listeler (Python, FFmpeg, Git, Deno, Ollama, Python paketleri,
-   yapay zekâ modelleri; en fazla ~12 GB). Bilgisayarınızda olanları yeniden kurmaz. Başlamak için
-   **Enter**'a basın.
-4. Bitince masaüstündeki **SharkyClips** simgesine çift tıklayın; tarayıcıda açılır. Açık kalan bir
-   pencere olmaz: saatin yanındaki SharkyClips simgesinden tekrar açabilir, performans modunu
-   değiştirebilir veya kapatabilirsiniz.
+   **`SharkyClips-Setup-<sürüm>.exe`** dosyasını (yaklaşık __SETUP_MB__ MB) indirin.
+2. Çift tıklayın, **İleri** ve **Kur**'a basın. Yönetici izni gerekmez; SharkyClips yalnızca sizin
+   kullanıcınıza kurulur, Başlat menüsüne ve isterseniz masaüstüne kısayol ekler.
+3. SharkyClips tarayıcıda açılır. İlk açılışta dili sorar, bilgisayarınızı kontrol eder ve ona uygun
+   yapay zekâ parçalarını (konuşmayı yazıya çevirme modeli, NVIDIA kartta GPU kütüphaneleri, başlıklar
+   için yerel yapay zekâ) ilerleme çubuğu ve kalan süreyle indirir. Sonrasında internetsiz çalışır.
 
-Kurulum mesajları Windows diliniz Türkçe ise Türkçe gösterilir.
+Python, FFmpeg ve tüm kütüphaneler kurulum dosyasının içindedir; başka bir şey kurulmaz, konsol
+penceresi açılmaz. **"Windows bilgisayarınızı korudu"** uyarısı çıkarsa (kurulum dosyası henüz
+imzalı değil) **Ek bilgi → Yine de çalıştır**'a tıklayın. Eski `install.bat` / git kurulumunuz varsa
+kurulum dosyasını çalıştırmanız yeterli: ayarlarınız ve projeleriniz olduğu yerde kalır, hiçbir şey
+taşınmaz veya silinmez.
+
+**Sistem gereksinimleri:** Windows 10 (1809+) / 11, 64 bit · 8 GB RAM · ekran kartı gerekmez (NVIDIA
+kart çok hızlandırır) · uygulama için ~3 GB, yapay zekâ modelleri için 2-10 GB boş alan.
 
 **macOS:** `install.sh` dosyasını indirip Terminal'de `bash ~/Downloads/install.sh` komutunu
 çalıştırın. Ardından Uygulamalar'daki **SharkyClips**'u açın.

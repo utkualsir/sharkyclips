@@ -109,7 +109,24 @@ detected and skipped. After this step everything works offline.
 
 ## 8. Code signing
 
-See section 11 ("What the owner must do") - it needs the owner's identity / account.
+An unsigned installer works, but Microsoft Defender SmartScreen shows "Windows protected your PC"
+for new downloads until the file builds reputation. The README documents **More info -> Run anyway**
+(with an illustration, `docs/screenshots/smartscreen.png`). Options, cheapest first:
+
+| Option | Cost | Fit for SharkyClips | Notes |
+| --- | --- | --- | --- |
+| **SignPath Foundation** (signpath.org) | free for OSS | **best, but needs a public repo** | Certificate is issued to "SignPath Foundation" (shown as publisher). Conditions: OSI license (MIT: ok), public source, no proprietary parts, at least one release, fully automated build from the repository (our GitHub Actions job), MFA for every team member on GitHub and SignPath, a published code-signing policy page. |
+| Certum "Open Source Code Signing" (certum.eu) | ~EUR 30-70 / year + card reader or SimplySign cloud | works with a private repo | Individual OV certificate in your own name; identity check with ID card. SmartScreen reputation still grows slowly (OV, not EV). |
+| Azure Artifact Signing (ex Trusted Signing) | USD 9.99 / month | probably not available | Public onboarding for individuals has been limited to some countries (US/CA, at times EU/UK) and organisations with 3+ years of history; check the current terms. |
+| EV certificate (DigiCert, Sectigo ...) | USD 250-500+ / year | overkill | Needs a registered company. |
+
+How it plugs in (already prepared): the CI job builds `SharkyClips-Setup-<v>.exe`; a signing step
+goes between "Build the installer" and "Smoke test" (SignPath: `signpath/github-action-submit-signing-request`;
+Certum/Azure: `signtool sign /fd sha256 /tr <timestamp-url> /td sha256 ...`). The launcher
+`SharkyClips.exe` should be signed too (sign the stage before ISCC, or let SignPath sign both
+with its "deep signing" of the Inno payload). The updater already checks the Authenticode
+signature of a downloaded installer: a signed file with a broken signature is refused, and the
+setting `update_require_signed: true` refuses unsigned ones (turn it on once releases are signed).
 
 ## 9. CI (`.github/workflows/installer.yml`)
 

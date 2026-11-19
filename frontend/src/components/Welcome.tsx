@@ -5,6 +5,7 @@ import { UI_LANGUAGES, useI18n } from "../i18n";
 import { chooseLanguage } from "../meta";
 import { SharkLogo } from "./Brand";
 import { Icon } from "./Icons";
+import { SetupDownloads } from "./SetupDownloads";
 import { ChannelPicker, ConnectYoutube, NoChannel, hideImg } from "./YoutubeConnect";
 
 // ---------------------------------------------------------------- onboarding
@@ -57,7 +58,11 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const toggleType = (id: string) =>
     setTypes((cur) => (cur.includes(id) ? (cur.length > 1 ? cur.filter((x) => x !== id) : cur) : [...cur, id]));
 
-  const steps = [t("onb.step.language"), t("onb.step.content"), t("onb.step.performance"), t("onb.step.youtube")];
+  // 1.2.56: the first-run downloads (an installed copy, or a checkout that still misses its models)
+  const withSetup = state?.install_kind === "installer" || state?.setup_needed === true;
+  const steps = [t("onb.step.language"), t("onb.step.content"), t("onb.step.performance"),
+    ...(withSetup ? [t("setup.step")] : []), t("onb.step.youtube")];
+  const ytStep = withSetup ? 4 : 3;
   const last = steps.length - 1;
   return (
     <div className="welcome" role="dialog" aria-modal="true" aria-labelledby="onb-title">
@@ -161,7 +166,17 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           </section>
         )}
 
-        {step === 3 && (
+        {withSetup && step === 3 && (
+          <section className="welcome-body">
+            <h1 className="welcome-title" id="onb-title" tabIndex={-1} ref={titleRef}>
+              {t("setup.title")}
+            </h1>
+            <p className="welcome-lede">{t("setup.lede")}</p>
+            <SetupDownloads look="welcome" />
+          </section>
+        )}
+
+        {step === ytStep && (
           <section className="welcome-body">
             <h1 className="welcome-title" id="onb-title" tabIndex={-1} ref={titleRef}>
               {t("onb.yt.title")}
