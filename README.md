@@ -193,6 +193,10 @@ it stopped. Details: **[docs/how-it-works.md](docs/how-it-works.md)**.
   into: when a recording is finished, the best clips are found, rendered and titled, only while your
   PC isn't busy. Mark moments while you play with **Ctrl+Alt+C** (works in games, no focus change) or
   **!clip** in your Twitch / YouTube chat (you and your mods): they become the first clips.
+- **Connect your channel, no recording needed.** Paste your Kick, Twitch or YouTube channel once
+  (Settings → Channels): when a stream ends, its VOD is downloaded and clipped by itself, only new
+  streams, one download at a time, public pages only (no login). "Your stream is over, 6 clips are
+  ready" comes to the tray and Telegram. Details: [docs/channel-monitor.md](docs/channel-monitor.md).
 - **Approve from your phone.** Your own free Telegram bot sends each ready clip with Upload / Plan /
   Skip buttons, or swipe through them on the approval page on your Wi-Fi (PIN protected).
 - **Instant replay, chat bubbles, meme effects.** The big moment again in smooth slow motion with a
@@ -540,6 +544,10 @@ Eski adı ClipForge'du: eski bağlantılar yeni adrese yönlenir, ayarlarınız 
   iyi klipleri bulur, hazırlar ve başlıklarını yazar (sadece bilgisayar meşgul değilken). Oynarken
   **Ctrl+Alt+C** (oyunda çalışır, odağı çalmaz) ya da Twitch / YouTube sohbetinde **!clip** (siz ve
   moderatörleriniz) ile anı işaretleyin: ilk klipler o anlar olur.
+- **Kanalınızı bağlayın, kayıt gerekmez:** Kick, Twitch veya YouTube kanalınızı bir kez yapıştırın
+  (Ayarlar → Kanallar): yayın bitince VOD indirilir ve kendiliğinden kliplenir; yalnızca yeni yayınlar,
+  aynı anda tek indirme, sadece herkese açık sayfalar (giriş yok). "Yayının bitti, 6 klip hazır"
+  bildirimi sistem tepsisine ve Telegram'a gelir.
 - **Telefondan onay:** ücretsiz kendi Telegram botunuz her hazır klibi Yükle / Planla / Atla
   düğmeleriyle gönderir; ya da Wi-Fi'daki onay sayfasında (PIN korumalı) kaydırarak karar verin.
 - **Anlık tekrar, sohbet balonları, meme efektleri:** büyük an akıcı ağır çekimde REPLAY etiketiyle bir
