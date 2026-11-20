@@ -3198,6 +3198,12 @@ const ja: Record<string, string> = {
   "updates.kind.fixed": "修正",
   "updates.kind.other": "変更点",
   "updates.open": "すべてのアップデート",
+  "gfx.label": "アニメーション表示",
+  "gfx.hint": "キルカウンター、KILL / ACE / CLUTCH のバナー、ラウンド勝利、あなたが言った数字（「3 KILL」「1v4」）が一瞬表示されます。顔・字幕・見せ場には重なりません。",
+  "gfx.none": "このクリップに表示するものはありません",
+  "gfx.style.off": "オフ",
+  "gfx.style.minimal": "シンプル",
+  "gfx.style.bold": "派手",
 };
 
 export default ja;

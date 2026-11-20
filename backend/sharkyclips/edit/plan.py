@@ -169,6 +169,7 @@ class EditPlan:
     fx: object | None = None  # fx.FxPlan: instant replay, meme effects, chat bubbles (1.2.17)
     dub: dict | None = None  # dub.track_for(): the clip's sound in the user's own voice (1.2.18)
     speed: list[tuple[float, float, float]] = field(default_factory=list)  # 1.2.34: (src a, src b, factor)
+    graphics: object | None = None  # graphics.GfxPlan: animated kill counter / banners / numbers (1.2.58)
     _starts: list[float] = field(default_factory=list, repr=False)
     _offsets: list[float] = field(default_factory=list, repr=False)
 
@@ -204,7 +205,7 @@ class EditPlan:
     @property
     def active(self) -> bool:
         return (self.audio_active or self.zooms or self.brand is not None or self.loop is not None
-                or self.fx is not None or self.dub is not None)
+                or self.fx is not None or self.dub is not None or self.graphics is not None)
 
     def frames(self) -> list[tuple[int, int]]:
         """Kept frame ranges [fa, fb) counted from the clip start."""
@@ -294,7 +295,8 @@ class EditPlan:
              "z": self.zoom_level, "p": [p.to_dict() for p in self.pulses],
              "m": (self.music or {}).get("name"), "brand": f"{(self.brand or {}).get('id')}:{(self.brand or {}).get('rev')}",
              "loop": None if self.loop is None else [self.loop.start, self.loop.end, self.loop.hook_text],
-             "fx": self.fx.fingerprint() if self.fx is not None else None}
+             "fx": self.fx.fingerprint() if self.fx is not None else None,
+             **({"gfx": self.graphics.fingerprint()} if self.graphics is not None else {})}
         return hashlib.sha1(json.dumps(d, sort_keys=True).encode()).hexdigest()[:12]
 
     def to_dict(self) -> dict:
@@ -739,6 +741,10 @@ def build(project: Project, cand: dict, opts, *, vertical: bool = True, fps: flo
         from . import fx
 
         plan.fx = fx.build(project, cand, opts, plan, max_len=max_len)
+    # ---- 1.2.58 animated graphics: a layer on top, after the effects (never across an insert)
+    from . import graphics as gfx_mod
+
+    plan.graphics = gfx_mod.build(project, cand, opts, plan)
     if plan.dub is not None and plan.bleeps:  # a dubbed line is new speech: the swears were translated away
         dubbed = plan.out_ranges([(float(x["start"]), float(x["end"])) for x in plan.dub.get("lines") or [] if x.get("dub")])
         plan.bleeps = [(a, b) for a, b in plan.bleeps if not any(a < y and b > x for x, y in dubbed)]

@@ -3201,6 +3201,12 @@ const pt: Record<string, string> = {
   "updates.kind.fixed": "Correções",
   "updates.kind.other": "Mudanças",
   "updates.open": "Todas as atualizações",
+  "gfx.label": "Gráficos animados",
+  "gfx.hint": "Um contador de abates, faixas de KILL / ACE / CLUTCH, rodadas vencidas e os números que você fala (\"3 KILL\", \"1v4\") aparecem por um instante. Nunca em cima do seu rosto, das legendas ou da ação.",
+  "gfx.none": "Nada para mostrar neste clipe",
+  "gfx.style.off": "Desligado",
+  "gfx.style.minimal": "Mínimo",
+  "gfx.style.bold": "Chamativo",
 };
 
 export default pt;

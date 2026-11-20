@@ -77,6 +77,32 @@ after you add or change one.
 Tips: keep boxes small (only where the banner appears) so gameplay behind them is not read. Big
 centre texts (victory, defeat) can share one `center` region.
 
+## 4b. Animated graphics (optional)
+
+Since 1.2.58 clips can show short animated graphics for your game's moments (a kill counter,
+banners like ACE or CLUTCH, round wins). Map your event codes in `graphics`:
+
+```json
+"graphics": {
+  "kills": ["mygame_kill"],
+  "events": {
+    "mygame_ace": {"type": "banner", "text": "ACE", "icon": "crown"},
+    "mygame_round_won": {"type": "score", "text": "ROUND WON", "icon": "flag"},
+    "mygame_multikill": {"type": "banner", "text": "{n}x KILL", "icon": "skull"}
+  }
+}
+```
+
+- `kills`: events that count up the kill counter.
+- `type`: `banner` (a big moment) or `score` (a score, round or match result). Banners win when two
+  moments are close together; only one graphic is ever on screen.
+- `text`: at most 24 characters, usually the game's own word in capitals. `{n}` becomes the event's
+  number (for example the kills of a multikill).
+- `icon`: one of `skull`, `crown`, `star`, `flag`, `flame`, `trophy`, `target`.
+
+SharkyClips places the graphic itself (never over the facecam, the captions, the middle of the game
+picture or the platform's buttons), so there is nothing to position.
+
 ## 5. Check it before you send it
 
 ```

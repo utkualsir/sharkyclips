@@ -2946,6 +2946,12 @@ const ar: Record<string, string> = {
   "updates.kind.fixed": "إصلاحات",
   "updates.kind.other": "التغييرات",
   "updates.open": "كل التحديثات",
+  "gfx.label": "رسومات متحركة",
+  "gfx.hint": "عدّاد قتل، وشرائط KILL / ACE / CLUTCH، والجولات الرابحة، والأرقام التي تقولها (\"3 KILL\"، \"1v4\") تظهر للحظة. لا تغطي وجهك أو الترجمة أو الحركة أبدًا.",
+  "gfx.none": "لا شيء لعرضه في هذا المقطع",
+  "gfx.style.off": "إيقاف",
+  "gfx.style.minimal": "بسيط",
+  "gfx.style.bold": "بارز",
 };
 
 export default ar;

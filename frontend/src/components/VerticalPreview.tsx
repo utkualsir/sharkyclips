@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, type RefObject } from "react";
 import { urls, type BrandPreset, type Candidate, type ClipOptions, type Facecam, type Word } from "../api";
 import { captionAt, groupWords, joinerFor, upper } from "../captions";
-import { coverRect, OUT_W, SPLIT_TOP as OUT_SPLIT, splitRects, zoomRect, zoomsAt, type PreviewFx, type Rect } from "../previewMath";
+import { coverRect, gfxPillPath, gfxStateAt, OUT_W, SPLIT_TOP as OUT_SPLIT, splitRects, toMain, zoomRect, zoomsAt, type GfxPlanView, type PreviewFx, type Rect } from "../previewMath";
+import { motion } from "../motion";
 
 // Canvas size (9:16). The picture is cut and zoomed with previewMath.ts = what the renderer
 // does (backend/sharkyclips/clips.py at 1080x1920); captions / hook / brand are drawn on top.
@@ -34,6 +35,51 @@ export function resolveLayout(layout: ClipOptions["layout"], facecam: Facecam | 
 
 function blit(ctx: CanvasRenderingContext2D, v: CanvasImageSource, r: Rect, dx: number, dy: number, dw: number, dh: number) {
   if (r[2] > 0 && r[3] > 0) ctx.drawImage(v, r[0], r[1], r[2], r[3], dx, dy, dw, dh);
+}
+
+const paths = new Map<string, Path2D>();
+function path2d(d: string): Path2D {
+  let p = paths.get(d);
+  if (!p) paths.set(d, (p = new Path2D(d)));
+  return p;
+}
+
+/** Draw the graphic on screen at main time tm (graphics.ass_lines does the same per frame).
+ * reduced: the OS / app asks for less motion: a plain fade, no slide or pop. Returns a short
+ * description of what is drawn (the preview check reads it), "" for nothing. */
+function drawGfx(ctx: CanvasRenderingContext2D, gp: GfxPlanView, tm: number, reduced: boolean): string {
+  for (const g of gp.items) {
+    const st = gfxStateAt(g, tm, gp.style, gp.simple || reduced, gp.fps);
+    if (!st || st.alpha <= 0) continue;
+    const b = g.box;
+    ctx.save();
+    ctx.translate(b.x * S, (b.y + st.dy) * S);
+    ctx.scale(st.scale * S, st.scale * S);
+    ctx.translate(-b.w / 2, -b.h / 2);
+    ctx.globalAlpha = st.alpha * gp.bg_alpha;
+    ctx.fillStyle = gp.colors.bg;
+    ctx.fill(path2d(gfxPillPath(b.w, b.h, b.r)));
+    ctx.globalAlpha = st.alpha;
+    if (g.icon && b.icon) {
+      ctx.save();
+      ctx.translate(b.icon_x, (b.h - b.icon) / 2);
+      ctx.scale(b.icon / 100, b.icon / 100);
+      for (const layer of gp.icons[g.icon] ?? []) {
+        ctx.fillStyle = layer.tone === "fg" ? gp.colors.fg : gp.colors.bg;
+        ctx.fill(path2d(layer.d));
+      }
+      ctx.restore();
+    }
+    ctx.fillStyle = gp.colors.ink;
+    ctx.font = `bold ${b.font}px Arial, "Helvetica Neue", sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.direction = "ltr";
+    ctx.fillText(st.text, b.text_x, b.h / 2);
+    ctx.restore();
+    return JSON.stringify({ kind: g.kind, text: st.text, alpha: st.alpha, scale: st.scale, dy: st.dy, x: b.x, y: b.y });
+  }
+  return "";
 }
 
 export default function VerticalPreview({ video, clip, range, options, facecam, words, lang, hookText, fx, brand }: Props) {
@@ -196,6 +242,13 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
           lines.forEach((l, i) => ctx.fillText(l, W / 2, hookY + i * lh + (lh - size) / 2));
         }
       }
+
+      // 1.2.58 animated graphics: the server's placed items, the renderer's per-frame look
+      const gp = fx?.gfx;
+      const tmain = inClip && gp && fx ? toMain(t, fx.keep) : null;
+      let shown = "";
+      if (gp && tmain != null) shown = drawGfx(ctx, gp, tmain, motion() !== "full");
+      cv.dataset.gfx = shown;
 
       // brand kit: logo watermark + @handle (same placement as the renderer)
       if (brand) {

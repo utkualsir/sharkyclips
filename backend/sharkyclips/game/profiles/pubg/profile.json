@@ -165,5 +165,17 @@
       "pubg_knock"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [
+      "pubg_kill"
+    ],
+    "events": {
+      "pubg_win": {
+        "type": "score",
+        "text": "WINNER WINNER",
+        "icon": "trophy"
+      }
+    }
   }
 }

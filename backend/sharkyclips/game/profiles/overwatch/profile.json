@@ -208,5 +208,37 @@
       "ow_victory"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [
+      "ow_elim"
+    ],
+    "events": {
+      "ow_team_kill": {
+        "type": "banner",
+        "text": "TEAM KILL",
+        "icon": "skull"
+      },
+      "ow_potg": {
+        "type": "banner",
+        "text": "PLAY OF THE GAME",
+        "icon": "star"
+      },
+      "ow_overtime": {
+        "type": "banner",
+        "text": "OVERTIME",
+        "icon": "flame"
+      },
+      "ow_victory": {
+        "type": "score",
+        "text": "VICTORY",
+        "icon": "trophy"
+      },
+      "ow_defeat": {
+        "type": "score",
+        "text": "DEFEAT",
+        "icon": "flag"
+      }
+    }
   }
 }

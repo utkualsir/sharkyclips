@@ -161,6 +161,13 @@ export default function EasySettings() {
         </div>
         <div className="toggle-line">
           <span>
+            <b>{t("gfx.label")}</b>
+            <span className="muted ez-hint">{t("gfx.hint")}</span>
+          </span>
+          <Toggle checked={settings?.graphics !== false} onChange={(v) => update({ graphics: v })} label={t("gfx.label")} />
+        </div>
+        <div className="toggle-line">
+          <span>
             <b>{t("extras.cards")}</b>
             <span className="muted ez-hint">{t("extras.cards_hint")}</span>
           </span>

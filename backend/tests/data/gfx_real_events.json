@@ -1,0 +1,310 @@
+[
+ {
+  "game": "lol",
+  "start": 1010.88,
+  "end": 1033.82,
+  "reasons": [
+   {
+    "code": "lol_kill",
+    "t": 1017.88,
+    "strength": 0.4
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 533.0,
+  "end": 557.26,
+  "reasons": [
+   {
+    "code": "lol_kill",
+    "t": 540.0,
+    "strength": 0.4
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 1529.0,
+  "end": 1548.4,
+  "reasons": [
+   {
+    "code": "lol_shutdown",
+    "t": 1540.26,
+    "strength": 0.65
+   },
+   {
+    "code": "lol_doublekill",
+    "t": 1539.76,
+    "strength": 0.55
+   },
+   {
+    "code": "lol_death",
+    "t": 1539.76,
+    "strength": 0.2
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 850.74,
+  "end": 880.41,
+  "reasons": [
+   {
+    "code": "lol_assist",
+    "t": 864.88,
+    "strength": 0.12
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 2109.8,
+  "end": 2126.51,
+  "reasons": [
+   {
+    "code": "lol_death",
+    "t": 2120.68,
+    "strength": 0.2
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 1029.56,
+  "end": 1057.47,
+  "reasons": [
+   {
+    "code": "lol_doublekill",
+    "t": 1039.84,
+    "strength": 0.55
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 2302.0,
+  "end": 2325.0,
+  "reasons": [
+   {
+    "code": "lol_doublekill",
+    "t": 2317.18,
+    "strength": 0.55
+   },
+   {
+    "code": "lol_dragon",
+    "t": 2318.68,
+    "strength": 0.35
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 2442.98,
+  "end": 2464.26,
+  "reasons": [
+   {
+    "code": "lol_doublekill",
+    "t": 2454.68,
+    "strength": 0.55
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 2349.0,
+  "end": 2380.86,
+  "reasons": [
+   {
+    "code": "lol_death",
+    "t": 2356.18,
+    "strength": 0.2
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 1539.23,
+  "end": 1562.66,
+  "reasons": [
+   {
+    "code": "lol_death",
+    "t": 1548.34,
+    "strength": 0.2
+   }
+  ]
+ },
+ {
+  "game": "lol",
+  "start": 1836.36,
+  "end": 1854.42,
+  "reasons": [
+   {
+    "code": "lol_kill",
+    "t": 1845.68,
+    "strength": 0.4
+   },
+   {
+    "code": "lol_assist",
+    "t": 1845.68,
+    "strength": 0.12
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 118.48,
+  "end": 153.5,
+  "reasons": [
+   {
+    "code": "df_multikill",
+    "t": 129.0,
+    "value": "2",
+    "strength": 0.65
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 441.36,
+  "end": 473.75,
+  "reasons": [
+   {
+    "code": "df_kill",
+    "t": 450.54,
+    "strength": 0.4
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 41.0,
+  "end": 68.5,
+  "reasons": [
+   {
+    "code": "df_kill",
+    "t": 48.0,
+    "strength": 0.4
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 605.54,
+  "end": 629.8,
+  "reasons": [
+   {
+    "code": "df_multikill",
+    "t": 623.16,
+    "value": "2",
+    "strength": 0.65
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 500.67,
+  "end": 525.35,
+  "reasons": [
+   {
+    "code": "df_multikill",
+    "t": 519.16,
+    "value": "2",
+    "strength": 0.65
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 842.33,
+  "end": 861.8,
+  "reasons": [
+   {
+    "code": "df_revive",
+    "t": 858.33,
+    "strength": 0.15
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 183.0,
+  "end": 199.71,
+  "reasons": [
+   {
+    "code": "df_kill",
+    "t": 192.5,
+    "strength": 0.4
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 884.59,
+  "end": 904.86,
+  "reasons": [
+   {
+    "code": "df_multikill",
+    "t": 900.83,
+    "value": "3",
+    "strength": 0.85
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 952.69,
+  "end": 984.5,
+  "reasons": [
+   {
+    "code": "df_kill",
+    "t": 963.33,
+    "strength": 0.4
+   },
+   {
+    "code": "df_revive",
+    "t": 961.33,
+    "strength": 0.15
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 773.98,
+  "end": 795.2,
+  "reasons": [
+   {
+    "code": "df_revenge",
+    "t": 782.33,
+    "strength": 0.45
+   },
+   {
+    "code": "df_kill",
+    "t": 782.33,
+    "strength": 0.4
+   },
+   {
+    "code": "df_revive",
+    "t": 785.33,
+    "strength": 0.15
+   }
+  ]
+ },
+ {
+  "game": "delta_force",
+  "start": 1062.03,
+  "end": 1082.77,
+  "reasons": [
+   {
+    "code": "df_kill",
+    "t": 1070.33,
+    "strength": 0.4
+   },
+   {
+    "code": "df_revive",
+    "t": 1080.83,
+    "strength": 0.15
+   }
+  ]
+ }
+]

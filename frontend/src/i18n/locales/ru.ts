@@ -3053,6 +3053,12 @@ const ru: Record<string, string> = {
   "updates.kind.fixed": "Исправления",
   "updates.kind.other": "Изменения",
   "updates.open": "Все обновления",
+  "gfx.label": "Анимированная графика",
+  "gfx.hint": "Счётчик убийств, плашки KILL / ACE / CLUTCH, выигранные раунды и сказанные вами числа («3 KILL», «1v4») ненадолго появляются на экране. Никогда поверх лица, субтитров или действия.",
+  "gfx.none": "В этом клипе нечего показать",
+  "gfx.style.off": "Выкл.",
+  "gfx.style.minimal": "Минимум",
+  "gfx.style.bold": "Яркий",
 };
 
 export default ru;

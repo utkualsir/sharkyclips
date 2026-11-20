@@ -217,5 +217,40 @@
       "wz_double"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [],
+    "events": {
+      "wz_double": {
+        "type": "banner",
+        "text": "DOUBLE KILL",
+        "icon": "skull"
+      },
+      "wz_triple": {
+        "type": "banner",
+        "text": "TRIPLE KILL",
+        "icon": "skull"
+      },
+      "wz_multi": {
+        "type": "banner",
+        "text": "MULTI KILL",
+        "icon": "flame"
+      },
+      "wz_squad_wipe": {
+        "type": "banner",
+        "text": "SQUAD WIPE",
+        "icon": "skull"
+      },
+      "wz_victory": {
+        "type": "score",
+        "text": "VICTORY",
+        "icon": "trophy"
+      },
+      "wz_gulag_win": {
+        "type": "score",
+        "text": "GULAG WON",
+        "icon": "flag"
+      }
+    }
   }
 }

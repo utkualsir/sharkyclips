@@ -3013,6 +3013,12 @@ const en: Record<string, string> = {
   "updates.kind.fixed": "Fixed",
   "updates.kind.other": "Changes",
   "updates.open": "All updates",
+  "gfx.label": "Animated graphics",
+  "gfx.hint": "A kill counter, KILL / ACE / CLUTCH banners, round wins and big numbers you say (\"3 KILL\", \"1v4\") pop in for a moment. Never over your face, the captions or the action.",
+  "gfx.none": "Nothing to show in this clip",
+  "gfx.style.off": "Off",
+  "gfx.style.minimal": "Minimal",
+  "gfx.style.bold": "Bold",
 };
 
 export default en;

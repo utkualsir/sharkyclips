@@ -3201,6 +3201,12 @@ const fr: Record<string, string> = {
   "updates.kind.fixed": "Corrections",
   "updates.kind.other": "Changements",
   "updates.open": "Toutes les mises à jour",
+  "gfx.label": "Graphismes animés",
+  "gfx.hint": "Un compteur de kills, des bandeaux KILL / ACE / CLUTCH, les manches gagnées et les chiffres que tu dis (« 3 KILL », « 1v4 ») apparaissent un instant. Jamais sur ton visage, les sous-titres ou l'action.",
+  "gfx.none": "Rien à afficher dans ce clip",
+  "gfx.style.off": "Non",
+  "gfx.style.minimal": "Discret",
+  "gfx.style.bold": "Marqué",
 };
 
 export default fr;

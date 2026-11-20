@@ -69,6 +69,30 @@ def validate(p: dict) -> list[str]:
             errs.append(f"event {code}: strength must be 0..1")
     if p.get("engine", "banners") == "banners" and p.get("ocr") and not regions:
         errs.append("a 'banners' profile with ocr rules needs regions")
+    errs += validate_graphics(p)
+    return errs
+
+
+def validate_graphics(p: dict) -> list[str]:
+    """1.2.58 `graphics`: {"kills": [event codes], "events": {code: {"type": banner|score, "text", "icon"}}}."""
+    from ..edit.graphics import ICONS
+
+    g = p.get("graphics")
+    if g is None:
+        return []
+    if not isinstance(g, dict):
+        return ["graphics must be an object"]
+    errs = []
+    if not isinstance(g.get("kills", []), list):
+        errs.append("graphics.kills must be a list of event codes")
+    for code, ev in (g.get("events") or {}).items():
+        if not isinstance(ev, dict) or ev.get("type") not in ("banner", "score"):
+            errs.append(f"graphics event {code}: type must be banner or score")
+            continue
+        if not str(ev.get("text") or "").strip() or len(str(ev["text"])) > 24:
+            errs.append(f"graphics event {code}: text must be 1-24 characters")
+        if ev.get("icon") and ev["icon"] not in ICONS:
+            errs.append(f"graphics event {code}: icon must be one of {sorted(ICONS)}")
     return errs
 
 

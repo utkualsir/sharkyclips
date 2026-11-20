@@ -3001,6 +3001,12 @@ const de: Record<string, string> = {
   "updates.kind.fixed": "Behoben",
   "updates.kind.other": "Änderungen",
   "updates.open": "Alle Updates",
+  "gfx.label": "Animierte Grafiken",
+  "gfx.hint": "Ein Kill-Zähler, KILL- / ACE- / CLUTCH-Banner, gewonnene Runden und Zahlen, die du sagst („3 KILL“, „1v4“), erscheinen kurz. Nie über deinem Gesicht, den Untertiteln oder der Action.",
+  "gfx.none": "In diesem Clip gibt es nichts zu zeigen",
+  "gfx.style.off": "Aus",
+  "gfx.style.minimal": "Dezent",
+  "gfx.style.bold": "Auffällig",
 };
 
 export default de;

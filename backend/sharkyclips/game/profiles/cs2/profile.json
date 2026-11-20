@@ -255,5 +255,55 @@
       "cs2_round_lost"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [],
+    "events": {
+      "cs2_ct_win": {
+        "type": "score",
+        "text": "CT WIN",
+        "icon": "flag"
+      },
+      "cs2_t_win": {
+        "type": "score",
+        "text": "T WIN",
+        "icon": "flag"
+      },
+      "cs2_planted": {
+        "type": "banner",
+        "text": "BOMB PLANTED",
+        "icon": "target"
+      },
+      "cs2_defused": {
+        "type": "banner",
+        "text": "DEFUSED",
+        "icon": "star"
+      },
+      "cs2_victory": {
+        "type": "score",
+        "text": "VICTORY",
+        "icon": "trophy"
+      },
+      "cs2_defeat": {
+        "type": "score",
+        "text": "DEFEAT",
+        "icon": "flag"
+      },
+      "cs2_mvp": {
+        "type": "banner",
+        "text": "MVP",
+        "icon": "star"
+      },
+      "cs2_round_won": {
+        "type": "score",
+        "text": "ROUND WON",
+        "icon": "flag"
+      },
+      "cs2_round_lost": {
+        "type": "score",
+        "text": "ROUND LOST",
+        "icon": "flag"
+      }
+    }
   }
 }

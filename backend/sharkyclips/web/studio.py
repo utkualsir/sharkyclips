@@ -62,9 +62,13 @@ def api_plan(project_id: str, cid: str, body: dict | None = None) -> dict:
         w, h = _source_size(project)
         out["geometry"] = clips_mod.preview_geometry(opts.layout, w, h, Facecam.from_dict(fc))
         out["safe_zones"] = safe_zones()
+        out["graphics"] = clips_mod.preview_graphics(plan, opts, Facecam.from_dict(fc), w, h)
         if body.get("samples"):  # the render's zoom at these source times (preview check)
             lay = out["geometry"]["layout"]
             out["samples"] = [clips_mod.picture_at(plan, lay, float(t)) for t in list(body["samples"])[:200]]
+            if out["graphics"]:  # 1.2.58: what the renderer draws at these moments (preview check)
+                for s in out["samples"]:
+                    s["gfx"] = clips_mod.graphics_at(out["graphics"], s["tm"])
     return out
 
 

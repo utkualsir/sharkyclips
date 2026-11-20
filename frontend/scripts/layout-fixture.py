@@ -112,7 +112,9 @@ def build(root: Path) -> str:
             "id": f"c{i + 1:02d}", "rank": i + 1, "start": round(s, 2), "end": round(s + dur, 2), "duration": dur,
             "peak": round(s + 1.2, 2), "hype_score": 100 - i * 4, "score": 0.95 - i * 0.03,
             "text": TITLES[i % len(TITLES)],
-            "reasons": [{"code": c, "t": s + 1, "strength": 1} for c in ("loudness_spike", "multikill", "pause_burst")[: 1 + i % 3]],
+            "reasons": [{"code": c, "t": s + 1, "strength": 1} for c in ("loudness_spike", "multikill", "pause_burst")[: 1 + i % 3]]
+            # 1.2.58: c01 has a game event the animated graphics show (preview-check.mjs pass 3)
+            + ([{"code": "df_multikill", "t": s + 1, "value": "3", "strength": 0.85}] if i == 0 else []),
             "signal_scores": {"loudness": 0.9, "laughter": 0.1, "keywords": 0.5, "speech": 0.8, "game": 0.6},
             "publish": {"available": True, "viral_score": 92 - i * 3, "viral_label": ("high", "medium", "low")[i % 3],
                         "titles": [TITLES[(i + 3) % len(TITLES)], "Alt title"], "hashtags": ["#shorts", "#gaming"],

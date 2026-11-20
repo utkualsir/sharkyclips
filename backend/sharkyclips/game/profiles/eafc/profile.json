@@ -180,5 +180,35 @@
     "post": 3
   },
   "notes": "Not checked yet: the tested video was an esports broadcast with its own overlay (no in-game GOAL / FULL TIME banner). Normal gameplay footage is needed.",
-  "tr_hud": "verify"
+  "tr_hud": "verify",
+  "graphics": {
+    "kills": [],
+    "events": {
+      "fc_goal": {
+        "type": "banner",
+        "text": "GOAL",
+        "icon": "star"
+      },
+      "fc_red": {
+        "type": "banner",
+        "text": "RED CARD",
+        "icon": "flag"
+      },
+      "fc_penalty": {
+        "type": "banner",
+        "text": "PENALTY",
+        "icon": "target"
+      },
+      "fc_full_time": {
+        "type": "score",
+        "text": "FULL TIME",
+        "icon": "flag"
+      },
+      "fc_half_time": {
+        "type": "score",
+        "text": "HALF TIME",
+        "icon": "flag"
+      }
+    }
+  }
 }

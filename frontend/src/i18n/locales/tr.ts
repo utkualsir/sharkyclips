@@ -2967,6 +2967,12 @@ const tr: Record<string, string> = {
   "updates.kind.fixed": "Düzeltmeler",
   "updates.kind.other": "Değişiklikler",
   "updates.open": "Tüm güncellemeler",
+  "gfx.label": "Hareketli grafikler",
+  "gfx.hint": "Kill sayacı, KILL / ACE / CLUTCH bantları, kazanılan raundlar ve söylediğin büyük sayılar (\"3 KILL\", \"1v4\") bir anlığına beliriyor. Asla yüzünün, altyazıların ya da aksiyonun üstüne gelmez.",
+  "gfx.none": "Bu klipte gösterilecek bir şey yok",
+  "gfx.style.off": "Kapalı",
+  "gfx.style.minimal": "Sade",
+  "gfx.style.bold": "Belirgin",
 };
 
 export default tr;

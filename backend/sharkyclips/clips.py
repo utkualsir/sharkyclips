@@ -83,6 +83,8 @@ class ClipOptions:
     banner: str = ""  # "" = none, else the headline text shown at the top for the whole clip
     safe_zone: str = ""  # "" = none | "shorts": captions / hook / banner stay clear of the Shorts buttons
     track: str = "off"  # off | auto: the full-height crop follows the action (edit/track.py)
+    # 1.2.58: animated graphics (kill counter, banners, spoken numbers; edit/graphics.py)
+    graphics: str = "minimal"  # off | minimal | bold
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "ClipOptions":
@@ -90,7 +92,7 @@ class ClipOptions:
         keys = ("layout", "subtitles", "hook", "hook_text", "hook_flash", "subtitle_lang", "profanity",
                 "profanity_captions", "bleep_sound", "swear_strict", "bleep_visual", "bleep_icon", "speaker_colors", "speaker_names", "cuts", "zoom",
                 "music", "brand", "loop", "replay", "chat_bubbles", "memes", "dub", "study_cards", "visualizer",
-                "speedup", "banner", "safe_zone", "track")
+                "speedup", "banner", "safe_zone", "track", "graphics")
         opts = cls(**{k: data[k] for k in keys if k in data})
         opts.chat_bubbles = bool(opts.chat_bubbles)
         opts.hook_flash = bool(opts.hook_flash)
@@ -102,7 +104,7 @@ class ClipOptions:
                               ("zoom", ("off", "subtle", "strong")), ("replay", ("off", "auto")),
                               ("memes", ("off", "light", "strong")),
                               ("study_cards", ("off", "auto")), ("visualizer", ("off", "auto")),
-                              ("speedup", ("off", "auto")), ("safe_zone", ("", "shorts")), ("track", ("off", "auto")),
+                              ("speedup", ("off", "auto")), ("safe_zone", ("", "shorts")), ("track", ("off", "auto")), ("graphics", ("off", "minimal", "bold")),
                               ("bleep_sound", ("classic", "boop", "custom")),
                               ("swear_strict", ("auto", "normal", "strict", "paranoid"))):
             if getattr(opts, name) not in allowed:
@@ -656,6 +658,88 @@ def preview_geometry(layout: str, src_w: int, src_h: int, facecam: Facecam | Non
 
 
 
+def render_geometry(spec: OutputSpec, opts: ClipOptions, facecam: Facecam | None) -> tuple[str, Geometry]:
+    """(layout, text geometry) of a render with this spec (already with_safe_zone)."""
+    wide = spec.frame == "wide"
+    # 16:9: the whole picture (fit), or filled (crop) - never the facecam split.
+    layout = ("crop" if opts.layout == "crop" else "fit") if wide else resolve_layout(opts.layout, facecam)
+    geo = Geometry.for_spec(spec, layout)
+    if opts.banner and layout == "split" and not wide:  # the banner sits on the split line: captions go below it
+        geo.cap_y = SPLIT_TOP + int(round(260 * geo.scale))
+    return layout, geo
+
+
+def preview_graphics(plan, opts: ClipOptions, facecam: Facecam | None, src_w: int, src_h: int) -> dict | None:
+    """1.2.58: the animated graphics of the plain 9:16 render, placed, for the live preview."""
+    gp = getattr(plan, "graphics", None)
+    if gp is None:
+        return None
+    spec = with_safe_zone(OutputSpec(), opts)
+    layout, geo = render_geometry(spec, opts, facecam)
+    graphics_boxes(plan, opts, spec, geo, layout, facecam, src_w, src_h)
+    return gp.to_dict()
+
+
+def graphics_at(view: dict, tm: float | None) -> dict | None:
+    """The graphic on screen at main time tm (preview_graphics() view), as the preview reports it."""
+    from .edit import graphics as gfx_mod
+
+    if tm is None:
+        return None
+    for g in view["items"]:
+        st = gfx_mod.state_at(g, tm, view["style"], view["simple"], view["fps"])
+        if st and st["alpha"] > 0:
+            return {"kind": g["kind"], **st, "x": g["box"]["x"], "y": g["box"]["y"]}
+    return None
+
+
+def graphics_boxes(plan, opts: ClipOptions, spec: OutputSpec, geo: Geometry, layout: str,
+                   facecam: Facecam | None, src_w: int, src_h: int) -> list[dict]:
+    """1.2.58: place the clip's animated graphics clear of the facecam, captions, hook / banner,
+    the key action, chat bubbles, the bleep badge and the platform's buttons. The render and the
+    live preview call this with the same inputs. Returns the placed items (to_dict)."""
+    from .edit import graphics as gfx_mod
+
+    gp = getattr(plan, "graphics", None)
+    if gp is None:
+        return []
+    W, H = geo.w, geo.h
+    vertical = H > W
+    picture = None
+    fc_rect = None
+    if layout == "fit" and src_w and src_h:
+        k = W / src_w if src_w / src_h >= W / H else H / src_h
+        pw, ph = src_w * k, src_h * k
+        picture = ((W - pw) / 2, (H - ph) / 2, (W + pw) / 2, (H + ph) / 2)
+        if facecam is not None:
+            fc_rect = (picture[0] + facecam.x * pw, picture[1] + facecam.y * ph,
+                       picture[0] + (facecam.x + facecam.w) * pw, picture[1] + (facecam.y + facecam.h) * ph)
+    elif layout == "crop" and facecam is not None and src_w and src_h:
+        k = max(W / src_w, H / src_h)
+        cw, ch = src_w * k, src_h * k
+        ox, oy = (W - cw) / 2, (H - ch) / 2
+        if opts.track == "auto" and vertical:  # the crop moves: keep the facecam's whole band free
+            fc_rect = (0, oy + facecam.y * ch, W, oy + (facecam.y + facecam.h) * ch)
+        else:
+            fc_rect = (ox + facecam.x * cw, oy + facecam.y * ch, ox + (facecam.x + facecam.w) * cw,
+                       oy + (facecam.y + facecam.h) * ch)
+    fxp = getattr(plan, "fx", None)
+    bz = None
+    if fxp is not None and getattr(fxp, "bubbles", None):
+        from .edit import fx as fx_mod
+
+        bz = fx_mod.bubble_zone(geo, layout, spec.safe, spec.frame == "wide")
+    bi = None
+    if opts.bleep_icon and plan.bleeps and opts.profanity != "off":
+        by = (SPLIT_TOP if geo.cap_y is None else geo.cap_y) - 150 * geo.scale if layout == "split" else 260 * geo.scale
+        bi = (W - 200 * geo.scale, by - 60 * geo.scale, W, by + 60 * geo.scale)
+    excl = gfx_mod.exclusions(geo, layout, spec.safe, captions=opts.subtitles != "none" and spec.burn_captions,
+                              hook=bool(opts.hook), banner=bool(opts.banner), facecam_rect=fc_rect,
+                              bubbles_zone=bz, picture=picture, bleep_icon=bi)
+    gfx_mod.place(gp.items, gp.style, geo, layout, excl)
+    return [g.to_dict() for g in gp.items if g.box is not None]
+
+
 def picture_at(plan, layout: str, t: float) -> dict:
     """The render's zoom on each picture at source time t (smart zoom per picture, the meme
     shake / punch on top), from the same expressions the filters use. For the preview check."""
@@ -914,10 +998,7 @@ def _render_core(project: Project, cand: dict, opts: ClipOptions, facecam: Facec
     canvas = spec.canvas
     wide = spec.frame == "wide"
     # 16:9: the whole picture (fit), or filled (crop) - never the facecam split.
-    layout = ("crop" if opts.layout == "crop" else "fit") if wide else resolve_layout(opts.layout, facecam)
-    geo = Geometry.for_spec(spec, layout)
-    if opts.banner and layout == "split" and not wide:  # the banner sits on the split line: captions go below it
-        geo.cap_y = SPLIT_TOP + int(round(260 * geo.scale))
+    layout, geo = render_geometry(spec, opts, facecam)
     _TRACK.set(None)
     track_keys: list = []
     if layout == "crop" and opts.track == "auto" and not wide:
@@ -1259,6 +1340,13 @@ def _render_planned(project: Project, cand: dict, opts: ClipOptions, facecam: Fa
         extra = extra + fx_mod.ass_lines(fxp, lead, geo, layout, _ass_time, lang, zone)
         fx_styles = fx_mod.ass_styles(lang, geo.scale)
         pauses = [(a + lead, b + lead) for a, b, _i in fxp.insert_ranges()]
+    gp = getattr(plan, "graphics", None)
+    if gp is not None:  # 1.2.58: animated graphics, a layer on top (captions / bleeps untouched)
+        from .edit import graphics as gfx_mod
+
+        graphics_boxes(plan, opts, spec, geo, layout, facecam, src_w, src_h)
+        extra = extra + gfx_mod.ass_lines(gp, fxp.final if fxp is not None else (lambda t: t), lead, _ass_time)
+        fx_styles = fx_styles + gfx_mod.style_lines()
     ass = build_ass(words, main, opts, layout, lang, hook_text, offset=lead, hook_lang=hook_lang, geo=geo,
                     style=style, hook_start=intro, extra=extra, hook_fade_in=0 if seam is not None else 150,
                     speakers=plan.speakers, extra_styles=fx_styles, pauses=pauses,

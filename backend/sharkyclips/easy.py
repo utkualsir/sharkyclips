@@ -42,15 +42,17 @@ DEFAULT_OPTIONS = {
 
 # Fun effects in Easy mode (1.2.17). Unset = the default below for projects made from 1.2.17 on;
 # older projects keep their look until the user flips a switch (no surprise re-renders).
-FX_DEFAULTS = {"replay": True, "bubbles": True, "memes": "off"}
+FX_DEFAULTS = {"replay": True, "bubbles": True, "memes": "off", "graphics": True}
 MEMES = ("off", "light", "strong")
 
 
 def fx_settings() -> dict:
     rp, bb, mm = config.get("easy_replay"), config.get("easy_bubbles"), config.get("easy_memes")
+    gx = config.get("easy_graphics")
     return {"replay": FX_DEFAULTS["replay"] if rp is None else bool(rp),
             "bubbles": FX_DEFAULTS["bubbles"] if bb is None else bool(bb),
-            "memes": mm if mm in MEMES else FX_DEFAULTS["memes"]}
+            "memes": mm if mm in MEMES else FX_DEFAULTS["memes"],
+            "graphics": FX_DEFAULTS["graphics"] if gx is None else bool(gx)}
 
 
 def fx_options(data: dict) -> dict:
@@ -59,8 +61,11 @@ def fx_options(data: dict) -> dict:
     if not data.get("fx"):
         s = {"replay": s["replay"] if config.get("easy_replay") is not None else False,
              "bubbles": s["bubbles"] if config.get("easy_bubbles") is not None else False,
-             "memes": s["memes"] if config.get("easy_memes") in MEMES else "off"}
-    return {"replay": "auto" if s["replay"] else "off", "chat_bubbles": bool(s["bubbles"]), "memes": s["memes"]}
+             "memes": s["memes"] if config.get("easy_memes") in MEMES else "off", "graphics": s["graphics"]}
+    if not data.get("gfx") and config.get("easy_graphics") is None:
+        s["graphics"] = False  # 1.2.58: made before the animated graphics: keeps its look until you flip the switch
+    return {"replay": "auto" if s["replay"] else "off", "chat_bubbles": bool(s["bubbles"]), "memes": s["memes"],
+            "graphics": "minimal" if s["graphics"] else "off"}
 
 
 def ui_mode() -> str:
@@ -95,6 +100,8 @@ def save_settings(body: dict) -> dict:
         changes["easy_bubbles"] = bool(body["bubbles"])
     if body.get("memes") in MEMES:
         changes["easy_memes"] = body["memes"]
+    if "graphics" in body:
+        changes["easy_graphics"] = bool(body["graphics"])
     if body.get("platform") in ("youtube", "tiktok", "reels"):
         changes["easy_platform"] = body["platform"]
     if body.get("study_cards") in ("off", "auto"):

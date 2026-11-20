@@ -213,5 +213,50 @@
       "dota_rampage"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [],
+    "events": {
+      "dota_first_blood": {
+        "type": "banner",
+        "text": "FIRST BLOOD",
+        "icon": "flame"
+      },
+      "dota_double": {
+        "type": "banner",
+        "text": "DOUBLE KILL",
+        "icon": "skull"
+      },
+      "dota_triple": {
+        "type": "banner",
+        "text": "TRIPLE KILL",
+        "icon": "skull"
+      },
+      "dota_ultra": {
+        "type": "banner",
+        "text": "ULTRA KILL",
+        "icon": "flame"
+      },
+      "dota_rampage": {
+        "type": "banner",
+        "text": "RAMPAGE",
+        "icon": "crown"
+      },
+      "dota_godlike": {
+        "type": "banner",
+        "text": "GODLIKE",
+        "icon": "flame"
+      },
+      "dota_roshan": {
+        "type": "banner",
+        "text": "ROSHAN",
+        "icon": "star"
+      },
+      "dota_victory": {
+        "type": "score",
+        "text": "VICTORY",
+        "icon": "trophy"
+      }
+    }
   }
 }

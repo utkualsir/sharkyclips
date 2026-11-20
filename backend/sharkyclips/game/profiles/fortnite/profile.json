@@ -143,5 +143,17 @@
       "fn_victory"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [
+      "fn_elim"
+    ],
+    "events": {
+      "fn_victory": {
+        "type": "score",
+        "text": "VICTORY ROYALE",
+        "icon": "trophy"
+      }
+    }
   }
 }

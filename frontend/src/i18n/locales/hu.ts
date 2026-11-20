@@ -2970,6 +2970,12 @@ const hu: Record<string, string> = {
   "updates.kind.fixed": "Javítások",
   "updates.kind.other": "Változások",
   "updates.open": "Összes frissítés",
+  "gfx.label": "Animált grafikák",
+  "gfx.hint": "Egy killszámláló, KILL / ACE / CLUTCH feliratok, megnyert körök és az általad mondott számok („3 KILL”, „1v4”) jelennek meg egy pillanatra. Soha nem takarják az arcod, a feliratot vagy az akciót.",
+  "gfx.none": "Ebben a klipben nincs mit megjeleníteni",
+  "gfx.style.off": "Ki",
+  "gfx.style.minimal": "Visszafogott",
+  "gfx.style.bold": "Feltűnő",
 };
 
 export default hu;

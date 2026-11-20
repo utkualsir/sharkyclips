@@ -468,7 +468,7 @@ export default function ProjectPage({ id }: { id: string }) {
   // doesn't restart its drawing loop on every page render
   const previewFx = useMemo<PreviewFx | null>(
     () => (plan ? { level: plan.zoom_level, pulses: plan.pulses, keep: plan.keep, loop: !!(options.loop && plan.loop),
-      shakes: plan.fx?.shakes ?? [], punches: plan.fx?.punches ?? [], fps: plan.fps || 30 } : null),
+      shakes: plan.fx?.shakes ?? [], punches: plan.fx?.punches ?? [], fps: plan.fps || 30, gfx: plan.graphics ?? null } : null),
     [plan, options.loop],
   );
   const subLangs = [...new Set(cands.flatMap((c) => c.subtitle_languages ?? []))].filter((l) => l !== project?.language);

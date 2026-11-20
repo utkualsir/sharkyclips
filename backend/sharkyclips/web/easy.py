@@ -437,7 +437,7 @@ def _mark_import(job: Job) -> None:
         if mode != meta.get("mode"):
             meta["mode"] = mode
             project.save_meta(meta)
-    E.save(project, easy=True, mode_auto=auto, created_at=state.now_iso(), fx=True, v2=True)
+    E.save(project, easy=True, mode_auto=auto, created_at=state.now_iso(), fx=True, v2=True, gfx=True)
     from .live import on_imported
 
     on_imported(job, project)

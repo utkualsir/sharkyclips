@@ -49,5 +49,32 @@
     "post": 3
   },
   "notes": "Built-in scanner (skull / revive / assist icons, score lines). Tested on real footage.",
-  "tr_hud": "checked on a Turkish client"
+  "tr_hud": "checked on a Turkish client",
+  "graphics": {
+    "kills": [
+      "df_kill"
+    ],
+    "events": {
+      "df_multikill": {
+        "type": "banner",
+        "text": "{n}x KILL",
+        "icon": "skull"
+      },
+      "df_revenge": {
+        "type": "banner",
+        "text": "REVENGE",
+        "icon": "flame"
+      },
+      "df_extracted": {
+        "type": "score",
+        "text": "EXTRACTED",
+        "icon": "flag"
+      },
+      "df_extract_failed": {
+        "type": "score",
+        "text": "EXTRACTION FAILED",
+        "icon": "flag"
+      }
+    }
+  }
 }

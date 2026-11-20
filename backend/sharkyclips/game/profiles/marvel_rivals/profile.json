@@ -217,5 +217,60 @@
       "mr_ko_streak"
     ],
     "on": "2026-11-19, a public 1080p English-client compilation"
+  },
+  "graphics": {
+    "kills": [],
+    "events": {
+      "mr_double": {
+        "type": "banner",
+        "text": "DOUBLE KO",
+        "icon": "skull"
+      },
+      "mr_triple": {
+        "type": "banner",
+        "text": "TRIPLE KO",
+        "icon": "skull"
+      },
+      "mr_quad": {
+        "type": "banner",
+        "text": "QUAD KO",
+        "icon": "flame"
+      },
+      "mr_penta": {
+        "type": "banner",
+        "text": "PENTA KO",
+        "icon": "crown"
+      },
+      "mr_hexa": {
+        "type": "banner",
+        "text": "HEXA KO",
+        "icon": "crown"
+      },
+      "mr_victory": {
+        "type": "score",
+        "text": "VICTORY",
+        "icon": "trophy"
+      },
+      "mr_defeat": {
+        "type": "score",
+        "text": "DEFEAT",
+        "icon": "flag"
+      },
+      "mr_mvp": {
+        "type": "banner",
+        "text": "MVP",
+        "icon": "star"
+      },
+      "mr_ace": {
+        "type": "banner",
+        "text": "ACE",
+        "icon": "crown"
+      },
+      "mr_ko_streak": {
+        "type": "banner",
+        "text": "KO STREAK",
+        "icon": "flame"
+      }
+    }
   }
 }

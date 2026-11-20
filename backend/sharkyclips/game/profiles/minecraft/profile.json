@@ -163,5 +163,30 @@
       "mc_died"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [],
+    "events": {
+      "mc_died": {
+        "type": "banner",
+        "text": "YOU DIED",
+        "icon": "skull"
+      },
+      "mc_advancement": {
+        "type": "banner",
+        "text": "ADVANCEMENT",
+        "icon": "star"
+      },
+      "mc_challenge": {
+        "type": "banner",
+        "text": "CHALLENGE",
+        "icon": "trophy"
+      },
+      "mc_goal": {
+        "type": "banner",
+        "text": "GOAL",
+        "icon": "star"
+      }
+    }
   }
 }

@@ -114,9 +114,9 @@ export default function Updates() {
                   {e.details_lang !== lang && <p className="muted small">{t("updates.english_only")}</p>}
                   {e.groups.map((g) => (
                     <section key={g.kind} className={`updates-group updates-${g.kind}`}>
-                      <h3>
+                      <h2>
                         <Icon name={KIND_ICON[g.kind] ?? "list"} size={14} /> {t(`updates.kind.${g.kind}`)}
-                      </h3>
+                      </h2>
                       <Markdown text={g.markdown} />
                     </section>
                   ))}

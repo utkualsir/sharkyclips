@@ -168,6 +168,8 @@ export interface PreviewFx {
   shakes: [number, number][];
   punches: [number, number][];
   fps: number;
+  /** 1.2.58: the animated graphics, placed by the server (clips.preview_graphics) */
+  gfx?: GfxPlanView | null;
 }
 
 const NO_ZOOM = { scene: 1, cam: 1, full: 1, shake: { z: 1, dx: 0, dy: 0 } };
@@ -191,4 +193,78 @@ export function zoomsAt(t: number, fx: PreviewFx | null) {
   }
   const shake = shakeAt(tm, fx.shakes, fx.punches, level || 1, fx.fps);
   return { scene, cam, full, shake };
+}
+
+// ---------------------------------------------------------------- 1.2.58 animated graphics
+// A copy of backend/sharkyclips/edit/graphics.py state_at (test_preview_math.py runs both).
+
+export interface GfxBox { x: number; y: number; w: number; h: number; r: number; font: number; icon: number; icon_x: number; text_x: number }
+export interface GfxItem { a: number; b: number; kind: string; text: string; icon: string; code: string; steps: [number, string][]; box: GfxBox }
+export interface GfxPlanView {
+  style: "minimal" | "bold";
+  simple: boolean;
+  fps: number;
+  colors: { bg: string; fg: string; ink: string };
+  bg_alpha: number;
+  in_s: number;
+  out_s: number;
+  icons: Record<string, { d: string; tone: "fg" | "bg" }[]>;
+  items: GfxItem[];
+}
+export interface GfxState { alpha: number; scale: number; dy: number; text: string }
+
+const GFX_IN = { minimal: 0.2, bold: 0.26 };
+const GFX_OUT = 0.22;
+const GFX_SIMPLE_IN = 0.15;
+const GFX_SIMPLE_OUT = 0.2;
+const COUNTER_STEP_S = 0.18;
+const round = (v: number, d: number) => Math.round(v * 10 ** d) / 10 ** d;
+const easeOutCubic = (p: number) => 1 - (1 - p) ** 3;
+function easeOutBack(p: number) {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
+  return 1 + c3 * (p - 1) ** 3 + c1 * (p - 1) ** 2;
+}
+
+/** The item's look at main time tm (null = not on screen), at the output frame the renderer draws. */
+export function gfxStateAt(g: Pick<GfxItem, "a" | "b" | "text" | "steps">, tm: number, style: "minimal" | "bold",
+  simple: boolean, fps: number): GfxState | null {
+  const t = Math.floor(tm * fps + 1e-6) / fps;
+  if (t < g.a - 1e-9 || t >= g.b - 1e-9) return null;
+  const e = t - g.a;
+  const r = g.b - t;
+  let text = g.text;
+  for (const [at, txt] of g.steps ?? []) if (e + 1e-9 >= at) text = txt;
+  if (simple) {
+    const alpha = Math.max(0, Math.min(1, e / GFX_SIMPLE_IN, r / GFX_SIMPLE_OUT));
+    return { alpha: round(alpha, 4), scale: 1, dy: 0, text };
+  }
+  const q = Math.max(0, Math.min(1, r / GFX_OUT));
+  let alpha: number;
+  let scale: number;
+  let dy: number;
+  if (style === "bold") {
+    const p = Math.min(1, e / GFX_IN.bold);
+    scale = 0.6 + 0.4 * easeOutBack(p);
+    alpha = Math.min(1, e / 0.1, q);
+    scale *= 1 + 0.08 * (1 - q);
+    dy = 0;
+  } else {
+    const p = Math.min(1, e / GFX_IN.minimal);
+    alpha = Math.min(easeOutCubic(p), q);
+    scale = 1;
+    dy = (1 - easeOutCubic(p)) * 28 + (1 - q) * -10;
+  }
+  for (const [at] of g.steps ?? []) {
+    const k = (e - at) / COUNTER_STEP_S;
+    if (k >= 0 && k < 1) scale *= 1 + 0.16 * Math.sin(Math.PI * k);
+  }
+  return { alpha: round(Math.max(0, alpha), 4), scale: round(scale, 4), dy: round(dy, 2), text };
+}
+
+/** The pill outline (graphics.rounded_path) as an SVG path. */
+export function gfxPillPath(w: number, h: number, r: number): string {
+  r = Math.min(r, h / 2, w / 2);
+  return `M ${r} 0 L ${w - r} 0 C ${w} 0 ${w} 0 ${w} ${r} L ${w} ${h - r} C ${w} ${h} ${w} ${h} ${w - r} ${h} ` +
+    `L ${r} ${h} C 0 ${h} 0 ${h} 0 ${h - r} L 0 ${r} C 0 0 0 0 ${r} 0 Z`;
 }

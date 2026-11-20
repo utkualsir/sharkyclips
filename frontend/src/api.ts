@@ -299,6 +299,8 @@ export interface ClipOptions {
   replay?: ReplayMode;
   chat_bubbles?: boolean;
   memes?: MemeLevel;
+  /** 1.2.58: animated graphics (kill counter, banners, spoken numbers) */
+  graphics?: GraphicsStyle;
   /** 1.2.18: dub language ("" = original voice), study cards (study mode), visualizer (music mode) */
   dub?: string;
   study_cards?: "off" | "auto";
@@ -313,6 +315,7 @@ export interface ClipOptions {
 export type SwearStrict = "auto" | "normal" | "strict" | "paranoid";
 export type ReplayMode = "off" | "auto";
 export type MemeLevel = "off" | "light" | "strong";
+export type GraphicsStyle = "off" | "minimal" | "bold";
 
 /** The seam of a seamless loop (source times). */
 export interface LoopSeam {
@@ -534,6 +537,8 @@ export interface EditPlanView {
   intro_s: number;
   outro_s: number;
   loop: LoopSeam | null;
+  /** 1.2.58: animated graphics of the plain 9:16 render, placed (null: none) */
+  graphics?: import("./previewMath").GfxPlanView | null;
   /** fun effects (1.2.17): what the render adds */
   fx?: {
     inserts: { kind: "replay" | "freeze"; code: string; dur: number; at: number; text: string }[];
@@ -2084,6 +2089,8 @@ export interface EasySettings {
   replay: boolean;
   bubbles: boolean;
   memes: MemeLevel;
+  /** 1.2.58: animated graphics on new clips */
+  graphics: boolean;
   auto_clip: boolean;
   /** 1.2.18: the upload button's platform, remembered */
   platform: "youtube" | "tiktok" | "reels";

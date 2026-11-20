@@ -183,5 +183,27 @@
       "apex_kill_leader"
     ],
     "on": "2026-11-19, public 1080p English-client videos"
+  },
+  "graphics": {
+    "kills": [
+      "apex_elim"
+    ],
+    "events": {
+      "apex_squad_wipe": {
+        "type": "banner",
+        "text": "SQUAD WIPE",
+        "icon": "skull"
+      },
+      "apex_kill_leader": {
+        "type": "banner",
+        "text": "KILL LEADER",
+        "icon": "crown"
+      },
+      "apex_champion": {
+        "type": "score",
+        "text": "CHAMPION",
+        "icon": "trophy"
+      }
+    }
   }
 }

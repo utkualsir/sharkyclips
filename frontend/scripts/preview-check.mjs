@@ -165,7 +165,7 @@ async function compareAt(page, t, plan) {
 const TIMES = [1.2, 1.75, 2.1, 2.6, 3.4]; // c01 = 1.0-3.6 s, smart zoom pulse around 2.0 s
 for (const layout of ["auto", "crop", "fit"]) {
   await api.put(`${base}/api/projects/${P}/review`, {
-    data: { options: { layout, zoom: "strong", subtitles: "none", hook: false, brand: false, loop: false } },
+    data: { options: { layout, zoom: "strong", subtitles: "none", hook: false, brand: false, loop: false, graphics: "off" } },
     headers: H,
   });
   const { ctx, page } = await openProject(1366, 768);
@@ -199,6 +199,62 @@ for (const layout of ["auto", "crop", "fit"]) {
     if (shotDir) await page.locator(".vprev-frame").screenshot({ path: join(shotDir, `preview-${plan.geometry.layout}-${t}.png`) });
   }
   if (!sawZoom) problems.push(`${layout}: no sampled moment was zoomed`);
+  await ctx.close();
+}
+
+// ------------------------------------------------------------------ 3. animated graphics (1.2.58)
+// The preview draws the server's placed graphics with the renderer's per-frame look: at the same
+// moments its canvas reports the same item, text, opacity, scale and slide as the plan's samples.
+for (const style of ["minimal", "bold"]) {
+  await api.put(`${base}/api/projects/${P}/review`, {
+    data: { options: { layout: "auto", zoom: "off", subtitles: "bold", hook: true, graphics: style, loop: false } },
+    headers: H,
+  });
+  const { ctx, page } = await openProject(1366, 768);
+  await ctx.addInitScript(() => localStorage.setItem("sc-motion", "full"));
+  await page.evaluate(() => {
+    localStorage.setItem("sc-motion", "full");
+    document.documentElement.setAttribute("data-motion", "full");
+  });
+  const plan = await (await page.request.post(`${base}/api/projects/${P}/candidates/${CLIP}/plan`, { data: {}, headers: H })).json();
+  if (!plan.graphics?.items?.length) {
+    problems.push(`graphics ${style}: the fixture clip shows no graphic`);
+    await ctx.close();
+    continue;
+  }
+  const g0 = plan.graphics.items[0];
+  const t0 = 1.0 + g0.a; // c01 starts at 1.0 s, no cuts
+  let seen = 0;
+  for (const dt of [-0.2, 0.05, 0.12, 0.5, 1.0, g0.b - g0.a - 0.1, g0.b - g0.a + 0.2]) {
+    const t = t0 + dt;
+    await page.evaluate(async (t) => {
+      const v = document.querySelector(".player video");
+      v.pause();
+      await new Promise((ok) => {
+        v.addEventListener("seeked", ok, { once: true });
+        v.currentTime = t;
+      });
+      await new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(ok)));
+    }, t);
+    const got = await page.evaluate(() => ({
+      t: document.querySelector(".player video").currentTime,
+      gfx: document.querySelector(".vprev-frame canvas").dataset.gfx || "",
+    }));
+    const res = await page.request.post(`${base}/api/projects/${P}/candidates/${CLIP}/plan`, { data: { samples: [got.t] }, headers: H });
+    const want = (await res.json()).samples[0].gfx ?? null;
+    const have = got.gfx ? JSON.parse(got.gfx) : null;
+    const tag = `graphics ${style} t=${got.t.toFixed(3)}`;
+    if (!want !== !have) problems.push(`${tag}: preview ${have ? "shows" : "hides"} a graphic, the render ${want ? "shows" : "doesn't"}`);
+    else if (want) {
+      seen++;
+      const off = ["alpha", "scale", "dy", "x", "y"].filter((k) => Math.abs(have[k] - want[k]) > 0.01);
+      if (have.text !== want.text || have.kind !== want.kind || off.length)
+        problems.push(`${tag}: preview ${JSON.stringify(have)} vs render ${JSON.stringify(want)}`);
+    }
+    console.log(`${tag}: ${have ? `${have.text} a=${have.alpha} s=${have.scale} dy=${have.dy}` : "-"}`);
+    if (shotDir && have) await page.locator(".vprev-frame").screenshot({ path: join(shotDir, `preview-gfx-${style}-${dt.toFixed(2)}.png`) });
+  }
+  if (seen < 3) problems.push(`graphics ${style}: only ${seen} sampled moments showed the graphic`);
   await ctx.close();
 }
 

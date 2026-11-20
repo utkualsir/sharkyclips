@@ -72,6 +72,8 @@ const SCREENS = [
   { name: "easy-pubqueue", mode: "easy", hash: "#/publish-queue", ready: ".pq-actions" },
   { name: "trash", mode: "pro", hash: "#/trash", ready: ".trash-usage" },
   { name: "easy-trash", mode: "easy", hash: "#/trash", ready: ".trash-usage" },
+  { name: "updates", mode: "pro", hash: "#/updates", ready: ".updates-item" },
+  { name: "easy-updates", mode: "easy", hash: "#/updates", ready: ".updates-item" },
 ];
 
 /** Runs in the page. Returns a list of problems. */

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { api, urls, type BleepSound, type BrandState, type ClipOptions, type CutLevel, type EditPlanView, type MemeLevel, type MusicTrack, type ProfanityMode, type SwearStrict, type ZoomLevel } from "../api";
+import { api, urls, type BleepSound, type BrandState, type ClipOptions, type CutLevel, type EditPlanView, type GraphicsStyle, type MemeLevel, type MusicTrack, type ProfanityMode, type SwearStrict, type ZoomLevel } from "../api";
 import { gameReasonLabel } from "../pages/GameDebug";
 import { useI18n } from "../i18n";
 import { href } from "../router";
@@ -12,6 +12,7 @@ const SOUNDS: BleepSound[] = ["classic", "boop", "custom"];
 const CUTS: CutLevel[] = ["off", "light", "strong"];
 const ZOOMS: ZoomLevel[] = ["off", "subtle", "strong"];
 const MEMES: MemeLevel[] = ["off", "light", "strong"];
+const GFX: GraphicsStyle[] = ["off", "minimal", "bold"];
 
 interface Props {
   options: ClipOptions;
@@ -86,6 +87,28 @@ function FunEffects({ options, setOption, plan }: Pick<Props, "options" | "setOp
                   ].join(" · ")
                 : t("fx.memes_none")}
             </span>
+          )}
+        </div>
+      </div>
+      <div className="render-row">
+        <label>{t("gfx.label")}</label>
+        <div className="edit-cell">
+          <Segmented<GraphicsStyle>
+            value={options.graphics ?? "minimal"}
+            options={GFX.map((g) => ({ value: g, label: t(`gfx.style.${g}`) }))}
+            onChange={(g) => setOption({ graphics: g })}
+            label={t("gfx.label")}
+          />
+          {(options.graphics ?? "minimal") === "off" ? (
+            <span className="edit-note">{t("gfx.hint")}</span>
+          ) : (
+            plan && (
+              <span className="edit-note" data-testid="gfx-note">
+                {plan.graphics?.items.length
+                  ? plan.graphics.items.map((g) => g.text).join(" · ")
+                  : t("gfx.none")}
+              </span>
+            )
           )}
         </div>
       </div>

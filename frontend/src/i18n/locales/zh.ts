@@ -2939,6 +2939,12 @@ const zh: Record<string, string> = {
   "updates.kind.fixed": "修复",
   "updates.kind.other": "变更",
   "updates.open": "所有更新",
+  "gfx.label": "动态图形",
+  "gfx.hint": "击杀计数、KILL / ACE / CLUTCH 横幅、赢下的回合和你说出的数字（“3 KILL”、“1v4”）会短暂弹出。绝不挡住你的脸、字幕或精彩画面。",
+  "gfx.none": "这个剪辑没有可显示的内容",
+  "gfx.style.off": "关闭",
+  "gfx.style.minimal": "简约",
+  "gfx.style.bold": "醒目",
 };
 
 export default zh;

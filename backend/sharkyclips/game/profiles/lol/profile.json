@@ -64,5 +64,67 @@
     "post": 3
   },
   "notes": "Built-in scanner (scoreboard K/D/A, announcer banners, champion portrait). Tested on real footage.",
-  "tr_hud": "checked on a Turkish client"
+  "tr_hud": "checked on a Turkish client",
+  "graphics": {
+    "kills": [
+      "lol_kill"
+    ],
+    "events": {
+      "lol_doublekill": {
+        "type": "banner",
+        "text": "DOUBLE KILL",
+        "icon": "skull"
+      },
+      "lol_triplekill": {
+        "type": "banner",
+        "text": "TRIPLE KILL",
+        "icon": "skull"
+      },
+      "lol_quadrakill": {
+        "type": "banner",
+        "text": "QUADRA KILL",
+        "icon": "flame"
+      },
+      "lol_pentakill": {
+        "type": "banner",
+        "text": "PENTAKILL",
+        "icon": "crown"
+      },
+      "lol_first_blood": {
+        "type": "banner",
+        "text": "FIRST BLOOD",
+        "icon": "flame"
+      },
+      "lol_shutdown": {
+        "type": "banner",
+        "text": "SHUTDOWN",
+        "icon": "target"
+      },
+      "lol_ace": {
+        "type": "banner",
+        "text": "ACE",
+        "icon": "crown"
+      },
+      "lol_baron_steal": {
+        "type": "banner",
+        "text": "BARON STEAL",
+        "icon": "star"
+      },
+      "lol_dragon_steal": {
+        "type": "banner",
+        "text": "DRAGON STEAL",
+        "icon": "flame"
+      },
+      "lol_victory": {
+        "type": "score",
+        "text": "VICTORY",
+        "icon": "trophy"
+      },
+      "lol_defeat": {
+        "type": "score",
+        "text": "DEFEAT",
+        "icon": "flag"
+      }
+    }
+  }
 }

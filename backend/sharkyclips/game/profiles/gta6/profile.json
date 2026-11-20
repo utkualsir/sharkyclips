@@ -133,5 +133,30 @@
     "post": 3
   },
   "notes": "Console only (PS5 / Xbox Series), out 2026-11-19. HUD texts are a guess from older GTA games: a generic open-world profile until real footage is checked.",
-  "tr_hud": "verify"
+  "tr_hud": "verify",
+  "graphics": {
+    "kills": [],
+    "events": {
+      "gta_wasted": {
+        "type": "banner",
+        "text": "WASTED",
+        "icon": "skull"
+      },
+      "gta_busted": {
+        "type": "banner",
+        "text": "BUSTED",
+        "icon": "flag"
+      },
+      "gta_passed": {
+        "type": "score",
+        "text": "MISSION PASSED",
+        "icon": "star"
+      },
+      "gta_failed": {
+        "type": "score",
+        "text": "MISSION FAILED",
+        "icon": "flag"
+      }
+    }
+  }
 }

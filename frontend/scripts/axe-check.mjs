@@ -60,6 +60,11 @@ const SCREENS = [
   ["easy-home", "easy", "#/", ".ez-create"],
   ["easy-project", "easy", `#/p/${P}`, ".ez-title"],
   ["easy-trash", "easy", "#/trash", ".trash-usage"],
+  // 1.2.58 Updates page: the list, a search with no match, an older version opened
+  ["updates", "pro", "#/updates", ".updates-item", async (page) => {
+    await page.locator(".updates-item summary").nth(2).click();
+  }],
+  ["easy-updates", "easy", "#/updates", ".updates-item"],
 ];
 
 const browser = await chromium.launch(process.env.AXE_CHANNEL ? { channel: process.env.AXE_CHANNEL } : {});

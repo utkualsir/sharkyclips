@@ -122,5 +122,20 @@
     "post": 3
   },
   "notes": "Not checked yet: two tested raids showed only inventory and item texts, no extraction screen. A video with an extraction is needed.",
-  "tr_hud": "verify"
+  "tr_hud": "verify",
+  "graphics": {
+    "kills": [],
+    "events": {
+      "arc_extracted": {
+        "type": "score",
+        "text": "EXTRACTED",
+        "icon": "flag"
+      },
+      "arc_failed": {
+        "type": "score",
+        "text": "EXTRACTION FAILED",
+        "icon": "flag"
+      }
+    }
+  }
 }

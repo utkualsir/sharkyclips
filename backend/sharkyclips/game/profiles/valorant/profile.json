@@ -287,5 +287,65 @@
       "val_round_won"
     ],
     "on": "2026-11-19, two public 1080p English-client videos (an aces compilation, the end of a ranked match)"
+  },
+  "graphics": {
+    "kills": [],
+    "events": {
+      "val_ace": {
+        "type": "banner",
+        "text": "ACE",
+        "icon": "crown"
+      },
+      "val_team_ace": {
+        "type": "banner",
+        "text": "TEAM ACE",
+        "icon": "crown"
+      },
+      "val_clutch": {
+        "type": "banner",
+        "text": "CLUTCH",
+        "icon": "flame"
+      },
+      "val_flawless": {
+        "type": "banner",
+        "text": "FLAWLESS",
+        "icon": "star"
+      },
+      "val_thrifty": {
+        "type": "banner",
+        "text": "THRIFTY",
+        "icon": "star"
+      },
+      "val_planted": {
+        "type": "banner",
+        "text": "SPIKE PLANTED",
+        "icon": "target"
+      },
+      "val_defused": {
+        "type": "banner",
+        "text": "DEFUSED",
+        "icon": "star"
+      },
+      "val_round_won": {
+        "type": "score",
+        "text": "ROUND WON",
+        "icon": "flag"
+      },
+      "val_round_lost": {
+        "type": "score",
+        "text": "ROUND LOST",
+        "icon": "flag"
+      },
+      "val_victory": {
+        "type": "score",
+        "text": "VICTORY",
+        "icon": "trophy"
+      },
+      "val_defeat": {
+        "type": "score",
+        "text": "DEFEAT",
+        "icon": "flag"
+      }
+    }
   }
 }
