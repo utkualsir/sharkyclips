@@ -244,7 +244,7 @@ def resolve(url: str, http=None) -> dict:
 
 
 def chat_plan(url: str, duration: float, http=None) -> tuple[int, datetime, float] | None:
-    """(chatroom id, wall-clock time of video second 0, length) or None when Kick has no replay."""
+    """(chat id = channel id, wall-clock time of video second 0, length) or None when Kick has no replay."""
     link = parse(url)
     if link is None or link.kind == "channel":
         return None
@@ -266,7 +266,9 @@ def chat_plan(url: str, duration: float, http=None) -> tuple[int, datetime, floa
             start, length = v.get("start_time"), float(duration or v.get("duration") or 0)
     if not start or not slug:
         return None
-    chat_id = (_channel(http, slug).get("chatroom") or {}).get("id")
+    # 1.2.57: the messages endpoint answers for the CHANNEL id now (the chatroom id gets an empty
+    # list since late 2026; checked on a public VOD)
+    chat_id = _channel(http, slug).get("id")
     return (int(chat_id), _ts(start), length) if chat_id else None
 
 

@@ -80,7 +80,7 @@ class FakeKick:
                                         "created_at": "2026-11-10T01:00:00Z",
                                         "channel": {"slug": "demo", "username": "Demo"},
                                         "category": {"name": "Valorant"}}})
-        if url.endswith("/api/v2/channels/5077/messages"):
+        if url.endswith("/api/v2/channels/77/messages"):  # 1.2.57: channel id, not chatroom
             at = datetime.fromisoformat(params["start_time"].replace("Z", "+00:00"))
             win = [m for m in self.chat
                    if at <= datetime.fromisoformat(m["created_at"].replace("Z", "+00:00")) < at + timedelta(seconds=5)]
@@ -134,7 +134,7 @@ def test_subscriber_only_vod_is_a_clear_error(monkeypatch):
 
 def test_chat_replay_windows(fake):
     chat_id, t0, length = kick.chat_plan(f"https://kick.com/demo/videos/{VOD}", 0)
-    assert (chat_id, t0, length) == (5077, START, 3600)
+    assert (chat_id, t0, length) == (77, START, 3600)  # the channel id (1.2.57)
     rows = kick.chat_segment(chat_id, t0, 0, 60)
     assert [r[0] for r in rows] == [2.0 * i for i in range(30)]  # in order, no repeats, no events
     assert rows[1] == (2.0, "hi 1 KEKW", "u1")  # emote codes become the emote's name
