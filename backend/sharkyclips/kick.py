@@ -122,6 +122,32 @@ def _vod_entry(http, creator_id: str | int, vod_id: str) -> dict:
     return next((v for v in videos if str(v.get("id")) == vod_id), {})
 
 
+def _video_v1(http, vod_id: str) -> dict:
+    """kick.com/api/v1/video/<uuid> (1.2.57): the VOD, its public HLS "source" and its stream
+    (title, start, duration, channel, category). {} when Kick doesn't know it."""
+    data = _json(http, "GET", f"{_site()}/api/v1/video/{vod_id}")
+    return data if isinstance(data, dict) and data.get("uuid") else {}
+
+
+def _from_v1(v: dict, fallback_slug: str | None) -> dict:
+    """resolve()'s answer from a v1 video (raises the clear messages)."""
+    if v.get("deleted_at") or v.get("is_pruned"):
+        raise SharkyClipsError("Kick deleted this VOD.", "Kick keeps VODs for a limited time.")
+    if v.get("is_private") or v.get("status") not in (None, "public") or not v.get("source"):
+        raise SharkyClipsError("This Kick VOD is for subscribers only.",
+                               "SharkyClips doesn't log in to sites. Download the video yourself and import the file.")
+    ls = v.get("livestream") or {}
+    ch = ls.get("channel") or {}
+    slug = ch.get("slug") or fallback_slug
+    cats = [c.get("name") for c in ls.get("categories") or [] if c.get("name")]
+    return {"id": v["uuid"], "title": ls.get("session_title") or v["uuid"],
+            "duration": (float(ls.get("duration") or 0) / 1000.0) or None,
+            "uploader": (ch.get("user") or {}).get("username") or slug, "uploader_id": slug,
+            "upload_date": _date(ls.get("start_time")), "extractor_key": "KickVOD",
+            "webpage_url": f"https://kick.com/{slug}/videos/{v['uuid']}", "media_url": v["source"],
+            "is_live": bool(ls.get("is_live")), "categories": cats, "start_time": ls.get("start_time")}
+
+
 def _playback(http, vod_id: str) -> dict:
     return _json(http, "POST", f"{_web()}/api/v1/stream/{vod_id}/playback",
                  json={"video_player": {"player": {}}, "video_session": {},
@@ -163,8 +189,10 @@ def canonical(url: str, http=None) -> str:
     # kick.com/video/<id>: yt-dlp needs the channel in the path
     http = http or _http()
     if link.kind == "vod":
-        creator = ((_playback(http, link.id).get("video_session") or {}).get("creator_id"))
-        slug = ((_vod_entry(http, creator, link.id).get("channel") or {}).get("slug")) if creator else None
+        slug = (((_video_v1(http, link.id).get("livestream") or {}).get("channel")) or {}).get("slug")
+        if not slug:
+            creator = ((_playback(http, link.id).get("video_session") or {}).get("creator_id"))
+            slug = ((_vod_entry(http, creator, link.id).get("channel") or {}).get("slug")) if creator else None
     else:
         slug = (_clip(http, link.id).get("channel") or {}).get("slug")
     if not slug:
@@ -187,6 +215,11 @@ def resolve(url: str, http=None) -> dict:
                 "webpage_url": f"https://kick.com/{ch.get('slug')}/clips/{c['id']}",
                 "media_url": c.get("video_url") or c.get("clip_url"),
                 "categories": [(c.get("category") or {}).get("name")] if c.get("category") else []}
+    # 1.2.57: kick.com/api/v1/video/<uuid> first (it has the public HLS "source"); the playback
+    # endpoint answered NOT_FOUND for public VODs in Nov 2026 (and so did yt-dlp's kick:vod)
+    v1 = _video_v1(http, link.id)
+    if v1:
+        return _from_v1(v1, link.channel)
     pb = _playback(http, link.id)
     err = pb.get("data") if isinstance(pb.get("data"), dict) else None
     creator = (pb.get("video_session") or {}).get("creator_id")
@@ -224,9 +257,13 @@ def chat_plan(url: str, duration: float, http=None) -> tuple[int, datetime, floa
         slug = link.channel
         if not slug:
             slug = parse(canonical(url, http)).channel  # type: ignore[union-attr]
-        ch = _channel(http, slug)
-        v = _vod_entry(http, ch["id"], link.id)
-        start, length = v.get("start_time"), float(duration or v.get("duration") or 0)
+        ls = _video_v1(http, link.id).get("livestream") or {}
+        if ls.get("start_time"):  # 1.2.57: the v1 video knows its stream's start
+            start, length = ls["start_time"], float(duration or (float(ls.get("duration") or 0) / 1000) or 0)
+        else:
+            ch = _channel(http, slug)
+            v = _vod_entry(http, ch["id"], link.id)
+            start, length = v.get("start_time"), float(duration or v.get("duration") or 0)
     if not start or not slug:
         return None
     chat_id = (_channel(http, slug).get("chatroom") or {}).get("id")
