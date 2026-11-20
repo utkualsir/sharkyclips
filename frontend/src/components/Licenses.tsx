@@ -5,6 +5,7 @@ import { aboutApi, type AiVoiceInfo, type LicensesView, type ModelLicense } from
 import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
 import { Toggle } from "./ui";
+import { href } from "../router";
 
 function Ext({ href, children }: { href?: string; children: React.ReactNode }) {
   if (!href) return <>{children}</>;
@@ -61,6 +62,18 @@ export function LicenseList({ items }: { items: ModelLicense[] }) {
 }
 
 /** Settings: the app's version and license, and the licenses of the optional AI models. */
+/** 1.2.58: About -> the Updates page (every version's notes). */
+function UpdatesLink() {
+  const { t } = useI18n();
+  return (
+    <p style={{ margin: "4px 0 0" }}>
+      <a className="btn btn-sm" href={href.updates}>
+        <Icon name="sparkles" size={14} /> {t("updates.open")}
+      </a>
+    </p>
+  );
+}
+
 export function AboutCard({ easy }: { easy?: boolean }) {
   const { t } = useI18n();
   const [data, setData] = useState<LicensesView | null>(null);
@@ -85,6 +98,7 @@ export function AboutCard({ easy }: { easy?: boolean }) {
         <p className="muted" style={{ marginTop: 0 }}>
           {intro}
         </p>
+        <UpdatesLink />
         {body}
       </section>
     );
@@ -93,6 +107,7 @@ export function AboutCard({ easy }: { easy?: boolean }) {
       <div>
         <h2>{t("about.title")}</h2>
         <p>{intro}</p>
+        <UpdatesLink />
       </div>
       {body}
     </section>

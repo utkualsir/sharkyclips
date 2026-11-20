@@ -968,6 +968,23 @@ def api_changelog(version: str, lang: str = "en") -> dict:
     return entry
 
 
+@app.get("/api/releases")
+def api_releases(lang: str = "en") -> dict:
+    """1.2.58 Updates page: every version, newest first, in `lang` (English fallback)."""
+    from .. import languages, welcome
+
+    code = languages.get(lang).code if languages.get(lang) else "en"
+    return {"current": __version__, "lang": code, "entries": welcome.release_history(code)}
+
+
+@app.post("/api/app/updates-seen")
+def api_updates_seen(body: dict | None = None) -> dict:
+    from .. import welcome
+
+    welcome.mark_updates_seen(str((body or {}).get("version") or __version__))
+    return welcome.app_state()
+
+
 @app.post("/api/app/whats-new-seen")
 def api_whats_new_seen(body: dict | None = None) -> dict:
     from .. import welcome

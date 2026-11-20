@@ -13,11 +13,16 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
 - The version lives in **one place: `VERSION`** at the repo root. The backend (`sharkyclips.__version__`,
   the UI via `/api/meta` and `/api/app`), the CLI, the updater and both installers read it. Never
   write the version anywhere else by hand (the README badge is the one exception: update it too).
-- Every bump gets a **CHANGELOG.md** entry `## [x.y.z] - YYYY-MM-DD`: English first, then Turkish
-  after `<!-- lang:tr -->`, then short summaries for de / hu / ru / ar / zh, each after
-  `<!-- lang:xx -->` inside `<details><summary>Language</summary> ... </details>`. The app's
-  "What's new in x.y.z" popup shows the block of the UI language (English fallback), once per
-  version (config `seen_version`), so write it for users, not developers.
+- Every bump gets a **CHANGELOG.md** entry `## [x.y.z] - YYYY-MM-DD`, written in **simple English
+  first** (max B2, no file names, no code, no developer jargon): a 1-2 line summary paragraph, then
+  the details under `### New` / `### Improved` / `### Fixed`. Then Turkish after `<!-- lang:tr -->`
+  (summary + `### Yeni` / `### İyileştirmeler` / `### Düzeltmeler`), then es / pt / de / fr / hu /
+  ru / ar / zh / ja, each after `<!-- lang:xx -->` inside `<details><summary>Language</summary> ...
+  </details>`, translated from the English (summary first; group headings in that language, see
+  `welcome.GROUP_HEADINGS`). The app's "What's new in x.y.z" popup (once per version, config
+  `seen_version`) and the **Updates** page (every version, `welcome.release_history`, "New" badge
+  until opened, config `updates_seen`) show the block of the UI language, English fallback.
+  `test_updates_page.py` checks the format, so write it for users, not developers.
 - Build the UI (`npm run build`) AFTER the VERSION bump: the bundle carries the version it was
   built from (`test_committed_ui_build_matches_version` fails otherwise; a build made before the
   bump caused the 1.2.47 / 1.2.49 "updated to an older version" bar).

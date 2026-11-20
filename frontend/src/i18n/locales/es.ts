@@ -3051,6 +3051,20 @@ const es: Record<string, string> = {
   "chan.manage": "Gestionar canales",
   "chan.from_title": "De este canal y directo",
   "trash.clean_source": "Vídeo original de un directo del canal",
+  "nav.updates": "Novedades",
+  "updates.badge": "Nuevo",
+  "updates.title": "Novedades",
+  "updates.lede": "Todas las versiones de SharkyClips, la más nueva primero. Abre una para ver qué es nuevo, qué mejoró y qué se arregló.",
+  "updates.search": "Buscar en las novedades",
+  "updates.none": "Ninguna novedad coincide con \"{q}\".",
+  "updates.current": "Tu versión",
+  "updates.details": "Detalles",
+  "updates.english_only": "Los detalles de esta versión solo están en inglés.",
+  "updates.kind.new": "Nuevo",
+  "updates.kind.improved": "Mejoras",
+  "updates.kind.fixed": "Correcciones",
+  "updates.kind.other": "Cambios",
+  "updates.open": "Todas las novedades",
 };
 
 export default es;

@@ -1546,6 +1546,8 @@ export interface AppState {
   onboarding: boolean;
   /** version whose "What's new" should be shown once */
   whats_new: string | null;
+  /** 1.2.58: "New" badge on the Updates menu item (this version's notes not opened yet) */
+  updates_new?: boolean;
   /** "under construction" banner (fresh flag) */
   dev: DevState | null;
   /** flag older than 12 h: no banner, a note in Settings */
@@ -1593,6 +1595,16 @@ export interface ChangelogEntry {
   markdown: string;
 }
 
+/** 1.2.58 Updates page: one version of CHANGELOG.md */
+export interface ReleaseEntry {
+  version: string;
+  date: string | null;
+  summary: string;
+  summary_lang: string;
+  groups: { kind: "new" | "improved" | "fixed" | "other"; markdown: string }[];
+  details_lang: string;
+}
+
 export interface HardwareCheck {
   cpu: string;
   cores: number;
@@ -1615,6 +1627,9 @@ export const api = {
   changelog: (version: string, lang: string) =>
     req<ChangelogEntry>("GET", `/api/changelog/${encodeURIComponent(version)}?lang=${encodeURIComponent(lang)}`),
   whatsNewSeen: (version: string) => req<AppState>("POST", "/api/app/whats-new-seen", { version }),
+  releases: (lang: string) =>
+    req<{ current: string; lang: string; entries: ReleaseEntry[] }>("GET", `/api/releases?lang=${encodeURIComponent(lang)}`),
+  updatesSeen: (version: string) => req<AppState>("POST", "/api/app/updates-seen", { version }),
   finishOnboarding: (body: { ui_language?: string; content_types?: string[]; performance_mode?: string }) =>
     req<AppState & { settings: Settings }>("POST", "/api/app/onboarding", body),
   hardwareCheck: () => req<HardwareCheck>("GET", "/api/app/hardware"),

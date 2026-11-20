@@ -2987,6 +2987,20 @@ const de: Record<string, string> = {
   "chan.manage": "Kanäle verwalten",
   "chan.from_title": "Aus diesem Kanal und Stream",
   "trash.clean_source": "Quellvideo eines Kanal-Streams",
+  "nav.updates": "Updates",
+  "updates.badge": "Neu",
+  "updates.title": "Updates",
+  "updates.lede": "Alle Versionen von SharkyClips, die neueste zuerst. Öffne eine, um zu sehen, was neu, besser und behoben ist.",
+  "updates.search": "Updates durchsuchen",
+  "updates.none": "Kein Update passt zu „{q}“.",
+  "updates.current": "Deine Version",
+  "updates.details": "Details",
+  "updates.english_only": "Die Details dieser Version gibt es nur auf Englisch.",
+  "updates.kind.new": "Neu",
+  "updates.kind.improved": "Verbessert",
+  "updates.kind.fixed": "Behoben",
+  "updates.kind.other": "Änderungen",
+  "updates.open": "Alle Updates",
 };
 
 export default de;

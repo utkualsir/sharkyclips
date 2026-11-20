@@ -3039,6 +3039,20 @@ const ru: Record<string, string> = {
   "chan.manage": "Управлять каналами",
   "chan.from_title": "С этого канала и стрима",
   "trash.clean_source": "Исходное видео стрима канала",
+  "nav.updates": "Обновления",
+  "updates.badge": "Новое",
+  "updates.title": "Обновления",
+  "updates.lede": "Все версии SharkyClips, самые новые сверху. Откройте версию, чтобы увидеть новое, улучшения и исправления.",
+  "updates.search": "Поиск по обновлениям",
+  "updates.none": "Нет обновлений по запросу «{q}».",
+  "updates.current": "Ваша версия",
+  "updates.details": "Подробнее",
+  "updates.english_only": "Подробности этой версии есть только на английском.",
+  "updates.kind.new": "Новое",
+  "updates.kind.improved": "Улучшения",
+  "updates.kind.fixed": "Исправления",
+  "updates.kind.other": "Изменения",
+  "updates.open": "Все обновления",
 };
 
 export default ru;

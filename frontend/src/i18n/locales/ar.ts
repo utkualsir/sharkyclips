@@ -2932,6 +2932,20 @@ const ar: Record<string, string> = {
   "chan.manage": "إدارة القنوات",
   "chan.from_title": "من هذه القناة وهذا البث",
   "trash.clean_source": "الفيديو المصدر لبث قناة",
+  "nav.updates": "التحديثات",
+  "updates.badge": "جديد",
+  "updates.title": "التحديثات",
+  "updates.lede": "كل إصدارات SharkyClips، الأحدث أولاً. افتح إصدارًا لترى الجديد وما تحسّن وما تم إصلاحه.",
+  "updates.search": "ابحث في التحديثات",
+  "updates.none": "لا يوجد تحديث يطابق \"{q}\".",
+  "updates.current": "إصدارك",
+  "updates.details": "التفاصيل",
+  "updates.english_only": "تفاصيل هذا الإصدار متوفرة بالإنجليزية فقط.",
+  "updates.kind.new": "جديد",
+  "updates.kind.improved": "تحسينات",
+  "updates.kind.fixed": "إصلاحات",
+  "updates.kind.other": "التغييرات",
+  "updates.open": "كل التحديثات",
 };
 
 export default ar;

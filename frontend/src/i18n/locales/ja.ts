@@ -3184,6 +3184,20 @@ const ja: Record<string, string> = {
   "chan.manage": "チャンネルを管理",
   "chan.from_title": "このチャンネルと配信から",
   "trash.clean_source": "チャンネル配信の元動画",
+  "nav.updates": "アップデート",
+  "updates.badge": "新着",
+  "updates.title": "アップデート",
+  "updates.lede": "SharkyClips のすべてのバージョン（新しい順）。開くと、新機能・改善・修正を確認できます。",
+  "updates.search": "アップデートを検索",
+  "updates.none": "「{q}」に一致するアップデートはありません。",
+  "updates.current": "使用中",
+  "updates.details": "詳細",
+  "updates.english_only": "このバージョンの詳細は英語のみです。",
+  "updates.kind.new": "新機能",
+  "updates.kind.improved": "改善",
+  "updates.kind.fixed": "修正",
+  "updates.kind.other": "変更点",
+  "updates.open": "すべてのアップデート",
 };
 
 export default ja;

@@ -2953,6 +2953,20 @@ const tr: Record<string, string> = {
   "chan.manage": "Kanalları yönet",
   "chan.from_title": "Bu kanal ve yayından",
   "trash.clean_source": "Kanal yayınının kaynak videosu",
+  "nav.updates": "Güncellemeler",
+  "updates.badge": "Yeni",
+  "updates.title": "Güncellemeler",
+  "updates.lede": "SharkyClips'in tüm sürümleri, en yenisi başta. Neyin yeni olduğunu, neyin iyileştiğini ve neyin düzeltildiğini görmek için birini aç.",
+  "updates.search": "Güncellemelerde ara",
+  "updates.none": "\"{q}\" ile eşleşen güncelleme yok.",
+  "updates.current": "Senin sürümün",
+  "updates.details": "Ayrıntılar",
+  "updates.english_only": "Bu sürümün ayrıntıları yalnızca İngilizce.",
+  "updates.kind.new": "Yeni",
+  "updates.kind.improved": "İyileştirmeler",
+  "updates.kind.fixed": "Düzeltmeler",
+  "updates.kind.other": "Değişiklikler",
+  "updates.open": "Tüm güncellemeler",
 };
 
 export default tr;

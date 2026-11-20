@@ -35,8 +35,30 @@ const PublishQueue = lazy(() => import("./pages/PublishQueue"));
 const Trash = lazy(() => import("./pages/Trash"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Approve = lazy(() => import("./pages/Approve"));
+const Updates = lazy(() => import("./pages/Updates"));
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
+
+/** 1.2.58: "Updates" (release history) with a small "New" badge after an update until opened. */
+function UpdatesNavLink({ active }: { active: boolean }) {
+  const { t } = useI18n();
+  const { state } = useAppState();
+  const fresh = !!state?.updates_new && !active;
+  return (
+    <a
+      href={href.updates}
+      aria-current={active ? "page" : undefined}
+      aria-label={fresh ? `${t("nav.updates")} (${t("updates.badge")})` : undefined}
+    >
+      {t("nav.updates")}
+      {fresh && (
+        <span className="nav-new" aria-hidden="true">
+          {t("updates.badge")}
+        </span>
+      )}
+    </a>
+  );
+}
 
 /** Easy mode: three places, the Pro switch, language and theme. Nothing else. */
 function EasyTopBar() {
@@ -65,6 +87,7 @@ function EasyTopBar() {
         <a href={href.settings} aria-current={route.name === "settings" || route.name === "trash" ? "page" : undefined}>
           {t("nav.settings")}
         </a>
+        <UpdatesNavLink active={route.name === "updates"} />
       </nav>
       <div className="topbar-spacer" />
       <div className="topbar-actions">
@@ -131,6 +154,7 @@ function TopBar() {
         <a href={href.settings} aria-current={route.name === "settings" || route.name === "trash" ? "page" : undefined}>
           {t("nav.settings")}
         </a>
+        <UpdatesNavLink active={route.name === "updates"} />
       </nav>
       <div className="topbar-spacer" />
       <div className="topbar-actions">
@@ -254,6 +278,7 @@ export default function App() {
         {route.name === "publish" && (easy ? <EasyLibrary /> : <ClipLibrary view={route.view} />)}
         {route.name === "pubqueue" && <PublishQueue />}
         {route.name === "trash" && <Trash />}
+        {route.name === "updates" && <Updates />}
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />

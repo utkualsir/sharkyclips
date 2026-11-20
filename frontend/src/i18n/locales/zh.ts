@@ -2925,6 +2925,20 @@ const zh: Record<string, string> = {
   "chan.manage": "管理频道",
   "chan.from_title": "来自此频道和直播",
   "trash.clean_source": "频道直播的源视频",
+  "nav.updates": "更新",
+  "updates.badge": "新",
+  "updates.title": "更新",
+  "updates.lede": "SharkyClips 的所有版本，最新的在前。打开一个版本，查看新功能、改进和修复。",
+  "updates.search": "搜索更新",
+  "updates.none": "没有与“{q}”匹配的更新。",
+  "updates.current": "你的版本",
+  "updates.details": "详情",
+  "updates.english_only": "此版本的详情只有英文。",
+  "updates.kind.new": "新功能",
+  "updates.kind.improved": "改进",
+  "updates.kind.fixed": "修复",
+  "updates.kind.other": "变更",
+  "updates.open": "所有更新",
 };
 
 export default zh;

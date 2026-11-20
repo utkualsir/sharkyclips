@@ -2956,6 +2956,20 @@ const hu: Record<string, string> = {
   "chan.manage": "Csatornák kezelése",
   "chan.from_title": "Ebből a csatornából és adásból",
   "trash.clean_source": "Egy csatornaadás forrásvideója",
+  "nav.updates": "Frissítések",
+  "updates.badge": "Új",
+  "updates.title": "Frissítések",
+  "updates.lede": "A SharkyClips összes verziója, a legújabb elöl. Nyiss meg egyet, és lásd, mi új, mi lett jobb és mit javítottunk.",
+  "updates.search": "Keresés a frissítésekben",
+  "updates.none": "Nincs a(z) „{q}” keresésnek megfelelő frissítés.",
+  "updates.current": "A te verziód",
+  "updates.details": "Részletek",
+  "updates.english_only": "Ennek a verziónak a részletei csak angolul érhetők el.",
+  "updates.kind.new": "Új",
+  "updates.kind.improved": "Fejlesztések",
+  "updates.kind.fixed": "Javítások",
+  "updates.kind.other": "Változások",
+  "updates.open": "Összes frissítés",
 };
 
 export default hu;

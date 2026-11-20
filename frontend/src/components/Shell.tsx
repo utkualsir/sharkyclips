@@ -303,6 +303,10 @@ export function Footer({ onWhatsNew }: { onWhatsNew: () => void }) {
       <button className="link-btn" onClick={onWhatsNew}>
         {t("whatsnew.link")}
       </button>
+      <span aria-hidden="true">·</span>
+      <a className="link-btn" href="#/updates">
+        {t("updates.open")}
+      </a>
     </footer>
   );
 }

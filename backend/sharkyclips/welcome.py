@@ -4,6 +4,10 @@
                already have projects).
   what's new   config `seen_version`; after an update the UI shows this version's CHANGELOG.md
                entry once, in the UI language (<!-- lang:xx --> blocks, English fallback).
+  updates      1.2.58: the "Updates" page lists every CHANGELOG.md version (newest first): a short
+               summary and the details grouped as New / Improved / Fixed, in the UI language
+               (English fallback). config `updates_seen`: the menu item shows "New" until the page
+               is opened after an update.
   dev flag     <config dir>/dev_in_progress.json {"started_at", "task"}: written by the developer
                (a development session) while an update is being built; the UI shows an "under construction"
                banner. Older than 12 hours = stale: no banner, only a note in Settings.
@@ -98,6 +102,107 @@ def changelog_entry(version: str, lang: str = "en", path: Path = CHANGELOG) -> d
     return {"version": version, "date": date, "lang": chosen, "markdown": md}
 
 
+# Group headings of the release notes, in every UI language (### New / ### Yeni / ...).
+GROUPS = ("new", "improved", "fixed")
+GROUP_HEADINGS = {
+    "new": ("new", "yeni", "nuevo", "novo", "новое", "neu", "nouveau", "جديد", "新功能", "新機能", "új"),
+    "improved": ("improved", "iyileştirmeler", "mejoras", "melhorias", "улучшения", "verbessert", "améliorations",
+                 "تحسينات", "改进", "改善", "fejlesztések"),
+    "fixed": ("fixed", "düzeltmeler", "correcciones", "correções", "исправления", "behoben", "corrections",
+              "إصلاحات", "修复", "修正", "javítások"),
+}
+
+
+def _norm(heading: str) -> str:
+    """casefold, and Turkish "İ" without the combining dot that casefold() leaves behind."""
+    return heading.strip().strip("*: ").casefold().replace("\u0307", "")
+
+
+_HEADING_KIND = {_norm(h): k for k, hs in GROUP_HEADINGS.items() for h in hs}
+
+
+def _blocks(body: str) -> dict[str, str]:
+    """{lang: markdown} of one CHANGELOG section (English = the text before the first marker)."""
+    parts = re.split(r"<!--\s*lang:([a-z]{2})\s*-->", body)
+    blocks = {"en": parts[0]}
+    for code, chunk in zip(parts[1::2], parts[2::2]):
+        blocks[code] = chunk
+    for code, md in blocks.items():
+        md = re.sub(r"</?details>|<summary>.*?</summary>", "", md, flags=re.S).strip()
+        blocks[code] = re.sub(r"^\*\*[^*\n]{2,20}\*\*\s*\n", "", md)  # "**Türkçe**" label for GitHub readers
+    return blocks
+
+
+def parse_release(md: str) -> dict:
+    """One language block -> {"summary", "groups": {new|improved|fixed|other: markdown}}.
+
+    The summary is the first paragraph (plain text before any heading or list); the groups are
+    the ### New / ### Improved / ### Fixed sections (headings in any UI language). Lists under
+    another heading (older entries) land in "other"."""
+    summary: list[str] = []
+    groups: dict[str, list[str]] = {}
+    cur: str | None = None
+    seen_body = False
+    for raw in md.replace("\r", "").split("\n"):
+        line = raw.rstrip()
+        h = re.match(r"^#{2,4}\s+(.*)$", line)
+        if h:
+            seen_body = True
+            cur = _HEADING_KIND.get(_norm(h.group(1)), "other")
+            continue
+        if re.match(r"^\s*<!--.*-->\s*$", line):
+            continue
+        if not seen_body and not re.match(r"^\s*[-*]\s+", line):
+            if line.strip():
+                summary.append(line.strip())
+            elif summary:
+                seen_body = True
+            continue
+        seen_body = True
+        if not line.strip() and cur is None:
+            continue
+        groups.setdefault(cur or "other", []).append(line)
+    out = {k: "\n".join(v).strip() for k, v in groups.items() if "\n".join(v).strip()}
+    return {"summary": " ".join(summary), "groups": out}
+
+
+def release_history(lang: str = "en", path: Path = CHANGELOG) -> list[dict]:
+    """Every CHANGELOG.md version, newest first: {"version", "date", "summary", "summary_lang",
+    "groups": [{"kind", "markdown"}], "details_lang"}. Text in `lang` where the entry has it,
+    else English."""
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    out = []
+    for m in re.finditer(r"^## \[([^\]]+)\][^\n]*\n(.*?)(?=^## \[|\Z)", text, re.M | re.S):
+        version = m.group(1)
+        head = m.group(0).splitlines()[0]
+        date = (re.search(r"\d{4}-\d{2}-\d{2}", head) or [None])[0]
+        blocks = _blocks(m.group(2))
+        en = parse_release(blocks["en"])
+        mine = parse_release(blocks[lang]) if lang != "en" and blocks.get(lang, "").strip() else None
+        summary, s_lang = (mine["summary"], lang) if mine and mine["summary"] else (en["summary"], "en")
+        groups, d_lang = (mine["groups"], lang) if mine and mine["groups"] else (en["groups"], "en")
+        order = [*GROUPS, "other"]
+        out.append({"version": version, "date": date, "summary": summary, "summary_lang": s_lang,
+                    "groups": [{"kind": k, "markdown": groups[k]} for k in order if k in groups],
+                    "details_lang": d_lang})
+    return out
+
+
+def updates_new(cfg: dict | None = None) -> bool:
+    """The "New" badge on the Updates menu item: this version's notes weren't opened yet."""
+    cfg = cfg if cfg is not None else config.load()
+    if cfg.get("updates_seen") == __version__ or onboarding_needed(cfg):
+        return False
+    return changelog_entry(__version__) is not None
+
+
+def mark_updates_seen(version: str = __version__) -> None:
+    config.update(updates_seen=version)
+
+
 # ------------------------------------------------------------------ onboarding / what's new
 
 
@@ -135,7 +240,7 @@ def finish_onboarding(body: dict) -> dict:
     """Save the onboarding answers (all optional; Skip sends nothing)."""
     from . import governor, languages
 
-    changes: dict = {"onboarding_done": True, "seen_version": __version__}
+    changes: dict = {"onboarding_done": True, "seen_version": __version__, "updates_seen": __version__}
     if body.get("ui_language"):
         changes["ui_language"] = languages.require(str(body["ui_language"])).code
     types = [t for t in (body.get("content_types") or []) if t in CONTENT_TYPES]
@@ -156,7 +261,7 @@ def app_state() -> dict:
 
     rs = updater.restart_state()
     return {"version": __version__, "disk_version": rs["disk"], "restart_needed": rs["restart_needed"],
-            "onboarding": onboarding_needed(cfg), "whats_new": whats_new(cfg),
+            "onboarding": onboarding_needed(cfg), "whats_new": whats_new(cfg), "updates_new": updates_new(cfg),
             "dev": dev if dev and not dev["stale"] else None, "dev_stale": dev if dev and dev["stale"] else None,
             "content_types": cfg.get("content_types") or [cfg.get("default_mode") or "gaming"],
             "youtube_signed_out": _yt_signed_out(), "instagram_manual": _ig_manual(),

@@ -2999,6 +2999,20 @@ const en: Record<string, string> = {
   "chan.manage": "Manage channels",
   "chan.from_title": "From this channel and stream",
   "trash.clean_source": "Source video of a channel stream",
+  "nav.updates": "Updates",
+  "updates.badge": "New",
+  "updates.title": "Updates",
+  "updates.lede": "Every version of SharkyClips, newest first. Open one to see what is new, what got better and what was fixed.",
+  "updates.search": "Search the updates",
+  "updates.none": "No update matches \"{q}\".",
+  "updates.current": "Your version",
+  "updates.details": "Details",
+  "updates.english_only": "The details of this version are only in English.",
+  "updates.kind.new": "New",
+  "updates.kind.improved": "Improved",
+  "updates.kind.fixed": "Fixed",
+  "updates.kind.other": "Changes",
+  "updates.open": "All updates",
 };
 
 export default en;
