@@ -9,6 +9,208 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.58] - 2026-11-20
+Animated graphics on your gaming clips, a new Updates page with every version's notes, and English as the start language for new users.
+
+### New
+- **Animated graphics on clips.** A kill counter that counts up, banners for big moments (DOUBLE KILL,
+  PENTAKILL, ACE, CLUTCH, SPIKE PLANTED and more), round wins and match results, and the big numbers
+  you say ("21 KILL", "1v4") pop in for a moment with a small icon, in your brand colours.
+- **Careful placement.** Only one graphic at a time, never longer than 1.5 seconds, never over your
+  facecam, the captions, the title text, the middle of the game picture or the buttons of Shorts,
+  TikTok and Reels. If there is no free spot, the graphic is skipped.
+- **Two styles:** Minimal (the default) and Bold, or Off. In Easy mode it is one switch in Settings;
+  in Pro mode you find it under the effects. Every game has its own moments, and you can add your
+  own game.
+- **Updates page.** A new **Updates** item in the menu lists every version, newest first: the date, a
+  short summary and the details as New / Improved / Fixed, in your language. Search it, and open any
+  version. A small "New" badge shows after an update until you open the page. You also find it in
+  Settings > About.
+
+### Improved
+- **The preview shows the graphics exactly like the finished clip:** same moment, same place, same
+  movement. With "reduce motion" on, the preview only fades them in and out.
+- **Light on your PC.** The graphics are drawn by the processor, no graphics card needed. On the Light
+  speed preset they use simple fades. Captions, bleeps and timing don't change.
+- **Clearer release notes.** Every version now starts with a one- or two-line summary in simple
+  English, and the notes no longer use technical words.
+- **English first for new users.** A new install starts in English. If you already picked a language,
+  it stays. The language button is on the home screen and in the top bar (also in Pro mode).
+
+<!-- lang:tr -->
+**Türkçe**
+
+Oyun kliplerinde hareketli grafikler, her sürümün notlarını gösteren yeni Güncellemeler sayfası ve yeni kullanıcılar için başlangıç dili olarak İngilizce.
+
+### Yeni
+- **Kliplerde hareketli grafikler.** Artan bir kill sayacı, büyük anlar için bantlar (DOUBLE KILL,
+  PENTAKILL, ACE, CLUTCH, SPIKE PLANTED ve dahası), kazanılan raundlar ve maç sonuçları ile
+  söylediğin büyük sayılar ("21 KILL", "1v4") küçük bir simgeyle, marka renklerinde bir anlığına
+  beliriyor.
+- **Özenli yerleşim.** Aynı anda tek grafik, en fazla 1,5 saniye; yüz kameranın, altyazıların, başlık
+  yazısının, oyun görüntüsünün ortasının ve Shorts, TikTok, Reels düğmelerinin üstüne asla gelmez.
+  Boş yer yoksa grafik atlanır.
+- **İki stil:** Sade (varsayılan) ve Belirgin, ya da Kapalı. Kolay modda Ayarlar'da tek bir anahtar;
+  Pro modda efektlerin altında. Her oyunun kendi anları var ve kendi oyununu da ekleyebilirsin.
+- **Güncellemeler sayfası.** Menüdeki yeni **Güncellemeler** öğesi tüm sürümleri en yenisi başta
+  listeliyor: tarih, kısa bir özet ve Yeni / İyileştirmeler / Düzeltmeler olarak ayrıntılar, senin
+  dilinde. Arama yapabilir, istediğin sürümü açabilirsin. Güncellemeden sonra sayfayı açana kadar
+  küçük bir "Yeni" rozeti görünür. Ayarlar > Hakkında'da da var.
+
+### İyileştirmeler
+- **Önizleme grafikleri bitmiş klipteki gibi gösteriyor:** aynı an, aynı yer, aynı hareket. "Hareketi
+  azalt" açıksa önizleme onları sadece belirip kaybolarak gösterir.
+- **Bilgisayarını yormaz.** Grafikleri işlemci çiziyor, ekran kartı gerekmez. Hafif hız ayarında basit
+  geçişler kullanılır. Altyazılar, bip'ler ve zamanlama değişmez.
+- **Daha anlaşılır sürüm notları.** Her sürüm artık basit bir bir-iki satırlık özetle başlıyor ve
+  notlarda teknik kelimeler yok.
+- **Yeni kullanıcılar için önce İngilizce.** Yeni bir kurulum İngilizce açılır. Daha önce bir dil
+  seçtiysen o kalır. Dil düğmesi ana ekranda ve üst çubukta (Pro modda da).
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Gráficos animados en tus clips de juegos, una nueva página Novedades con las notas de cada versión e inglés como idioma inicial para usuarios nuevos.
+
+### Nuevo
+- **Gráficos animados:** un contador de bajas, rótulos para los grandes momentos (PENTAKILL, ACE, CLUTCH...), rondas ganadas y los números que dices ("21 KILL", "1v4"), con un icono y en tus colores de marca.
+- Solo uno a la vez, como máximo 1,5 s, nunca encima de tu cámara, los subtítulos, el centro de la partida ni los botones de Shorts, TikTok y Reels. Estilos Mínimo (por defecto), Llamativo o No; en el modo Fácil, un interruptor.
+- **Página Novedades:** todas las versiones con resumen y detalles (Nuevo / Mejoras / Correcciones), buscador y una insignia "Nuevo" tras cada actualización.
+
+### Mejoras
+- La vista previa muestra los gráficos igual que el clip final. Funcionan sin tarjeta gráfica; subtítulos y pitidos no cambian.
+- Las instalaciones nuevas empiezan en inglés; tu idioma elegido se mantiene.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Gráficos animados nos seus clipes de jogos, uma nova página Atualizações com as notas de cada versão e inglês como idioma inicial para novos usuários.
+
+### Novo
+- **Gráficos animados:** um contador de abates, faixas para os grandes momentos (PENTAKILL, ACE, CLUTCH...), rodadas vencidas e os números que você fala ("21 KILL", "1v4"), com um ícone e nas cores da sua marca.
+- Só um por vez, no máximo 1,5 s, nunca sobre a sua câmera, as legendas, o centro da partida ou os botões de Shorts, TikTok e Reels. Estilos Mínimo (padrão), Chamativo ou Desligado; no modo Fácil, um botão.
+- **Página Atualizações:** todas as versões com resumo e detalhes (Novo / Melhorias / Correções), busca e um selo "Novo" depois de cada atualização.
+
+### Melhorias
+- A prévia mostra os gráficos igual ao clipe final. Funcionam sem placa de vídeo; legendas e bipes não mudam.
+- Instalações novas começam em inglês; o idioma que você escolheu continua.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Animierte Grafiken in deinen Gaming-Clips, eine neue Seite Updates mit den Notizen jeder Version und Englisch als Startsprache für neue Nutzer.
+
+### Neu
+- **Animierte Grafiken:** ein Kill-Zähler, Banner für große Momente (PENTAKILL, ACE, CLUTCH ...), gewonnene Runden und Zahlen, die du sagst („21 KILL“, „1v4“), mit Symbol und in deinen Markenfarben.
+- Immer nur eine, höchstens 1,5 s, nie über deiner Facecam, den Untertiteln, der Bildmitte oder den Buttons von Shorts, TikTok und Reels. Stile Dezent (Standard), Auffällig oder Aus; im einfachen Modus ein Schalter.
+- **Seite Updates:** alle Versionen mit Zusammenfassung und Details (Neu / Verbessert / Behoben), Suche und einem „Neu“-Abzeichen nach jedem Update.
+
+### Verbessert
+- Die Vorschau zeigt die Grafiken genau wie der fertige Clip. Keine Grafikkarte nötig; Untertitel und Pieptöne bleiben gleich.
+- Neue Installationen starten auf Englisch; deine gewählte Sprache bleibt.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Des graphismes animés sur tes clips de jeu, une nouvelle page Mises à jour avec les notes de chaque version, et l'anglais comme langue de départ pour les nouveaux utilisateurs.
+
+### Nouveau
+- **Graphismes animés :** un compteur de kills, des bandeaux pour les grands moments (PENTAKILL, ACE, CLUTCH...), les manches gagnées et les chiffres que tu dis (« 21 KILL », « 1v4 »), avec une icône et dans tes couleurs de marque.
+- Un seul à la fois, 1,5 s au plus, jamais sur ta caméra, les sous-titres, le centre de l'image ou les boutons de Shorts, TikTok et Reels. Styles Discret (par défaut), Marqué ou Non ; en mode Facile, un interrupteur.
+- **Page Mises à jour :** toutes les versions avec un résumé et les détails (Nouveau / Améliorations / Corrections), une recherche et un badge « Nouveau » après chaque mise à jour.
+
+### Améliorations
+- L'aperçu montre les graphismes exactement comme le clip final. Pas besoin de carte graphique ; sous-titres et bips inchangés.
+- Les nouvelles installations démarrent en anglais ; la langue que tu as choisie reste.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Animált grafikák a játékklipjeiden, új Frissítések oldal minden verzió jegyzeteivel, és angol kezdőnyelv az új felhasználóknak.
+
+### Új
+- **Animált grafikák:** killszámláló, feliratok a nagy pillanatokhoz (PENTAKILL, ACE, CLUTCH...), megnyert körök és az általad mondott számok („21 KILL”, „1v4”), ikonnal, a márkaszíneidben.
+- Egyszerre csak egy, legfeljebb 1,5 mp, soha nem takarja a kamerád, a feliratot, a kép közepét vagy a Shorts, TikTok és Reels gombjait. Stílusok: Visszafogott (alap), Feltűnő vagy Ki; Egyszerű módban egy kapcsoló.
+- **Frissítések oldal:** minden verzió összefoglalóval és részletekkel (Új / Fejlesztések / Javítások), kereséssel és „Új” jelvénnyel frissítés után.
+
+### Fejlesztések
+- Az előnézet pontosan úgy mutatja a grafikákat, mint a kész klip. Nem kell videókártya; a feliratok és sípolások nem változnak.
+- Az új telepítések angolul indulnak; a már kiválasztott nyelved megmarad.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Анимированная графика в игровых клипах, новая страница «Обновления» с заметками каждой версии и английский как стартовый язык для новых пользователей.
+
+### Новое
+- **Анимированная графика:** счётчик убийств, плашки для ярких моментов (PENTAKILL, ACE, CLUTCH...), выигранные раунды и сказанные вами числа («21 KILL», «1v4») — со значком и в ваших фирменных цветах.
+- Только одна за раз, не дольше 1,5 с, никогда поверх камеры, субтитров, центра картинки или кнопок Shorts, TikTok и Reels. Стили: «Минимум» (по умолчанию), «Яркий» или «Выкл.»; в простом режиме — один переключатель.
+- **Страница «Обновления»:** все версии с кратким итогом и подробностями (Новое / Улучшения / Исправления), поиск и значок «Новое» после обновления.
+
+### Улучшения
+- Предпросмотр показывает графику точно как в готовом клипе. Видеокарта не нужна; субтитры и запикивание не меняются.
+- Новые установки запускаются на английском; выбранный вами язык сохраняется.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+رسومات متحركة في مقاطع ألعابك، وصفحة "التحديثات" الجديدة بملاحظات كل إصدار، والإنجليزية كلغة البدء للمستخدمين الجدد.
+
+### جديد
+- **رسومات متحركة:** عدّاد قتل، وشرائط للحظات الكبيرة (PENTAKILL وACE وCLUTCH...)، والجولات الرابحة، والأرقام التي تقولها ("21 KILL"، "1v4")، مع أيقونة وبألوان علامتك.
+- رسم واحد فقط في كل مرة، لمدة 1.5 ثانية على الأكثر، ولا يغطي كاميرتك أو الترجمة أو وسط الصورة أو أزرار Shorts وTikTok وReels أبدًا. الأنماط: بسيط (افتراضي) أو بارز أو إيقاف؛ وفي الوضع السهل مفتاح واحد.
+- **صفحة التحديثات:** كل الإصدارات مع ملخص وتفاصيل (جديد / تحسينات / إصلاحات)، وبحث، وشارة "جديد" بعد كل تحديث.
+
+### تحسينات
+- تعرض المعاينة الرسومات تمامًا كما في المقطع النهائي. لا حاجة لبطاقة رسومات؛ الترجمة والصافرات لا تتغير.
+- التثبيتات الجديدة تبدأ بالإنجليزية؛ وتبقى اللغة التي اخترتها.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+游戏剪辑中的动态图形、展示每个版本说明的新“更新”页面，以及新用户默认使用英语。
+
+### 新功能
+- **动态图形：**击杀计数、精彩时刻横幅（PENTAKILL、ACE、CLUTCH 等）、赢下的回合，以及你说出的数字（“21 KILL”、“1v4”），配有小图标并使用你的品牌颜色。
+- 同一时间只显示一个，最长 1.5 秒，绝不挡住你的摄像头、字幕、画面中央或 Shorts、TikTok、Reels 的按钮。样式：简约（默认）、醒目或关闭；简易模式中只有一个开关。
+- **“更新”页面：**所有版本的摘要和详情（新功能 / 改进 / 修复），可搜索，更新后菜单显示“新”标记。
+
+### 改进
+- 预览中的图形与最终剪辑完全一致。无需显卡；字幕和哔声不受影响。
+- 新安装默认英语；你已选择的语言保持不变。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+ゲームクリップにアニメーション表示、全バージョンのノートを見られる新しい「アップデート」ページ、新規ユーザーは英語でスタート。
+
+### 新機能
+- **アニメーション表示：**キルカウンター、見せ場のバナー（PENTAKILL・ACE・CLUTCH など）、ラウンド勝利、あなたが言った数字（「21 KILL」「1v4」）を、アイコン付き・ブランドカラーで一瞬表示します。
+- 表示は一度にひとつ、最長 1.5 秒。顔カメラ・字幕・画面中央・Shorts/TikTok/Reels のボタンには重なりません。スタイルはシンプル（既定）・派手・オフ。かんたんモードではスイッチひとつ。
+- **アップデートページ：**全バージョンの要約と詳細（新機能 / 改善 / 修正）、検索、更新後の「新着」バッジ。
+
+### 改善
+- プレビューのアニメーション表示は完成クリップと完全に同じです。グラフィックボード不要、字幕とピー音は変わりません。
+- 新規インストールは英語で始まり、選択済みの言語はそのまま残ります。
+
+</details>
+
 ## [1.2.57] - 2026-11-20
 Connect your Kick, Twitch or YouTube channel once, and SharkyClips makes clips from every new stream by itself.
 

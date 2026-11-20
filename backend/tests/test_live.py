@@ -481,10 +481,13 @@ def test_live_settings_api(tmp_path):
 def test_easy_fx_defaults_only_for_new_projects():
     from sharkyclips import easy as E
 
-    assert E.fx_options({"fx": True}) == {"replay": "auto", "chat_bubbles": True, "memes": "off"}
-    assert E.fx_options({"fx": False}) == {"replay": "off", "chat_bubbles": False, "memes": "off"}
+    # 1.2.58: + "graphics" (on for projects made from 1.2.58 on: "gfx")
+    assert E.fx_options({"fx": True, "gfx": True}) == {"replay": "auto", "chat_bubbles": True, "memes": "off",
+                                                       "graphics": "minimal"}
+    assert E.fx_options({"fx": True}) == {"replay": "auto", "chat_bubbles": True, "memes": "off", "graphics": "off"}
+    assert E.fx_options({"fx": False}) == {"replay": "off", "chat_bubbles": False, "memes": "off", "graphics": "off"}
     config.update(easy_memes="light", easy_replay=True)  # a switch the user flipped applies everywhere
-    assert E.fx_options({"fx": False}) == {"replay": "auto", "chat_bubbles": False, "memes": "light"}
+    assert E.fx_options({"fx": False}) == {"replay": "auto", "chat_bubbles": False, "memes": "light", "graphics": "off"}
 
 
 def test_service_tick_imports_a_simulated_obs_recording(tmp_path, monkeypatch):
