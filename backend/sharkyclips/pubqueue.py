@@ -564,7 +564,7 @@ MD = {
 
 
 def calendar_md(data: dict) -> str:
-    L = MD["tr" if (config.get("ui_language") or "tr") == "tr" else "en"]
+    L = MD["tr" if (config.get("ui_language") or "en") == "tr" else "en"]
     name = zone_name()
     lines = [f"# {L['title']}", "", "_" + L["tz"].format(tz=L["local"] if name == "local" else name) + "_", ""]
     now = now_local()

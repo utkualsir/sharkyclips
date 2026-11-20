@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import { api, ApiError, uploadFile, urls, type Job, type Mode, type ProjectSummary } from "../api";
 import { Icon } from "../components/Icons";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { ChannelSource } from "../components/Channels";
 import { DeleteDialog, useUndoToast } from "../components/Trash";
 import { fmtBytes as fmtSize } from "../format";
@@ -383,6 +384,7 @@ export default function Library() {
           <p className="lede">{t("library.lede")}</p>
         </div>
         <div className="inline-row" style={{ flexWrap: "wrap" }}>
+          <LanguageSwitcher />
           <a className="btn btn-ghost" href={href.trash}>
             <Icon name="trash" size={15} /> {t("trash.title")}
             {trashCount > 0 && <span className="nav-count mono">{trashCount}</span>}

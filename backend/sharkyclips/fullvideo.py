@@ -398,7 +398,7 @@ def after_upload(project: Project, video: dict, body: dict, draft: dict) -> dict
 
 
 def link_line(url: str, lang: str | None) -> str:
-    return f"Tam video: {url}" if (lang or "tr") == "tr" else f"Full video: {url}"
+    return f"Tam video: {url}" if (lang or "en") == "tr" else f"Full video: {url}"
 
 
 def full_video_url(project: Project) -> str | None:
