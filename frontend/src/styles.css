@@ -4779,7 +4779,7 @@ a.edit-note:hover { text-decoration: underline; }
   display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
   padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface);
 }
-.setup-item.present { opacity: 0.8; }
+.setup-item.present { background: transparent; }
 .setup-check { display: flex; align-items: flex-start; gap: 10px; min-width: 0; flex: 1 1 260px; cursor: pointer; }
 .setup-check input { margin-top: 3px; flex: none; }
 .setup-name { display: grid; gap: 2px; min-width: 0; }
