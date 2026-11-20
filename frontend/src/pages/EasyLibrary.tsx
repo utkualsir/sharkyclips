@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { easyApi, urls, type EasyLibRow } from "../api";
 import { Icon } from "../components/Icons";
+import { ChannelSource } from "../components/Channels";
 import { PostBadges } from "../components/PublishAll";
 import { WeeklyDigestCard } from "../components/EasyAuto";
 import { fmtCompact, fmtTime } from "../format";
@@ -102,6 +103,7 @@ export default function EasyLibrary() {
                     ) : (
                       <span className="muted" dir="auto">
                         {r.project_title}
+                        {r.channel?.name ? <ChannelSource c={r.channel} /> : null}
                       </span>
                     )}
                   </span>

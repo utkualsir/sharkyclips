@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import { api, ApiError, uploadFile, urls, type Job, type Mode, type ProjectSummary } from "../api";
 import { Icon } from "../components/Icons";
+import { ChannelSource } from "../components/Channels";
 import { DeleteDialog, useUndoToast } from "../components/Trash";
 import { fmtBytes as fmtSize } from "../format";
 import { trashApi } from "../trash";
@@ -77,6 +78,7 @@ function ProjectCard({ p, job, size, onDelete }: { p: ProjectSummary; job: Job |
           <Icon name={p.source.type === "file" ? "file" : "link"} size={13} />
           <span dir="auto">{[src, p.source.uploader].filter(Boolean).join(" · ")}</span>
         </div>
+        <ChannelSource c={p.channel} />
         <div className="pcard-foot">
           {status}
           {p.clips > 0 && <span className="chip chip-gold">{t("library.clips", { n: p.clips })}</span>}

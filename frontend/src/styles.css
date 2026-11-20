@@ -4801,3 +4801,49 @@ a.edit-note:hover { text-decoration: underline; }
 .setup-banner span { flex: 1 1 200px; min-width: 0; }
 .setup-welcome .setup-item { background: #ffffff; border-color: var(--w-line); }
 .setup-welcome .setup-pc, .setup-welcome .muted { color: var(--w-muted); }
+
+/* 1.2.57 channel monitoring (components/Channels.tsx) */
+.chan-body { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.chan-how { margin-top: 10px !important; font-size: 12.5px !important; }
+.chan-add { display: grid; gap: 10px; min-width: 0; }
+.chan-add-row { display: flex; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.chan-add-row .input { flex: 1 1 200px; min-width: 0; }
+.chan-own { display: flex; gap: 8px; align-items: center; font-size: 13.5px; cursor: pointer; }
+.chan-own input { accent-color: var(--gold); }
+.chan-note { margin: 0; font-size: 12.5px; }
+.chan-list, .chan-vods, .ez-chan-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 0; }
+.chan-item { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface-2); min-width: 0; }
+.chan-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; min-width: 0; }
+.chan-name { display: grid; gap: 4px; flex: 1 1 180px; min-width: 0; }
+.chan-name b { overflow-wrap: anywhere; color: var(--strong); }
+.chan-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.chan-status { font-size: 12.5px; }
+.chan-opts { display: grid; gap: 12px; border-top: 1px solid var(--border); padding-top: 12px; min-width: 0; }
+.chan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.chan-grid label, .chan-free { display: grid; gap: 4px; min-width: 0; }
+.chan-grid .select, .chan-free .select { width: 100%; min-width: 0; }
+.chan-free { max-width: 220px; }
+.chan-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chan-import, .chan-confirm { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.chan-confirm > span { font-size: 13px; }
+.chan-err { margin: 0; font-size: 12px; overflow-wrap: anywhere; }
+.chan-recent h3 { margin: 4px 0 8px; font-size: 14px; color: var(--strong); }
+.chan-vod { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--r-sm); min-width: 0; }
+.chan-vod-main { display: grid; gap: 2px; flex: 1 1 200px; min-width: 0; }
+.chan-vod-title { font-weight: 600; font-size: 13.5px; overflow-wrap: anywhere; }
+.chan-vod-meta { display: flex; gap: 4px 10px; flex-wrap: wrap; font-size: 12px; }
+.chan-vod-side { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.chan-global { display: grid; gap: 10px; border-top: 1px solid var(--border); padding-top: 12px; }
+.chan-ph-kick { --pf: #1d6b2c; } .chan-ph-twitch { --pf: #6a3fc4; } .chan-ph-youtube { --pf: #b8002a; }
+.chan-src { display: inline-flex; gap: 4px; align-items: center; font-size: 12px; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.chan-src svg { flex: none; }
+.ez-lib-item .chan-src { margin-inline-start: 6px; }
+.ez-chan-card { margin-top: 28px; max-width: 860px; padding: 18px; display: grid; gap: 12px; }
+.ez-chan-top { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.ez-chan-icon { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-soft); color: var(--gold-text); flex: none; }
+.ez-chan-text { display: grid; gap: 2px; flex: 1 1 220px; min-width: 0; }
+.ez-chan-text h2 { margin: 0; font-size: 17px; color: var(--strong); }
+.ez-chan-text p { margin: 0; font-size: 13.5px; }
+.ez-chan-text b { overflow-wrap: anywhere; }
+.ez-chan-row { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.ez-chan-row .ez-chan-text .muted { font-size: 12.5px; }

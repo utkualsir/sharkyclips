@@ -4,6 +4,7 @@ import { ConnectionPill } from "../components/EasyAuto";
 import { ApiError, easyApi, uploadEasyFile, urls, type EasyProjectRow, type Mode } from "../api";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { Icon } from "../components/Icons";
+import { ChannelSource, ConnectChannelCard } from "../components/Channels";
 import { DeleteDialog, useUndoToast } from "../components/Trash";
 import { ProgressBar } from "../components/ui";
 import { fmtTime } from "../format";
@@ -248,6 +249,8 @@ export default function EasyHome() {
         </form>
       )}
 
+      <ConnectChannelCard />
+
       {recent && recent.length > 0 && (
         <section className="ez-recent" aria-labelledby="ez-recent-title">
           <h2 id="ez-recent-title">{t("easy.recent")}</h2>
@@ -264,6 +267,7 @@ export default function EasyHome() {
                       {p.busy ? t("easy.recent_working") : p.clips ? t("easy.recent_clips", { n: p.clips }) : t("easy.recent_empty")}
                       {p.duration ? ` · ${fmtTime(p.duration)}` : ""}
                     </span>
+                    <ChannelSource c={p.channel} />
                   </span>
                   <Icon name="chevron-right" size={18} className="flip-rtl" />
                 </a>

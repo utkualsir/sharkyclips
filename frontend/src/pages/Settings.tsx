@@ -3,6 +3,7 @@ import { useAppState } from "../appstate";
 import { api, type LlmInfo, type Mode, type PerfMode, type Settings as SettingsT, type UpdateStatus } from "../api";
 import { SetupCard } from "../components/SetupDownloads";
 import { Icon } from "../components/Icons";
+import { ChannelsCard } from "../components/Channels";
 import { href } from "../router";
 import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
@@ -750,6 +751,8 @@ export default function Settings() {
               <LanPinBox lanOn={!!meta?.lan_url} isLocal={!!meta?.is_local} />
             </div>
           </section>
+
+          <ChannelsCard />
 
           <AutoClipCard />
 

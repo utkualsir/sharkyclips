@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, urls, type LibraryRow, type LibraryView, type LibStatus } from "../api";
 import { Icon } from "../components/Icons";
+import { ChannelSource } from "../components/Channels";
 import { LockBanner, PublishSetupDialog, RescheduleDialog, ScheduleDialog, useWhen } from "../components/PublishTools";
 import { CopyButton, Modal, ProgressBar, Segmented } from "../components/ui";
 import { fmtTime } from "../format";
@@ -254,6 +255,7 @@ function Row({
         </div>
         <div className="lib-meta muted">
           <a href={href.project(row.project_id)}>{row.project_title}</a>
+          <ChannelSource c={row.channel} />
           <span>#{row.rank}</span>
           <span className="mono">{fmtTime(row.duration)}</span>
           {row.viral_score != null && (

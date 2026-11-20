@@ -173,6 +173,7 @@ export interface SpeedEntry {
 
 export interface ProjectSummary {
   id: string;
+  channel?: ChannelLine | null;
   title: string;
   mode: Mode | null;
   duration: number | null;
@@ -1269,6 +1270,7 @@ export type PublishFix = "retry" | "reconnect" | "edit" | "rerender" | "reschedu
 export interface LibraryRow {
   /** 1.2.36: this clip on YouTube, TikTok and Instagram */
   platforms?: import("./multipost").ClipPosts | null;
+  channel?: ChannelLine | null;
   key: string;
   project_id: string;
   project_title: string;
@@ -2148,6 +2150,111 @@ export const liveApi = {
   unmark: (id: string) => req<{ recent: LiveMarker[] }>("DELETE", `/api/live/markers/${encodeURIComponent(id)}`),
 };
 
+// ---------------------------------------------------------------- channel monitoring (1.2.57)
+
+export type ChannelPlatform = "kick" | "twitch" | "youtube";
+export type ChannelVodStatus =
+  | "live" | "processing" | "upcoming" | "queued" | "retry" | "waiting_disk" | "waiting_metered" | "waiting_game"
+  | "downloading" | "clipping" | "done" | "skipped" | "gone" | "error" | "baseline";
+
+export interface ChannelInfo {
+  id: string;
+  platform: ChannelPlatform;
+  handle: string;
+  name: string | null;
+  avatar: string | null;
+  url: string | null;
+  at?: string | null;
+  own: boolean;
+  mode: "auto" | Mode;
+  game: string;
+  auto_publish: boolean;
+  /** -1 = keep forever, 0 = right after the clips */
+  keep_days: number;
+  yt_kinds: "both" | "live" | "uploads";
+  enabled: boolean;
+  added_at: number;
+  live: boolean;
+  live_since: number | null;
+  ended_at: number | null;
+  last_check: number | null;
+  next_check: number | null;
+  fails: number;
+  last_error: string | null;
+  last_ok: number | null;
+  counts: Partial<Record<ChannelVodStatus, number>>;
+  can_import: number;
+}
+
+export interface ChannelVod {
+  key: string;
+  channel: string;
+  platform: ChannelPlatform;
+  vod_id: string;
+  url: string | null;
+  title: string | null;
+  started_at: number | null;
+  duration: number | null;
+  status: ChannelVodStatus;
+  note: string | null;
+  game: string | null;
+  project_id: string | null;
+  clips: number | null;
+  attempts: number | null;
+  next_try: number | null;
+  done_at: number | null;
+  last_error: string | null;
+  source_trashed: number | null;
+  channel_name: string | null;
+  own: boolean;
+}
+
+export interface ChannelsView {
+  channels: ChannelInfo[];
+  vods: ChannelVod[];
+  settings: { pause_metered: boolean; pause_games: boolean; min_free_gb: number; min_minutes: number };
+  service: { running: boolean; last_tick: number | null; error: string | null; ipv4_only: boolean;
+    waiting: { key: string; reason: "queue_paused" | "game" | "metered" | "disk"; detail?: string; free?: number; need?: number } | null };
+  games: string[];
+  game_names: Record<string, string>;
+}
+
+export interface ChannelLookup {
+  id: string;
+  platform: ChannelPlatform;
+  handle: string;
+  name: string | null;
+  avatar: string | null;
+  url: string | null;
+  live: boolean;
+  known: boolean;
+}
+
+/** 1.2.57: which channel / stream a project or clip came from (the Library shows it) */
+export interface ChannelLine {
+  platform: ChannelPlatform | null;
+  name: string | null;
+  own: boolean | null;
+  stream_title: string | null;
+  started_at: number | null;
+}
+
+const ch = (id: string) => encodeURIComponent(id);
+
+export const channelsApi = {
+  get: () => req<ChannelsView>("GET", "/api/channels"),
+  lookup: (text: string, platform?: ChannelPlatform) => req<ChannelLookup>("POST", "/api/channels/lookup", { text, platform }),
+  add: (body: { text: string; platform?: ChannelPlatform; own?: boolean }) => req<ChannelsView>("POST", "/api/channels", body),
+  update: (id: string, body: Partial<Pick<ChannelInfo, "mode" | "game" | "auto_publish" | "keep_days" | "yt_kinds" | "own" | "enabled">>) =>
+    req<ChannelsView>("PUT", `/api/channels/${ch(id)}/options`, body),
+  remove: (id: string) => req<ChannelsView>("DELETE", `/api/channels/${ch(id)}/remove`),
+  check: (id: string) => req<ChannelsView>("POST", `/api/channels/${ch(id)}/check`),
+  importRecent: (id: string, count: number) => req<ChannelsView & { queued: string[] }>("POST", `/api/channels/${ch(id)}/import`, { count }),
+  retry: (key: string) => req<ChannelsView>("POST", `/api/channels/vods/${ch(key)}/retry`),
+  skip: (key: string) => req<ChannelsView>("POST", `/api/channels/vods/${ch(key)}/skip`),
+  settings: (body: Partial<ChannelsView["settings"]>) => req<ChannelsView>("PUT", "/api/channels/settings", body),
+};
+
 // ---------------------------------------------------------------- phone approval (1.2.17)
 
 export interface PhoneStatus {
@@ -2368,6 +2475,7 @@ export interface AutopilotView {
 
 export interface EasyProjectRow {
   id: string;
+  channel?: ChannelLine | null;
   title: string;
   created_at: string | null;
   duration: number | null;
@@ -2397,6 +2505,7 @@ export interface EasyDownload {
 export interface EasyLibRow {
   /** 1.2.36: YouTube / TikTok / Instagram of this clip */
   posts?: import("./multipost").ClipPosts | null;
+  channel?: ChannelLine | null;
   key: string;
   project_id: string;
   project_title: string;

@@ -3,6 +3,7 @@ import { ApiError, liveApi, phoneApi, type PhoneStatus } from "../api";
 import { PhoneConnect } from "../components/Phone";
 import { AboutCard } from "../components/Licenses";
 import { Icon } from "../components/Icons";
+import { ChannelsCard } from "../components/Channels";
 import { href } from "../router";
 import { useToast } from "../toast";
 import { Toggle } from "../components/ui";
@@ -93,6 +94,8 @@ export default function EasySettings() {
       </section>
 
       <AutopilotCard />
+
+      <ChannelsCard easy />
 
       <section className="card ez-set-card" aria-labelledby="ez-set-auto">
         <h2 id="ez-set-auto">{t("easy.set_auto")}</h2>
