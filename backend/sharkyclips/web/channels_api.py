@@ -424,6 +424,7 @@ def on_job_finished(job: Job) -> None:
         if job.status == "done" and job.project_id:
             rec.update(status="clipping", project_id=job.project_id, note=None, dl_done=now)
             rec.pop("job_id", None)
+            rec.pop("last_error", None)  # an earlier failed try is history now
             C.log(data, "downloaded", rec.get("channel"), key, now=now)
             ch = data["channels"].get(rec.get("channel") or "") or {}
             C.save(data)

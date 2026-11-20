@@ -4819,12 +4819,13 @@ a.edit-note:hover { text-decoration: underline; }
 .chan-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .chan-status { font-size: 12.5px; }
 .chan-opts { display: grid; gap: 12px; border-top: 1px solid var(--border); padding-top: 12px; min-width: 0; }
-.chan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.chan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; }
 .chan-grid label, .chan-free { display: grid; gap: 4px; min-width: 0; }
 .chan-grid .select, .chan-free .select { width: 100%; min-width: 0; }
 .chan-free { max-width: 220px; }
 .chan-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .chan-import, .chan-confirm { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.chan-import .select { width: auto; min-width: 70px; flex: none; }
 .chan-confirm > span { font-size: 13px; }
 .chan-err { margin: 0; font-size: 12px; overflow-wrap: anywhere; }
 .chan-recent h3 { margin: 4px 0 8px; font-size: 14px; color: var(--strong); }

@@ -1086,7 +1086,7 @@ export default function ProjectPage({ id }: { id: string }) {
                     {project.playable ? (
                       <video ref={video} src={urls.source(id)} controls playsInline preload="metadata" aria-label={project.title} />
                     ) : (
-                      <div className="skeleton skeleton-fill" aria-label={t("common.loading")} />
+                      <div className="skeleton skeleton-fill" role="status" aria-label={t("common.loading")} />
                     )}
                   </div>
                 </div>

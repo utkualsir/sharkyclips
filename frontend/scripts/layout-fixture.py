@@ -82,6 +82,10 @@ def build(root: Path) -> str:
         "mode": "gaming", "duration": SECONDS, "resolution": "640x360", "width": 640, "height": 360, "fps": 30.0,
         "audio_codec": "aac", "video_codec": "vp9", "files": {"source": "source.mp4"},
         "source": {"type": "file", "value": "source.mp4"}, "created_at": "2026-10-01T00:00:00+00:00",
+        # 1.2.57: from a connected channel (the Library's source line), a long stream title
+        "channel": {"key": "kick:layout-vod-1", "id": "kick:democreator", "platform": "kick", "name": "DemoCreator",
+                    "own": True, "stream_title": "GECE YAYINI: Delta Force ranked, 55 kill rekor denemesi ve sohbet",
+                    "started_at": 1790000000},
         "transcript": {"language": "tr", "segments": 1, "words": 40}})
     # c01 (1.0-3.6 s) holds one of Whisper's endless "words" on silence: it must not stretch the
     # page (preview-check.mjs; the 1.2.22 "preview zooms in and shifts" report)
@@ -163,6 +167,7 @@ def build(root: Path) -> str:
     (d / "previews").mkdir()
     _video(d / "previews" / "01_s100_00-00-01.mp4", "180x320", 1.0)
     _channel_style(home)
+    _channels(home)
     # 1.2.51: the full video waits on its confirm screen (long title / description / chapters)
     _ff("-f", "lavfi", "-i", "testsrc2=size=1280x720:rate=1:duration=1", "-frames:v", "1", str(d / "full_thumb.jpg"))
     _json(d / "full_upload.json", {"status": "review", "draft": {
@@ -175,6 +180,49 @@ def build(root: Path) -> str:
         "made_for_kids": False, "language": "tr", "publish_at": "2099-01-01T19:00:00Z",
         "thumbnail": str(d / "full_thumb.jpg") if (d / "full_thumb.jpg").is_file() else None}})
     return PID
+
+
+def _channels(home: Path) -> None:
+    """1.2.57 Settings > Channels: an own Kick channel (live, long names, every finished state) and
+    someone else's paused YouTube channel. next_check far in the future and no waiting VOD of an
+    enabled channel: the server's monitor never goes online or starts a download here."""
+    far = 4102444800  # 2100-01-01
+    base = 1790000000
+    chans = {
+        "kick:democreator": {"id": "kick:democreator", "platform": "kick", "handle": "democreator",
+                             "name": "DemoCreator_with_a_rather_long_channel_name", "avatar": None,
+                             "url": "https://kick.com/democreator", "own": True, "mode": "auto", "game": "auto",
+                             # keep_days -1: the "done" stream below is the layout project, whose
+                             # source must stay (7 days after a September date = trashed at once)
+                             "auto_publish": False, "keep_days": -1, "yt_kinds": "both", "enabled": True,
+                             "added_at": base, "baseline": base, "live": True, "live_since": base + 7200,
+                             "ended_at": None, "last_check": base + 7300, "next_check": far, "fails": 0,
+                             "last_error": None, "last_ok": base + 7300},
+        "youtube:UCdemo0000000000000000000": {
+            "id": "youtube:UCdemo0000000000000000000", "platform": "youtube", "handle": "UCdemo0000000000000000000",
+            "name": "Someone Else", "avatar": None, "url": "https://www.youtube.com/channel/UCdemo0000000000000000000",
+            "at": "@someoneelse", "own": False, "mode": "gaming", "game": "delta_force", "auto_publish": False,
+            "keep_days": -1, "yt_kinds": "live", "enabled": False, "added_at": base, "baseline": base, "live": False,
+            "live_since": None, "ended_at": None, "last_check": base + 3600, "next_check": far, "fails": 2,
+            "last_error": "YouTube: HTTP 503", "last_ok": base}}
+    long = "GECE YAYINI: Delta Force ranked, 55 kill rekor denemesi, sohbet ve sürprizler (çok uzun bir başlık)"
+    rows = [("kick:v-live", "kick:democreator", "live", None, None), ("kick:v-done", "kick:democreator", "done", None, 6),
+            ("kick:v-sub", "kick:democreator", "skipped", "subscriber_only", None),
+            ("kick:v-gone", "kick:democreator", "gone", "deleted", None),
+            ("kick:v-err", "kick:democreator", "error", "download_failed", None),
+            ("youtube:v-disk", "youtube:UCdemo0000000000000000000", "waiting_disk", None, None)]
+    vods = {}
+    for i, (key, ch, st, note, clips) in enumerate(rows):
+        vods[key] = {"channel": ch, "platform": ch.split(":")[0], "vod_id": key.split(":")[1],
+                     "url": None if st == "live" else f"https://kick.com/democreator/videos/{key}",
+                     "title": long if i % 2 == 0 else f"Stream {i}", "started_at": base + 7200 - i * 86400,
+                     "duration": None if st == "live" else 3 * 3600 + i * 600, "status": st, "note": note,
+                     "clips": clips, "project_id": PID if st == "done" else None, "first_seen": base,
+                     "done_at": base + 9000 if st in ("done", "skipped", "gone", "error") else None}
+    vods["kick:v-old"] = {"channel": "kick:democreator", "platform": "kick", "vod_id": "v-old", "status": "baseline",
+                          "url": "https://kick.com/democreator/videos/v-old", "title": "Old", "started_at": base - 99999,
+                          "duration": 7200, "first_seen": base}
+    _json(home / "channels.json", {"version": 1, "channels": chans, "vods": vods, "log": []})
 
 
 def _channel_style(home: Path) -> None:
