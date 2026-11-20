@@ -454,6 +454,7 @@ def project_summary(project: Project, active_job: dict | None, last_job: dict | 
         "resolution": meta.get("resolution"),
         "source": {"type": src.get("type"), "value": src.get("webpage_url") or src.get("value"),
                    "extractor": src.get("extractor"), "uploader": src.get("uploader")},
+        "channel": meta.get("channel") if isinstance(meta.get("channel"), dict) else None,  # 1.2.57
         "language": tr.get("language"),
         "created_at": meta.get("created_at"),
         "updated_at": meta.get("updated_at"),

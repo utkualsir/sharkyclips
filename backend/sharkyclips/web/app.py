@@ -265,6 +265,16 @@ def submit_import(source: str, mode: str, language: str, title: str,
             if cleanup is not None:
                 cleanup.unlink(missing_ok=True)  # the project keeps its own (hard-linked) copy
         job.project_id = project.id
+        expect = (extra or {}).get("expect_duration")
+        if expect:  # 1.2.57 channel VODs: a download much shorter than the stream is incomplete
+            from .. import channels, trash
+
+            got = float(project.load_meta().get("duration") or 0)
+            if not channels.verify(float(expect), got):
+                trash.trash_source(project.id, keep=0)
+                raise SharkyClipsError(
+                    f"The download is incomplete ({got / 60:.0f} of {float(expect) / 60:.0f} min).",
+                    "It is downloaded again later.")
         return {"project_id": project.id}
 
     def then(job: Job):
@@ -2588,6 +2598,7 @@ from .retention import router as _retention_router  # noqa: E402 - stories, A/B 
 from .publishing import router as _publishing_router  # noqa: E402 - Library + scheduled publishing (1.2.7)
 from .easy import router as _easy_router  # noqa: E402 - Easy mode (1.2.16)
 from .live import router as _live_router  # noqa: E402 - auto clips, live markers (1.2.17)
+from .channels_api import router as _channels_router  # noqa: E402 - channel monitoring (1.2.57)
 from .phone_api import router as _phone_router  # noqa: E402 - Telegram bot + approval page (1.2.17)
 from .covers_api import router as _covers_router  # noqa: E402 - cover studio (1.2.18)
 from .platforms_api import router as _platforms_router  # noqa: E402 - TikTok / Reels (1.2.18)
@@ -2606,6 +2617,7 @@ app.include_router(_retention_router)
 app.include_router(_publishing_router)
 app.include_router(_easy_router)
 app.include_router(_live_router)
+app.include_router(_channels_router)
 app.include_router(_phone_router)
 app.include_router(_covers_router)
 app.include_router(_multipost_router)
@@ -2694,6 +2706,9 @@ def _start_publishing() -> None:
     from .live import install as install_live
 
     install_live()  # auto clips after a stream, live markers (1.2.17)
+    from .channels_api import install as install_channels
+
+    install_channels(jobs)  # channel monitoring: a stream's VOD -> clips (1.2.57)
     from .phone_api import install as install_phone
 
     install_phone()  # the Telegram bot's Upload / Plan / Skip buttons (1.2.17)

@@ -93,6 +93,11 @@ DEFAULTS: dict[str, Any] = {
     "watch_publish": "off",  # off | plan | now: what happens to the best clips of an auto project
     "watch_publish_top": 3,
     "watch_min_minutes": 2,  # shorter recordings are skipped
+    # 1.2.57 channel monitoring (channels.py, web/channels_api.py; the channels in <settings>/channels.json)
+    "channel_pause_metered": True,  # no VOD downloads on a metered connection
+    "channel_pause_games": True,  # a VOD download doesn't start while a game is running
+    "channel_min_free_gb": 5,  # always left free on the projects drive
+    "channel_min_minutes": 5,  # shorter streams / uploads are skipped
     "marker_hotkey": "ctrl+alt+c",
     "marker_hotkey_enabled": True,
     "live_clip_command": "!clip",

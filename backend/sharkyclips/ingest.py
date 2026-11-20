@@ -96,7 +96,17 @@ def _ydl_opts(project_dir: Path, max_height: int) -> dict:
     runtimes = js_runtimes()
     if runtimes:
         opts["js_runtimes"] = runtimes
+    if _ipv4_only():
+        opts["source_address"] = "0.0.0.0"
     return opts
+
+
+def _ipv4_only() -> bool:
+    """1.2.57: the channel monitor found a broken IPv6 route (every connection waited for the
+    IPv6 timeout first): yt-dlp uses IPv4 too."""
+    from . import channels
+
+    return channels.ipv4_only()
 
 
 _LOGIN_MARKERS = ("sign in", "your age", "age-restricted", "login", "log in", "private video", "members-only",
@@ -152,6 +162,7 @@ def _ingest_url(url: str) -> tuple[Project, dict]:
     try:
         with yt_dlp.YoutubeDL({"quiet": True, "noplaylist": True, "skip_download": True,
                                "socket_timeout": 30, "retries": 5, "logger": _YdlLogger(),
+                               **({"source_address": "0.0.0.0"} if _ipv4_only() else {}),
                                **({"js_runtimes": js_runtimes()} if js_runtimes() else {})}) as ydl:
             info = ydl.extract_info(lookup, download=False)
     except Exception as exc:

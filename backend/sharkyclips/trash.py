@@ -195,7 +195,10 @@ def set_keep_days(n) -> int:
 
 def _expires(rec: dict) -> datetime:
     deleted = _parse(rec.get("deleted_at")) or _now()
-    return deleted + timedelta(days=keep_days())
+    days = keep_days()
+    if isinstance(rec.get("keep_days"), int):  # 1.2.57: a channel VOD's source stays shorter
+        days = min(days, max(0, rec["keep_days"]))
+    return deleted + timedelta(days=days)
 
 
 def _new_id() -> str:
@@ -1067,3 +1070,29 @@ def cleanup(project_id: str, what: list[str]) -> dict:
                    "data": {"clips_json": done_json, "candidates": []}, "plans": {}, "posts": None, "original": None}
             trashed = _finish(rec)
     return {"freed_now": freed_now, "trashed": trashed, "usage": usage(project)}
+
+
+def trash_source(project_id: str, keep: int | None = None) -> dict | None:
+    """1.2.57 channel monitoring: the downloaded VOD of a finished stream -> the trash (restorable
+    like any cleanup item; `keep` days at most there, the clips stay). None = nothing to move."""
+    project = get_project(project_id)
+    with _lock:
+        src = project.source_path
+        if src is None:
+            return None
+        moves = [src] + [p for p in (project.cache_dir / "proxy.mp4",) if p.is_file()]  # the browser copy too
+        tid = _new_id()
+        home = root() / tid
+        done = []
+        for f in moves:
+            rel = f.relative_to(project.dir)
+            _move(f, home / "files" / rel)
+            done.append({"from": str(rel), "to": str(Path("files") / rel)})
+        rec = {"id": tid, "kind": "cleanup", "project_id": project.id,
+               "project_title": project.load_meta().get("title") or project.id, "clip_ids": [], "titles": ["source"],
+               "deleted_at": _iso(_now()), "bytes": sum(size_of(home / m["to"]) for m in done), "files": done,
+               "data": {"clips_json": {}, "candidates": []}, "plans": {}, "posts": None, "original": None}
+        if keep is not None:
+            rec["keep_days"] = int(keep)
+        rec["expires_at"] = _iso(_expires(rec))
+        return _finish(rec)

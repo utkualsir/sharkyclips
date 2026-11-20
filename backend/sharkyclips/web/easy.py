@@ -501,11 +501,15 @@ def on_job_finished(job: Job) -> None:
     n = sum(1 for c in top if c["id"] in clips)
     if n:
         E.save(project, notified_for=hl.get("created_at"))
-        E.ready_notice(project.load_meta().get("title") or pid, n, f"/#/p/{pid}")
+        from .channels_api import on_clips_ready as channel_ready
         from .live import on_clips_ready
         from .phone_api import on_clips_ready as phone_cards
 
-        on_clips_ready(project, top)  # auto publish (auto clips)
+        # 1.2.57: a channel's VOD has its own notice ("Your stream is over, 6 clips are ready")
+        # and its channel's auto-publish rule
+        if not channel_ready(project, top):
+            E.ready_notice(project.load_meta().get("title") or pid, n, f"/#/p/{pid}")
+            on_clips_ready(project, top)  # auto publish (auto clips)
         phone_cards(project, top)  # the paired phone gets the best ones
 
 
@@ -781,9 +785,16 @@ def api_projects() -> list[dict]:
         hl = _hl(p)
         out.append({"id": p.id, "title": meta.get("title") or p.id, "created_at": meta.get("created_at"),
                     "duration": meta.get("duration"), "mode": meta.get("mode"), "easy": data["easy"],
-                    "clips": len(hl.get("candidates") or []), "busy": pipeline_busy(p.id)})
+                    "clips": len(hl.get("candidates") or []), "busy": pipeline_busy(p.id),
+                    "channel": _channel_line(meta)})
     out.sort(key=lambda p: p.get("created_at") or "", reverse=True)
     return out
+
+
+def _channel_line(meta: dict) -> dict | None:
+    from .publishing import _channel_line as line
+
+    return line(meta)
 
 
 @router.get("/api/easy/projects/{project_id}")
@@ -1100,7 +1111,7 @@ def api_library() -> dict:
     tabs: dict[str, list] = {"ready": [], "planned": [], "live": []}
     for r in lib["rows"]:
         row = {k: r.get(k) for k in ("key", "project_id", "project_title", "clip_id", "title", "duration",
-                                     "viral_label", "status", "step", "date", "publish_at", "error")}
+                                     "viral_label", "status", "step", "date", "publish_at", "error", "channel")}
         row["url"] = (r.get("upload") or {}).get("url")
         row["views"] = (r.get("upload") or {}).get("views")
         row["job"] = r.get("job")

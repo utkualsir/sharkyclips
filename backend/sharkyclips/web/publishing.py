@@ -323,6 +323,7 @@ def library_view(now: datetime | None = None) -> dict:
             running = next((j for j in jobs_ if j.status == "running"), None)
             rows.append({
                 "key": key, "project_id": project.id, "project_title": meta.get("title") or project.id,
+                "channel": _channel_line(meta),  # 1.2.57: from which channel / stream
                 "clip_id": cid, "rank": c["rank"],
                 "title": ((item or {}).get("meta") or {}).get("title") or (live or {}).get("title")
                 or (pub.get("titles") or [None])[0] or (c.get("text") or "")[:90],
@@ -934,6 +935,13 @@ def _key_parts(project_id: str, cid: str) -> tuple[Project, dict, str]:
     A = _app()
     project = A._project(project_id)
     return project, A._cand(project, cid), P.key_of(project.id, cid)
+
+
+def _channel_line(meta: dict) -> dict | None:
+    ch = meta.get("channel")
+    if not isinstance(ch, dict):
+        return None
+    return {k: ch.get(k) for k in ("platform", "name", "own", "stream_title", "started_at")}
 
 
 @router.get("/api/library")
