@@ -7,6 +7,135 @@ All notable changes to SharkyClips (called ClipForge before 1.2.1). The format f
 Each entry is in English, then Turkish; short summaries in the other UI languages follow in
 `<!-- lang:xx -->` blocks. The app's "What's new" window shows the block of the UI language.
 
+## [1.2.57] - 2026-11-20
+### Connect your channel: clips from every stream, by themselves
+- **Settings > Channels** (and "Connect my channel" on the home screen): paste your Kick, Twitch or
+  YouTube channel once. When a stream ends, SharkyClips downloads its VOD and makes the clips: no OBS
+  recording needed. Your PC just has to be on.
+- **Only new streams.** Adding a channel never processes its old videos. Want a few anyway? "Import
+  the last streams" takes them.
+- **It looks often enough, never too often:** every 5 minutes while you're live and right after, every
+  30 minutes otherwise. Public pages only: no login, no password. A VOD that shows up late, is still
+  being prepared or was deleted is handled; subscriber-only and age-restricted VODs are skipped with a
+  clear note. Was the PC off or asleep? It catches up on the missed streams, oldest first.
+- **Careful with your PC:** one download at a time, continues where it stopped, checked when done.
+  It waits while you play, on a metered connection (optional) and when the disk is too full (it tells
+  you how much space it needs). Then the normal Easy clips run: chat replay as a hype signal, bleeps,
+  titles in your style, covers, game detection.
+- **"Your stream is over, 6 clips are ready."** You get it in the tray and on Telegram (if paired).
+  The Library shows which channel and stream every clip came from.
+- **Per channel:** content type and game (automatic by default), auto-publish (off by default; when on
+  it uses your Publish / Autopilot rules and daily limits) and what happens to the downloaded video
+  (by default it goes to the trash 7 days after the clips; you can keep it).
+- **Other people's channels** can be watched too, clearly marked "Not mine", with auto-publish off.
+  Get the streamer's permission before posting their content.
+
+<!-- lang:tr -->
+**Türkçe**
+
+### Kanalını bağla: her yayından klipler, kendiliğinden
+- **Ayarlar > Kanallar** (ve ana ekranda "Kanalımı bağla"): Kick, Twitch veya YouTube kanalını bir kez
+  yapıştır. Yayın bitince SharkyClips VOD'u indirir ve klipleri çıkarır: OBS kaydı gerekmez.
+  Bilgisayarının açık olması yeterli.
+- **Sadece yeni yayınlar.** Kanal eklemek eski videoları işlemez. Yine de birkaçını istersen
+  "Son yayınları içe aktar" onları alır.
+- **Yeterince sık bakar, asla fazla değil:** yayındayken ve hemen sonrasında 5 dakikada bir, diğer
+  zamanlarda 30 dakikada bir. Sadece herkese açık sayfalar: giriş yok, şifre yok. Geç gelen, hâlâ
+  hazırlanan veya silinen VOD'lar doğru ele alınır; abonelere özel ve yaş sınırlı VOD'lar açık bir notla
+  atlanır. Bilgisayar kapalı ya da uykudaydı mı? Kaçan yayınları en eskiden başlayarak yakalar.
+- **Bilgisayarına özenli:** aynı anda tek indirme, kaldığı yerden devam eder, bitince kontrol edilir.
+  Oyun oynarken, ölçülü bağlantıda (isteğe bağlı) ve disk çok doluyken bekler (ne kadar yer gerektiğini
+  söyler). Ardından normal Kolay mod klipleri çalışır: heyecan sinyali olarak sohbet tekrarı, bipler,
+  senin tarzında başlıklar, kapaklar, oyun algılama.
+- **"Yayının bitti, 6 klip hazır."** Bildirimi sistem tepsisinde ve (eşleştirdiysen) Telegram'da alırsın.
+  Kütüphane her klibin hangi kanal ve yayından geldiğini gösterir.
+- **Kanal başına:** içerik türü ve oyun (varsayılan otomatik), otomatik yayın (varsayılan kapalı; açıkken
+  Yayınla / Otopilot kurallarını ve günlük limitlerini kullanır) ve indirilen videoya ne olacağı
+  (varsayılan: kliplerden 7 gün sonra çöp kutusuna gider; saklayabilirsin).
+- **Başkalarının kanalları** da izlenebilir; açıkça "Benim değil" diye işaretlenir, otomatik yayın
+  kapalıdır. İçeriğini paylaşmadan önce yayıncıdan izin al.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+- **Conecta tu canal** de Kick, Twitch o YouTube en Ajustes > Canales (o "Conectar mi canal" en el inicio): cuando termina un directo, SharkyClips descarga el VOD y hace los clips solo. Sin grabar con OBS.
+- Solo directos nuevos (los antiguos, con "Importar los últimos directos"). Solo páginas públicas, sin iniciar sesión. Una descarga cada vez; espera mientras juegas, con conexión de uso medido y con poco disco; se pone al día si el PC estaba apagado.
+- "Tu directo terminó, 6 clips están listos" en la bandeja y en Telegram. Publicación automática desactivada por defecto; canales de otras personas marcados, con permiso del streamer.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+- **Conecte seu canal** da Kick, Twitch ou YouTube em Configurações > Canais (ou "Conectar meu canal" no início): quando a live acaba, o SharkyClips baixa o VOD e faz os clipes sozinho. Sem gravar no OBS.
+- Só lives novas (as antigas, com "Importar as últimas lives"). Só páginas públicas, sem login. Um download por vez; espera enquanto você joga, em conexão limitada e com pouco disco; recupera o que perdeu se o PC estava desligado.
+- "Sua live acabou, 6 clipes estão prontos" na bandeja e no Telegram. Publicação automática desligada por padrão; canais de outras pessoas marcados, com permissão do streamer.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+- **Verbinde deinen Kanal** (Kick, Twitch oder YouTube) unter Einstellungen > Kanäle oder "Meinen Kanal verbinden" auf der Startseite: Wenn ein Stream endet, lädt SharkyClips das VOD und macht die Clips von selbst. Keine OBS-Aufnahme nötig.
+- Nur neue Streams (alte über "Letzte Streams importieren"). Nur öffentliche Seiten, kein Login. Ein Download nach dem anderen; wartet, während du spielst, bei getakteter Verbindung und bei vollem Speicher; holt Verpasstes nach, wenn der PC aus war.
+- "Dein Stream ist vorbei, 6 Clips sind fertig" im Tray und auf Telegram. Auto-Veröffentlichung standardmäßig aus; Kanäle anderer sind markiert, nur mit Erlaubnis posten.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+- **Connecte ta chaîne** Kick, Twitch ou YouTube dans Réglages > Chaînes (ou "Connecter ma chaîne" sur l'accueil) : à la fin d'un live, SharkyClips télécharge la VOD et fait les clips tout seul. Pas besoin d'OBS.
+- Seulement les nouveaux lives (les anciens via "Importer les derniers lives"). Pages publiques uniquement, sans connexion. Un téléchargement à la fois ; attend pendant que tu joues, sur connexion limitée et quand le disque est plein ; rattrape ce qui a été manqué si le PC était éteint.
+- "Ton live est terminé, 6 clips sont prêts" dans la barre des tâches et sur Telegram. Publication auto désactivée par défaut ; chaînes des autres marquées, avec l'autorisation du streamer.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+- **Kösd össze a csatornádat** (Kick, Twitch vagy YouTube) a Beállítások > Csatornák alatt vagy a kezdőlapon: ha véget ér egy adás, a SharkyClips letölti a VOD-ot, és magától elkészíti a klipeket. Nem kell OBS-felvétel.
+- Csak új adások (a régiek az "Utolsó adások importálása" gombbal). Csak nyilvános oldalak, bejelentkezés nélkül. Egyszerre egy letöltés; vár, amíg játszol, forgalomkorlátos kapcsolaton és ha kevés a hely; pótolja, ha a gép ki volt kapcsolva.
+- "Véget ért az adásod, 6 klip kész" a tálcán és a Telegramon. Az automatikus közzététel alapból ki van kapcsolva; mások csatornái jelölve, csak engedéllyel.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+- **Подключите свой канал** Kick, Twitch или YouTube в Настройки > Каналы (или «Подключить мой канал» на главной): когда стрим заканчивается, SharkyClips скачивает запись и сам делает клипы. Запись в OBS не нужна.
+- Только новые стримы (старые — кнопкой «Импортировать последние стримы»). Только публичные страницы, без входа. Одна загрузка за раз; ждёт, пока вы играете, при лимитном подключении и нехватке места; догоняет пропущенное, если ПК был выключен.
+- «Стрим закончился, готово 6 клипов» в трее и в Telegram. Автопубликация по умолчанию выключена; чужие каналы помечены, публикуйте только с разрешения стримера.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+- **اربط قناتك** على Kick أو Twitch أو YouTube من الإعدادات > القنوات (أو "اربط قناتي" في الصفحة الرئيسية): عند انتهاء البث ينزّل SharkyClips التسجيل ويصنع المقاطع بنفسه. لا حاجة لتسجيل OBS.
+- البثوث الجديدة فقط (القديمة عبر "استيراد آخر البثوث"). صفحات عامة فقط بلا تسجيل دخول. تنزيل واحد في كل مرة؛ ينتظر أثناء لعبك ومع الاتصال المحدود وعند امتلاء القرص؛ يلحق بما فاته إذا كان الجهاز مطفأً.
+- "انتهى بثك، 6 مقاطع جاهزة" في شريط النظام وعلى Telegram. النشر التلقائي مُعطّل افتراضيًا؛ قنوات الآخرين مُعلَّمة، وانشر فقط بإذن صاحب البث.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+- **连接你的频道**（Kick、Twitch 或 YouTube）：在 设置 > 频道（或首页的"连接我的频道"）。直播结束后，SharkyClips 会下载回放并自动剪辑，无需 OBS 录制。
+- 只处理新直播（旧直播可用"导入最近的直播"）。只访问公开页面，无需登录。一次只下载一个；你玩游戏时、按流量计费时和磁盘不足时会等待；电脑关机后会补上错过的直播。
+- 托盘和 Telegram 会提示"直播结束了，6 个剪辑已就绪"。自动发布默认关闭；他人频道会标明，发布前请征得主播许可。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+- **チャンネルをつなぐ**（Kick・Twitch・YouTube）：設定 > チャンネル（またはホームの「自分のチャンネルをつなぐ」）。配信が終わると SharkyClips がアーカイブをダウンロードし、自動でクリップを作ります。OBS 録画は不要です。
+- 対象はこれからの配信だけ（過去の配信は「直近の配信を取り込む」で）。公開ページのみ、ログイン不要。ダウンロードは 1 件ずつ。ゲーム中・従量制課金接続・空き容量不足のときは待ち、PC がオフだった間の配信も後から処理します。
+- 「配信が終わりました。クリップが 6 本できています」をトレイと Telegram でお知らせ。自動投稿は初期設定でオフ。他人のチャンネルは明示され、投稿には配信者の許可が必要です。
+
+</details>
+
 ## [1.2.56] - 2026-11-20
 ### A real Windows installer
 - **Install SharkyClips like any app:** download `SharkyClips-Setup.exe`, double-click, Next, done.
