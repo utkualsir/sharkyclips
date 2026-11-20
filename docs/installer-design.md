@@ -20,21 +20,26 @@
   planda kurar ve kendiliğinden yeniden açılır. Asla eski sürüme dönmez (kurulum dosyası da reddeder).
 - **CI:** her sürüm etiketinde temiz Windows makinesinde derleme → sessiz kurulum → çift tık gibi
   başlatma → arayüz + doctor + CPU'da küçük klip render → sessiz kaldırma; `.exe` + `.sha256`
-  sürüme eklenir. Temiz makinede test **geçti**.
+  sürüme eklenir. Temiz makinede test **geçti**; v1.2.56 sürümüne kurulum dosyası ve `.sha256`
+  eklendi: https://github.com/utkualsir/sharkyclips/releases/tag/v1.2.56 . Tüm CI işleri yeşil.
+- Sizin bilgisayarınızda çalışan bir SharkyClips yoktu (8000-8010 boş), yeniden başlatılacak bir
+  şey olmadı. Bilgisayarınızdaki git kurulumuna, ayarlarınıza ve kısayollarınıza dokunulmadı
+  (yerel kurulum testi geçici bir klasörde yapıldı ve kaldırıldı).
 - README: en üstte "Download for Windows" düğmesi, kurulum adımları, gereksinimler (8 GB RAM, GPU
   gerekmez), SmartScreen adımı (görsel bir çizimdir), SSS. Git/geliştirici akışı değişmedi.
 
-**Ölçümler:** kurulum dosyası **375 MB** (CI derlemesi 357 MB), kurulu boyut **~1,35 GB**, sessiz
+**Ölçümler:** kurulum dosyası **375 MB** (357 MiB), kurulu boyut **~1,35 GB**, sessiz
 kurulum **~70 sn**, ilk açılışta arayüz **~25 sn**, kaldırma 8-32 sn. Yapay zekâ modelleri ilk
 açılışta ayrıca iner (CPU'da ~0,5 GB; GPU'da ~2,8 GB; isteğe bağlı Ollama + model 5-8 GB).
 
 **Sizin yapmanız gerekenler**
-1. **Depoyu herkese açmak** (ben yapmadım): depo gizliyken "Download for Windows" düğmesi ve kurulu
-   kopyaların otomatik güncellemesi yalnızca erişimi olanlarda çalışır.
-2. **Kod imzalama:** önerim **SignPath Foundation** (ücretsiz, ama depo herkese açık olmalı). Adımlar
-   aşağıda bölüm 11'de. Depo açılmadan imza isterseniz: Certum Open Source sertifikası (~30-70 €/yıl).
-   İmza gelene kadar kullanıcılar SmartScreen'de **Ek bilgi → Yine de çalıştır** der (README'de var).
-3. İsterseniz README'deki SmartScreen çizimini gerçek bir ekran görüntüsüyle değiştirin.
+1. **Kod imzalama:** önerim **SignPath Foundation** (ücretsiz; depo artık herkese açık olduğu için
+   başvurabilirsiniz). Adımlar aşağıda bölüm 11'de: GitHub'da 2FA, kısa bir imza politikası sayfası,
+   https://signpath.org/apply başvurusu, onaydan sonra `SIGNPATH_API_TOKEN` secret'ı ve CI'a tek adım.
+   Alternatif: Certum Open Source sertifikası (~30-70 €/yıl, kimlik doğrulamalı). İmza gelene kadar
+   kullanıcılar SmartScreen'de **Ek bilgi → Yine de çalıştır** der (README'de anlatıldı).
+2. İsterseniz README'deki SmartScreen çizimini gerçek bir ekran görüntüsüyle değiştirin
+   (`docs/screenshots/smartscreen.png`).
 
 Kararların tamamı aşağıda "Decision log" bölümünde.
 
@@ -215,12 +220,10 @@ projects are kept, then attach `SharkyClips-Setup-<v>.exe` + `.sha256` to the Gi
 
 ## 11. What the owner must do (could not be done unattended)
 
-1. **Make the repository public when you are ready** (never done by Claude). Until then:
-   the "Download for Windows" button and the in-app updater of installed copies only work for
-   people with access to the private repository (GitHub answers 404 to anonymous downloads of
-   private releases). Everything else works.
+1. ~~Make the repository public~~: already public when checked at the end of this run (anonymous
+   `releases/latest` answers 200), so the download button and the in-app updater work for everyone.
 2. **Code signing (recommended: SignPath Foundation, free):**
-   1. Make the repo public (SignPath only signs public OSI-licensed projects).
+   1. The repo is public (SignPath only signs public OSI-licensed projects): done.
    2. Turn on 2FA/MFA on GitHub for every maintainer.
    3. Add a short code-signing policy page (e.g. `docs/code-signing-policy.md`: "Free code signing
       provided by SignPath.io, certificate by SignPath Foundation"; who approves releases: you).
