@@ -372,11 +372,16 @@ def test_quota_exceeded_on_the_server_waits_for_the_reset(yt):
 
     schedule([{"project_id": project.id, "clip_id": "c01"}], "auto")
     yt.quota_exceeded = True
+    before = datetime.now(timezone.utc)
     acts = _drive(2)
     assert f"upload:{key}" in acts
     it = P.get(key)
     assert not it["attention"] and it["error"]["fix"] == "wait" and it["attempts"] == 0
-    assert P.parse(it["next_try_at"]) > datetime.now(timezone.utc) + timedelta(minutes=1)
+    # waits for the quota reset (midnight Pacific); near 08:00 UTC that can be seconds away, so the
+    # check is "on a reset", not "more than a minute from now" (failed CI at 07:59:53 UTC)
+    nxt = P.parse(it["next_try_at"])
+    assert nxt > before and min(abs((nxt - youtube.next_reset(t)).total_seconds())
+                                for t in (before, datetime.now(timezone.utc))) < 5
     assert youtube.quota_view()["uploads_left"] == 0  # Google said it's gone: counter shows 0
     assert not yt.videos
 

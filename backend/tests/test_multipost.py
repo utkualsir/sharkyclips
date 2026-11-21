@@ -40,10 +40,11 @@ def social(monkeypatch, cfg):  # noqa: F811
     monkeypatch.setenv("SHARKYCLIPS_IG_ENDPOINT", f.url)
     monkeypatch.setenv("SHARKYCLIPS_FB_ENDPOINT", f.url)
     monkeypatch.setattr(MP, "POLL_S", 0.01)
+    monkeypatch.setattr(MP.igpace, "MIN_GAP_HOURS", 0.0)  # 1.2.62 pace: own tests (test_ig_pace.py)
     for p in ("tiktok", "reels"):
         PF.forget(p)
     PF._creator_cache.clear()
-    config.update(platform_modes={}, publish_targets=["youtube", "tiktok", "reels"])
+    config.update(platform_modes={}, publish_targets=["youtube", "tiktok", "reels"], ig_paused_at=1.0)
     _clean_projects()
     url = PF.tiktok_start("ck-123", "cs-456", 8000)
     from urllib.parse import parse_qs, urlparse

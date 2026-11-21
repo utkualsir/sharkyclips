@@ -46,7 +46,10 @@ from .project import write_json_atomic
 TZ_NAME = "Europe/Budapest"  # the 1.2.40 zone; the zone in use is zone_name() (setting "timezone")
 PLATFORMS = ("youtube", "tiktok", "instagram")
 NAMES = {"youtube": "YouTube", "tiktok": "TikTok", "instagram": "Instagram"}
-HARD_CAP = {"youtube": 8, "instagram": 10}  # TikTok: the "tiktok_cap" setting (default 10)
+HARD_CAP = {"youtube": 8, "instagram": 4}  # TikTok: the "tiktok_cap" setting (default 10)
+# 1.2.62 safe pace: Instagram is off until switched on, and its times are at least
+# IG_MIN_GAP_HOURS apart (web/igpace.py keeps the same gap for every other Instagram post)
+IG_MIN_GAP_HOURS = 4
 STATUSES = ("pending", "scheduled", "published", "failed", "skipped_duplicate")
 LIVE = ("scheduled", "published")  # out there, or planned on the platform itself
 LIMIT_BYTES = 10_000_000  # "under 10 MB": the decimal MB, the stricter of the two
@@ -67,7 +70,7 @@ DEFAULTS = {
     "platforms": {
         "youtube": {"on": True, "per_day": 3, "times": ["12:00", "18:00", "21:00"]},
         "tiktok": {"on": True, "per_day": 3, "times": ["12:00", "18:00", "21:00"]},
-        "instagram": {"on": True, "per_day": 3, "times": ["12:00", "18:00", "21:00"]},
+        "instagram": {"on": False, "per_day": 2, "times": ["12:00", "18:00"]},
     },
 }
 
@@ -259,6 +262,9 @@ def iso(dt: datetime) -> str:
 
 
 def settings() -> dict:
+    from .web import igpace
+
+    igpace.pause_once()  # 1.2.62: Instagram off once (the setup stays)
     saved = config.get("pubqueue") or {}
     out = json.loads(json.dumps(DEFAULTS))
     for k, v in saved.items():
@@ -310,6 +316,10 @@ def save_settings(changes: dict) -> dict:
                                            str(v[p]["times"]).split(",")) if str(t).strip() and not _hm(str(t))]
                         if bad:
                             raise SharkyClipsError(f"\"{str(bad[0]).strip()}\" isn't a time.", "Write times like 12:00, 18:00, 21:00.")
+                        if p == "instagram" and _too_close(times):
+                            raise SharkyClipsError(f"Instagram times need at least {IG_MIN_GAP_HOURS} hours between them.",
+                                                   "Posting more often can get an Instagram account restricted. "
+                                                   "Try 12:00, 18:00.")
                         v[p]["times"] = times
                     cur["platforms"][p].update({kk: vv for kk, vv in v[p].items() if kk in ("on", "per_day", "times")})
         elif k == "timezone":
@@ -327,6 +337,14 @@ def save_settings(changes: dict) -> dict:
     cur.pop("timezone_in_use", None)
     config.update(pubqueue=cur)
     return settings()
+
+
+def _too_close(times: list[str]) -> bool:
+    """Two Instagram times less than IG_MIN_GAP_HOURS apart (also across midnight)."""
+    mins = sorted(h * 60 + m for t in times if (hm := _hm(t)) for h, m in [hm])
+    gap = IG_MIN_GAP_HOURS * 60
+    pairs = list(zip(mins, mins[1:])) + ([(mins[-1], mins[0] + 1440)] if len(mins) > 1 else [])
+    return any(b - a < gap for a, b in pairs)
 
 
 def _hm(text: str) -> tuple[int, int] | None:

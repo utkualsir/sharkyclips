@@ -50,7 +50,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from .. import config, easy as E, platforms as PF, publishing as P
 from ..errors import SharkyClipsError
 from ..project import Project, write_json_atomic
-from . import state
+from . import igpace, state
 from .jobs import ACTIVE, Job, JobCancelled
 
 router = APIRouter()
@@ -96,11 +96,16 @@ def _iso(dt: datetime | None) -> str | None:
 # ===================================================================== stored choices
 
 
+DEFAULT_TARGETS = ("youtube", "tiktok")  # 1.2.62: Instagram is off until you switch it on
+
+
 def targets() -> list[str]:
-    """The platform switches, remembered (all three on until changed)."""
+    """The platform switches, remembered (YouTube + TikTok until changed; Instagram only when you
+    switch it on: 1.2.62 paused it once, igpace.pause_once)."""
+    igpace.pause_once()
     t = config.get("publish_targets")
     if not isinstance(t, list):
-        return list(PLATFORMS)
+        return list(DEFAULT_TARGETS)
     return [p for p in PLATFORMS if p in t]
 
 
@@ -194,9 +199,25 @@ def social_caption(project: Project, cand: dict, platform: str, meta: dict | Non
 
     meta = meta or _youtube_meta(project, cand)
     ai = ai_voice(project, cand["id"])
-    return PF.caption(platform, meta.get("title") or "", meta.get("description") or "",
-                      _hashtags_first(meta.get("hashtags") or []), ai["line"] if ai["note"] else None,
-                      socials=brand.socials_block(_lang(project, cand, meta)))
+    tags = _hashtags_first(meta.get("hashtags") or [])
+    last = None
+    if platform == "reels":  # 1.2.62 safe pace: few, varied hashtags; never the last post's caption
+        last = igpace.last_before(igpace.events(_app()), (project.id, cand["id"]))
+        tags = igpace.pick_hashtags(tags, len(brand.channel_hashtags()),
+                                    igpace.tags_of(last["caption"]) if last else set())
+    socials = brand.socials_block(_lang(project, cand, meta))
+
+    def build(title: str) -> str:
+        return PF.caption(platform, title, meta.get("description") or "", tags,
+                          ai["line"] if ai["note"] else None, socials=socials)
+
+    text = build(meta.get("title") or "")
+    if last is not None and igpace.norm(text) == igpace.norm(last["caption"]):
+        for alt in (cand.get("publish") or {}).get("titles") or []:
+            other = build(str(alt or ""))
+            if alt and igpace.norm(other) != igpace.norm(last["caption"]):
+                return other
+    return text
 
 
 def drafts(project: Project, cand: dict) -> dict:
@@ -454,6 +475,8 @@ def problems(project: Project, cand: dict, want: list[str], d: dict, tt: dict | 
             out.append(_problem(p, "caption_too_long", "shorten_caption", n=len(cap), max=lim["caption"]))
         if p == "reels" and hashtag_count(cap) > lim["hashtags"]:
             out.append(_problem(p, "too_many_hashtags", "trim_hashtags", n=hashtag_count(cap), max=lim["hashtags"]))
+        if p == "reels" and _same_as_last_ig(project, cand["id"], cap):  # 1.2.62: no identical captions in a row
+            out.append(_problem(p, "same_caption", "vary_caption"))
         if semi:
             continue
         q = (quota or {}).get(p) or {}
@@ -493,6 +516,8 @@ def apply_fix(project: Project, cid: str, platform: str, code: str) -> dict:
         save_clip_store(project, cid, drafts={platform: {"caption": _shorten_caption(d[platform]["caption"], LIMITS[platform]["caption"])}})
     elif code == "trim_hashtags" and platform == "reels":
         save_clip_store(project, cid, drafts={"reels": {"caption": _trim_hashtags(d["reels"]["caption"], LIMITS["reels"]["hashtags"])}})
+    elif code == "vary_caption" and platform == "reels":
+        save_clip_store(project, cid, drafts={"reels": {"caption": _varied_caption(project, cand, d["reels"]["caption"])}})
     elif code == "no_branded":
         save_clip_store(project, cid, tiktok={"brand_content": False})
     elif code == "fix_branded":
@@ -502,6 +527,33 @@ def apply_fix(project: Project, cid: str, platform: str, code: str) -> dict:
     else:
         raise SharkyClipsError("This fix isn't available here.")
     return view(project, cid)
+
+
+def _same_as_last_ig(project: Project, cid: str, caption: str) -> bool:
+    if _rec(project, cid, "reels").get("status") in ("published", "processing"):
+        return False  # this one is out already
+    last = igpace.last_before(igpace.events(_app()), (project.id, cid))
+    return last is not None and bool(caption.strip()) and igpace.norm(caption) == igpace.norm(last["caption"])
+
+
+def _varied_caption(project: Project, cand: dict, caption: str) -> str:
+    """The Instagram caption made different from the last post's: the generated one (other title,
+    rotated hashtags), else the same text with the hashtag line rotated, else a short closing line."""
+    last = igpace.last_before(igpace.events(_app(), fresh=True), (project.id, cand["id"]))
+    if last is None:
+        return caption
+    gen = social_caption(project, cand, "reels")
+    if igpace.norm(gen) != igpace.norm(last["caption"]):
+        return gen
+    blocks = caption.split("\n\n")
+    for i, b in enumerate(blocks):
+        tags = b.split()
+        if len(tags) > 1 and all(t.startswith("#") for t in tags):
+            blocks[i] = " ".join(tags[1:] + tags[:1])
+            out = "\n\n".join(blocks)
+            if igpace.norm(out) != igpace.norm(last["caption"]):
+                return out
+    return caption.rstrip() + "\n\n" + _now().strftime("%d.%m.")
 
 
 def _source_info(project: Project, cid: str) -> dict:
@@ -705,13 +757,23 @@ def _social_start(project: Project, cand: dict, platform: str, when: datetime | 
         return {"status": "uploading", "skipped": True}
     ai = v["ai_voice"]
     caption = v["drafts"][platform]["caption"]
+    paced = None
+    if platform == "reels":  # 1.2.62 safe pace: MIN_GAP_HOURS between Instagram posts
+        wanted = when or _now()
+        safe = igpace.next_safe(wanted, igpace.events(_app(), fresh=True), (project.id, cid))
+        if safe > wanted + timedelta(seconds=30):
+            when = paced = safe
+        igpace.forget_cache()
     if v["modes"][platform] == "semi":  # by hand: make the file now, whatever the planned time
         PF.record(project, cid, platform, mode="semi", caption=caption, ai_voice=ai if ai["dub"] else None,
                   error=None, attempts=0, next_try_at=None, late=False, status="preparing",
                   publish_at=None, remind_at=_iso(when) if when else None, file=None, folder=None,
                   shared_at=None, manual=None, url=None, notified_at=None if when else time.time())
         submit(project.id, cid, platform)
-        return {"status": "preparing", "mode": "semi", "upload_page": PF.UPLOAD_PAGE[platform]}
+        out = {"status": "preparing", "mode": "semi", "upload_page": PF.UPLOAD_PAGE[platform]}
+        if paced is not None:
+            out.update(paced_to=_iso(paced), pace_hours=igpace.MIN_GAP_HOURS)
+        return out
     if v["modes"][platform] == "browser":
         return _browser_start(project, cand, when, v, caption)
     if platform == "reels" and not PF.META_AUTOMATION:  # 1.2.50: never through Meta's API
@@ -727,7 +789,8 @@ def _social_start(project: Project, cand: dict, platform: str, when: datetime | 
               status="scheduled" if when else "preparing", publish_at=_iso(when) if when else None,
               file=None if rec.get("status") != "failed" and not rec.get("file_fixed") else rec.get("file"))
     if when:
-        return {"status": "scheduled", "publish_at": _iso(when)}
+        return {"status": "scheduled", "publish_at": _iso(when),
+                **({"paced_to": _iso(paced), "pace_hours": igpace.MIN_GAP_HOURS} if paced is not None else {})}
     submit(project.id, cid, platform)
     return {"status": "uploading"}
 
@@ -923,6 +986,15 @@ def _failed(project: Project, cid: str, platform: str, exc: SharkyClipsError) ->
     nxt = None
     if kind in ("transient", "rate_limit", "quota") and tries < MAX_TRIES and retry:
         nxt = time.time() + float(retry) * (1 if kind == "quota" else min(8, 2 ** (tries - 1)))
+    if kind == "account":  # 1.2.62: restricted / suspended / no permission: say so, never retry by itself
+        msg, hint = igpace.ACCOUNT_MESSAGE.get(platform, (exc.message, exc.hint))
+        PF.note_problem(platform, "attention", msg)
+        PF.record(project, cid, platform, status="failed", attempts=tries, next_try_at=None,
+                  error={"message": msg, "hint": hint, "detail": exc.message, "code": getattr(exc, "code", None),
+                         "kind": kind})
+        if platform == "reels":
+            igpace.pause_after_block(_app())
+        return
     if kind == "auth":  # Meta's 190: the token was revoked (or the password changed): connect again
         revoked = platform == "reels" and str(getattr(exc, "code", "")).split(":")[0] == "190"
         PF.note_problem(platform, "signed_out" if revoked else "attention", exc.message)

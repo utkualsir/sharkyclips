@@ -9,6 +9,189 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.62] - 2026-11-21
+Instagram is now switched off for publishing until you turn it on again, and when you do post there, the app keeps a safe pace so your account looks less like a robot.
+
+### Improved
+- **Instagram is paused.** Instagram is no longer switched on when you publish. Your Instagram setup is
+  kept: switch Instagram on again in the publish window when your account is fine.
+- **A safe pace for Instagram.** There are now at least 4 hours between two Instagram posts. If you post
+  sooner, the app plans the post for the next safe time and reminds you then.
+- **Fewer, changing hashtags.** Instagram captions now use at most 5 hashtags, and the app changes them
+  from post to post when the clip has other good ones.
+- **No copy-paste captions.** The app never gives two Instagram posts in a row the same caption. If you
+  typed the same text again, it shows a warning with a button that changes it for you.
+
+### Fixed
+- **Clear message for account problems.** If Instagram or TikTok refuses a post because the account is
+  restricted, suspended or missing a permission, the app now says so clearly and does not try again by
+  itself. Your other automatic Instagram posts are paused, so nothing else is sent to a blocked account.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Instagram artık sen tekrar açana kadar paylaşımda kapalı. Orada paylaştığında da uygulama güvenli bir hız tutuyor, böylece hesabın daha az robot gibi görünüyor.
+
+### İyileştirmeler
+- **Instagram duraklatıldı.** Paylaşırken Instagram artık açık gelmiyor. Instagram ayarların duruyor:
+  hesabın düzelince paylaşım penceresinde Instagram'ı tekrar aç.
+- **Instagram için güvenli hız.** İki Instagram gönderisi arasında artık en az 4 saat var. Daha erken
+  paylaşırsan uygulama gönderiyi bir sonraki güvenli zamana planlıyor ve o zaman sana hatırlatıyor.
+- **Daha az ve değişen hashtag'ler.** Instagram açıklamaları artık en fazla 5 hashtag kullanıyor ve klibin
+  başka iyi hashtag'leri varsa uygulama bunları gönderiden gönderiye değiştiriyor.
+- **Kopyala-yapıştır açıklama yok.** Uygulama art arda iki Instagram gönderisine asla aynı açıklamayı
+  vermiyor. Aynı metni tekrar yazdıysan, onu senin için değiştiren bir düğmeyle uyarı gösteriyor.
+
+### Düzeltmeler
+- **Hesap sorunları için net mesaj.** Instagram ya da TikTok hesap kısıtlandığı, askıya alındığı ya da bir
+  izni eksik olduğu için bir gönderiyi reddederse, uygulama artık bunu açıkça söylüyor ve kendi kendine
+  tekrar denemiyor. Diğer otomatik Instagram gönderilerin duraklatılıyor, böylece engellenmiş bir hesaba
+  başka bir şey gönderilmiyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Instagram queda desactivado para publicar hasta que lo vuelvas a activar, y cuando publicas allí, la app mantiene un ritmo seguro para que tu cuenta parezca menos un robot.
+
+### Mejoras
+- **Instagram está en pausa.** Instagram ya no aparece activado al publicar. Tu configuración de Instagram se guarda: vuelve a activarlo en la ventana de publicación cuando tu cuenta esté bien.
+- **Un ritmo seguro para Instagram.** Ahora hay al menos 4 horas entre dos publicaciones de Instagram. Si publicas antes, la app planifica la publicación para el siguiente momento seguro y te lo recuerda entonces.
+- **Menos hashtags, y distintos.** Los textos de Instagram usan como máximo 5 hashtags, y la app los cambia de una publicación a otra cuando el clip tiene otros buenos.
+- **Nada de textos copiados.** La app nunca da el mismo texto a dos publicaciones seguidas de Instagram. Si escribiste el mismo texto otra vez, muestra un aviso con un botón que lo cambia por ti.
+
+### Correcciones
+- **Mensaje claro para problemas de la cuenta.** Si Instagram o TikTok rechaza una publicación porque la cuenta está restringida, suspendida o le falta un permiso, la app ahora lo dice claramente y no lo vuelve a intentar sola. Tus otras publicaciones automáticas de Instagram se ponen en pausa, para que no se envíe nada más a una cuenta bloqueada.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+O Instagram agora fica desligado para publicar até você ligá-lo de novo, e quando você publica lá, o app mantém um ritmo seguro para sua conta parecer menos um robô.
+
+### Melhorias
+- **O Instagram está pausado.** O Instagram não vem mais ligado quando você publica. Sua configuração do Instagram continua salva: ligue o Instagram de novo na janela de publicação quando sua conta estiver bem.
+- **Um ritmo seguro para o Instagram.** Agora há pelo menos 4 horas entre duas publicações no Instagram. Se você publicar antes, o app planeja a publicação para o próximo horário seguro e avisa você na hora.
+- **Menos hashtags, e diferentes.** As legendas do Instagram agora usam no máximo 5 hashtags, e o app as troca de uma publicação para outra quando o clipe tem outras boas.
+- **Nada de legendas copiadas.** O app nunca dá a mesma legenda a duas publicações seguidas no Instagram. Se você digitou o mesmo texto de novo, ele mostra um aviso com um botão que muda o texto para você.
+
+### Correções
+- **Mensagem clara para problemas da conta.** Se o Instagram ou o TikTok recusar uma publicação porque a conta está restrita, suspensa ou sem uma permissão, o app agora diz isso com clareza e não tenta de novo sozinho. Suas outras publicações automáticas no Instagram são pausadas, para nada mais ser enviado a uma conta bloqueada.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Instagram ist zum Veröffentlichen jetzt ausgeschaltet, bis du es wieder einschaltest, und wenn du dort postest, hält die App ein sicheres Tempo, damit dein Konto weniger wie ein Roboter wirkt.
+
+### Verbessert
+- **Instagram ist pausiert.** Instagram ist beim Veröffentlichen nicht mehr eingeschaltet. Deine Instagram-Einrichtung bleibt erhalten: Schalte Instagram im Veröffentlichen-Fenster wieder ein, wenn dein Konto in Ordnung ist.
+- **Ein sicheres Tempo für Instagram.** Zwischen zwei Instagram-Posts liegen jetzt mindestens 4 Stunden. Postest du früher, plant die App den Post für den nächsten sicheren Zeitpunkt und erinnert dich dann.
+- **Weniger Hashtags, die wechseln.** Instagram-Texte nutzen jetzt höchstens 5 Hashtags, und die App wechselt sie von Post zu Post, wenn der Clip andere gute hat.
+- **Keine kopierten Texte.** Die App gibt zwei Instagram-Posts hintereinander nie denselben Text. Hast du denselben Text noch einmal geschrieben, zeigt sie eine Warnung mit einem Knopf, der ihn für dich ändert.
+
+### Behoben
+- **Klare Meldung bei Kontoproblemen.** Lehnt Instagram oder TikTok einen Post ab, weil das Konto eingeschränkt, gesperrt ist oder eine Berechtigung fehlt, sagt die App das jetzt klar und versucht es nicht von selbst noch einmal. Deine anderen automatischen Instagram-Posts werden pausiert, damit nichts weiter an ein gesperrtes Konto geht.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Instagram est maintenant désactivé pour la publication jusqu’à ce que tu le réactives, et quand tu y publies, l’app garde un rythme sûr pour que ton compte ressemble moins à un robot.
+
+### Améliorations
+- **Instagram est en pause.** Instagram n’est plus activé quand tu publies. Ta configuration Instagram est gardée : réactive Instagram dans la fenêtre de publication quand ton compte va bien.
+- **Un rythme sûr pour Instagram.** Il y a maintenant au moins 4 heures entre deux publications Instagram. Si tu publies plus tôt, l’app prévoit la publication au prochain moment sûr et te le rappelle à ce moment-là.
+- **Moins de hashtags, et qui changent.** Les légendes Instagram utilisent maintenant au plus 5 hashtags, et l’app les change d’une publication à l’autre quand le clip en a d’autres bons.
+- **Pas de légendes copiées.** L’app ne donne jamais la même légende à deux publications Instagram de suite. Si tu as réécrit le même texte, elle affiche un avertissement avec un bouton qui le change pour toi.
+
+### Corrections
+- **Message clair pour les problèmes de compte.** Si Instagram ou TikTok refuse une publication parce que le compte est restreint, suspendu ou qu’il manque une autorisation, l’app le dit maintenant clairement et ne réessaie pas toute seule. Tes autres publications Instagram automatiques sont mises en pause, pour que rien d’autre ne soit envoyé à un compte bloqué.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Az Instagram most ki van kapcsolva a közzétételnél, amíg újra be nem kapcsolod, és ha ott posztolsz, az alkalmazás biztonságos tempót tart, hogy a fiókod kevésbé tűnjön robotnak.
+
+### Fejlesztések
+- **Az Instagram szünetel.** Közzétételkor az Instagram már nincs bekapcsolva. Az Instagram-beállításaid megmaradnak: kapcsold be újra az Instagramot a közzététel ablakban, ha a fiókod rendben van.
+- **Biztonságos tempó az Instagramon.** Két Instagram-poszt között most legalább 4 óra van. Ha hamarabb posztolsz, az alkalmazás a következő biztonságos időpontra tervezi a posztot, és akkor szól.
+- **Kevesebb, változó hashtag.** Az Instagram-szövegek most legfeljebb 5 hashtaget használnak, és az alkalmazás posztról posztra cseréli őket, ha a klipnek vannak más jó hashtagjei.
+- **Nincs bemásolt szöveg.** Az alkalmazás soha nem ad két egymás utáni Instagram-posztnak ugyanazt a szöveget. Ha ugyanazt a szöveget írtad be újra, figyelmeztetést mutat egy gombbal, amely megváltoztatja helyetted.
+
+### Javítások
+- **Világos üzenet fiókproblémáknál.** Ha az Instagram vagy a TikTok azért utasít el egy posztot, mert a fiók korlátozva van, fel van függesztve, vagy hiányzik egy engedély, az alkalmazás most ezt világosan megmondja, és magától nem próbálja újra. A többi automatikus Instagram-posztod szünetel, így semmi más nem megy egy letiltott fiókra.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Instagram теперь выключен для публикации, пока вы не включите его снова, а когда вы публикуете там, приложение держит безопасный темп, чтобы ваш аккаунт меньше походил на робота.
+
+### Улучшения
+- **Instagram на паузе.** При публикации Instagram больше не включён. Ваши настройки Instagram сохраняются: включите Instagram снова в окне публикации, когда с аккаунтом всё будет в порядке.
+- **Безопасный темп для Instagram.** Теперь между двумя публикациями в Instagram проходит не меньше 4 часов. Если вы публикуете раньше, приложение планирует публикацию на следующее безопасное время и тогда напоминает вам.
+- **Меньше хештегов, и они меняются.** В подписях для Instagram теперь не больше 5 хештегов, и приложение меняет их от публикации к публикации, если у клипа есть другие хорошие.
+- **Никаких скопированных подписей.** Приложение никогда не даёт двум публикациям подряд в Instagram одинаковую подпись. Если вы снова ввели тот же текст, оно показывает предупреждение с кнопкой, которая изменит его за вас.
+
+### Исправления
+- **Понятное сообщение о проблемах с аккаунтом.** Если Instagram или TikTok отклоняет публикацию, потому что аккаунт ограничен, заблокирован или у него нет нужного разрешения, приложение теперь ясно об этом говорит и не повторяет попытку само. Остальные автоматические публикации в Instagram ставятся на паузу, чтобы на заблокированный аккаунт больше ничего не отправлялось.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+أصبح Instagram الآن متوقفًا عن النشر حتى تشغّله من جديد، وعندما تنشر هناك يحافظ التطبيق على وتيرة آمنة حتى يبدو حسابك أقل شبهًا بالروبوت.
+
+### تحسينات
+- **Instagram متوقف مؤقتًا.** لم يعد Instagram مفعّلًا عند النشر. إعداداتك في Instagram محفوظة: فعّل Instagram من جديد في نافذة النشر عندما يصبح حسابك بخير.
+- **وتيرة آمنة لـ Instagram.** أصبحت هناك 4 ساعات على الأقل بين منشورين على Instagram. إذا نشرت قبل ذلك، يخطط التطبيق للمنشور في أقرب وقت آمن ويذكّرك حينها.
+- **وسوم أقل ومتغيّرة.** تستخدم أوصاف Instagram الآن 5 وسوم على الأكثر، ويغيّرها التطبيق من منشور إلى آخر عندما يكون للمقطع وسوم جيدة أخرى.
+- **لا أوصاف منسوخة.** لا يعطي التطبيق أبدًا منشورين متتاليين على Instagram الوصف نفسه. إذا كتبت النص نفسه مرة أخرى، يعرض تنبيهًا مع زر يغيّره لك.
+
+### إصلاحات
+- **رسالة واضحة لمشاكل الحساب.** إذا رفض Instagram أو TikTok منشورًا لأن الحساب مقيّد أو معلّق أو ينقصه إذن، يقول التطبيق ذلك الآن بوضوح ولا يعيد المحاولة وحده. وتتوقف منشوراتك التلقائية الأخرى على Instagram مؤقتًا، حتى لا يُرسل شيء آخر إلى حساب محظور.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+发布时 Instagram 现在默认关闭，直到你再次打开它；在 Instagram 发布时，应用会保持安全的节奏，让你的账号看起来不那么像机器人。
+
+### 改进
+- **Instagram 已暂停。**发布时 Instagram 不再默认打开。你的 Instagram 设置会保留：账号恢复正常后，在发布窗口中重新打开 Instagram 即可。
+- **Instagram 的安全节奏。**现在两条 Instagram 帖子之间至少相隔 4 小时。如果你更早发布，应用会把帖子安排到下一个安全时间，并在那时提醒你。
+- **更少、会变化的话题标签。**Instagram 文案现在最多使用 5 个话题标签；如果片段还有其他合适的标签，应用会在每条帖子之间更换它们。
+- **不再有复制粘贴的文案。**应用绝不会让连续两条 Instagram 帖子使用相同的文案。如果你又输入了同样的文字，它会显示提醒，并提供一个帮你修改的按钮。
+
+### 修复
+- **账号问题有清楚的提示。**如果 Instagram 或 TikTok 因为账号被限制、被停用或缺少权限而拒绝帖子，应用现在会清楚地告诉你，并且不会自动重试。你其他的自动 Instagram 帖子会被暂停，不会再向被封锁的账号发送任何内容。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+Instagram は、もう一度オンにするまで投稿先としてオフになりました。Instagram に投稿するときは、アカウントがロボットのように見えないよう、アプリが安全なペースを保ちます。
+
+### 改善
+- **Instagram を一時停止。**投稿するとき、Instagram は最初からオンになっていません。Instagram の設定は残っています。アカウントが問題なくなったら、投稿画面で Instagram をもう一度オンにしてください。
+- **Instagram の安全なペース。**2 つの Instagram 投稿の間は、最低 4 時間あくようになりました。それより早く投稿すると、アプリが次の安全な時間に予定して、その時にお知らせします。
+- **少なめで、変わるハッシュタグ。**Instagram のキャプションのハッシュタグは最大 5 個になりました。クリップにほかの良いハッシュタグがあれば、投稿ごとに入れ替えます。
+- **コピーしたキャプションはなし。**続けて投稿する 2 つの Instagram 投稿に、同じキャプションを使うことはありません。同じ文章をもう一度入力すると、変更してくれるボタン付きの警告が表示されます。
+
+### 修正
+- **アカウントの問題をはっきり表示。**アカウントが制限・停止されている、または権限が足りないために Instagram や TikTok が投稿を拒否した場合、アプリはそれをはっきり伝え、自動で再試行しません。ほかの自動 Instagram 投稿は一時停止され、ブロックされたアカウントには何も送られません。
+
+</details>
+
 ## [1.2.61] - 2026-11-21
 A small safety update: the app now makes sure that some helper parts it uses are new enough and have no known security problems.
 

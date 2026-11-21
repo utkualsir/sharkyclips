@@ -18,7 +18,9 @@ from test_publishing import _clean_projects, _project, cfg  # noqa: F401 - fixtu
 @pytest.fixture
 def pq(monkeypatch, tmp_path, cfg):  # noqa: F811
     monkeypatch.setenv("SHARKYCLIPS_QUEUE_HOME", str(tmp_path / "SharkyClips"))
-    config.update(pubqueue={"timezone": "Europe/Budapest"})
+    config.update(pubqueue={"timezone": "Europe/Budapest", "platforms": {"instagram": {
+                                "on": True, "per_day": 3, "times": ["12:00", "18:00", "21:00"]}}},
+                  ig_paused_at=1.0)  # 1.2.62: Instagram is off by default; on for these tests
     _clean_projects()
     yield tmp_path / "SharkyClips"
     config.update(pubqueue=None)

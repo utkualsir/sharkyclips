@@ -607,7 +607,7 @@ def ig_connect(token: str, account: str | None = None) -> dict:
     try:  # unknown prefix: Instagram first, then the Facebook side
         return _ig_save(token, 60 * 86400, account)
     except PlatformError as exc:
-        if exc.kind != "auth":
+        if exc.kind not in ("auth", "account"):
             raise
     return _fb_connect(token, account)
 
@@ -682,7 +682,7 @@ def _fb_connect(token: str, account: str | None = None) -> dict:
     try:
         _fb_get("me", token, "connection", fields="id,name")
     except PlatformError as exc:
-        if exc.kind == "auth":
+        if exc.kind in ("auth", "account"):
             raise _ig_error("bad_token") from exc
         raise
     info: dict = {}
@@ -714,7 +714,7 @@ def _fb_connect(token: str, account: str | None = None) -> dict:
     try:  # posting rights: the publishing limit needs instagram_content_publish on this account
         _fb_get(f"{target}/content_publishing_limit", token, "check", fields="quota_usage")
     except PlatformError as exc:
-        if exc.kind in ("auth", "fatal"):
+        if exc.kind in ("auth", "fatal", "account"):
             raise _ig_error("no_publish", account=label) from exc
     scopes = info.get("scopes") or []
     expires = float(info.get("expires_at") or 0)  # 0: never (system user)
@@ -867,7 +867,9 @@ def record(project, cid: str, platform: str, **data) -> dict:
 class PlatformError(SharkyClipsError):
     """An API refusal with what the posting engine needs to react: `kind` is one of
     auth (connect again) | rate_limit (try again in a minute or two) | quota (daily cap: later) |
-    transient (network / 5xx: try again) | fatal (this post can't work as it is)."""
+    transient (network / 5xx: try again) | fatal (this post can't work as it is) |
+    account (1.2.62: the account is restricted / suspended / lacks a permission: never retried by
+    itself, the user is told what to check)."""
 
     def __init__(self, message: str, hint: str | None, platform: str, code: str, kind: str,
                  retry_after: float | None = None):
@@ -876,10 +878,23 @@ class PlatformError(SharkyClipsError):
 
 
 _TT_KIND = {"rate_limit_exceeded": "rate_limit", "spam_risk_too_many_posts": "quota",
-            "spam_risk_user_banned_from_posting": "fatal", "reached_active_user_cap": "quota",
+            "spam_risk_user_banned_from_posting": "account", "reached_active_user_cap": "quota",
             "access_token_invalid": "auth", "access_token_expired": "auth", "invalid_grant": "auth",
             "scope_not_authorized": "auth", "unaudited_client_can_only_post_to_private_accounts": "fatal",
             "privacy_level_option_mismatch": "fatal", "internal_error": "transient"}
+
+
+# 1.2.62: Meta refusals that are about the account, not this post: permissions (10, 200-299), the
+# app's capability (3), a block for policy reasons (368), and the subcodes of a restricted /
+# inactive / checkpointed account (2207050) or an unconfirmed / checkpointed user (459, 464).
+META_ACCOUNT_CODES = {"3", "10", "368"}
+META_ACCOUNT_SUBCODES = {"2207050", "459", "464"}
+
+
+def _meta_account(code: str) -> bool:
+    base, _, sub = code.partition(":")
+    return (base in META_ACCOUNT_CODES or (base.isdigit() and 200 <= int(base) <= 299)
+            or sub in META_ACCOUNT_SUBCODES)
 
 
 def api_error(platform: str, message: str, hint: str | None, code: str, http: int = 400) -> PlatformError:
@@ -889,7 +904,8 @@ def api_error(platform: str, message: str, hint: str | None, code: str, http: in
     else:
         base = code.split(":")[0]
         kind = ("quota" if code == "9:2207042" else "rate_limit" if base in ("4", "17", "32", "613") or http == 429
-                else "auth" if base in ("190", "10", "200") or http == 401 else
+                else "account" if _meta_account(code) else
+                "auth" if base == "190" or http == 401 else
                 "transient" if base in ("1", "2", "-1") or http >= 500 else "fatal")
     retry = {"rate_limit": 90.0, "quota": 6 * 3600.0, "transient": 60.0}.get(kind)
     return PlatformError(message, hint, platform, code, kind, retry)

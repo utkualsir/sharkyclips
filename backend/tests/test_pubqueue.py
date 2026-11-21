@@ -21,7 +21,7 @@ from test_publishing import _clean_projects, _idle, _project, _wait, cfg  # noqa
 @pytest.fixture
 def pq(monkeypatch, tmp_path, cfg):  # noqa: F811
     monkeypatch.setenv("SHARKYCLIPS_QUEUE_HOME", str(tmp_path / "SharkyClips"))
-    config.update(pubqueue=MINE)
+    config.update(pubqueue=MINE, ig_paused_at=1.0)  # the one-time 1.2.62 pause is behind us
     _clean_projects()
     yield tmp_path / "SharkyClips"
     _wait(_idle, 120)
@@ -31,7 +31,9 @@ def pq(monkeypatch, tmp_path, cfg):  # noqa: F811
 
 # a creator with two Instagram accounts, a brand tag and a fixed zone (1.2.41: settings, not code)
 MINE = {"timezone": "Europe/Budapest", "brand_hashtag": "#mychan", "instagram_accounts": ["mychan", "mychan.gaming"],
-        "instagram_default": "mychan", "instagram_gaming": "mychan.gaming"}
+        "instagram_default": "mychan", "instagram_gaming": "mychan.gaming",
+        # 1.2.62: Instagram is off by default; these tests cover the queue with it switched on
+        "platforms": {"instagram": {"on": True, "per_day": 3, "times": ["12:00", "18:00", "21:00"]}}}
 
 
 def bud(y, mo, d, h, mi=0):

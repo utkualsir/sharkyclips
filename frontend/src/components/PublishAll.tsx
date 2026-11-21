@@ -223,8 +223,13 @@ export function PostBadges({ posts, pid, cid, onChanged, all }: { posts: ClipPos
       )}
       {ORDER.filter((p) => posts[p].status === "failed" && posts[p].error).map((p) => (
         <p key={p} className="mp-fail-line" role="alert">
-          <PlatformIcon p={p} size={13} /> {posts[p].error!.message}
-          {posts[p].error!.hint && <span className="muted"> {posts[p].error!.hint}</span>}
+          <PlatformIcon p={p} size={13} />{" "}
+          {posts[p].error!.kind === "account" ? t("mp.account_blocked", { name: TARGET_NAME[p] }) : posts[p].error!.message}
+          {posts[p].error!.kind === "account" ? (
+            <span className="muted"> {t("mp.account_blocked_hint", { name: TARGET_NAME[p] })}</span>
+          ) : (
+            posts[p].error!.hint && <span className="muted"> {posts[p].error!.hint}</span>
+          )}
         </p>
       ))}
     </div>
@@ -238,7 +243,7 @@ function problemText(p: Problem, t: (k: string, v?: Record<string, string | numb
   return t(`mp.p_${p.code}`, { ...p.params, name, max: p.params.max ?? "", n: p.params.n ?? "" });
 }
 
-const FIX_SERVER = ["shorten_title", "shorten_caption", "trim_hashtags", "shorten_description", "no_branded", "fix_branded"];
+const FIX_SERVER = ["shorten_title", "shorten_caption", "trim_hashtags", "shorten_description", "no_branded", "fix_branded", "vary_caption"];
 
 function Problems({
   view,
@@ -656,7 +661,13 @@ function afterStart(
 ) {
   const tt = r.results.tiktok;
   if (tt && !tt.error && !tt.skipped && tt.mode !== "semi") toast({ kind: "info", text: t("mp.tt_after") });
-  const hand = byHand(targets, r.view.modes, r.view.states).filter((p) => !r.results[p]?.error);
+  // 1.2.62 safe pace: an Instagram post asked for too soon after the last one waits (reminder later)
+  const ig = r.results.reels;
+  if (ig?.paced_to) {
+    const when = relWhen(ig.paced_to, document.documentElement.lang || "en");
+    toast({ kind: "info", text: t("mp.ig_paced", { when, h: ig.pace_hours ?? 4 }) });
+  }
+  const hand = byHand(targets, r.view.modes, r.view.states).filter((p) => !r.results[p]?.error && !(p === "reels" && ig?.paced_to));
   openHandoff({ pid, cid, title, platforms: hand });
 }
 

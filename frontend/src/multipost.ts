@@ -46,7 +46,7 @@ export interface PostError {
   message: string;
   hint: string | null;
   code?: string | null;
-  kind?: "auth" | "rate_limit" | "quota" | "transient" | "fatal";
+  kind?: "auth" | "rate_limit" | "quota" | "transient" | "fatal" | "account";
 }
 
 export interface PostState {
@@ -221,7 +221,7 @@ export interface Handoff {
 }
 
 export interface StartResult {
-  results: Partial<Record<Target, { status: PostStatus; skipped?: boolean; publish_at?: string; moved?: boolean; error?: PostError; mode?: PostMode; upload_page?: string }>>;
+  results: Partial<Record<Target, { status: PostStatus; skipped?: boolean; publish_at?: string; moved?: boolean; paced_to?: string; pace_hours?: number; error?: PostError; mode?: PostMode; upload_page?: string }>>;
   view: PublishView;
 }
 
