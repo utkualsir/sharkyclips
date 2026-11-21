@@ -14,6 +14,9 @@ game (docs/ADDING_A_GAME.md):
     ocr                    {region: {event_code: [phrases, EN + TR, "-word" = must not be there]}}
     events                 {event_code: {"strength" 0..1, "label", "dedupe" s, "pre" s, "post" s}}
     audio_cues, vocabulary, terms, hashtags {"all": [...], "<lang>": [...]}, title_style {lang: hint}
+    hud_areas              {name: {"box": [x, y, w, h] on 1920x1080, "label", "guess": bool}} (1.2.59):
+                           the game's own HUD (kill feed, score, minimap ...). Animated graphics
+                           never cover them. "guess": true = not checked on real footage yet.
 
 Users can drop their own profile folder into `<settings>/game_profiles/<id>/profile.json`: it is
 loaded too, and wins over a built-in profile with the same id.
@@ -70,7 +73,48 @@ def validate(p: dict) -> list[str]:
     if p.get("engine", "banners") == "banners" and p.get("ocr") and not regions:
         errs.append("a 'banners' profile with ocr rules needs regions")
     errs += validate_graphics(p)
+    errs += validate_hud(p)
     return errs
+
+
+HUD_AREAS = ("kill_feed", "kill_text", "score", "minimap", "health", "ammo", "abilities", "timer", "objective",
+             "chat", "scoreboard")
+
+
+def validate_hud(p: dict) -> list[str]:
+    """1.2.59 `hud_areas`: {name: {"box": [x, y, w, h] on 1920x1080, "label", "guess": bool}}."""
+    areas = p.get("hud_areas")
+    if areas is None:
+        return []
+    if not isinstance(areas, dict):
+        return ["hud_areas must be an object"]
+    errs = []
+    for name, a in areas.items():
+        base = str(name).split(".")[0]  # "kill_feed.2": a second area of the same kind
+        if base not in HUD_AREAS:
+            errs.append(f"hud area {name}: name must be one of {HUD_AREAS}")
+        box = (a or {}).get("box") if isinstance(a, dict) else None
+        if not (isinstance(box, list) and len(box) == 4 and all(isinstance(v, (int, float)) for v in box)):
+            errs.append(f"hud area {name}: box must be [x, y, w, h]")
+            continue
+        x, y, w, h = box
+        if w < 8 or h < 8 or x < 0 or y < 0 or x + w > 1920 or y + h > 1080:
+            errs.append(f"hud area {name}: box outside the 1920x1080 frame")
+        elif w * h > 0.2 * 1920 * 1080:
+            errs.append(f"hud area {name}: box too big (more than a fifth of the screen)")
+        if "guess" in a and not isinstance(a["guess"], bool):
+            errs.append(f"hud area {name}: guess must be true or false")
+    return errs
+
+
+def hud_boxes(game_id: str | None) -> list[tuple[float, float, float, float]]:
+    """The game's HUD areas as fractions of the frame (x0, y0, x1, y1); [] for an unknown game."""
+    p = get(game_id) if game_id else None
+    out = []
+    for a in ((p or {}).get("hud_areas") or {}).values():
+        x, y, w, h = a["box"]
+        out.append((x / 1920, y / 1080, (x + w) / 1920, (y + h) / 1080))
+    return out
 
 
 def validate_graphics(p: dict) -> list[str]:

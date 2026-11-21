@@ -9,6 +9,249 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.59] - 2026-11-21
+A small shark game to play while your project is processing, and animated graphics that now keep away from the game's own kill feed, score and minimap.
+
+### New
+- **Shark Snack, a mini game while you wait.** While a project is processing, a small button shows at
+  the bottom of the screen. It opens a compact game: your shark eats smaller fish to grow, avoids
+  bigger fish, jellyfish and spiky urchins, builds combos and picks up bubbles (magnet, double points,
+  shield, extra time). Rounds are short (30 to 90 seconds) and get a little harder every second.
+- **Play your way.** Mouse, finger or keyboard (arrow keys or WASD, Space to dash, P to pause). A short
+  "how to play" shows the first time. Sound effects are off until you turn them on.
+- **Your best score, today's best and seven shark skins** you earn by playing. No ads, nothing to buy,
+  no timers or streaks, nothing online: everything stays on your computer.
+- **Your clips first.** When the processing is done, a small "Your clips are ready!" message opens
+  your clips with one click. The game keeps your score, so you can also keep playing.
+- **Game HUD areas.** Every game profile now knows where the game draws its kill feed, score, minimap
+  and other HUD parts. The animated graphics never cover them.
+
+### Improved
+- **The game never slows down your clips.** It only runs while you play, it pauses when you hide it,
+  switch to another window or minimise the app, and it uses very little power (about 0.2 ms of work
+  per frame in our tests). You can turn the button off in Settings, and start a game from there at
+  any time.
+- **Bold graphics in the split layout** now move into the free space above the action (a little
+  smaller when needed) instead of sitting on the game's own text at the bottom.
+
+### Fixed
+- In Delta Force clips, the Bold style no longer covers the game's own kill text and score lines.
+- Short clips with the Shorts / TikTok / Reels safe areas now show Bold graphics again where there was
+  no free spot before.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Projen işlenirken oynayabileceğin küçük bir köpekbalığı oyunu ve artık oyunun kendi kill akışından, skorundan ve mini haritasından uzak duran hareketli grafikler.
+
+### Yeni
+- **Shark Snack: beklerken mini oyun.** Bir proje işlenirken ekranın altında küçük bir düğme belirir.
+  Kompakt bir oyun açar: köpekbalığın küçük balıkları yiyerek büyür, büyük balıklardan, denizanalarından
+  ve dikenli deniz kestanelerinden kaçar, kombo yapar ve baloncukları toplar (mıknatıs, çift puan, kalkan,
+  ek süre). Turlar kısadır (30-90 saniye) ve her saniye biraz zorlaşır.
+- **İstediğin gibi oyna.** Fare, parmak veya klavye (ok tuşları ya da WASD, atılmak için Boşluk,
+  duraklatmak için P). İlk açılışta kısa bir "nasıl oynanır" görünür. Ses efektleri sen açana kadar
+  kapalıdır.
+- **En iyi skorun, bugünün en iyisi ve oynayarak kazandığın yedi köpekbalığı görünümü.** Reklam yok,
+  satın alma yok, süre baskısı veya seri yok, internet yok: her şey bilgisayarında kalır.
+- **Önce kliplerin.** İşlem bitince küçük bir "Kliplerin hazır!" mesajı tek tıkla kliplerini açar. Oyun
+  skorunu saklar, istersen oynamaya devam edebilirsin.
+- **Oyun HUD bölgeleri.** Her oyun profili artık oyunun kill akışını, skorunu, mini haritasını ve diğer
+  HUD parçalarını nereye çizdiğini biliyor. Hareketli grafikler bunların üstüne asla gelmez.
+
+### İyileştirmeler
+- **Oyun kliplerini asla yavaşlatmaz.** Sadece oynarken çalışır; gizleyince, başka pencereye geçince
+  veya uygulamayı küçültünce durur ve çok az güç kullanır (testlerimizde kare başına yaklaşık 0,2 ms).
+  Düğmeyi Ayarlar'dan kapatabilir, oyunu oradan istediğin zaman başlatabilirsin.
+- **Bölünmüş düzende Belirgin grafikler** artık alttaki oyun yazısının üstüne oturmak yerine aksiyonun
+  üstündeki boş alana geçiyor (gerekirse biraz küçülerek).
+
+### Düzeltmeler
+- Delta Force kliplerinde Belirgin stil artık oyunun kendi öldürme yazısını ve puan satırlarını
+  kapatmıyor.
+- Shorts / TikTok / Reels güvenli alanlı kliplerde, daha önce boş yer bulunamayan Belirgin grafikler
+  yeniden görünüyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Un pequeño juego de tiburón para jugar mientras se procesa tu proyecto, y gráficos animados que ahora se apartan del registro de bajas, el marcador y el minimapa del propio juego.
+
+### Nuevo
+- **Shark Snack, un minijuego mientras esperas:** come peces más pequeños para crecer, esquiva peces grandes, medusas y erizos, haz combos y recoge burbujas de poder. Rondas cortas (30-90 s).
+- Ratón, dedo o teclado; una breve guía la primera vez; sonido apagado hasta que lo actives. Récord, mejor de hoy y siete aspectos que se ganan jugando. Sin anuncios, sin compras, nada en línea.
+- Al terminar el proceso, un aviso "¡Tus clips están listos!" los abre con un clic; el juego guarda tu puntuación.
+- **Zonas del HUD de cada juego:** los gráficos animados nunca cubren el registro de bajas, el marcador ni el minimapa.
+
+### Mejoras
+- El juego solo funciona mientras juegas, se pausa al ocultarlo o cambiar de ventana y gasta muy poco. Puedes desactivar el botón en Ajustes.
+- Los gráficos llamativos en el diseño dividido pasan al espacio libre sobre la acción.
+
+### Correcciones
+- En Delta Force, el estilo llamativo ya no tapa el texto de bajas del juego.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Um joguinho de tubarão para jogar enquanto seu projeto é processado, e gráficos animados que agora ficam longe do feed de abates, do placar e do minimapa do próprio jogo.
+
+### Novo
+- **Shark Snack, um minijogo enquanto espera:** coma peixes menores para crescer, fuja de peixes grandes, águas-vivas e ouriços, faça combos e pegue bolhas de poder. Rodadas curtas (30-90 s).
+- Mouse, dedo ou teclado; um guia rápido na primeira vez; som desligado até você ligar. Recorde, melhor de hoje e sete visuais conquistados jogando. Sem anúncios, sem compras, nada online.
+- Quando o processamento termina, o aviso "Seus clipes estão prontos!" abre tudo com um clique; o jogo guarda sua pontuação.
+- **Áreas do HUD de cada jogo:** os gráficos animados nunca cobrem o feed de abates, o placar ou o minimapa.
+
+### Melhorias
+- O jogo só roda enquanto você joga, pausa ao esconder ou trocar de janela e gasta muito pouco. Dá para desligar o botão nas Configurações.
+- Gráficos chamativos no layout dividido vão para o espaço livre acima da ação.
+
+### Correções
+- No Delta Force, o estilo chamativo não cobre mais o texto de abates do jogo.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Ein kleines Hai-Spiel für die Wartezeit, während dein Projekt verarbeitet wird, und animierte Grafiken, die jetzt Killfeed, Punktestand und Minikarte des Spiels freilassen.
+
+### Neu
+- **Shark Snack, ein Minispiel beim Warten:** friss kleinere Fische, um zu wachsen, weiche großen Fischen, Quallen und Seeigeln aus, mach Kombos und sammle Power-up-Blasen. Kurze Runden (30-90 s).
+- Maus, Finger oder Tastatur; eine kurze Anleitung beim ersten Mal; Ton aus, bis du ihn einschaltest. Bestwert, Tagesbestwert und sieben erspielbare Skins. Keine Werbung, keine Käufe, nichts online.
+- Ist die Verarbeitung fertig, öffnet „Deine Clips sind fertig!“ sie mit einem Klick; das Spiel behält deinen Punktestand.
+- **HUD-Bereiche je Spiel:** animierte Grafiken verdecken nie Killfeed, Punktestand oder Minikarte.
+
+### Verbessert
+- Das Spiel läuft nur, während du spielst, pausiert beim Ausblenden oder Fensterwechsel und braucht sehr wenig Leistung. Der Knopf lässt sich in den Einstellungen ausschalten.
+- Auffällige Grafiken im geteilten Layout rücken in den freien Platz über der Action.
+
+### Behoben
+- In Delta Force verdeckt der auffällige Stil nicht mehr den Kill-Text des Spiels.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Un petit jeu de requin pour patienter pendant le traitement de ton projet, et des graphismes animés qui évitent maintenant le fil des kills, le score et la mini-carte du jeu.
+
+### Nouveau
+- **Shark Snack, un mini-jeu pendant l’attente :** mange les petits poissons pour grandir, évite les gros poissons, les méduses et les oursins, enchaîne les combos et attrape des bulles bonus. Manches courtes (30-90 s).
+- Souris, doigt ou clavier ; un petit guide la première fois ; son coupé jusqu’à ce que tu l’actives. Record, meilleur score du jour et sept apparences à gagner en jouant. Pas de pub, rien à acheter, rien en ligne.
+- Quand le traitement est fini, « Tes clips sont prêts ! » les ouvre en un clic ; le jeu garde ton score.
+- **Zones du HUD de chaque jeu :** les graphismes animés ne couvrent jamais le fil des kills, le score ou la mini-carte.
+
+### Améliorations
+- Le jeu ne tourne que pendant que tu joues, se met en pause quand tu le caches ou changes de fenêtre, et consomme très peu. Tu peux masquer le bouton dans les Réglages.
+- Les graphismes marqués en disposition partagée passent dans l’espace libre au-dessus de l’action.
+
+### Corrections
+- Dans Delta Force, le style marqué ne cache plus le texte des kills du jeu.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Egy kis cápás játék várakozás közben, amíg a projekted készül, és animált grafikák, amelyek most elkerülik a játék saját killfeedjét, pontjait és minitérképét.
+
+### Új
+- **Shark Snack, minijáték várakozás közben:** egyél kisebb halakat, hogy nőj, kerüld a nagy halakat, medúzákat és tengeri sünöket, gyűjts kombót és erőbuborékokat. Rövid körök (30-90 mp).
+- Egér, ujj vagy billentyűzet; rövid útmutató az első alkalommal; a hang ki van kapcsolva, amíg be nem kapcsolod. Rekord, mai legjobb és hét játékkal megszerezhető kinézet. Nincs reklám, nincs vásárlás, semmi sem megy az internetre.
+- Ha kész a feldolgozás, a „Kész vannak a klipjeid!” üzenet egy kattintással megnyitja őket; a játék megőrzi a pontjaidat.
+- **Játékonkénti HUD-területek:** az animált grafikák soha nem takarják a killfeedet, a pontokat vagy a minitérképet.
+
+### Fejlesztések
+- A játék csak játék közben fut, elrejtéskor vagy ablakváltáskor szünetel, és nagyon keveset fogyaszt. A gomb a Beállításokban kikapcsolható.
+- A feltűnő grafikák osztott elrendezésben az akció feletti szabad helyre kerülnek.
+
+### Javítások
+- Delta Force-ban a feltűnő stílus már nem takarja a játék kill-szövegét.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшая игра про акулу на время обработки проекта и анимированная графика, которая теперь не закрывает ленту убийств, счёт и мини-карту самой игры.
+
+### Новое
+- **Shark Snack — мини-игра во время ожидания:** ешьте рыб поменьше, чтобы расти, уворачивайтесь от больших рыб, медуз и морских ежей, делайте комбо и собирайте пузыри с бонусами. Короткие раунды (30–90 с).
+- Мышь, палец или клавиатура; короткая подсказка при первом запуске; звук выключен, пока вы его не включите. Рекорд, лучший результат за день и семь обликов, которые открываются за игру. Без рекламы, без покупок, без интернета.
+- Когда обработка закончится, сообщение «Ваши клипы готовы!» откроет их одним щелчком; игра сохранит ваш счёт.
+- **Области интерфейса каждой игры:** анимированная графика никогда не закрывает ленту убийств, счёт и мини-карту.
+
+### Улучшения
+- Игра работает только пока вы играете, ставится на паузу, если её скрыть или переключить окно, и почти не нагружает компьютер. Кнопку можно выключить в настройках.
+- Яркая графика в раздельной раскладке переходит в свободное место над действием.
+
+### Исправления
+- В Delta Force яркий стиль больше не закрывает надписи об убийствах в самой игре.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+لعبة قرش صغيرة تلعبها أثناء معالجة مشروعك، ورسومات متحركة تبتعد الآن عن سجل القتل والنتيجة والخريطة المصغّرة الخاصة باللعبة.
+
+### جديد
+- **Shark Snack، لعبة صغيرة أثناء الانتظار:** كُل الأسماك الأصغر لتكبر، وتجنّب الأسماك الكبيرة وقناديل البحر وقنافذ البحر، واصنع الكومبو واجمع فقاعات القدرات. جولات قصيرة (30-90 ثانية).
+- الفأرة أو الإصبع أو لوحة المفاتيح؛ دليل قصير في المرة الأولى؛ الصوت مغلق حتى تشغّله. أفضل نتيجة، وأفضل نتيجة اليوم، وسبعة مظاهر تكسبها باللعب. بلا إعلانات ولا مشتريات ولا شيء عبر الإنترنت.
+- عند انتهاء المعالجة تفتح رسالة "مقاطعك جاهزة!" مقاطعك بنقرة واحدة؛ وتحتفظ اللعبة بنتيجتك.
+- **مناطق واجهة كل لعبة:** الرسومات المتحركة لا تغطي أبدًا سجل القتل أو النتيجة أو الخريطة المصغّرة.
+
+### تحسينات
+- تعمل اللعبة فقط أثناء اللعب، وتتوقف عند إخفائها أو الانتقال إلى نافذة أخرى، وتستهلك القليل جدًا. يمكنك إيقاف الزر من الإعدادات.
+- الرسومات البارزة في التخطيط المقسوم تنتقل إلى المساحة الفارغة فوق الحركة.
+
+### إصلاحات
+- في Delta Force لم يعد النمط البارز يغطي نص القتل الخاص باللعبة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+项目处理期间可以玩的小鲨鱼游戏，以及现在会避开游戏自身击杀信息、比分和小地图的动态图形。
+
+### 新功能
+- **Shark Snack，等待时的小游戏：**吃掉更小的鱼长大，躲开大鱼、水母和海胆，打出连击并收集能力气泡。每局很短（30-90 秒）。
+- 鼠标、手指或键盘；首次打开有简短玩法说明；声音默认关闭。最高分、今日最佳，以及七种靠玩游戏解锁的外观。没有广告，没有购买，不联网。
+- 处理完成后，"你的片段已准备好！"提示一键打开片段；游戏会保留你的分数。
+- **每款游戏的界面区域：**动态图形从不遮挡击杀信息、比分或小地图。
+
+### 改进
+- 游戏只在你玩的时候运行，隐藏或切换窗口时自动暂停，几乎不占资源。可以在设置中关闭按钮。
+- 分屏布局中的醒目图形会移到动作上方的空白处。
+
+### 修复
+- 在 Delta Force 中，醒目样式不再遮挡游戏自身的击杀文字。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+プロジェクトの処理中に遊べる小さなサメのゲームと、ゲーム自体のキルログ・スコア・ミニマップを避けるようになったアニメーショングラフィック。
+
+### 新機能
+- **Shark Snack、待ち時間のミニゲーム：**小さな魚を食べて大きくなり、大きな魚・クラゲ・ウニをよけ、コンボを決めてパワーアップの泡を集めよう。短いラウンド（30〜90 秒）。
+- マウス、指、キーボードに対応。初回は短い遊び方を表示。サウンドはオンにするまでオフ。ベスト、今日のベスト、遊んで手に入る 7 種類のスキン。広告なし、購入なし、オンライン通信なし。
+- 処理が終わると「クリップの準備ができました！」から 1 クリックで開けます。スコアはそのまま残ります。
+- **ゲームごとの HUD エリア：**アニメーショングラフィックがキルログ、スコア、ミニマップを隠すことはありません。
+
+### 改善
+- ゲームは遊んでいる間だけ動き、隠したりウィンドウを切り替えたりすると一時停止し、負荷はごくわずかです。ボタンは設定でオフにできます。
+- 分割レイアウトの目立つグラフィックは、アクションの上の空いた場所に移ります。
+
+### 修正
+- Delta Force で、目立つスタイルがゲーム自体のキル表示を隠さなくなりました。
+
+</details>
+
 ## [1.2.58] - 2026-11-20
 Animated graphics on your gaming clips, a new Updates page with every version's notes, and English as the start language for new users.
 

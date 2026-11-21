@@ -7,7 +7,8 @@ Rules
 - At most one graphic at a time, each at most MAX_S (1.5 s), never in the first moment of the clip,
   never across an instant replay / freeze frame (it would be cut in two).
 - Never over the facecam, the captions, the hook / banner, the key action (the middle of the
-  gameplay picture), chat bubbles or the platform's own buttons (safe zones): `place()` tries
+  gameplay picture), chat bubbles, the game's own HUD (kill feed, score, minimap: `hud_areas` in the
+  game profile, 1.2.59) or the platform's own buttons (safe zones): `place()` tries
   spots in a fixed order and skips the graphic when none is free.
 - Per game, the event -> graphic mapping lives in the game profile (`graphics` in
   game/profiles/<id>/profile.json, see docs/ADDING_A_GAME.md):
@@ -37,6 +38,7 @@ MAX_ITEMS = 6
 COUNTER_STEP_S = 0.18  # the pop when the kill counter goes up
 PRIORITY = {"banner": 3, "score": 2, "number": 1, "counter": 0}
 KEY_ACTION = (0.3, 0.7)
+FIT_SCALES = (1.0, 0.88, 0.76)  # 1.2.59: tried in order when a graphic has no free spot
 SIDE_COST = 400  # px of height a side spot must save to beat the centre  # the middle 40 % of the gameplay picture (both ways) stays free
 
 # Look per style: font size, padding, icon size, gap, height, radius (1080-wide canvas px)
@@ -144,10 +146,12 @@ class GfxPlan:
     simple: bool = False  # Light preset: fades only
     fps: float = 30.0
     colors: dict = field(default_factory=lambda: {"bg": NAVY, "fg": GOLD, "ink": WHITE})
+    # 1.2.59: the game's HUD areas (fractions of the source frame, x0 y0 x1 y1): never covered
+    hud: list = field(default_factory=list)
 
     def fingerprint(self) -> list:
         return [self.style, self.simple, [(round(i.a, 2), i.kind, i.text, i.steps) for i in self.items],
-                self.colors]
+                self.colors, [[round(v, 4) for v in b] for b in self.hud]]
 
     def to_dict(self) -> dict:
         look = LOOK[self.style]
@@ -328,7 +332,19 @@ def build(project, cand: dict, opts, plan, mode: str | None = None) -> GfxPlan |
         simple = bool(perf.light())
     except Exception:  # noqa: BLE001
         simple = False
-    return GfxPlan(chosen, style, simple, float(plan.fps), colors)
+    return GfxPlan(chosen, style, simple, float(plan.fps), colors, hud_of(project))
+
+
+def hud_of(project) -> list:
+    """The HUD areas of the project's game (fractions of the frame); [] when the game is unknown."""
+    if project is None:
+        return []
+    try:
+        from ..game import gameprofiles, resolve
+
+        return gameprofiles.hud_boxes(resolve(project).get("game"))
+    except Exception:  # noqa: BLE001 - no game info: the other rules still apply
+        return []
 
 
 # ------------------------------------------------------------------ placement (safe zones)
@@ -362,7 +378,8 @@ def _size(g: Gfx, style: str, scale: float) -> dict:
 
 def exclusions(geo, layout: str, safe: tuple, *, captions: bool, hook: bool, banner: bool,
                facecam_rect: tuple | None = None, bubbles_zone: dict | None = None,
-               picture: tuple | None = None, bleep_icon: tuple | None = None) -> list[tuple]:
+               picture: tuple | None = None, bleep_icon: tuple | None = None,
+               hud: list[tuple] | None = None) -> list[tuple]:
     """Canvas rects (x0, y0, x1, y1) no graphic may touch."""
     from ..clips import SPLIT_TOP, banner_y
 
@@ -395,6 +412,7 @@ def exclusions(geo, layout: str, safe: tuple, *, captions: bool, hook: bool, ban
         ex.append((bz["x"], bz["bottom"] - 560 * bz.get("scale", 1.0), bz["x"] + bz["w"], bz["bottom"]))
     if bleep_icon is not None:
         ex.append(bleep_icon)
+    ex.extend(hud or [])  # 1.2.59: the game's own HUD (canvas rects from clips.hud_rects)
     return ex
 
 
@@ -417,24 +435,29 @@ def place(items: list[Gfx], style: str, geo, layout: str, excl: list[tuple]) -> 
     else:
         anchor = H * 0.24
     for g in items:
-        s = size(g, style, geo.scale, max_w=W - 200)
-        w, h = s["w"], s["h"]
-        if w > W - 120:
-            continue
-        grow = max_scale(g, style)  # the whole animated extent: pop / overshoot and the slide-in
-        aw, ah = w * grow, h * grow
-        xs = [W / 2, 40 + aw / 2, W - 40 - aw / 2]
-        ys = range(int(ah / 2) + 24, int(H - ah / 2 - 24 - 28), 10)
-        # nearest to the anchor height first; the centre wins unless a side spot is much nearer
-        spots = sorted(((x, y) for y in ys for x in xs),
-                       key=lambda p: (abs(p[1] - anchor) + (0 if p[0] == W / 2 else SIDE_COST), p[1], p[0]))
         box = None
-        for x, y in spots:
-            r = (x - aw / 2 - 8, y - ah / 2 - 18, x + aw / 2 + 8, y + ah / 2 + 36)
-            if r[0] < 0 or r[2] > W or r[1] < 0 or r[3] > H:
-                continue
-            if not any(_hit(r, e) for e in excl):
-                box = {"x": round(x), "y": round(y), **s}
+        # 1.2.59: full size first; when no spot is free (e.g. Bold in the split layout, with the game's
+        # own HUD at the bottom), the same graphic a bit smaller before giving up
+        for shrink in FIT_SCALES:
+            s = size(g, style, geo.scale * shrink, max_w=W - 200)
+            w, h = s["w"], s["h"]
+            if w > W - 120:
+                break
+            grow = max_scale(g, style)  # the whole animated extent: pop / overshoot and the slide-in
+            aw, ah = w * grow, h * grow
+            xs = [W / 2, 40 + aw / 2, W - 40 - aw / 2]
+            ys = range(int(ah / 2) + 24, int(H - ah / 2 - 24 - 28), 10)
+            # nearest to the anchor height first; the centre wins unless a side spot is much nearer
+            spots = sorted(((x, y) for y in ys for x in xs),
+                           key=lambda p: (abs(p[1] - anchor) + (0 if p[0] == W / 2 else SIDE_COST), p[1], p[0]))
+            for x, y in spots:
+                r = (x - aw / 2 - 8, y - ah / 2 - 18, x + aw / 2 + 8, y + ah / 2 + 36)
+                if r[0] < 0 or r[2] > W or r[1] < 0 or r[3] > H:
+                    continue
+                if not any(_hit(r, e) for e in excl):
+                    box = {"x": round(x), "y": round(y), **s}
+                    break
+            if box is not None:
                 break
         g.box = box
 

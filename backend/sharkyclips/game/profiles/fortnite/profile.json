@@ -155,5 +155,67 @@
         "icon": "trophy"
       }
     }
+  },
+  "hud_areas": {
+    "minimap": {
+      "box": [
+        1640,
+        20,
+        260,
+        260
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "score": {
+      "box": [
+        1640,
+        280,
+        260,
+        70
+      ],
+      "label": "Players left + elims",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        560,
+        640,
+        800,
+        140
+      ],
+      "label": "Elimination text",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        30,
+        620,
+        520,
+        220
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        30,
+        900,
+        500,
+        160
+      ],
+      "label": "Shield + health",
+      "guess": true
+    },
+    "ammo": {
+      "box": [
+        1350,
+        940,
+        550,
+        130
+      ],
+      "label": "Inventory",
+      "guess": true
+    }
   }
 }

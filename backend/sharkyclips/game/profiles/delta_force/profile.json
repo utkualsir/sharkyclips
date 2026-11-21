@@ -76,5 +76,67 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "kill_text": {
+      "box": [
+        700,
+        700,
+        520,
+        210
+      ],
+      "label": "Kill icons + score lines (Öldürme +100)",
+      "guess": false
+    },
+    "kill_feed": {
+      "box": [
+        1460,
+        90,
+        440,
+        240
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "objective": {
+      "box": [
+        640,
+        0,
+        640,
+        90
+      ],
+      "label": "Objectives + compass",
+      "guess": true
+    },
+    "minimap": {
+      "box": [
+        24,
+        24,
+        300,
+        300
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        30,
+        960,
+        460,
+        100
+      ],
+      "label": "Health + armour",
+      "guess": true
+    },
+    "ammo": {
+      "box": [
+        1500,
+        950,
+        400,
+        110
+      ],
+      "label": "Weapon + ammo",
+      "guess": true
+    }
   }
 }

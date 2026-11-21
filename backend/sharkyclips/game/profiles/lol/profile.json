@@ -126,5 +126,57 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "score": {
+      "box": [
+        1520,
+        0,
+        400,
+        32
+      ],
+      "label": "Team score + K/D/A",
+      "guess": false
+    },
+    "kill_text": {
+      "box": [
+        560,
+        60,
+        800,
+        110
+      ],
+      "label": "Announcer banner",
+      "guess": false
+    },
+    "abilities": {
+      "box": [
+        705,
+        985,
+        345,
+        95
+      ],
+      "label": "Ability bar",
+      "guess": false
+    },
+    "minimap": {
+      "box": [
+        1640,
+        800,
+        280,
+        280
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        1640,
+        250,
+        280,
+        300
+      ],
+      "label": "Kill feed",
+      "guess": true
+    }
   }
 }

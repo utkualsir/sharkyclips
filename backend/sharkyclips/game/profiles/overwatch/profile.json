@@ -240,5 +240,57 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "kill_feed": {
+      "box": [
+        1440,
+        60,
+        460,
+        260
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "objective": {
+      "box": [
+        700,
+        0,
+        520,
+        140
+      ],
+      "label": "Objective",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        760,
+        690,
+        400,
+        140
+      ],
+      "label": "Elimination text",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        30,
+        900,
+        520,
+        160
+      ],
+      "label": "Health",
+      "guess": true
+    },
+    "abilities": {
+      "box": [
+        1360,
+        880,
+        540,
+        190
+      ],
+      "label": "Abilities + ultimate",
+      "guess": true
+    }
   }
 }

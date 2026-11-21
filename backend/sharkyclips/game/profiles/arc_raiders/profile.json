@@ -137,5 +137,47 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "objective": {
+      "box": [
+        660,
+        10,
+        600,
+        90
+      ],
+      "label": "Compass",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        1460,
+        180,
+        440,
+        220
+      ],
+      "label": "Feed",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        30,
+        940,
+        480,
+        120
+      ],
+      "label": "Health",
+      "guess": true
+    },
+    "ammo": {
+      "box": [
+        1500,
+        930,
+        390,
+        130
+      ],
+      "label": "Weapon + ammo",
+      "guess": true
+    }
   }
 }

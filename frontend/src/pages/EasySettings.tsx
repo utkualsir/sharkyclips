@@ -1,3 +1,4 @@
+import { MiniGameSetting } from "../components/MiniGameSetting";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, liveApi, phoneApi, type PhoneStatus } from "../api";
 import { PhoneConnect } from "../components/Phone";
@@ -216,6 +217,7 @@ export default function EasySettings() {
           </span>
           <Toggle checked={theme === "dark"} onChange={toggleTheme} label={t("theme.dark")} />
         </div>
+        <MiniGameSetting />
         <button className="link-btn" onClick={() => update({ tour_done: false }).then(() => (window.location.hash = "#/"))}>
           <Icon name="sparkles" size={14} /> {t("easy.set_tour_again")}
         </button>

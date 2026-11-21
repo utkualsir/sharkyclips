@@ -188,5 +188,37 @@
         "icon": "star"
       }
     }
+  },
+  "hud_areas": {
+    "health": {
+      "box": [
+        640,
+        900,
+        640,
+        180
+      ],
+      "label": "Hotbar + health",
+      "guess": true
+    },
+    "chat": {
+      "box": [
+        0,
+        700,
+        700,
+        240
+      ],
+      "label": "Chat (kill messages)",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        1480,
+        0,
+        440,
+        150
+      ],
+      "label": "Advancement toast",
+      "guess": true
+    }
   }
 }

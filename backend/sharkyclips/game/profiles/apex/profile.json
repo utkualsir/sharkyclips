@@ -205,5 +205,57 @@
         "icon": "trophy"
       }
     }
+  },
+  "hud_areas": {
+    "kill_feed": {
+      "box": [
+        1400,
+        20,
+        500,
+        250
+      ],
+      "label": "Kill feed + squads left",
+      "guess": true
+    },
+    "minimap": {
+      "box": [
+        30,
+        30,
+        290,
+        290
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        560,
+        640,
+        800,
+        140
+      ],
+      "label": "Knock / kill text",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        30,
+        940,
+        500,
+        120
+      ],
+      "label": "Shield + health",
+      "guess": true
+    },
+    "ammo": {
+      "box": [
+        1500,
+        920,
+        390,
+        140
+      ],
+      "label": "Weapons + ammo",
+      "guess": true
+    }
   }
 }

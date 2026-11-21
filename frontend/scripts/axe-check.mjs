@@ -65,6 +65,27 @@ const SCREENS = [
     await page.locator(".updates-item summary").nth(2).click();
   }],
   ["easy-updates", "easy", "#/updates", ".updates-item"],
+  // 1.2.59 the waiting mini game: how-to, start screen, skins, a round paused (Pro and Easy)
+  ["minigame-howto", "pro", "#/settings", ".mg-setting", async (page) => {
+    await page.request.put(`${base}/api/minigame`, { data: { howto_seen: false, today: "2000-01-01" }, headers: H });
+    await page.locator(".mg-setting .link-btn").click();
+    await page.waitForSelector('.mg-stage[data-screen="howto"]');
+  }],
+  ["minigame-skins", "pro", "#/settings", ".mg-setting", async (page) => {
+    await page.locator(".mg-setting .link-btn").click();
+    await page.waitForSelector(".mg-panel:not([hidden])");
+    if (await page.locator('.mg-stage[data-screen="howto"]').count()) await page.locator(".mg-card .btn-primary").click();
+    await page.locator(".mg-card .btn:not(.btn-primary)").first().click();
+    await page.waitForSelector(".mg-skins");
+  }],
+  ["easy-minigame-paused", "easy", "#/settings", ".mg-setting", async (page) => {
+    await page.locator(".mg-setting .link-btn").click();
+    await page.waitForSelector(".mg-panel:not([hidden])");
+    if (await page.locator('.mg-stage[data-screen="howto"]').count()) await page.locator(".mg-card .btn-primary").click();
+    await page.locator(".mg-card .btn-primary").click(); // Start
+    await page.locator(".mg-stage").press("p");
+    await page.waitForSelector('.mg-stage[data-screen="paused"]');
+  }],
 ];
 
 const browser = await chromium.launch(process.env.AXE_CHANNEL ? { channel: process.env.AXE_CHANNEL } : {});

@@ -258,5 +258,47 @@
         "icon": "trophy"
       }
     }
+  },
+  "hud_areas": {
+    "score": {
+      "box": [
+        660,
+        0,
+        600,
+        80
+      ],
+      "label": "Score + clock",
+      "guess": true
+    },
+    "minimap": {
+      "box": [
+        0,
+        780,
+        300,
+        300
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "abilities": {
+      "box": [
+        560,
+        900,
+        800,
+        180
+      ],
+      "label": "Hero bar",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        0,
+        180,
+        380,
+        300
+      ],
+      "label": "Kill feed",
+      "guess": true
+    }
   }
 }

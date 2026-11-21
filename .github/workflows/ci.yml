@@ -176,6 +176,9 @@ jobs:
       - name: Preview matches the render plan
         working-directory: frontend
         run: node scripts/preview-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
+      - name: Mini game (keys stay in the game, performance budget, pausing, layout)
+        working-directory: frontend
+        run: node scripts/minigame-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"
       - name: Accessibility (axe) + delete / undo flow
         working-directory: frontend
         run: node scripts/axe-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"

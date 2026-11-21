@@ -81,6 +81,7 @@ def settings() -> dict:
             "downloads": str(downloads_root()), **fx_settings(),
             "auto_clip": bool(config.get("auto_clip_enabled")),
             "platform": config.get("easy_platform") if config.get("easy_platform") in ("youtube", "tiktok", "reels") else "youtube",
+            "minigame": config.get("minigame_enabled") is not False,  # 1.2.59: the game while you wait
             **extras_settings(), **v2_settings()}
 
 
@@ -104,6 +105,8 @@ def save_settings(body: dict) -> dict:
         changes["easy_graphics"] = bool(body["graphics"])
     if body.get("platform") in ("youtube", "tiktok", "reels"):
         changes["easy_platform"] = body["platform"]
+    if "minigame" in body:
+        changes["minigame_enabled"] = bool(body["minigame"])
     if body.get("study_cards") in ("off", "auto"):
         changes["easy_study_cards"] = body["study_cards"]
     if body.get("visualizer") in ("off", "auto"):

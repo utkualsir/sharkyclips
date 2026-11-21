@@ -252,5 +252,57 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "minimap": {
+      "box": [
+        20,
+        20,
+        330,
+        330
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        20,
+        600,
+        500,
+        220
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "score": {
+      "box": [
+        1600,
+        20,
+        300,
+        90
+      ],
+      "label": "Players left + plates",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        660,
+        180,
+        600,
+        220
+      ],
+      "label": "Medals",
+      "guess": true
+    },
+    "ammo": {
+      "box": [
+        1480,
+        920,
+        420,
+        140
+      ],
+      "label": "Weapon + ammo",
+      "guess": true
+    }
   }
 }

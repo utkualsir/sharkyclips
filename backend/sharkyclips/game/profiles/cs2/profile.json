@@ -305,5 +305,57 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "score": {
+      "box": [
+        700,
+        0,
+        520,
+        110
+      ],
+      "label": "Score + round timer",
+      "guess": true
+    },
+    "minimap": {
+      "box": [
+        0,
+        0,
+        330,
+        330
+      ],
+      "label": "Radar",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        1360,
+        60,
+        540,
+        260
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        0,
+        1000,
+        440,
+        80
+      ],
+      "label": "Health + armour",
+      "guess": true
+    },
+    "ammo": {
+      "box": [
+        1500,
+        1000,
+        420,
+        80
+      ],
+      "label": "Ammo",
+      "guess": true
+    }
   }
 }

@@ -706,6 +706,29 @@ def _project(pid: str) -> Project:
 # ===================================================================== API
 
 
+@router.get("/api/minigame")
+def api_minigame(today: str | None = None) -> dict:
+    """1.2.59: the waiting game's numbers (best, today's best, skins). today = the player's date."""
+    from .. import minigame
+
+    return minigame.view(today)
+
+
+@router.put("/api/minigame")
+def api_minigame_put(body: dict) -> dict:
+    from .. import minigame
+
+    body = body or {}
+    return minigame.save_prefs(body, body.get("today"))
+
+
+@router.post("/api/minigame/round")
+def api_minigame_round(body: dict) -> dict:
+    from .. import minigame
+
+    return minigame.record_round(body or {})
+
+
 @router.get("/api/easy/settings")
 def api_settings() -> dict:
     return E.settings()

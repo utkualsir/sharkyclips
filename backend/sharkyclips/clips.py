@@ -733,11 +733,60 @@ def graphics_boxes(plan, opts: ClipOptions, spec: OutputSpec, geo: Geometry, lay
     if opts.bleep_icon and plan.bleeps and opts.profanity != "off":
         by = (SPLIT_TOP if geo.cap_y is None else geo.cap_y) - 150 * geo.scale if layout == "split" else 260 * geo.scale
         bi = (W - 200 * geo.scale, by - 60 * geo.scale, W, by + 60 * geo.scale)
+    zoomed = bool(getattr(plan, "zooms", False)) or getattr(plan, "fx", None) is not None
+    hud = hud_rects(getattr(gp, "hud", None) or [], layout, W, H, src_w, src_h, facecam,
+                    tracked=opts.track == "auto" and vertical, zoomed=zoomed)
     excl = gfx_mod.exclusions(geo, layout, spec.safe, captions=opts.subtitles != "none" and spec.burn_captions,
                               hook=bool(opts.hook), banner=bool(opts.banner), facecam_rect=fc_rect,
-                              bubbles_zone=bz, picture=picture, bleep_icon=bi)
+                              bubbles_zone=bz, picture=picture, bleep_icon=bi, hud=hud)
     gfx_mod.place(gp.items, gp.style, geo, layout, excl)
     return [g.to_dict() for g in gp.items if g.box is not None]
+
+
+def hud_rects(hud: list, layout: str, W: int, H: int, src_w: int, src_h: int, facecam: Facecam | None, *,
+              tracked: bool = False, zoomed: bool = False, margin: float = 16.0) -> list[tuple]:
+    """1.2.59: the game's HUD areas (fractions of the source frame) as canvas rects for this layout:
+    where the kill feed / score / minimap land in the clip. Parts cut away by the layout are dropped.
+    tracked: the crop follows the action, so only the area's height band is known (full width).
+    zoomed: smart zoom / shake can push the HUD outwards (up to zoom.MAX_ZOOM): both places count."""
+    from .edit.zoom import MAX_ZOOM
+
+    if not hud or not src_w or not src_h:
+        return []
+    if layout == "split" and facecam is not None and H > W:
+        _cam, (gx, _gy, gw, _gh) = split_rects(src_w, src_h, facecam)
+        pic = (0.0, float(SPLIT_TOP), float(W), float(H))
+        sx0, sw = gx / src_w, gw / src_w  # the visible part of the source (fractions)
+
+        def to_canvas(fx: float, fy: float) -> tuple[float, float]:
+            return (fx - sx0) / sw * W, SPLIT_TOP + fy * (H - SPLIT_TOP)
+    else:
+        if layout == "fit":
+            k = W / src_w if src_w / src_h >= W / H else H / src_h
+        else:
+            k = max(W / src_w, H / src_h)
+        cw, ch = src_w * k, src_h * k
+        ox, oy = (W - cw) / 2, (H - ch) / 2
+        pic = (max(0.0, ox), max(0.0, oy), min(float(W), ox + cw), min(float(H), oy + ch))
+
+        def to_canvas(fx: float, fy: float) -> tuple[float, float]:
+            return ox + fx * cw, oy + fy * ch
+    out: list[tuple] = []
+    cx, cy = (pic[0] + pic[2]) / 2, (pic[1] + pic[3]) / 2
+    for fx0, fy0, fx1, fy1 in hud:
+        x0, y0 = to_canvas(fx0, fy0)
+        x1, y1 = to_canvas(fx1, fy1)
+        if tracked and layout == "crop":
+            x0, x1 = pic[0], pic[2]
+        rects = [(x0, y0, x1, y1)]
+        if zoomed:
+            z = MAX_ZOOM
+            rects.append((cx + (x0 - cx) * z, cy + (y0 - cy) * z, cx + (x1 - cx) * z, cy + (y1 - cy) * z))
+        for a0, b0, a1, b1 in rects:
+            r = (max(pic[0], a0 - margin), max(pic[1], b0 - margin), min(pic[2], a1 + margin), min(pic[3], b1 + margin))
+            if r[2] - r[0] > margin and r[3] - r[1] > margin:  # still on screen
+                out.append(tuple(round(v, 1) for v in r))
+    return out
 
 
 def picture_at(plan, layout: str, t: float) -> dict:

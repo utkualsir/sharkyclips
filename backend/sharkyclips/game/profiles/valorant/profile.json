@@ -347,5 +347,57 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "score": {
+      "box": [
+        700,
+        0,
+        520,
+        110
+      ],
+      "label": "Score + round timer",
+      "guess": true
+    },
+    "minimap": {
+      "box": [
+        0,
+        0,
+        420,
+        420
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        1440,
+        80,
+        460,
+        260
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        760,
+        760,
+        400,
+        200
+      ],
+      "label": "Kill banner",
+      "guess": true
+    },
+    "abilities": {
+      "box": [
+        640,
+        960,
+        640,
+        120
+      ],
+      "label": "Health + abilities",
+      "guess": true
+    }
   }
 }

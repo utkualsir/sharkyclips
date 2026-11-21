@@ -210,5 +210,37 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "score": {
+      "box": [
+        30,
+        20,
+        440,
+        80
+      ],
+      "label": "Score + clock",
+      "guess": true
+    },
+    "minimap": {
+      "box": [
+        740,
+        900,
+        440,
+        160
+      ],
+      "label": "Radar",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        460,
+        120,
+        1000,
+        220
+      ],
+      "label": "Goal banner",
+      "guess": true
+    }
   }
 }

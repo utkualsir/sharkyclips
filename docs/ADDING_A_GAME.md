@@ -103,6 +103,24 @@ banners like ACE or CLUTCH, round wins). Map your event codes in `graphics`:
 SharkyClips places the graphic itself (never over the facecam, the captions, the middle of the game
 picture or the platform's buttons), so there is nothing to position.
 
+## 4c. The game's own HUD (optional, recommended)
+
+Since 1.2.59 a profile can mark where the game draws its own HUD, so the animated graphics never
+cover it (the kill feed, the score, the minimap ...). Boxes are `[x, y, w, h]` on a 1920x1080 frame:
+
+```json
+"hud_areas": {
+  "kill_feed": {"box": [1440, 80, 460, 260], "label": "Kill feed", "guess": true},
+  "minimap":   {"box": [0, 0, 420, 420], "label": "Minimap", "guess": true},
+  "kill_text": {"box": [760, 760, 400, 200], "label": "Kill banner", "guess": false}
+}
+```
+
+Names: `kill_feed`, `kill_text`, `score`, `minimap`, `health`, `ammo`, `abilities`, `timer`,
+`objective`, `chat`, `scoreboard` (add `.2` for a second box of the same kind, e.g. `score.2`). Set
+`"guess": true` until you have checked the box on real footage. One box may cover at most a fifth of
+the screen. When no free spot is left, a graphic is drawn a little smaller, or not at all.
+
 ## 5. Check it before you send it
 
 ```

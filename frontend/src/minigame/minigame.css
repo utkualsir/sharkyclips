@@ -1,0 +1,114 @@
+/* 1.2.59 waiting mini game: a compact panel at the bottom (inline start) corner. */
+.mg-panel {
+  position: fixed;
+  inset-block-end: 16px;
+  inset-inline-start: 16px;
+  z-index: 55;
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - var(--topbar-h) - 32px);
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+}
+.mg-panel[hidden] { display: none; }
+.mg-head { display: flex; align-items: center; gap: 8px; }
+.mg-title { flex: 1; min-width: 0; font-size: 14px; color: var(--strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mg-head-btns { display: flex; gap: 2px; }
+.mg-icon { width: 32px; height: 32px; padding: 0; display: inline-grid; place-items: center; }
+.mg-q { font-weight: 700; font-size: 14px; line-height: 1; }
+.mg-job { display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.mg-job-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mg-job-bar { height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+.mg-job-bar span { display: block; height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s var(--ease); }
+.mg-job-bar span.indet { animation: mg-indet 1.4s linear infinite; }
+@keyframes mg-indet { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-job-bar span.indet { animation: none; }
+.mg-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 13px; color: var(--muted); min-height: 20px; }
+.mg-hud b { color: var(--strong); font-size: 14px; }
+.mg-lives { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; color: var(--border-strong); }
+.mg-lives .on { color: var(--danger); }
+.mg-mult { color: var(--gold-text); font-weight: 700; }
+.mg-stage {
+  position: relative;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: #0f3a66;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+  cursor: crosshair;
+}
+.mg-stage:focus-visible { box-shadow: var(--focus); }
+.mg-stage canvas { display: block; width: 100%; }
+.mg-dash {
+  position: absolute;
+  inset-block-end: 8px;
+  inset-inline-end: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(5, 15, 35, 0.45);
+  color: #fff;
+  display: none;
+  place-items: center;
+}
+@media (pointer: coarse) { .mg-dash { display: grid; } }
+.mg-over {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  background: rgba(5, 14, 32, 0.55);
+  overflow: auto;
+}
+.mg-card {
+  width: 100%;
+  max-width: 320px;
+  max-height: 100%;
+  overflow: auto;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: center;
+  font-size: 13px;
+}
+.mg-card h3 { margin: 0 0 6px; font-size: 15px; color: var(--strong); }
+.mg-card ul { margin: 0 0 10px; padding-inline-start: 18px; text-align: start; display: grid; gap: 4px; }
+.mg-sub { margin: 0 0 8px; color: var(--muted); font-size: 12.5px; }
+.mg-big { margin: 0; font-size: 30px; font-weight: 700; color: var(--strong); line-height: 1.2; }
+.mg-badge { margin: 2px 0 8px; color: var(--gold-text); font-weight: 600; }
+.mg-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.mg-skins ul { list-style: none; padding: 0; gap: 6px; }
+.mg-skins li { display: flex; align-items: center; gap: 8px; }
+.mg-skin-pic { width: 56px; height: 35px; flex: none; border-radius: 6px; background: #134a7c; }
+.mg-skin-pic.locked { filter: grayscale(1) brightness(0.6); }
+.mg-skin-txt { flex: 1; min-width: 0; display: grid; text-align: start; }
+.mg-skin-txt .mg-sub { margin: 0; }
+.mg-locked { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; }
+.mg-toast {
+  position: absolute;
+  inset-inline: 8px;
+  inset-block-start: 8px;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--gold-line);
+  box-shadow: var(--shadow-pop);
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--strong);
+}
+.mg-keys { margin: 0; font-size: 12px; color: var(--muted); }
+@media (pointer: coarse) { .mg-keys { display: none; } }

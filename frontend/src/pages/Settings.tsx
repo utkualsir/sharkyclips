@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MiniGameSetting } from "../components/MiniGameSetting";
 import { useAppState } from "../appstate";
 import { api, type LlmInfo, type Mode, type PerfMode, type Settings as SettingsT, type UpdateStatus } from "../api";
 import { SetupCard } from "../components/SetupDownloads";
@@ -517,6 +518,14 @@ export default function Settings() {
                 </div>
               </div>
             </div>
+          </section>
+
+          <section className="card setting" id="minigame-card">
+            <div>
+              <h2>{t("mg.title")}</h2>
+              <p>{t("mg.tagline")}</p>
+            </div>
+            <MiniGameSetting />
           </section>
 
           <section className="card setting" id="content-language">

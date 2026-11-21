@@ -272,5 +272,47 @@
         "icon": "flame"
       }
     }
+  },
+  "hud_areas": {
+    "kill_feed": {
+      "box": [
+        1420,
+        80,
+        480,
+        220
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "objective": {
+      "box": [
+        680,
+        0,
+        560,
+        120
+      ],
+      "label": "Objective + score",
+      "guess": true
+    },
+    "abilities": {
+      "box": [
+        1380,
+        900,
+        520,
+        170
+      ],
+      "label": "Abilities",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        30,
+        920,
+        460,
+        140
+      ],
+      "label": "Health",
+      "guess": true
+    }
   }
 }

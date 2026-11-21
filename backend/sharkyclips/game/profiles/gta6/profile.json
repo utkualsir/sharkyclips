@@ -158,5 +158,27 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "minimap": {
+      "box": [
+        30,
+        790,
+        340,
+        260
+      ],
+      "label": "Radar (not out on PC yet)",
+      "guess": true
+    },
+    "score": {
+      "box": [
+        1480,
+        20,
+        420,
+        160
+      ],
+      "label": "Money + wanted level (not out on PC yet)",
+      "guess": true
+    }
   }
 }

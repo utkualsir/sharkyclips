@@ -179,5 +179,27 @@
         "icon": "flag"
       }
     }
+  },
+  "hud_areas": {
+    "minimap": {
+      "box": [
+        30,
+        790,
+        340,
+        260
+      ],
+      "label": "Radar",
+      "guess": true
+    },
+    "score": {
+      "box": [
+        1480,
+        20,
+        420,
+        160
+      ],
+      "label": "Money + wanted level",
+      "guess": true
+    }
   }
 }

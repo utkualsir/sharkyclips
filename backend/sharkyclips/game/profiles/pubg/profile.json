@@ -177,5 +177,57 @@
         "icon": "trophy"
       }
     }
+  },
+  "hud_areas": {
+    "minimap": {
+      "box": [
+        1620,
+        780,
+        290,
+        290
+      ],
+      "label": "Minimap",
+      "guess": true
+    },
+    "score": {
+      "box": [
+        1700,
+        20,
+        200,
+        80
+      ],
+      "label": "Players alive + kills",
+      "guess": true
+    },
+    "kill_text": {
+      "box": [
+        560,
+        680,
+        800,
+        140
+      ],
+      "label": "Kill text",
+      "guess": true
+    },
+    "kill_feed": {
+      "box": [
+        1400,
+        100,
+        500,
+        200
+      ],
+      "label": "Kill feed",
+      "guess": true
+    },
+    "health": {
+      "box": [
+        700,
+        1000,
+        520,
+        70
+      ],
+      "label": "Health bar",
+      "guess": true
+    }
   }
 }

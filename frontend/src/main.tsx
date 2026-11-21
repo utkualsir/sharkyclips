@@ -1,4 +1,5 @@
 import "./csrf"; // first: the API token on every write request (1.2.52)
+import { installKeyGuard } from "./keyguard";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
@@ -11,6 +12,8 @@ import { ToastProvider } from "./toast";
 import { UiModeProvider } from "./uimode";
 import "./styles.css";
 import "./easy.css";
+
+installKeyGuard(); // 1.2.59: before any other key listener (the mini game's keys stay in the game)
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

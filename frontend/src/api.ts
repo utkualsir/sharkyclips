@@ -2091,6 +2091,8 @@ export interface EasySettings {
   memes: MemeLevel;
   /** 1.2.58: animated graphics on new clips */
   graphics: boolean;
+  /** 1.2.59: the mini game button while a project is processing */
+  minigame?: boolean;
   auto_clip: boolean;
   /** 1.2.18: the upload button's platform, remembered */
   platform: "youtube" | "tiktok" | "reels";
@@ -2556,6 +2558,34 @@ export const bleepApi = {
 
 const EZ = (pid: string, cid: string) => `/api/easy/clips/${encodeURIComponent(pid)}/${encodeURIComponent(cid)}`;
 const EP = (pid: string) => `/api/easy/projects/${encodeURIComponent(pid)}`;
+
+/** 1.2.59: the waiting mini game's numbers (kept in the settings file, see backend minigame.py). */
+export interface MiniGameSkin {
+  id: string;
+  rule: "free" | "rounds" | "best" | "fish" | "combo";
+  need: number;
+  have: number;
+  unlocked: boolean;
+}
+export interface MiniGameStats {
+  enabled: boolean;
+  best: number;
+  today_best: number;
+  rounds: number;
+  fish: number;
+  best_combo: number;
+  skin: string;
+  muted: boolean;
+  howto_seen: boolean;
+  skins: MiniGameSkin[];
+  round?: { score: number; new_best: boolean; new_today: boolean; new_skins: string[] };
+}
+
+export const miniGameApi = {
+  get: (today: string) => req<MiniGameStats>("GET", `/api/minigame?today=${encodeURIComponent(today)}`),
+  prefs: (p: { skin?: string; muted?: boolean; howto_seen?: boolean; today: string }) => req<MiniGameStats>("PUT", "/api/minigame", p),
+  round: (r: { score: number; fish: number; combo: number; date: string }) => req<MiniGameStats>("POST", "/api/minigame/round", r),
+};
 
 export const easyApi = {
   settings: () => req<EasySettings>("GET", "/api/easy/settings"),

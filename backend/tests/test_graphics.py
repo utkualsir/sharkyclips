@@ -373,3 +373,110 @@ def test_easy_mode_switch(tmp_path, monkeypatch):
     easy.save_settings({"graphics": True})
     assert easy.fx_options({"fx": True})["graphics"] == "minimal"  # you flipped it: every project
     assert config.load()["easy_graphics"] is True
+
+
+# ------------------------------------------------------------------ 6. the game's own HUD (1.2.59)
+
+
+def test_every_profile_marks_its_hud_areas():
+    profs = gameprofiles.all_profiles()
+    assert len(profs) >= 16
+    for gid, p in profs.items():
+        areas = p.get("hud_areas") or {}
+        assert areas and not gameprofiles.validate_hud(p), gid
+        # the kill feed / score / minimap (or the game's equivalent) is always there
+        assert {n.split(".")[0] for n in areas} & {"kill_feed", "kill_text", "score", "minimap"}, gid
+        if p["status"] != "verified":  # beta / preview profiles: best guesses, marked as such
+            assert all(a.get("guess") is True for a in areas.values()), gid
+    bad = {"id": "x", "name": "X", "aliases": ["x"], "hud_areas": {"radar": {"box": [0, 0, 10, 10]}}}
+    assert gameprofiles.validate(bad)
+    bad["hud_areas"] = {"minimap": {"box": [1900, 0, 300, 300]}}
+    assert gameprofiles.validate(bad)
+    bad["hud_areas"] = {"minimap": {"box": [0, 0, 1920, 1080]}}  # a whole-screen "HUD" would hide everything
+    assert gameprofiles.validate(bad)
+
+
+def _gfx_items():
+    return [G.Gfx(1.0, 2.4, "counter", "1 KILL", "skull", steps=[(0.3, "2 KILL")]),
+            G.Gfx(4.0, 5.4, "banner", "3x KILL", "skull"), G.Gfx(7.0, 8.4, "score", "EXTRACTION FAILED", "flag")]
+
+
+def _extent(g, style):
+    b, grow = g["box"], G.max_scale(G.Gfx(0, 1, g["kind"], g["text"], steps=g["steps"]), style)
+    hw, hh = b["w"] * grow / 2, b["h"] * grow / 2
+    return (b["x"] - hw, b["y"] - hh - 10, b["x"] + hw, b["y"] + hh + 28)
+
+
+@pytest.mark.parametrize("game", sorted(gameprofiles.all_profiles()))
+@pytest.mark.parametrize("layout", ["split", "fit", "crop"])
+@pytest.mark.parametrize("style", ["minimal", "bold"])
+def test_graphics_never_cover_the_games_hud(game, layout, style):
+    hud = gameprofiles.hud_boxes(game)
+    fc = Facecam(0.0, 0.74, 0.26, 0.26)
+    for safe in ("none", "youtube_shorts"):
+        for flags in ({}, {"zoom": "strong"}, {"track": "auto"}):
+            spec = OutputSpec(safe=SAFES[safe])
+            opts = ClipOptions.from_dict({"graphics": style, "layout": layout, **flags})
+            lay, geo = clips.render_geometry(spec, opts, fc)
+            plan = _plan(0.0, 20.0)
+            plan.graphics = G.GfxPlan(_gfx_items(), style, False, 30.0, hud=hud)
+            placed = clips.graphics_boxes(plan, opts, spec, geo, lay, fc, 1920, 1080)
+            rects = clips.hud_rects(hud, lay, geo.w, geo.h, 1920, 1080, fc, tracked=flags.get("track") == "auto",
+                                    zoomed=False, margin=0)
+            for g in placed:
+                for r in rects:
+                    assert not _hit(_extent(g, style), r), (game, lay, style, safe, flags, g["text"], g["box"], r)
+
+
+def test_hud_rects_follow_the_layout():
+    fc = Facecam(0.0, 0.74, 0.26, 0.26)
+    kill_text = [(700 / 1920, 806 / 1080, 1220 / 1920, 900 / 1080)]  # Delta Force's score lines
+    [r] = clips.hud_rects(kill_text, "split", 1080, 1920, 1920, 1080, fc, margin=0)
+    _cam, (gx, _y, gw, _h) = clips.split_rects(1920, 1080, fc)
+    assert r[1] == pytest.approx(clips.SPLIT_TOP + 806 / 1080 * 1152, abs=0.2)
+    assert r[0] == pytest.approx(max(0, (700 - gx) / gw * 1080), abs=0.2)
+    # fit: inside the picture band in the middle of the 9:16 canvas
+    [r] = clips.hud_rects(kill_text, "fit", 1080, 1920, 1920, 1080, None, margin=0)
+    assert r[1] == pytest.approx((1920 - 607.5) / 2 + 806 / 1080 * 607.5, abs=0.2)
+    # a corner the split crop cuts away is simply gone
+    assert clips.hud_rects([(0.0, 0.0, 0.1, 0.1)], "split", 1080, 1920, 1920, 1080, fc) == []
+    # tracking crop: the whole height band
+    [r] = clips.hud_rects(kill_text, "crop", 1080, 1920, 1920, 1080, fc, tracked=True, margin=0)
+    assert (r[0], r[2]) == (0, 1080)
+
+
+def test_bold_split_keeps_delta_force_kill_text_free():
+    """The 1.2.58 known issue: Bold in the split layout sat on Delta Force's own kill text / score lines
+    (the bottom of the gameplay panel). Now it moves (a bit smaller) into the free gap above."""
+    fc = Facecam(0.0, 0.74, 0.26, 0.26)
+    opts = ClipOptions.from_dict({"graphics": "bold", "layout": "split"})
+    spec = OutputSpec()
+    lay, geo = clips.render_geometry(spec, opts, fc)
+    df = gameprofiles.get("delta_force")
+    x, y, w, h = df["hud_areas"]["kill_text"]["box"]
+    assert x <= 700 and y <= 806 and x + w >= 1220 and y + h >= 900  # the scanner's score-line box is inside
+    [kill_text] = clips.hud_rects([(x / 1920, y / 1080, (x + w) / 1920, (y + h) / 1080)], lay, geo.w, geo.h,
+                                  1920, 1080, fc, margin=0)
+    before = _plan(0.0, 20.0)
+    before.graphics = G.GfxPlan(_gfx_items(), "bold", False, 30.0)  # no HUD info (1.2.58)
+    old = clips.graphics_boxes(before, opts, spec, geo, lay, fc, 1920, 1080)
+    assert any(_hit(_extent(g, "bold"), kill_text) for g in old)  # the bug, as it was
+    plan = _plan(0.0, 20.0)
+    plan.graphics = G.GfxPlan(_gfx_items(), "bold", False, 30.0, hud=gameprofiles.hud_boxes("delta_force"))
+    new = clips.graphics_boxes(plan, opts, spec, geo, lay, fc, 1920, 1080)
+    assert len(new) == 3  # still shown
+    for g in new:
+        assert not _hit(_extent(g, "bold"), kill_text), g["box"]
+        assert g["box"]["y"] - g["box"]["h"] / 2 > clips.SPLIT_TOP  # never on the facecam panel
+        assert g["box"]["h"] >= 0.7 * G.LOOK["bold"]["h"]  # still clearly "bold"
+
+
+def test_build_takes_the_hud_from_the_projects_game(tmp_path, monkeypatch):
+    from sharkyclips import game as game_mod
+
+    monkeypatch.setattr(game_mod, "resolve", lambda project: {"game": "delta_force"})
+    gp = G.build(object(), {"reasons": [_r("df_kill", 105.0)]}, _opts(layout="split"), _plan(), mode="gaming")
+    assert gp is not None and gp.hud == gameprofiles.hud_boxes("delta_force") and gp.hud
+    monkeypatch.setattr(game_mod, "resolve", lambda project: {"game": None})
+    gp2 = G.build(object(), {"reasons": [_r("df_kill", 105.0)]}, _opts(layout="split"), _plan(), mode="gaming")
+    assert gp2.hud == [] and gp.fingerprint() != gp2.fingerprint()  # a HUD change re-renders the clip
