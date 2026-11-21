@@ -123,3 +123,13 @@ def test_ui_has_the_page_the_menu_item_and_the_about_link():
     assert "href.updates" in (src / "components" / "Licenses.tsx").read_text(encoding="utf-8")  # Settings > About
     page = (src / "pages" / "Updates.tsx").read_text(encoding="utf-8")
     assert "api.updatesSeen" in page and 'type="search"' in page
+
+
+def test_updates_link_name_matches_its_visible_text():
+    """1.2.64: with the "New" badge the link was announced as "Updates (New)" while it showed
+    "Updates New" (axe label-content-name-mismatch on every screen, first visit after an update)."""
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[2] / "frontend" / "src" / "App.tsx").read_text(encoding="utf-8")
+    link = src.split("function UpdatesNavLink", 1)[1].split("\n}\n", 1)[0]
+    assert "aria-label" not in link and 'aria-hidden="true"' not in link and "nav-new" in link

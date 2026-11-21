@@ -4,7 +4,12 @@ import { GovernorWidget } from "./components/Governor";
 import { useAppState } from "./appstate";
 import { BrandMark } from "./components/Brand";
 import { Icon } from "./components/Icons";
-import { DevBanner, Footer, StaleServerBar, WhatsNew } from "./components/Shell";
+import {
+  DevBanner,
+  Footer,
+  StaleServerBar,
+  WhatsNew,
+} from "./components/Shell";
 import { IgManualBar } from "./components/IgManual";
 import { YoutubeSignedOutBanner } from "./components/YoutubeConnect";
 import { SetupBanner } from "./components/SetupDownloads";
@@ -46,16 +51,15 @@ function UpdatesNavLink({ active }: { active: boolean }) {
   const { state } = useAppState();
   const fresh = !!state?.updates_new && !active;
   return (
-    <a
-      href={href.updates}
-      aria-current={active ? "page" : undefined}
-      aria-label={fresh ? `${t("nav.updates")} (${t("updates.badge")})` : undefined}
-    >
+    // 1.2.64: the name screen readers hear is the visible text ("Updates New"); a separate label like
+    // "Updates (New)" differed from it (axe: label-content-name-mismatch whenever the badge shows)
+    <a href={href.updates} aria-current={active ? "page" : undefined}>
       {t("nav.updates")}
       {fresh && (
-        <span className="nav-new" aria-hidden="true">
-          {t("updates.badge")}
-        </span>
+        <>
+          {" "}
+          <span className="nav-new">{t("updates.badge")}</span>
+        </>
       )}
     </a>
   );
@@ -76,16 +80,36 @@ function EasyTopBar() {
         <span className="brand-name">SharkyClips</span>
       </a>
       <nav className="nav">
-        <a href={href.library} aria-current={route.name === "library" || route.name === "project" ? "page" : undefined}>
+        <a
+          href={href.library}
+          aria-current={
+            route.name === "library" || route.name === "project"
+              ? "page"
+              : undefined
+          }
+        >
           {t("easy.nav_create")}
         </a>
-        <a href={href.publish()} aria-current={route.name === "publish" ? "page" : undefined}>
+        <a
+          href={href.publish()}
+          aria-current={route.name === "publish" ? "page" : undefined}
+        >
           {t("easy.nav_library")}
         </a>
-        <a href={href.pubqueue} aria-current={route.name === "pubqueue" ? "page" : undefined}>
+        <a
+          href={href.pubqueue}
+          aria-current={route.name === "pubqueue" ? "page" : undefined}
+        >
           {t("nav.pubqueue")}
         </a>
-        <a href={href.settings} aria-current={route.name === "settings" || route.name === "trash" ? "page" : undefined}>
+        <a
+          href={href.settings}
+          aria-current={
+            route.name === "settings" || route.name === "trash"
+              ? "page"
+              : undefined
+          }
+        >
           {t("nav.settings")}
         </a>
         <UpdatesNavLink active={route.name === "updates"} />
@@ -132,27 +156,57 @@ function TopBar() {
       <nav className="nav">
         <a
           href={href.library}
-          aria-current={["library", "project", "bestof", "game", "stories"].includes(route.name) ? "page" : undefined}
+          aria-current={
+            ["library", "project", "bestof", "game", "stories"].includes(
+              route.name,
+            )
+              ? "page"
+              : undefined
+          }
         >
           {t("nav.library")}
         </a>
-        <a href={href.publish()} aria-current={route.name === "publish" ? "page" : undefined}>
+        <a
+          href={href.publish()}
+          aria-current={route.name === "publish" ? "page" : undefined}
+        >
           {t("nav.publish")}
         </a>
-        <a href={href.pubqueue} aria-current={route.name === "pubqueue" ? "page" : undefined}>
+        <a
+          href={href.pubqueue}
+          aria-current={route.name === "pubqueue" ? "page" : undefined}
+        >
           {t("nav.pubqueue")}
         </a>
-        <a href={href.queue} aria-current={route.name === "queue" ? "page" : undefined}>
+        <a
+          href={href.queue}
+          aria-current={route.name === "queue" ? "page" : undefined}
+        >
           {t("nav.queue")}
-          {active.length > 0 && <span className="nav-count mono">{active.length}</span>}
+          {active.length > 0 && (
+            <span className="nav-count mono">{active.length}</span>
+          )}
         </a>
-        <a href={href.stats} aria-current={route.name === "stats" ? "page" : undefined}>
+        <a
+          href={href.stats}
+          aria-current={route.name === "stats" ? "page" : undefined}
+        >
           {t("nav.stats")}
         </a>
-        <a href={href.studio()} aria-current={route.name === "studio" ? "page" : undefined}>
+        <a
+          href={href.studio()}
+          aria-current={route.name === "studio" ? "page" : undefined}
+        >
           {t("nav.studio")}
         </a>
-        <a href={href.settings} aria-current={route.name === "settings" || route.name === "trash" ? "page" : undefined}>
+        <a
+          href={href.settings}
+          aria-current={
+            route.name === "settings" || route.name === "trash"
+              ? "page"
+              : undefined
+          }
+        >
           {t("nav.settings")}
         </a>
         <UpdatesNavLink active={route.name === "updates"} />
@@ -173,7 +227,11 @@ function TopBar() {
             href={href.queue}
             title={t("jobs.running", { n: active.length })}
           >
-            {running.paused ? <Icon name="pause" size={13} /> : <span className="spinner" style={{ width: 12, height: 12 }} />}
+            {running.paused ? (
+              <Icon name="pause" size={13} />
+            ) : (
+              <span className="spinner" style={{ width: 12, height: 12 }} />
+            )}
             <b>{jobLabel(running, t, num)}</b>
             {active.length > 1 && <span>+{active.length - 1}</span>}
           </a>
@@ -205,22 +263,33 @@ function ShutdownBanner() {
   }, [counting]);
   if (!shutdown) return null;
   if (shutdown.countdown == null) {
-    return shutdown.fired_at && shutdown.dry_run && Date.now() / 1000 - shutdown.fired_at < 20 ? (
+    return shutdown.fired_at &&
+      shutdown.dry_run &&
+      Date.now() / 1000 - shutdown.fired_at < 20 ? (
       <div className="shutdown-banner" role="status">
         <Icon name="power" size={18} />
         <span>{t("shutdown.dry_fired")}</span>
       </div>
     ) : null;
   }
-  const left = Math.max(0, Math.ceil(shutdown.countdown - (performance.now() - shutdownAt) / 1000));
+  const left = Math.max(
+    0,
+    Math.ceil(shutdown.countdown - (performance.now() - shutdownAt) / 1000),
+  );
   return (
     <div className="shutdown-banner" role="alert">
       <Icon name="power" size={18} />
       <span>
         <b>{t("shutdown.title")}</b> {t("shutdown.in", { s: num(left) })}
-        {shutdown.dry_run && <span className="muted"> · {t("queue.shutdown_dry")}</span>}
+        {shutdown.dry_run && (
+          <span className="muted"> · {t("queue.shutdown_dry")}</span>
+        )}
       </span>
-      <button className="btn btn-primary btn-sm" onClick={() => api.cancelShutdown()} autoFocus>
+      <button
+        className="btn btn-primary btn-sm"
+        onClick={() => api.cancelShutdown()}
+        autoFocus
+      >
         {t("shutdown.cancel")}
       </button>
     </div>
@@ -237,11 +306,23 @@ export default function App() {
   const [manualWhatsNew, setManualWhatsNew] = useState(false);
   const [whatsNewClosed, setWhatsNewClosed] = useState(false);
   const showOnboarding = splashDone && !onboarded && !!state?.onboarding;
-  const autoWhatsNew = splashDone && !showOnboarding && !!state?.whats_new && !whatsNewClosed;
+  const autoWhatsNew =
+    splashDone && !showOnboarding && !!state?.whats_new && !whatsNewClosed;
   const showTour =
-    easy && splashDone && !showOnboarding && !autoWhatsNew && !manualWhatsNew && !!ui && !ui.tour_done && route.name === "library";
+    easy &&
+    splashDone &&
+    !showOnboarding &&
+    !autoWhatsNew &&
+    !manualWhatsNew &&
+    !!ui &&
+    !ui.tour_done &&
+    route.name === "library";
   const closeWhatsNew = () => {
-    if (autoWhatsNew && state?.whats_new) api.whatsNewSeen(state.whats_new).then(set).catch(() => {});
+    if (autoWhatsNew && state?.whats_new)
+      api
+        .whatsNewSeen(state.whats_new)
+        .then(set)
+        .catch(() => {});
     setWhatsNewClosed(true);
     setManualWhatsNew(false);
   };
@@ -265,28 +346,41 @@ export default function App() {
       <SetupBanner />
       <IgManualBar />
       <ShutdownBanner />
-      <div className="page-fx" key={mode + route.name + ("id" in route ? `:${route.id}` : "")}>
+      <div
+        className="page-fx"
+        key={mode + route.name + ("id" in route ? `:${route.id}` : "")}
+      >
         <Suspense fallback={null}>
-        {route.name === "library" && (easy ? <EasyHome /> : <Library />)}
-        {route.name === "settings" && (easy ? <EasySettings /> : <Settings />)}
-        {route.name === "studio" && <Studio tab={route.tab} />}
-        {route.name === "project" && (easy ? <EasyProject key={route.id} id={route.id} /> : <ProjectPage key={route.id} id={route.id} />)}
-        {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
-        {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
-        {route.name === "stories" && <Stories key={route.id} id={route.id} />}
-        {route.name === "queue" && <Queue />}
-        {route.name === "stats" && <Stats />}
-        {route.name === "publish" && (easy ? <EasyLibrary /> : <ClipLibrary view={route.view} />)}
-        {route.name === "pubqueue" && <PublishQueue />}
-        {route.name === "trash" && <Trash />}
-        {route.name === "updates" && <Updates />}
+          {route.name === "library" && (easy ? <EasyHome /> : <Library />)}
+          {route.name === "settings" &&
+            (easy ? <EasySettings /> : <Settings />)}
+          {route.name === "studio" && <Studio tab={route.tab} />}
+          {route.name === "project" &&
+            (easy ? (
+              <EasyProject key={route.id} id={route.id} />
+            ) : (
+              <ProjectPage key={route.id} id={route.id} />
+            ))}
+          {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
+          {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
+          {route.name === "stories" && <Stories key={route.id} id={route.id} />}
+          {route.name === "queue" && <Queue />}
+          {route.name === "stats" && <Stats />}
+          {route.name === "publish" &&
+            (easy ? <EasyLibrary /> : <ClipLibrary view={route.view} />)}
+          {route.name === "pubqueue" && <PublishQueue />}
+          {route.name === "trash" && <Trash />}
+          {route.name === "updates" && <Updates />}
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />
       <HandoffHost />
       <GameDock />
       {(autoWhatsNew || manualWhatsNew) && state && (
-        <WhatsNew version={state.whats_new ?? state.version} onClose={closeWhatsNew} />
+        <WhatsNew
+          version={state.whats_new ?? state.version}
+          onClose={closeWhatsNew}
+        />
       )}
       {showOnboarding && <Onboarding onDone={() => setOnboarded(true)} />}
       {showTour && <EasyTour onDone={() => updateUi({ tour_done: true })} />}

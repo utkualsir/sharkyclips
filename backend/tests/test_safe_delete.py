@@ -47,3 +47,14 @@ def test_shutil_rmtree_is_guarded_during_tests(tmp_path):
     d.mkdir()
     shutil.rmtree(d)
     assert not d.exists()
+
+
+def test_pytest_never_writes_its_cache_into_the_repo():
+    """1.2.63 CI: every test passed, then pytest's cache writer tried to rmtree a
+    "pytest-cache-files-*" folder in the repo root, the guard refused it and the job failed. The
+    cache is switched off, so pytest itself never deletes anything in the repo."""
+    from pathlib import Path
+
+    ini = (Path(__file__).resolve().parents[2] / "pytest.ini").read_text(encoding="utf-8")
+    addopts = next(line for line in ini.splitlines() if line.startswith("addopts"))
+    assert "no:cacheprovider" in addopts

@@ -9,6 +9,121 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.64] - 2026-11-21
+A small fix for people who use a screen reader, and safer checks behind the scenes.
+
+### Fixed
+- **The "Updates" link reads right.** When the Updates link shows the "New" sign, screen readers now read it exactly as it looks ("Updates New").
+- **More reliable checks.** The automatic checks that run before each update no longer stop at the very end of a good run, so updates reach you on time.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Ekran okuyucu kullananlar için küçük bir düzeltme ve arka planda daha güvenli kontroller.
+
+### Düzeltmeler
+- **"Güncellemeler" bağlantısı doğru okunuyor.** Güncellemeler bağlantısında "Yeni" işareti varken ekran okuyucular onu artık tam göründüğü gibi okuyor ("Güncellemeler Yeni").
+- **Daha güvenilir kontroller.** Her güncellemeden önce çalışan otomatik kontroller artık başarılı bir çalışmanın en sonunda durmuyor, böylece güncellemeler sana zamanında ulaşıyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Un pequeño arreglo para quienes usan un lector de pantalla, y comprobaciones más seguras por dentro.
+
+### Correcciones
+- **El enlace "Actualizaciones" se lee bien.** Cuando el enlace muestra la marca "Nuevo", los lectores de pantalla ahora lo leen tal como se ve ("Actualizaciones Nuevo").
+- **Comprobaciones más fiables.** Las comprobaciones automáticas que se hacen antes de cada actualización ya no se detienen al final de una ejecución correcta, así que las actualizaciones te llegan a tiempo.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Uma pequena correção para quem usa leitor de tela, e verificações mais seguras nos bastidores.
+
+### Correções
+- **O link "Atualizações" é lido certo.** Quando o link mostra a marca "Novo", os leitores de tela agora o leem exatamente como aparece ("Atualizações Novo").
+- **Verificações mais confiáveis.** As verificações automáticas feitas antes de cada atualização não param mais no fim de uma execução bem-sucedida, então as atualizações chegam a tempo.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Eine kleine Korrektur für alle, die einen Screenreader nutzen, und sicherere Prüfungen im Hintergrund.
+
+### Behoben
+- **Der Link "Updates" wird richtig vorgelesen.** Wenn der Link das Zeichen "Neu" zeigt, lesen Screenreader ihn jetzt genau so vor, wie er aussieht ("Updates Neu").
+- **Zuverlässigere Prüfungen.** Die automatischen Prüfungen vor jedem Update brechen nicht mehr ganz am Ende eines erfolgreichen Laufs ab, damit Updates rechtzeitig bei dir ankommen.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Une petite correction pour les personnes qui utilisent un lecteur d'écran, et des vérifications plus sûres en coulisses.
+
+### Corrections
+- **Le lien « Mises à jour » est bien lu.** Quand le lien affiche le badge « Nouveau », les lecteurs d'écran le lisent maintenant exactement comme il apparaît (« Mises à jour Nouveau »).
+- **Des vérifications plus fiables.** Les vérifications automatiques faites avant chaque mise à jour ne s'arrêtent plus tout à la fin d'un passage réussi, pour que les mises à jour t'arrivent à temps.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Egy kis javítás a képernyőolvasót használóknak, és biztonságosabb ellenőrzések a háttérben.
+
+### Javítások
+- **A "Frissítések" link helyesen hangzik el.** Amikor a linken az "Új" jelzés látszik, a képernyőolvasók most pontosan úgy olvassák fel, ahogy kinéz ("Frissítések Új").
+- **Megbízhatóbb ellenőrzések.** A frissítések előtt futó automatikus ellenőrzések már nem állnak le egy sikeres futás legvégén, így a frissítések időben megérkeznek.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшое исправление для тех, кто пользуется экранным диктором, и более надёжные проверки внутри.
+
+### Исправления
+- **Ссылка «Обновления» читается правильно.** Когда на ссылке есть значок «Новое», экранные дикторы теперь читают её точно так, как она выглядит («Обновления Новое»).
+- **Более надёжные проверки.** Автоматические проверки перед каждым обновлением больше не останавливаются в самом конце успешного прогона, поэтому обновления приходят вовремя.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+إصلاح صغير لمن يستخدمون قارئ الشاشة، وفحوصات أكثر أمانًا في الخلفية.
+
+### إصلاحات
+- **رابط "التحديثات" يُقرأ بشكل صحيح.** عندما يظهر على رابط التحديثات وسم "جديد"، يقرؤه قارئ الشاشة الآن تمامًا كما يظهر ("التحديثات جديد").
+- **فحوصات أكثر موثوقية.** الفحوصات التلقائية التي تعمل قبل كل تحديث لم تعد تتوقف في نهاية تشغيل ناجح، لذلك تصلك التحديثات في وقتها.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+为使用屏幕阅读器的用户做了一个小修复，后台检查也更可靠了。
+
+### 修复
+- **"更新"链接读法正确。** 当"更新"链接显示"新"标记时，屏幕阅读器现在会按它显示的样子来读（"更新 新"）。
+- **更可靠的检查。** 每次更新前运行的自动检查不会再在顺利运行到最后时中断，更新能按时送到你手上。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+スクリーンリーダーを使う人のための小さな修正と、裏側のより確実なチェックです。
+
+### 修正
+- **「アップデート」リンクが正しく読まれます。** アップデートのリンクに「New」の印が出ている時、スクリーンリーダーが見た目どおりに読むようになりました。
+- **より確実なチェック。** アップデート前に動く自動チェックが、うまくいった実行の最後で止まらなくなり、アップデートが予定どおり届きます。
+
+</details>
+
 ## [1.2.63] - 2026-11-21
 Titles, descriptions and hashtags can now follow your own fixed style. Pro mode is calmer, and when you watch a clip you can always see where it ends.
 
