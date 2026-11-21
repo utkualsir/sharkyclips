@@ -28,3 +28,13 @@ pystray>=0.19.5; platform_system == "Windows"
 matplotlib>=3.11.2
 # 1.2.42 - automatic TikTok posts through TikTok Studio (uses the installed Chrome / Edge)
 playwright>=1.65.2
+
+# Security floors for indirect dependencies (OSV-Scanner, docs/research/osv-report.md). pip would
+# normally pick newer versions anyway; these make sure an old, vulnerable one is never kept.
+pillow>=13.0.0              # via matplotlib, pystray, rapidocr
+pycryptodomex>=3.19.1       # via yt-dlp[default]
+httpx2>=2.12.0              # via huggingface_hub (faster-whisper)
+httpcore2>=2.10.0           # via httpx2
+anyio>=4.14.2               # via fastapi / starlette
+certifi>=2026.10.18         # via requests
+idna>=3.15                  # via requests, anyio

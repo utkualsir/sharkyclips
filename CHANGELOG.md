@@ -9,6 +9,117 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.61] - 2026-11-21
+A small safety update: the app now makes sure that some helper parts it uses are new enough and have no known security problems.
+
+### Improved
+- **Safer helper parts.** SharkyClips uses many small parts made by other people, for example to read
+  pictures or to download videos. The app now asks for versions of these parts that have no known
+  security problems. Normally you already had them; now an old one can never stay on your computer.
+  While this update installs, the app may download a few of these parts, so it can take a little longer.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Küçük bir güvenlik güncellemesi: uygulama artık kullandığı bazı yardımcı parçaların yeterince yeni olduğundan ve bilinen bir güvenlik sorunu taşımadığından emin oluyor.
+
+### İyileştirmeler
+- **Daha güvenli yardımcı parçalar.** SharkyClips, başkalarının yaptığı birçok küçük parça kullanıyor;
+  örneğin resimleri okumak ya da video indirmek için. Uygulama artık bu parçaların bilinen bir güvenlik
+  sorunu olmayan sürümlerini istiyor. Normalde bunlar zaten sende vardı; artık eski bir sürüm
+  bilgisayarında hiç kalamaz. Bu güncelleme kurulurken uygulama bu parçalardan birkaçını
+  indirebilir, bu yüzden biraz daha uzun sürebilir.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Una pequeña actualización de seguridad: la app ahora se asegura de que algunas piezas auxiliares que usa sean lo bastante nuevas y no tengan problemas de seguridad conocidos.
+
+### Mejoras
+- **Piezas auxiliares más seguras.** SharkyClips usa muchas piezas pequeñas hechas por otras personas, por ejemplo para leer imágenes o descargar vídeos. La app ahora pide versiones sin problemas de seguridad conocidos. Normalmente ya las tenías; ahora una versión antigua nunca puede quedarse en tu ordenador. Mientras se instala esta actualización, la app puede descargar algunas de estas piezas, así que puede tardar un poco más.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Uma pequena atualização de segurança: o app agora garante que algumas peças auxiliares que ele usa sejam novas o suficiente e não tenham problemas de segurança conhecidos.
+
+### Melhorias
+- **Peças auxiliares mais seguras.** O SharkyClips usa muitas peças pequenas feitas por outras pessoas, por exemplo para ler imagens ou baixar vídeos. O app agora pede versões sem problemas de segurança conhecidos. Normalmente você já as tinha; agora uma versão antiga nunca pode ficar no seu computador. Enquanto esta atualização é instalada, o app pode baixar algumas dessas peças, então pode demorar um pouco mais.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Ein kleines Sicherheitsupdate: Die App stellt jetzt sicher, dass einige Hilfsteile, die sie nutzt, neu genug sind und keine bekannten Sicherheitsprobleme haben.
+
+### Verbessert
+- **Sicherere Hilfsteile.** SharkyClips nutzt viele kleine Teile, die andere Leute gemacht haben, zum Beispiel zum Lesen von Bildern oder zum Herunterladen von Videos. Die App verlangt jetzt Versionen ohne bekannte Sicherheitsprobleme. Normalerweise hattest du sie schon; jetzt kann eine alte Version nie mehr auf deinem Computer bleiben. Während dieses Update installiert wird, lädt die App vielleicht einige dieser Teile herunter, daher kann es etwas länger dauern.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Une petite mise à jour de sécurité : l’app vérifie maintenant que certaines pièces utilitaires qu’elle utilise sont assez récentes et n’ont aucun problème de sécurité connu.
+
+### Améliorations
+- **Pièces utilitaires plus sûres.** SharkyClips utilise beaucoup de petites pièces faites par d’autres personnes, par exemple pour lire des images ou télécharger des vidéos. L’app demande maintenant des versions sans problème de sécurité connu. En général tu les avais déjà ; maintenant une ancienne version ne peut plus rester sur ton ordinateur. Pendant l’installation de cette mise à jour, l’app peut télécharger certaines de ces pièces, donc cela peut prendre un peu plus de temps.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Kis biztonsági frissítés: az alkalmazás most gondoskodik róla, hogy az általa használt segédrészek elég újak legyenek, és ne legyen ismert biztonsági hibájuk.
+
+### Fejlesztések
+- **Biztonságosabb segédrészek.** A SharkyClips sok kis részt használ, amelyeket mások készítettek, például képek olvasásához vagy videók letöltéséhez. Az alkalmazás most olyan verziókat kér, amelyeknek nincs ismert biztonsági hibájuk. Általában ezek már megvoltak neked; most egy régi verzió soha nem maradhat a gépeden. A frissítés telepítése közben az alkalmazás letölthet néhányat ezekből a részekből, ezért kicsit tovább tarthat.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшое обновление безопасности: приложение теперь следит за тем, чтобы вспомогательные компоненты, которые оно использует, были достаточно новыми и не имели известных проблем с безопасностью.
+
+### Улучшения
+- **Более безопасные вспомогательные компоненты.** SharkyClips использует много небольших компонентов, созданных другими людьми, например для чтения изображений или загрузки видео. Теперь приложение требует версии без известных проблем с безопасностью. Обычно они у вас уже были; теперь старая версия никогда не останется на вашем компьютере. Во время установки этого обновления приложение может загрузить некоторые из этих компонентов, поэтому оно может занять немного больше времени.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+تحديث أمان صغير: يتأكد التطبيق الآن من أن بعض الأجزاء المساعدة التي يستخدمها حديثة بما يكفي وليس فيها مشاكل أمان معروفة.
+
+### تحسينات
+- **أجزاء مساعدة أكثر أمانًا.** يستخدم SharkyClips كثيرًا من الأجزاء الصغيرة التي صنعها أشخاص آخرون، مثلًا لقراءة الصور أو تنزيل الفيديوهات. يطلب التطبيق الآن إصدارات ليس فيها مشاكل أمان معروفة. في العادة كانت لديك بالفعل؛ والآن لا يمكن أن يبقى إصدار قديم على جهازك أبدًا. أثناء تثبيت هذا التحديث قد ينزّل التطبيق بعض هذه الأجزاء، لذلك قد يستغرق وقتًا أطول قليلًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+一次小的安全更新：应用现在会确保它使用的一些辅助组件足够新，并且没有已知的安全问题。
+
+### 改进
+- **更安全的辅助组件。**SharkyClips 使用很多由其他人制作的小组件，例如用来读取图片或下载视频。应用现在会要求使用没有已知安全问题的版本。通常你本来就已经有这些版本；现在旧版本再也不会留在你的电脑上。安装此更新时，应用可能会下载其中一些组件，所以可能会多花一点时间。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+小さなセキュリティ更新：アプリが使っている補助パーツが十分に新しく、既知のセキュリティ問題がないことを確認するようになりました。
+
+### 改善
+- **より安全な補助パーツ。**SharkyClips は、画像の読み込みや動画のダウンロードなどのために、ほかの人が作った小さなパーツをたくさん使っています。アプリは既知のセキュリティ問題のないバージョンを求めるようになりました。普通はすでに入っていましたが、これからは古いバージョンがパソコンに残ることはありません。この更新をインストールするとき、アプリがこれらのパーツの一部をダウンロードすることがあるため、少し時間がかかる場合があります。
+
+</details>
+
 ## [1.2.60] - 2026-11-21
 A small fix for cover pictures: a single frame that only looks like a face no longer counts as your face.
 

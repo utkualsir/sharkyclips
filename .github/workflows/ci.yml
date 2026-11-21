@@ -277,3 +277,29 @@ jobs:
       - name: npm audit
         working-directory: frontend
         run: npm audit --audit-level=moderate
+
+  osv:
+    # OSV-Scanner (osv.dev) over the Python requirements (with their indirect dependencies) and the
+    # npm lockfile. Non-blocking for now (docs/tooling.md); report: docs/research/osv-report.md.
+    name: OSV-Scanner
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    env:
+      OSV_VERSION: v2.7.0
+      OSV_SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Install osv-scanner (pinned, checksum verified)
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/osv-scanner" \
+            "https://github.com/google/osv-scanner/releases/download/$OSV_VERSION/osv-scanner_linux_amd64"
+          echo "$OSV_SHA256  $RUNNER_TEMP/osv-scanner" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/osv-scanner"
+      - name: Scan
+        run: |
+          "$RUNNER_TEMP/osv-scanner" scan source \
+            -L backend/requirements.txt -L backend/requirements-dev.txt \
+            -L backend/requirements-nvidia.txt -L frontend/package-lock.json

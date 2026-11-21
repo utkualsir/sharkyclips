@@ -5,3 +5,7 @@ httpx>=0.28.1          # FastAPI TestClient
 lxml>=6.1.3             # tests: DTD validation of the editor timelines (FCPXML)
 pillow>=13.0.0         # installer/make_icons.py
 shellcheck-py>=0.11.0.1   # lint the macOS scripts
+# Security floors for indirect dependencies of httpx (same as backend/requirements.txt, OSV-Scanner)
+anyio>=4.14.2
+certifi>=2026.10.18
+idna>=3.15
