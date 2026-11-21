@@ -174,6 +174,10 @@ def score_faces(frames: list[np.ndarray], loud: np.ndarray) -> list[dict]:
     return out
 
 
+MIN_FACE_FRAMES = 2
+MIN_FACE_SHARE = 0.1
+
+
 def best_face(project: Project, cand: dict, facecam: Facecam | None) -> dict | None:
     """The clip moment with the streamer's strongest expression: {t, score 0..100, reasons,
     faces (share of frames with a face), box (the face region used)}. None = no face found."""
@@ -182,7 +186,7 @@ def best_face(project: Project, cand: dict, facecam: Facecam | None) -> dict | N
         return None
     meta = project.load_meta()
     box = (facecam.x, facecam.y, facecam.w, facecam.h) if facecam else None
-    key = _sig("face2", cand["start"], cand["end"], box)
+    key = _sig("face3", cand["start"], cand["end"], box)
     cache = folder(project) / f"face_{cand['id']}_{key}.json"
     if cache.is_file():
         try:
@@ -196,7 +200,9 @@ def best_face(project: Project, cand: dict, facecam: Facecam | None) -> dict | N
     if frames:
         scored = score_faces(frames, _loudness(project, times))
         faces = sum(1 for s in scored if s["face"])
-        if faces:
+        # a real facecam shows the face in many frames; one stray hit (a pattern that looks like a
+        # face for a frame) is not the streamer (seen with a new ffmpeg build's test pattern)
+        if faces >= MIN_FACE_FRAMES and faces >= MIN_FACE_SHARE * len(scored):
             i = max(range(len(scored)), key=lambda k: scored[k]["score"])
             parts = scored[i]["parts"]
             reasons = [k for k, v in sorted(parts.items(), key=lambda kv: -kv[1]) if v >= 0.12][:3]

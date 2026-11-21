@@ -9,6 +9,114 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.60] - 2026-11-21
+A small fix for cover pictures: a single frame that only looks like a face no longer counts as your face.
+
+### Fixed
+- **Cover pictures.** When the app looks for the moment with your best facial expression, it now needs
+  to see a face in more than one frame of the clip. A pattern that looked like a face for a moment
+  could make it pick a "face" cover for a clip without a facecam.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Kapak resimleri için küçük bir düzeltme: sadece bir an yüze benzeyen tek bir kare artık senin yüzün sayılmıyor.
+
+### Düzeltmeler
+- **Kapak resimleri.** Uygulama en iyi yüz ifadeni gösteren anı ararken artık klibin birden fazla
+  karesinde yüz görmesi gerekiyor. Bir an yüze benzeyen bir desen, yüz kamerası olmayan bir klip için
+  "yüz" kapağı seçtirebiliyordu.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Una pequeña corrección para las portadas: un solo fotograma que solo parece una cara ya no cuenta como tu cara.
+
+### Correcciones
+- **Portadas.** Para elegir el momento con tu mejor expresión, la app ahora necesita ver una cara en más de un fotograma del clip.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Uma pequena correção nas capas: um único quadro que só parece um rosto não conta mais como o seu rosto.
+
+### Correções
+- **Capas.** Para escolher o momento com a sua melhor expressão, o app agora precisa ver um rosto em mais de um quadro do clipe.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Eine kleine Korrektur bei Titelbildern: Ein einzelnes Bild, das nur wie ein Gesicht aussieht, zählt nicht mehr als dein Gesicht.
+
+### Behoben
+- **Titelbilder.** Um den Moment mit deinem besten Gesichtsausdruck zu finden, muss die App jetzt in mehr als einem Bild des Clips ein Gesicht sehen.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Une petite correction des miniatures : une seule image qui ressemble juste à un visage ne compte plus comme ton visage.
+
+### Corrections
+- **Miniatures.** Pour choisir le moment avec ta meilleure expression, l’app doit maintenant voir un visage sur plus d’une image du clip.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Kis javítás a borítóképeknél: egyetlen képkocka, amely csak hasonlít egy arcra, már nem számít az arcodnak.
+
+### Javítások
+- **Borítóképek.** A legjobb arckifejezésed pillanatának kereséséhez az alkalmazásnak most a klip több képkockáján kell arcot látnia.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшое исправление обложек: один кадр, который лишь похож на лицо, больше не считается вашим лицом.
+
+### Исправления
+- **Обложки.** Чтобы выбрать момент с вашим лучшим выражением лица, приложению теперь нужно увидеть лицо больше чем в одном кадре клипа.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+إصلاح صغير لصور الغلاف: إطار واحد يشبه الوجه فقط لم يعد يُحسب وجهك.
+
+### إصلاحات
+- **صور الغلاف.** لاختيار اللحظة التي تظهر فيها أفضل تعابير وجهك، يحتاج التطبيق الآن إلى رؤية وجه في أكثر من إطار واحد من المقطع.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+封面图片的小修复：只是看起来像脸的单独一帧不再被当作你的脸。
+
+### 修复
+- **封面图片。**在寻找你表情最好的时刻时，应用现在需要在片段的多于一帧中看到人脸。以前，一个短暂像人脸的图案可能会让没有摄像头画面的片段也选到"人脸"封面。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+カバー画像の小さな修正：顔のように見えるだけの 1 フレームは、もうあなたの顔として扱われません。
+
+### 修正
+- **カバー画像。**一番いい表情の瞬間を探すとき、クリップの複数のフレームで顔が見つかる必要があるようになりました。これまでは、一瞬だけ顔に見える模様のせいで、フェイスカメラのないクリップでも「顔」のカバーが選ばれることがありました。
+
+</details>
+
 ## [1.2.59] - 2026-11-21
 A small shark game to play while your project is processing, and animated graphics that now keep away from the game's own kill feed, score and minimap.
 

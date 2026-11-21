@@ -337,3 +337,23 @@ def test_a_picture_painted_on_a_white_card_is_trimmed(tmp_path):
     ok = tmp_path / "full.png"
     Image.effect_noise((576, 1024), 60).convert("RGB").save(ok)
     assert not imagegen.trim_border(ok)
+
+
+def test_one_stray_face_frame_is_not_a_face(tmp_path, monkeypatch):
+    """1.2.59: ffmpeg 9.1's test pattern looked like a face in 1 of 20 frames. A real facecam shows
+    the face in many frames: at least 2 frames and 10 % count."""
+    from sharkyclips import cover
+    from sharkyclips.project import Project
+
+    d = tmp_path / "p"
+    d.mkdir()
+    (d / "source.mp4").write_bytes(b"x")
+    (d / "meta.json").write_text("{}", encoding="utf-8")
+    project = Project("p", d)
+    monkeypatch.setattr(cover, "_clip_frames", lambda *a, **k: ([float(i) for i in range(20)], [object()] * 20))
+    monkeypatch.setattr(cover, "_loudness", lambda *a, **k: [0.0] * 20)
+    for hits, found in ((1, False), (2, True), (6, True)):
+        monkeypatch.setattr(cover, "score_faces", lambda frames, loud, h=hits: [
+            {"face": i < h, "score": 0.5 if i < h else 0.0, "parts": {"smile": 0.5}} for i in range(20)])
+        cand = {"id": f"c{hits}", "start": 0.0, "end": 20.0}
+        assert (cover.best_face(project, cand, None) is not None) is found, hits

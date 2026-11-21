@@ -39,6 +39,11 @@ bilgisi yok, 1.2.58) ve sonra (HUD bölgeleriyle) yeniden render edildi. Kareler
 "Çifte Öldürme +20 DP" yazısını kapatıyor; sonra: yazı açıkta. Gerçek proje dosyalarına dokunulmadı
 (geçici kopya, video sabit bağlantıyla).
 
+**CI notu → 1.2.60:** 1.2.59'un CI'ında sadece Windows testleri kırıldı: GitHub'ın Windows makinesinde
+ffmpeg bir gecede 9.0.2'den 9.1'e geçti ve yeni test deseninin 20 karesinden biri yüz sanıldı. Bu
+gerçek bir zayıflıktı (tek karelik yanlış yüz, kapak seçimini değiştirebiliyordu): artık en az 2 kare
+ve klibin %10'u gerekiyor. Kurala uygun olarak 1.2.60 olarak yayınlandı.
+
 **Senin yapman gereken:** hiçbir şey zorunlu değil. İstersen Ayarlar'da "Beklerken mini oyun" →
 "Şimdi oyna" ile dene.
 
@@ -120,6 +125,13 @@ Unattended work: every choice that would normally be a question is recorded here
 - Delta Force frames: rendered from a scratch copy (video hard-linked, never written), without the
   bleep re-check pass (not needed for still frames). Added a guessed DF "objective" box after seeing
   the objective bar at the top of the gameplay picture in the real frames.
+
+### CI failure after 1.2.59 -> 1.2.60
+- Only Backend (windows-latest) failed: two cover tests saw a "face" in the synthetic test video.
+  Cause: the runner's Chocolatey ffmpeg moved from 9.0.2 to 9.1 overnight (pip packages unchanged);
+  the face detector hit 1 of 20 frames of the new test pattern. Rather than pinning ffmpeg in CI,
+  the product rule was hardened (a face needs >= 2 frames and >= 10 % of the sampled frames; cache
+  key bumped) with a unit test, and released as 1.2.60 (the version rule: every product change bumps).
 
 ### Skipped / needs the user
 - Nothing needed the user's accounts. Making the repo public stays with the user.
