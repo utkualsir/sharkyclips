@@ -337,3 +337,14 @@ Etiketler:
   free), ruff clean, i18n OK, every browser check above green.
 - CI result, the restart of the running app and the removal of the "under construction" flag:
   see "After the release" below.
+
+### After the release
+
+- Tag v1.2.63 pushed, GitHub release created. The running app: no SharkyClips server was running on
+  ports 8000-8010, so nothing to restart (it starts on 1.2.63 next time).
+- **CI at the user's shutdown (stopped early on request, "güvenli durdurma"):** Windows installer,
+  Frontend, Installer scripts, OSV-Scanner, Dependency audit and gitleaks passed; **Backend
+  (ubuntu-latest) and Backend (windows-latest) failed**, macOS and Layout were still running. The
+  failure logs were not downloadable yet (the run was not finished). Locally the full suite passed
+  on Windows. **Next session:** `gh run view 44908950799 --log-failed`, fix, release as 1.2.64.
+- The "under construction" flag was removed at the shutdown (work committed and pushed).
