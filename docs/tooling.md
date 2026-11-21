@@ -145,5 +145,14 @@ them, not a hard limit; the issue-triager has no Bash and no GitHub write tools 
   silently quarantined. Nothing was found.
 - **Agents in user scope** (`~/.claude/agents`), not `.claude/agents` in the repo, as asked.
   The issue-triager gets an explicit allowlist of read-only GitHub tools and no shell.
+- **CI check after 1.2.61**: the tag run was green (OSV-Scanner job: "No issues found"). The run
+  on `main` failed once in the Layout job: a 30 s timeout on `GET /api/jobs` while the fixture
+  server was rendering (a timing flake, not a layout fault; the same commit passed it on the tag
+  run). The 1.2.60 Backend (ubuntu) failure was a clock-dependent test (seconds before the
+  YouTube quota reset at 08:00 UTC); the test was fixed in 1.2.62.
+- **1.2.62 (Instagram account suspended)**: Instagram paused as a default target (setup kept),
+  account / permission refusals are never retried by themselves, and a safe Instagram pace
+  (4 h apart, max 5 rotated hashtags, no identical captions in a row). Released through the
+  normal flow below.
 - **Nothing changed on GitHub** besides the normal release flow of CLAUDE.md rule 1 (commit, tag,
   push, GitHub release for 1.2.61). No settings, labels, issues, PRs or comments.

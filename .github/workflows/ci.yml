@@ -186,6 +186,12 @@ jobs:
         # last: it starts a real render, which changes the fixture project the checks above use
         working-directory: frontend
         run: BROWSERS=chromium,firefox,webkit node scripts/browser-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"
+      - name: Server log (on failure)
+        # 1.2.61-62: the fixture server twice stopped answering (API timeouts); its log says why
+        if: failure()
+        run: |
+          tail -n 300 "$RUNNER_TEMP/server.log" || true
+          ps -eo pid,pcpu,pmem,rss,etime,cmd --sort=-pcpu | head -15 || true
       - name: Screenshots of failing views
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
