@@ -1,0 +1,16 @@
+{
+ "_note": "A generic 'My style' template. Your own template lives in ~/.sharkyclips/style/template.json (Settings > My style): your channel hashtag, your social block and your typical title words go there, never into the repo.",
+ "enabled": false,
+ "lang": "tr",
+ "channel_tag": "",
+ "social_block": "",
+ "shorts_socials": true,
+ "title_words": ["EFSANE", "PATLATTIK", "DOMİNE ETTİK"],
+ "title_examples": [
+  "TEK BAŞIMA 4 KİŞİYİ İNDİRDİM! RAKİP TAKIMI DARMADAĞIN ETTİK! ⚔️🔥",
+  "SON SANİYEDE MAÇI ÇEVİRDİK! 😱 (EFSANE DÖNÜŞ)"
+ ],
+ "community_tags": {},
+ "story_games": [],
+ "series": {}
+}

@@ -25,7 +25,12 @@ import {
 import { BleepList } from "../components/BleepReport";
 import EditTools from "../components/EditTools";
 import FastReview, { ShortcutSheet } from "../components/FastReview";
-import { ExportDialog, ExportsList, UploadDialog, UploadsLine } from "../components/Publish";
+import {
+  ExportDialog,
+  ExportsList,
+  UploadDialog,
+  UploadsLine,
+} from "../components/Publish";
 import { PublishSetupDialog } from "../components/PublishTools";
 import { LongMetaDialog } from "../components/MyStyle";
 import { FullUploadButton } from "../components/FullUpload";
@@ -36,7 +41,17 @@ import FacecamEditor from "../components/FacecamEditor";
 import HypeMap from "../components/HypeMap";
 import { Icon } from "../components/Icons";
 import { fmtRatio, PublishPanel, SignalStats } from "../components/Panels";
-import { JobLine, Segmented, Toggle } from "../components/ui";
+import { Advanced, JobLine, Segmented, Toggle } from "../components/ui";
+import {
+  ClipBar,
+  ClipVideo,
+  EndBadge,
+  toggleBig,
+  useClipEndMode,
+  useEndShown,
+  useVideoEl,
+  useVideoTime,
+} from "../components/ClipEnd";
 import VerticalPreview, { resolveLayout } from "../components/VerticalPreview";
 import type { PreviewFx } from "../previewMath";
 import { fmtBytes, fmtCompact, fmtTime, sourceLabel } from "../format";
@@ -46,21 +61,48 @@ import { useMeta } from "../meta";
 import { CountUp } from "../motion";
 import { href } from "../router";
 import { useToast } from "../toast";
-import { effectiveRange, renderRange, typing, useHistory, useLiveBleeps, usePlan, usePreviewPlayback } from "../editing";
-import { FinalPreview, PlatformOverlay, PlatformTabs, type PlatformView } from "../components/PreviewExtras";
+import {
+  effectiveRange,
+  renderRange,
+  typing,
+  useHistory,
+  useLiveBleeps,
+  usePlan,
+  usePreviewPlayback,
+} from "../editing";
+import {
+  FinalPreview,
+  PlatformOverlay,
+  PlatformTabs,
+  type PlatformView,
+} from "../components/PreviewExtras";
 import HookTestDialog from "../components/HookTest";
 import { gameReasonLabel, whyText } from "./GameDebug";
 import { DubSwitch } from "../components/MyVoice";
 import { DeleteDialog, useUndoToast } from "../components/Trash";
 
 const MODES: Mode[] = ["gaming", "study", "music"];
-const GAME_NAMES: Record<GameId, string> = { delta_force: "Delta Force", lol: "League of Legends" };
+const GAME_NAMES: Record<GameId, string> = {
+  delta_force: "Delta Force",
+  lol: "League of Legends",
+};
 const GAME_CODE = /^(lol|df)_/;
-const SUBS: SubtitleStyle[] = ["bold", "karaoke", "speakers", "clean", "minimal", "none"];
+const SUBS: SubtitleStyle[] = [
+  "bold",
+  "karaoke",
+  "speakers",
+  "clean",
+  "minimal",
+  "none",
+];
 const LAYOUTS: Layout[] = ["auto", "split", "fit", "crop"];
 type HookMode = "off" | "text" | "flash" | "both";
 const HOOK_MODES: HookMode[] = ["off", "text", "flash", "both"];
-type Snapshot = { accepted: string[]; rejected: string[]; edits: Record<string, ClipEdit> };
+type Snapshot = {
+  accepted: string[];
+  rejected: string[];
+  edits: Record<string, ClipEdit>;
+};
 
 // ------------------------------------------------------------------ candidate row
 
@@ -92,10 +134,14 @@ function CandidateRow({
 }) {
   const { t, num } = useI18n();
   const codes = [...new Set(c.reasons.map((r) => r.code))].slice(0, 4);
-  const valueOf = (code: string) => c.reasons.find((r) => r.code === code && r.value)?.value;
+  const valueOf = (code: string) =>
+    c.reasons.find((r) => r.code === code && r.value)?.value;
   const title = c.publish.titles[0] || c.text;
   const cal = c.publish.calibrated ?? null;
-  const viral = c.publish.available && c.publish.viral_score != null ? cal?.score ?? c.publish.viral_score : null;
+  const viral =
+    c.publish.available && c.publish.viral_score != null
+      ? (cal?.score ?? c.publish.viral_score)
+      : null;
   const label = c.publish.viral_label;
   const chatSpike = c.reasons
     .filter((r) => r.code === "chat_spike" && r.value)
@@ -107,12 +153,20 @@ function CandidateRow({
       aria-current={selected ? "true" : undefined}
       tabIndex={0}
       onClick={picking ? () => onPick?.(!picked) : onSelect}
-      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), picking ? onPick?.(!picked) : onSelect())}
+      onKeyDown={(e) =>
+        (e.key === "Enter" || e.key === " ") &&
+        (e.preventDefault(), picking ? onPick?.(!picked) : onSelect())
+      }
       data-cand={c.id}
     >
       {picking && (
         <label className="cand-pick" onClick={(e) => e.stopPropagation()}>
-          <input type="checkbox" checked={!!picked} onChange={(e) => onPick?.(e.target.checked)} aria-label={`${t("trash.pick")} #${c.rank}`} />
+          <input
+            type="checkbox"
+            checked={!!picked}
+            onChange={(e) => onPick?.(e.target.checked)}
+            aria-label={`${t("trash.pick")} #${c.rank}`}
+          />
         </label>
       )}
       <span className="cand-rank">#{String(c.rank).padStart(2, "0")}</span>
@@ -125,7 +179,11 @@ function CandidateRow({
             className="cand-viral"
             title={
               cal
-                ? t("cal.tooltip", { score: cal.score, def: cal.default, n: cal.n })
+                ? t("cal.tooltip", {
+                    score: cal.score,
+                    def: cal.default,
+                    n: cal.n,
+                  })
                 : `${t("publish.viral")}: ${viral}/100`
             }
           >
@@ -134,7 +192,11 @@ function CandidateRow({
               <CountUp value={viral} format={num} />
               <span className="v-den">/100</span>
             </span>
-            {label && !cal && <span className={`v-pill v-${label}`}>{t(`publish.label.${label}`)}</span>}
+            {label && !cal && (
+              <span className={`v-pill v-${label}`}>
+                {t(`publish.label.${label}`)}
+              </span>
+            )}
             {cal && <span className="v-pill v-cal">{t("cal.badge")}</span>}
           </div>
         )}
@@ -149,32 +211,58 @@ function CandidateRow({
               </span>
             )}
           </div>
-          <div className={`cand-score${viral != null ? " secondary" : ""}`} title={`${t("signals.score")}: ${c.hype_score}/100`}>
+          <div
+            className={`cand-score${viral != null ? " secondary" : ""}`}
+            title={`${t("signals.score")}: ${c.hype_score}/100`}
+          >
             <span className="lbl">{t("cands.hype_short")}</span>
             <div className="bar">
               <span style={{ width: `${c.hype_score}%` }} />
             </div>
-            <span className="n"><CountUp value={c.hype_score} format={num} /></span>
+            <span className="n">
+              <CountUp value={c.hype_score} format={num} />
+            </span>
           </div>
         </div>
         <div className="cand-reasons">
-          {rejected && <span className="chip chip-danger">{t("fast.skipped")}</span>}
+          {rejected && (
+            <span className="chip chip-danger">{t("fast.skipped")}</span>
+          )}
           {codes.map((code) => (
             <span
               key={code}
               className={`chip${code === "chat_spike" ? " chip-gold" : ""}${GAME_CODE.test(code) ? " chip-game" : ""}`}
             >
-              {GAME_CODE.test(code) ? gameReasonLabel(t, code, code === "df_multikill" ? valueOf(code) : null) : t(`reason.${code}`)}
-              {code === "chat_spike" && chatSpike && <span className="mono"> {fmtRatio(chatSpike, num)}</span>}
+              {GAME_CODE.test(code)
+                ? gameReasonLabel(
+                    t,
+                    code,
+                    code === "df_multikill" ? valueOf(code) : null,
+                  )
+                : t(`reason.${code}`)}
+              {code === "chat_spike" && chatSpike && (
+                <span className="mono"> {fmtRatio(chatSpike, num)}</span>
+              )}
             </span>
           ))}
         </div>
       </div>
       <div className="cand-accept" onClick={(e) => e.stopPropagation()}>
-        <Toggle checked={accepted} onChange={onAccept} label={`${t("cands.accept")} #${c.rank}`} />
-        <span className={accepted ? "ok" : ""}>{accepted ? <Icon name="check" size={13} /> : t("cands.accept")}</span>
+        <Toggle
+          checked={accepted}
+          onChange={onAccept}
+          label={`${t("cands.accept")} #${c.rank}`}
+        />
+        <span className={accepted ? "ok" : ""}>
+          {accepted ? <Icon name="check" size={13} /> : t("cands.accept")}
+        </span>
         {onDelete && !picking && (
-          <button className="btn btn-sm btn-ghost icon-btn" onClick={onDelete} aria-label={`${t("trash.delete_clip")} #${c.rank}`} title={t("trash.delete_clip")}>
+          <button
+            className="btn btn-sm btn-ghost icon-btn"
+            onClick={onDelete}
+            aria-label={`${t("trash.delete_clip")} #${c.rank}`}
+            title={t("trash.delete_clip")}
+          >
             <Icon name="trash" size={13} />
           </button>
         )}
@@ -185,7 +273,15 @@ function CandidateRow({
 
 // ------------------------------------------------------------------ real views (calibration)
 
-function PerformanceForm({ projectId, clip, onSaved }: { projectId: string; clip: RenderedClip; onSaved: () => void }) {
+function PerformanceForm({
+  projectId,
+  clip,
+  onSaved,
+}: {
+  projectId: string;
+  clip: RenderedClip;
+  onSaved: () => void;
+}) {
   const { t, lang } = useI18n();
   const toast = useToast();
   const perf = clip.performance ?? null;
@@ -238,15 +334,21 @@ function PerformanceForm({ projectId, clip, onSaved }: { projectId: string; clip
 
   if (!open) {
     return (
-      <button className={`perf-line${perf ? " has" : ""}`} onClick={() => setOpen(true)} data-perf={clip.id}>
+      <button
+        className={`perf-line${perf ? " has" : ""}`}
+        onClick={() => setOpen(true)}
+        data-perf={clip.id}
+      >
         <Icon name="eye" size={13} />
         {perf ? (
           <span>
-            <b className="mono">{fmtCompact(perf.views, lang)}</b> {t("cal.views")}
+            <b className="mono">{fmtCompact(perf.views, lang)}</b>{" "}
+            {t("cal.views")}
             {perf.likes != null && (
               <>
                 {" · "}
-                <b className="mono">{fmtCompact(perf.likes, lang)}</b> {t("cal.likes")}
+                <b className="mono">{fmtCompact(perf.likes, lang)}</b>{" "}
+                {t("cal.likes")}
               </>
             )}
           </span>
@@ -289,19 +391,37 @@ function PerformanceForm({ projectId, clip, onSaved }: { projectId: string; clip
       </label>
       <label>
         <span>{t("cal.published_label")}</span>
-        <input className="input" type="datetime-local" value={published} onChange={(e) => setPublished(e.target.value)} />
+        <input
+          className="input"
+          type="datetime-local"
+          value={published}
+          onChange={(e) => setPublished(e.target.value)}
+        />
       </label>
       <div className="perf-actions">
         {perf && (
-          <button type="button" className="btn btn-sm btn-ghost danger-text" onClick={remove} disabled={busy}>
+          <button
+            type="button"
+            className="btn btn-sm btn-ghost danger-text"
+            onClick={remove}
+            disabled={busy}
+          >
             {t("cal.remove")}
           </button>
         )}
         <span style={{ flex: 1 }} />
-        <button type="button" className="btn btn-sm btn-ghost" onClick={() => setOpen(false)}>
+        <button
+          type="button"
+          className="btn btn-sm btn-ghost"
+          onClick={() => setOpen(false)}
+        >
           {t("common.cancel")}
         </button>
-        <button type="submit" className="btn btn-sm btn-primary" disabled={busy || !digits(views)}>
+        <button
+          type="submit"
+          className="btn btn-sm btn-primary"
+          disabled={busy || !digits(views)}
+        >
           {t("common.save")}
         </button>
       </div>
@@ -348,11 +468,16 @@ export default function ProjectPage({ id }: { id: string }) {
   const [previewH, setPreviewH] = useState<number | null>(null);
   const saveTimer = useRef<number | undefined>(undefined);
   const [exportIds, setExportIds] = useState<string[] | null>(null);
-  const [uploadFor, setUploadFor] = useState<{ cid: string; source?: string } | null>(null);
+  const [uploadFor, setUploadFor] = useState<{
+    cid: string;
+    source?: string;
+  } | null>(null);
   const [publishFor, setPublishFor] = useState<string | null>(null);
   const [clipExports, setClipExports] = useState<ClipExport[]>([]);
   const [uploads, setUploads] = useState<Record<string, YoutubeUpload[]>>({});
-  const [marks, setMarks] = useState<{ in: number | null; out: number | null }>({ in: null, out: null });
+  const [marks, setMarks] = useState<{ in: number | null; out: number | null }>(
+    { in: null, out: null },
+  );
   const [fastOpen, setFastOpen] = useState(false);
   const [keysOpen, setKeysOpen] = useState(false);
   const [tracks, setTracks] = useState<MusicTrack[]>([]);
@@ -366,13 +491,28 @@ export default function ProjectPage({ id }: { id: string }) {
   const undoDelete = useUndoToast();
   const history = useHistory<Snapshot>();
   useEffect(() => {
-    api.music().then((m) => setTracks(m.tracks)).catch(() => {});
-    api.brand().then(setBrand).catch(() => {});
+    api
+      .music()
+      .then((m) => setTracks(m.tracks))
+      .catch(() => {});
+    api
+      .brand()
+      .then(setBrand)
+      .catch(() => {});
   }, []);
   const loadExports = useCallback(() => {
-    api.clipExports(id).then(setClipExports).catch(() => {});
-    api.uploads(id).then(setUploads).catch(() => {});
-    api.hookTests(id).then(setHookTests).catch(() => {});
+    api
+      .clipExports(id)
+      .then(setClipExports)
+      .catch(() => {});
+    api
+      .uploads(id)
+      .then(setUploads)
+      .catch(() => {});
+    api
+      .hookTests(id)
+      .then(setHookTests)
+      .catch(() => {});
   }, [id]);
 
   const load = useCallback(async () => {
@@ -381,9 +521,15 @@ export default function ProjectPage({ id }: { id: string }) {
       setProject(p);
       setMode(p.highlights?.mode ?? p.mode ?? "gaming");
       setOutLang((cur) => cur ?? p.output_language);
-      if (p.highlights) api.hype(id).then(setCurve).catch(() => setCurve(null));
+      if (p.highlights)
+        api
+          .hype(id)
+          .then(setCurve)
+          .catch(() => setCurve(null));
       setSelectedId((cur) =>
-        cur && p.highlights?.candidates.some((c) => c.id === cur) ? cur : p.highlights?.candidates[0]?.id ?? null,
+        cur && p.highlights?.candidates.some((c) => c.id === cur)
+          ? cur
+          : (p.highlights?.candidates[0]?.id ?? null),
       );
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) setNotFound(true);
@@ -399,33 +545,73 @@ export default function ProjectPage({ id }: { id: string }) {
   useEffect(() => {
     if (!lastFinished || lastFinished.project_id !== id) return;
     load();
-    if (["export", "upload", "render", "ab"].includes(lastFinished.kind)) loadExports();
-    if (lastFinished.kind === "ab" && lastFinished.status === "done" && lastFinished.result?.clip_id) {
+    if (["export", "upload", "render", "ab"].includes(lastFinished.kind))
+      loadExports();
+    if (
+      lastFinished.kind === "ab" &&
+      lastFinished.status === "done" &&
+      lastFinished.result?.clip_id
+    ) {
       const cid = lastFinished.result.clip_id as string;
-      toast({ kind: "ok", text: t("ab.done", { label: lastFinished.result.winner }), action: { label: t("ab.open"), run: () => setHookFor(cid) } });
+      toast({
+        kind: "ok",
+        text: t("ab.done", { label: lastFinished.result.winner }),
+        action: { label: t("ab.open"), run: () => setHookFor(cid) },
+      });
     }
-    const stillExporting = jobs.some((j) => j.kind === "export" && j.project_id === id && isActive(j));
-    if (lastFinished.kind === "export" && lastFinished.status === "done" && !stillExporting) {
-      toast({ kind: "ok", text: t("export.done"), action: { label: t("render.view"), run: () => setTab("clips") } });
+    const stillExporting = jobs.some(
+      (j) => j.kind === "export" && j.project_id === id && isActive(j),
+    );
+    if (
+      lastFinished.kind === "export" &&
+      lastFinished.status === "done" &&
+      !stillExporting
+    ) {
+      toast({
+        kind: "ok",
+        text: t("export.done"),
+        action: { label: t("render.view"), run: () => setTab("clips") },
+      });
       setTab("clips");
     }
-    if (lastFinished.kind === "upload" && lastFinished.status === "done" && lastFinished.result?.url) {
+    if (
+      lastFinished.kind === "upload" &&
+      lastFinished.status === "done" &&
+      lastFinished.result?.url
+    ) {
       const r = lastFinished.result;
       toast({
         kind: "ok",
         text: t("yt.done"),
         hint: r.thumbnail_error ?? undefined,
-        action: { label: t("yt.open"), run: () => window.open(r.url, "_blank", "noopener") },
+        action: {
+          label: t("yt.open"),
+          run: () => window.open(r.url, "_blank", "noopener"),
+        },
       });
     }
-    const stillRendering = jobs.some((j) => j.kind === "render" && j.project_id === id && isActive(j));
-    if (lastFinished.kind === "render" && lastFinished.status === "done" && !stillRendering) {
+    const stillRendering = jobs.some(
+      (j) => j.kind === "render" && j.project_id === id && isActive(j),
+    );
+    if (
+      lastFinished.kind === "render" &&
+      lastFinished.status === "done" &&
+      !stillRendering
+    ) {
       const n = lastFinished.params?.batch_count ?? 1;
-      toast({ kind: "ok", text: t("render.done", { n }), action: { label: t("render.view"), run: () => setTab("clips") } });
+      toast({
+        kind: "ok",
+        text: t("render.done", { n }),
+        action: { label: t("render.view"), run: () => setTab("clips") },
+      });
       setTab("clips");
     }
     if (lastFinished.status === "error" && lastFinished.error) {
-      toast({ kind: "err", text: lastFinished.error.message, hint: lastFinished.error.hint });
+      toast({
+        kind: "err",
+        text: lastFinished.error.message,
+        hint: lastFinished.error.hint,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finishedTick]);
@@ -433,28 +619,60 @@ export default function ProjectPage({ id }: { id: string }) {
   const projectJobs = jobs.filter((j) => j.project_id === id);
   const activeJobs = projectJobs.filter(isActive);
   const renderJobs = activeJobs.filter((j) => j.kind === "render");
-  const renderJob = renderJobs.find((j) => j.status === "running") ?? renderJobs[0];
-  const pipelineJob = activeJobs.find((j) => !["render", "facecam", "titles", "montage"].includes(j.kind)) ?? null;
-  const llmJob = activeJobs.find((j) => j.kind === "analyze" || j.kind === "titles") ?? null;
+  const renderJob =
+    renderJobs.find((j) => j.status === "running") ?? renderJobs[0];
+  const pipelineJob =
+    activeJobs.find(
+      (j) => !["render", "facecam", "titles", "montage"].includes(j.kind),
+    ) ?? null;
+  const llmJob =
+    activeJobs.find((j) => j.kind === "analyze" || j.kind === "titles") ?? null;
   const lastAnalyze =
-    projectJobs.filter((j) => j.kind === "analyze" && !isActive(j)).sort((a, b) => (b.finished ?? 0) - (a.finished ?? 0))[0] ?? null;
+    projectJobs
+      .filter((j) => j.kind === "analyze" && !isActive(j))
+      .sort((a, b) => (b.finished ?? 0) - (a.finished ?? 0))[0] ?? null;
   const facecamJob = activeJobs.find((j) => j.kind === "facecam");
-  const exportJobs = activeJobs.filter((j) => j.kind === "export" || j.kind === "upload");
+  const exportJobs = activeJobs.filter(
+    (j) => j.kind === "export" || j.kind === "upload",
+  );
 
   const cands = project?.highlights?.candidates ?? [];
   const selected = cands.find((c) => c.id === selectedId) ?? null;
   const review = project?.review;
   const accepted = useMemo(() => new Set(review?.accepted ?? []), [review]);
   const options: ClipOptions = review?.options ?? {
-    layout: "auto", subtitles: "bold", hook: true, hook_flash: false, subtitle_lang: "", profanity: "auto",
-    profanity_captions: true, bleep_sound: "classic", swear_strict: "auto", bleep_visual: true, bleep_icon: true, speaker_colors: true, speaker_names: false,
-    cuts: "off", zoom: "off", music: false, brand: false, loop: false, replay: "off", chat_bubbles: false, memes: "off",
+    layout: "auto",
+    subtitles: "bold",
+    hook: true,
+    hook_flash: false,
+    subtitle_lang: "",
+    profanity: "auto",
+    profanity_captions: true,
+    bleep_sound: "classic",
+    swear_strict: "auto",
+    bleep_visual: true,
+    bleep_icon: true,
+    speaker_colors: true,
+    speaker_names: false,
+    cuts: "off",
+    zoom: "off",
+    music: false,
+    brand: false,
+    loop: false,
+    replay: "off",
+    chat_bubbles: false,
+    memes: "off",
   };
   const [voicesRev, setVoicesRev] = useState(0);
   const rejected = useMemo(() => new Set(review?.rejected ?? []), [review]);
-  const edit: ClipEdit | undefined = selected ? review?.edits?.[selected.id] : undefined;
+  const edit: ClipEdit | undefined = selected
+    ? review?.edits?.[selected.id]
+    : undefined;
   const range = selected ? effectiveRange(selected, edit) : null;
-  const musicChoice = selected && review?.music && selected.id in review.music ? review.music[selected.id] : undefined;
+  const musicChoice =
+    selected && review?.music && selected.id in review.music
+      ? review.music[selected.id]
+      : undefined;
   const activeBrand = brand?.presets.find((b) => b.id === brand.active) ?? null;
   const plan = usePlan(id, selected?.id ?? null, {
     options,
@@ -467,32 +685,65 @@ export default function ProjectPage({ id }: { id: string }) {
   // the render plan's zoom / shake for the 9:16 preview; one object per plan, so the preview
   // doesn't restart its drawing loop on every page render
   const previewFx = useMemo<PreviewFx | null>(
-    () => (plan ? { level: plan.zoom_level, pulses: plan.pulses, keep: plan.keep, loop: !!(options.loop && plan.loop),
-      shakes: plan.fx?.shakes ?? [], punches: plan.fx?.punches ?? [], fps: plan.fps || 30, gfx: plan.graphics ?? null } : null),
+    () =>
+      plan
+        ? {
+            level: plan.zoom_level,
+            pulses: plan.pulses,
+            keep: plan.keep,
+            loop: !!(options.loop && plan.loop),
+            shakes: plan.fx?.shakes ?? [],
+            punches: plan.fx?.punches ?? [],
+            fps: plan.fps || 30,
+            gfx: plan.graphics ?? null,
+          }
+        : null,
     [plan, options.loop],
   );
-  const subLangs = [...new Set(cands.flatMap((c) => c.subtitle_languages ?? []))].filter((l) => l !== project?.language);
-  const hookText = selected ? review?.hooks[selected.id] ?? selected.default_hook : "";
+  const subLangs = [
+    ...new Set(cands.flatMap((c) => c.subtitle_languages ?? [])),
+  ].filter((l) => l !== project?.language);
+  const hookText = selected
+    ? (review?.hooks[selected.id] ?? selected.default_hook)
+    : "";
   const hookEdited = !!(selected && review?.hooks[selected.id] != null);
   const aiHook = !!selected?.publish.hook_text;
-  const hookMode: HookMode = options.hook ? (options.hook_flash ? "both" : "text") : options.hook_flash ? "flash" : "off";
+  const hookMode: HookMode = options.hook
+    ? options.hook_flash
+      ? "both"
+      : "text"
+    : options.hook_flash
+      ? "flash"
+      : "off";
 
   // Words around the selected clip (transcript editor; the live preview uses the clip's part)
-  const ctxFrom = selected ? Math.max(0, Math.min(selected.start, range!.start) - 12) : 0;
+  const ctxFrom = selected
+    ? Math.max(0, Math.min(selected.start, range!.start) - 12)
+    : 0;
   const ctxTo = selected ? Math.max(selected.end, range!.end) + 12 : 0;
   useEffect(() => {
     if (!selected) return;
     let cancelled = false;
-    api.words(id, ctxFrom, ctxTo).then((w) => !cancelled && setWords(w)).catch(() => setWords([]));
+    api
+      .words(id, ctxFrom, ctxTo)
+      .then((w) => !cancelled && setWords(w))
+      .catch(() => setWords([]));
     return () => {
       cancelled = true;
     };
   }, [id, selected?.id, Math.round(ctxFrom), Math.round(ctxTo), voicesRev]); // eslint-disable-line react-hooks/exhaustive-deps
   const previewWords = useMemo(() => {
     // 1.2.45: the caption text the render burns in (censored by the server's own function)
-    if (plan) return plan.words.filter((w) => !w.removed).map((w) => (w.shown != null ? { ...w, word: w.shown } : w));
+    if (plan)
+      return plan.words
+        .filter((w) => !w.removed)
+        .map((w) => (w.shown != null ? { ...w, word: w.shown } : w));
     if (!range) return [];
-    return words.filter((w) => (w.start + w.end) / 2 >= range.start && (w.start + w.end) / 2 <= range.end);
+    return words.filter(
+      (w) =>
+        (w.start + w.end) / 2 >= range.start &&
+        (w.start + w.end) / 2 <= range.end,
+    );
   }, [plan, words, range?.start, range?.end]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Keep the 9:16 preview as tall as the 16:9 player on wide screens.
@@ -504,8 +755,13 @@ export default function ProjectPage({ id }: { id: string }) {
     const ro = new ResizeObserver(() =>
       setPreviewH((cur) => {
         // capped to the window: the preview can never outgrow the screen, whatever the player does
-        const next = window.innerWidth > 720 ? Math.min(el.clientHeight, Math.round(window.innerHeight * 0.8)) : null;
-        return cur != null && next != null && Math.abs(cur - next) < 3 ? cur : next;
+        const next =
+          window.innerWidth > 720
+            ? Math.min(el.clientHeight, Math.round(window.innerHeight * 0.8))
+            : null;
+        return cur != null && next != null && Math.abs(cur - next) < 3
+          ? cur
+          : next;
       }),
     );
     ro.observe(el);
@@ -531,7 +787,12 @@ export default function ProjectPage({ id }: { id: string }) {
   // Facecam: projects analyzed before this feature existed get a detection run once.
   const askedFacecam = useRef(false);
   useEffect(() => {
-    if (!project?.highlights || project.review.facecam_checked || askedFacecam.current) return;
+    if (
+      !project?.highlights ||
+      project.review.facecam_checked ||
+      askedFacecam.current
+    )
+      return;
     if (jobs.some((j) => j.project_id === id && isActive(j))) return;
     askedFacecam.current = true;
     api.detectFacecam(id).catch(() => {});
@@ -557,14 +818,42 @@ export default function ProjectPage({ id }: { id: string }) {
   }, [playingClip, selected, project?.highlights]);
 
   useLiveBleeps(video, plan); // 1.2.45: the render's bleeps whenever the video plays
+  // 1.2.63: the clip's end point - stop or loop exactly there, "End of clip" in the frame
+  const [endMode, setEndMode] = useClipEndMode();
+  const [endedAt, setEndedAt] = useState(0);
   usePreviewPlayback(
     video,
     playingClip,
     plan,
     shownRange?.end ?? null,
-    () => setPlayingClip(false),
-    loopPlay && shownRange ? shownRange.start : null,
+    () => {
+      setPlayingClip(false);
+      setEndedAt(Date.now());
+    },
+    (loopPlay || endMode === "loop") && shownRange ? shownRange.start : null,
+    () => setEndedAt(Date.now()),
   );
+  const videoEl = useVideoEl(video);
+  const vt = useVideoTime(videoEl);
+  const endShown = useEndShown(
+    endedAt,
+    !!shownRange && vt.t >= shownRange.end - 0.05,
+    vt.playing,
+    endMode,
+  );
+  const bigBox = useRef<HTMLDivElement>(null);
+  // Native play inside the selected clip counts as watching the clip: it stops / loops at the end too.
+  useEffect(() => {
+    const v = videoEl;
+    if (!v || !shownRange) return;
+    const onPlay = () => {
+      const t = v.currentTime;
+      if (t >= shownRange.start - 0.05 && t < shownRange.end - 0.05)
+        setPlayingClip(true);
+    };
+    v.addEventListener("play", onPlay);
+    return () => v.removeEventListener("play", onPlay);
+  }, [videoEl, shownRange?.start, shownRange?.end]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /** Loop preview: from 3 s before the seam, the end plays into the start, repeating. */
   const loopPreview = () => {
@@ -591,24 +880,41 @@ export default function ProjectPage({ id }: { id: string }) {
     setSelectedId(c.id);
     seek(rangeOf(c).start);
     if (play) playClip(c);
-    document.querySelector(`[data-cand="${c.id}"]`)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    document
+      .querySelector(`[data-cand="${c.id}"]`)
+      ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   };
 
   const playClip = (c: Candidate | null = selected) => {
     const v = video.current;
     if (!v || !c) return;
     const r = c.id === selected?.id && shownRange ? shownRange : rangeOf(c);
-    if (c.id !== selected?.id || v.currentTime < r.start - 0.5 || v.currentTime >= r.end - 0.2) v.currentTime = r.start;
+    if (
+      c.id !== selected?.id ||
+      v.currentTime < r.start - 0.5 ||
+      v.currentTime >= r.end - 0.2
+    )
+      v.currentTime = r.start;
     setPlayingClip(true);
     v.play().catch(() => setPlayingClip(false));
   };
 
   const playPause = () => {
-    if (playingClip || (video.current && !video.current.paused)) video.current?.pause();
+    if (playingClip || (video.current && !video.current.paused))
+      video.current?.pause();
     else playClip();
   };
 
-  const seekBy = (s: number) => seek(Math.max(0, Math.min(project?.duration ?? 1e9, (video.current?.currentTime ?? time) + s)));
+  const seekBy = (s: number) =>
+    seek(
+      Math.max(
+        0,
+        Math.min(
+          project?.duration ?? 1e9,
+          (video.current?.currentTime ?? time) + s,
+        ),
+      ),
+    );
 
   const step = (dir: 1 | -1) => {
     if (!selected) return;
@@ -619,11 +925,16 @@ export default function ProjectPage({ id }: { id: string }) {
 
   // ---------------------------------------------------------------- review updates
 
-  const patchReview = (changes: Partial<NonNullable<typeof review>>, debounce = false) => {
+  const patchReview = (
+    changes: Partial<NonNullable<typeof review>>,
+    debounce = false,
+  ) => {
     if (!project) return;
     setProject({ ...project, review: { ...project.review, ...changes } });
     const send = () =>
-      api.saveReview(id, changes).catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
+      api
+        .saveReview(id, changes)
+        .catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
     window.clearTimeout(saveTimer.current);
     if (debounce) saveTimer.current = window.setTimeout(send, 600);
     else send();
@@ -658,15 +969,25 @@ export default function ProjectPage({ id }: { id: string }) {
       acc.delete(cid);
       rej.add(cid);
     }
-    patchReview({ accepted: cands.filter((c) => acc.has(c.id)).map((c) => c.id), rejected: [...rej] });
+    patchReview({
+      accepted: cands.filter((c) => acc.has(c.id)).map((c) => c.id),
+      rejected: [...rej],
+    });
   };
 
   const setEdit = (cid: string, e: ClipEdit) => {
     history.push(snapshot());
     const edits = { ...(review?.edits ?? {}) };
     // 1.2.45: an edit with only bleep choices is an edit too (it used to be dropped here)
-    const empty = e.start == null && e.end == null && !e.deleted?.length && !e.bleep?.length && !e.unbleep?.length
-      && !e.bleep_set?.length && !e.bleep_type && !(e as { captions?: Record<string, string> }).captions;
+    const empty =
+      e.start == null &&
+      e.end == null &&
+      !e.deleted?.length &&
+      !e.bleep?.length &&
+      !e.unbleep?.length &&
+      !e.bleep_set?.length &&
+      !e.bleep_type &&
+      !(e as { captions?: Record<string, string> }).captions;
     if (empty) delete edits[cid];
     else edits[cid] = e;
     patchReview({ edits });
@@ -694,7 +1015,11 @@ export default function ProjectPage({ id }: { id: string }) {
     try {
       const r = await api.addManualClip(id, marks.in, marks.out);
       setMarks({ in: null, out: null });
-      toast({ kind: "ok", text: t("manual.added", { n: r.candidate.rank }), hint: r.job ? t("manual.analyzing") : undefined });
+      toast({
+        kind: "ok",
+        text: t("manual.added", { n: r.candidate.rank }),
+        hint: r.job ? t("manual.analyzing") : undefined,
+      });
       await load();
       setSelectedId(r.candidate.id);
     } catch (e: any) {
@@ -702,13 +1027,14 @@ export default function ProjectPage({ id }: { id: string }) {
     }
   };
 
-
-  const setOption = (o: Partial<ClipOptions>) => patchReview({ options: { ...options, ...o } });
+  const setOption = (o: Partial<ClipOptions>) =>
+    patchReview({ options: { ...options, ...o } });
 
   const setHook = (text: string) => {
     if (!selected || !review) return;
     const hooks = { ...review.hooks };
-    if (text.trim() && text !== selected.default_hook) hooks[selected.id] = text;
+    if (text.trim() && text !== selected.default_hook)
+      hooks[selected.id] = text;
     else delete hooks[selected.id];
     patchReview({ hooks }, true);
   };
@@ -717,7 +1043,8 @@ export default function ProjectPage({ id }: { id: string }) {
     setFacecamOpen(false);
     patchReview({ facecam: fc, facecam_checked: true });
     // remembered for this channel + resolution: new projects start with it
-    if (fc && remember) api.setFacecam(id, fc, { remember: true }).catch(() => {});
+    if (fc && remember)
+      api.setFacecam(id, fc, { remember: true }).catch(() => {});
   };
 
   // Play a short part of the source (swear review list / waveform).
@@ -793,7 +1120,11 @@ export default function ProjectPage({ id }: { id: string }) {
     if (!file) return;
     try {
       const c = await api.importChat(id, file);
-      toast({ kind: "ok", text: t("project.chat_count", { n: c.count }), hint: t("settings.triggers_note") });
+      toast({
+        kind: "ok",
+        text: t("project.chat_count", { n: c.count }),
+        hint: t("settings.triggers_note"),
+      });
       load();
     } catch (e: any) {
       toast({ kind: "err", text: e.message, hint: e.hint });
@@ -802,7 +1133,8 @@ export default function ProjectPage({ id }: { id: string }) {
 
   const retry = async () => {
     try {
-      if (project?.last_error_kind === "transcribe" || !project?.language) await api.transcribe(id);
+      if (project?.last_error_kind === "transcribe" || !project?.language)
+        await api.transcribe(id);
       else await api.highlights(id, mode);
     } catch (e: any) {
       toast({ kind: "err", text: e.message, hint: e.hint });
@@ -812,7 +1144,16 @@ export default function ProjectPage({ id }: { id: string }) {
   // Keyboard shortcuts ("?" shows them). Fast review has its own while it is open.
   useEffect(() => {
     const on = (e: KeyboardEvent) => {
-      if (typing(e) || facecamOpen || exportIds || uploadFor || publishFor || keysOpen || fastOpen) return;
+      if (
+        typing(e) ||
+        facecamOpen ||
+        exportIds ||
+        uploadFor ||
+        publishFor ||
+        keysOpen ||
+        fastOpen
+      )
+        return;
       const onVideo = (e.target as HTMLElement)?.tagName === "VIDEO";
       const k = e.key.toLowerCase();
       if ((e.ctrlKey || e.metaKey) && (k === "z" || k === "y")) {
@@ -823,15 +1164,20 @@ export default function ProjectPage({ id }: { id: string }) {
       }
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       if (e.key === "?") setKeysOpen(true);
-      else if (e.key === "ArrowDown" || e.key === "ArrowRight") !onVideo && (e.preventDefault(), step(1));
-      else if (e.key === "ArrowUp" || e.key === "ArrowLeft") !onVideo && (e.preventDefault(), step(-1));
+      else if (e.key === "ArrowDown" || e.key === "ArrowRight")
+        !onVideo && (e.preventDefault(), step(1));
+      else if (e.key === "ArrowUp" || e.key === "ArrowLeft")
+        !onVideo && (e.preventDefault(), step(-1));
       else if (k === "a" && selected) decide(selected.id, true);
       else if (k === "x" && selected) decide(selected.id, false);
-      else if ((e.key === " " && !onVideo) || k === "k") (e.preventDefault(), playPause());
+      else if ((e.key === " " && !onVideo) || k === "k")
+        (e.preventDefault(), playPause());
       else if (k === "j") seekBy(e.shiftKey ? -1 : -3);
       else if (k === "l") seekBy(e.shiftKey ? 1 : 3);
-      else if (k === "i") setMarks((m) => ({ ...m, in: video.current?.currentTime ?? time }));
-      else if (k === "o") setMarks((m) => ({ ...m, out: video.current?.currentTime ?? time }));
+      else if (k === "i")
+        setMarks((m) => ({ ...m, in: video.current?.currentTime ?? time }));
+      else if (k === "o")
+        setMarks((m) => ({ ...m, out: video.current?.currentTime ?? time }));
       else if (k === "f" && cands.length) {
         setFastOpen(true);
         if (selected) select(selected, true);
@@ -859,20 +1205,31 @@ export default function ProjectPage({ id }: { id: string }) {
   if (!project) {
     return (
       <main className="page">
-        <div className="skeleton" style={{ height: 40, width: 380, marginBottom: 24 }} />
+        <div
+          className="skeleton"
+          style={{ height: 40, width: 380, marginBottom: 24 }}
+        />
         <div className="proj-layout">
-          <div className="skeleton" style={{ aspectRatio: "16/9", borderRadius: 14 }} />
+          <div
+            className="skeleton"
+            style={{ aspectRatio: "16/9", borderRadius: 14 }}
+          />
           <div className="skeleton" style={{ height: 480, borderRadius: 16 }} />
         </div>
       </main>
     );
   }
 
-  const langName = UI_LANGUAGES.find((l) => l.code === project.language)?.name ?? project.language;
+  const langName =
+    UI_LANGUAGES.find((l) => l.code === project.language)?.name ??
+    project.language;
   const clips = Object.values(project.clips).sort((a, b) => a.rank - b.rank);
   const fc = review?.facecam ?? null;
   const fcUnsure = !!fc && fc.source === "auto" && (fc.confidence ?? 1) < 0.6;
-  const src = project.source.type === "file" ? t("library.source_file") : sourceLabel(project.source.value);
+  const src =
+    project.source.type === "file"
+      ? t("library.source_file")
+      : sourceLabel(project.source.value);
 
   return (
     <main className="page">
@@ -886,15 +1243,25 @@ export default function ProjectPage({ id }: { id: string }) {
             {project.title}
           </h1>
           <div className="meta-row">
-            {project.mode && <span className="chip">{t(`mode.${project.mode}`)}</span>}
-            {project.duration != null && <span className="chip chip-outline tc">{fmtTime(project.duration)}</span>}
+            {project.mode && (
+              <span className="chip">{t(`mode.${project.mode}`)}</span>
+            )}
+            {project.duration != null && (
+              <span className="chip chip-outline tc">
+                {fmtTime(project.duration)}
+              </span>
+            )}
             {langName && (
               <span className="chip chip-outline">
                 <Icon name="globe" size={12} />
                 {langName}
               </span>
             )}
-            {project.resolution && <span className="chip chip-outline mono">{project.resolution}</span>}
+            {project.resolution && (
+              <span className="chip chip-outline mono">
+                {project.resolution}
+              </span>
+            )}
             {project.chat?.status === "ok" && (
               <span className="chip chip-outline" title={project.chat.source}>
                 <Icon name="hash" size={12} />
@@ -903,7 +1270,12 @@ export default function ProjectPage({ id }: { id: string }) {
             )}
             {src &&
               (project.source.type === "url" && project.source.value ? (
-                <a className="chip chip-outline" href={project.source.value} target="_blank" rel="noreferrer">
+                <a
+                  className="chip chip-outline"
+                  href={project.source.value}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <Icon name="link" size={12} />
                   {src}
                 </a>
@@ -913,7 +1285,11 @@ export default function ProjectPage({ id }: { id: string }) {
                   {src}
                 </span>
               ))}
-            <button className="chip chip-outline chip-btn" onClick={() => setDeleteIds([])} title={t("trash.delete_project")}>
+            <button
+              className="chip chip-outline chip-btn"
+              onClick={() => setDeleteIds([])}
+              title={t("trash.delete_project")}
+            >
               <Icon name="trash" size={12} />
               {t("trash.delete_project")}
             </button>
@@ -921,44 +1297,15 @@ export default function ProjectPage({ id }: { id: string }) {
         </div>
         {project.language && (
           <div className="proj-actions">
-            <select
-              className="select select-sm"
-              style={{ width: "auto" }}
-              value={mode}
-              onChange={(e) => setMode(e.target.value as Mode)}
-              aria-label={t("new.mode")}
+            <button
+              className="btn btn-sm"
+              onClick={reanalyze}
+              disabled={!!pipelineJob}
             >
-              {MODES.map((m) => (
-                <option key={m} value={m}>
-                  {t(`mode.${m}`)}
-                </option>
-              ))}
-            </select>
-            {mode === "gaming" && project.game && (
-              <div className="ai-group">
-                <select
-                  className="select select-sm game-select"
-                  value={project.game.choice}
-                  onChange={(e) => chooseGame(e.target.value as GameChoice)}
-                  aria-label={t("game.label")}
-                  title={whyText(t, project.game.why, project.game.detected)}
-                  disabled={!!pipelineJob}
-                >
-                  <option value="auto">
-                    {project.game.detected ? t("game.auto_detected", { name: GAME_NAMES[project.game.detected] }) : t("game.auto_none")}
-                  </option>
-                  <option value="delta_force">{GAME_NAMES.delta_force}</option>
-                  <option value="lol">{GAME_NAMES.lol}</option>
-                  <option value="other">{t("game.other")}</option>
-                </select>
-                <a className="btn btn-sm btn-ghost icon-btn" href={href.game(id)} title={t("game.title")} aria-label={t("game.title")}>
-                  <Icon name="gamepad" />
-                </a>
-              </div>
-            )}
-            <button className="btn btn-sm" onClick={reanalyze} disabled={!!pipelineJob}>
               <Icon name="refresh" />
-              {project.highlights ? t("project.reanalyze") : t("project.analyze")}
+              {project.highlights
+                ? t("project.reanalyze")
+                : t("project.analyze")}
             </button>
             {project.highlights && meta?.llm.available && (
               <div className="ai-group">
@@ -975,60 +1322,137 @@ export default function ProjectPage({ id }: { id: string }) {
                     </option>
                   ))}
                 </select>
-                <button className="btn btn-sm btn-gold" onClick={analyzeAI} disabled={!!pipelineJob || !!llmJob}>
+                <button
+                  className="btn btn-sm btn-gold"
+                  onClick={analyzeAI}
+                  disabled={!!pipelineJob || !!llmJob}
+                >
                   <Icon name="sparkles" />
-                  {project.analysis ? t("project.ai_again") : t("publish.analyze")}
+                  {project.analysis
+                    ? t("project.ai_again")
+                    : t("publish.analyze")}
                 </button>
               </div>
             )}
-            {mode === "gaming" && project.metadata_game && (
+            {longOpen && (
+              <LongMetaDialog
+                projectId={id}
+                onClose={() => setLongOpen(false)}
+              />
+            )}
+            <FullUploadButton projectId={id} canPrepare={!!project.analysis} />
+            <Advanced label={t("adv.more")} className="proj-more inline">
               <select
-                className="select select-sm game-select"
-                value={project.metadata_game.choice}
-                onChange={(e) => chooseMetaGame(e.target.value)}
-                aria-label={t("metagame.label")}
-                title={t("metagame.hint")}
-                disabled={!!pipelineJob || !!llmJob}
+                className="select select-sm"
+                style={{ width: "auto" }}
+                value={mode}
+                onChange={(e) => setMode(e.target.value as Mode)}
+                aria-label={t("new.mode")}
               >
-                <option value="auto">
-                  {project.metadata_game.choice === "auto"
-                    ? project.metadata_game.known
-                      ? t("metagame.auto", { name: project.metadata_game.name })
-                      : t("metagame.auto_unknown")
-                    : t("metagame.auto_plain")}
-                </option>
-                {project.metadata_game.choices.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.id === "generic" ? t("metagame.generic") : t("metagame.for", { name: g.name })}
+                {MODES.map((m) => (
+                  <option key={m} value={m}>
+                    {t(`mode.${m}`)}
                   </option>
                 ))}
               </select>
-            )}
-            {project.highlights && (
-              <a className="btn btn-sm" href={href.stories(id)} title={t("story.button_hint")}>
-                <Icon name="book" />
-                {t("story.button")}
-              </a>
-            )}
-            {mode === "gaming" && project.analysis && (
-              <button className="btn btn-sm" onClick={() => setLongOpen(true)} title={t("longmeta.hint")}>
-                <Icon name="file" />
-                {t("longmeta.button")}
+              {mode === "gaming" && project.game && (
+                <div className="ai-group">
+                  <select
+                    className="select select-sm game-select"
+                    value={project.game.choice}
+                    onChange={(e) => chooseGame(e.target.value as GameChoice)}
+                    aria-label={t("game.label")}
+                    title={whyText(t, project.game.why, project.game.detected)}
+                    disabled={!!pipelineJob}
+                  >
+                    <option value="auto">
+                      {project.game.detected
+                        ? t("game.auto_detected", {
+                            name: GAME_NAMES[project.game.detected],
+                          })
+                        : t("game.auto_none")}
+                    </option>
+                    <option value="delta_force">
+                      {GAME_NAMES.delta_force}
+                    </option>
+                    <option value="lol">{GAME_NAMES.lol}</option>
+                    <option value="other">{t("game.other")}</option>
+                  </select>
+                  <a
+                    className="btn btn-sm btn-ghost icon-btn"
+                    href={href.game(id)}
+                    title={t("game.title")}
+                    aria-label={t("game.title")}
+                  >
+                    <Icon name="gamepad" />
+                  </a>
+                </div>
+              )}
+              {mode === "gaming" && project.metadata_game && (
+                <select
+                  className="select select-sm game-select"
+                  value={project.metadata_game.choice}
+                  onChange={(e) => chooseMetaGame(e.target.value)}
+                  aria-label={t("metagame.label")}
+                  title={t("metagame.hint")}
+                  disabled={!!pipelineJob || !!llmJob}
+                >
+                  <option value="auto">
+                    {project.metadata_game.choice === "auto"
+                      ? project.metadata_game.known
+                        ? t("metagame.auto", {
+                            name: project.metadata_game.name,
+                          })
+                        : t("metagame.auto_unknown")
+                      : t("metagame.auto_plain")}
+                  </option>
+                  {project.metadata_game.choices.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.id === "generic"
+                        ? t("metagame.generic")
+                        : t("metagame.for", { name: g.name })}
+                    </option>
+                  ))}
+                </select>
+              )}
+              {project.highlights && (
+                <a
+                  className="btn btn-sm"
+                  href={href.stories(id)}
+                  title={t("story.button_hint")}
+                >
+                  <Icon name="book" />
+                  {t("story.button")}
+                </a>
+              )}
+              {mode === "gaming" && project.analysis && (
+                <button
+                  className="btn btn-sm"
+                  onClick={() => setLongOpen(true)}
+                  title={t("longmeta.hint")}
+                >
+                  <Icon name="file" />
+                  {t("longmeta.button")}
+                </button>
+              )}
+              {project.highlights && (
+                <a className="btn btn-sm" href={href.bestof(id)}>
+                  <Icon name="layers" />
+                  {t("bestof.button")}
+                  {project.exports > 0 && (
+                    <span className="count mono">{project.exports}</span>
+                  )}
+                </a>
+              )}
+              <button
+                className="btn btn-sm btn-ghost"
+                onClick={() => chatInput.current?.click()}
+                title={t("project.chat_hint")}
+              >
+                <Icon name="upload" />
+                {t("project.chat_import")}
               </button>
-            )}
-            {longOpen && <LongMetaDialog projectId={id} onClose={() => setLongOpen(false)} />}
-            <FullUploadButton projectId={id} canPrepare={!!project.analysis} />
-            {project.highlights && (
-              <a className="btn btn-sm" href={href.bestof(id)}>
-                <Icon name="layers" />
-                {t("bestof.button")}
-                {project.exports > 0 && <span className="count mono">{project.exports}</span>}
-              </a>
-            )}
-            <button className="btn btn-sm btn-ghost" onClick={() => chatInput.current?.click()} title={t("project.chat_hint")}>
-              <Icon name="upload" />
-              {t("project.chat_import")}
-            </button>
+            </Advanced>
             <input
               ref={chatInput}
               type="file"
@@ -1045,7 +1469,10 @@ export default function ProjectPage({ id }: { id: string }) {
 
       {pipelineJob && (
         <div className="panel" style={{ marginBottom: 16 }}>
-          <JobLine job={pipelineJob} onCancel={() => api.cancelJob(pipelineJob.id)} />
+          <JobLine
+            job={pipelineJob}
+            onCancel={() => api.cancelJob(pipelineJob.id)}
+          />
         </div>
       )}
 
@@ -1055,7 +1482,9 @@ export default function ProjectPage({ id }: { id: string }) {
           <div style={{ flex: 1 }}>
             <div className="notice-title">{t("project.error_title")}</div>
             <div>{project.last_error.message}</div>
-            {project.last_error.hint && <div className="muted">{project.last_error.hint}</div>}
+            {project.last_error.hint && (
+              <div className="muted">{project.last_error.hint}</div>
+            )}
           </div>
           <button className="btn btn-sm" onClick={retry}>
             {t("common.retry")}
@@ -1065,14 +1494,29 @@ export default function ProjectPage({ id }: { id: string }) {
 
       {!project.highlights ? (
         <div className="empty">
-          {pipelineJob ? <span className="spinner" style={{ width: 28, height: 28 }} /> : <Icon name="sparkles" size={28} />}
-          <h2 className="display">{pipelineJob ? t("project.processing_title") : t("project.no_highlights_title")}</h2>
+          {pipelineJob ? (
+            <span className="spinner" style={{ width: 28, height: 28 }} />
+          ) : (
+            <Icon name="sparkles" size={28} />
+          )}
+          <h2 className="display">
+            {pipelineJob
+              ? t("project.processing_title")
+              : t("project.no_highlights_title")}
+          </h2>
           <p style={{ margin: 0, maxWidth: "48ch" }}>
-            {pipelineJob ? t("project.processing_body") : t("project.no_highlights_body")}
+            {pipelineJob
+              ? t("project.processing_body")
+              : t("project.no_highlights_body")}
           </p>
           {!pipelineJob && (
-            <button className="btn btn-primary" onClick={project.language ? reanalyze : retry}>
-              {project.language ? t("project.analyze") : t("project.transcribe")}
+            <button
+              className="btn btn-primary"
+              onClick={project.language ? reanalyze : retry}
+            >
+              {project.language
+                ? t("project.analyze")
+                : t("project.transcribe")}
             </button>
           )}
         </div>
@@ -1082,11 +1526,38 @@ export default function ProjectPage({ id }: { id: string }) {
             <section className="panel">
               <div className="stage">
                 <div className="stage-left">
-                  <div className="player" ref={playerBox}>
-                    {project.playable ? (
-                      <video ref={video} src={urls.source(id)} controls playsInline preload="metadata" aria-label={project.title} />
-                    ) : (
-                      <div className="skeleton skeleton-fill" role="status" aria-label={t("common.loading")} />
+                  <div className="player-box" ref={bigBox}>
+                    <div className="player" ref={playerBox}>
+                      {project.playable ? (
+                        <video
+                          ref={video}
+                          src={urls.source(id)}
+                          controls
+                          controlsList="nofullscreen"
+                          playsInline
+                          preload="metadata"
+                          aria-label={project.title}
+                        />
+                      ) : (
+                        <div
+                          className="skeleton skeleton-fill"
+                          role="status"
+                          aria-label={t("common.loading")}
+                        />
+                      )}
+                      <EndBadge show={endShown} mode={endMode} />
+                    </div>
+                    {selected && shownRange && project.playable && (
+                      <ClipBar
+                        t={vt.t}
+                        start={shownRange.start}
+                        end={shownRange.end}
+                        total={vt.total || project.duration || shownRange.end}
+                        mode={endMode}
+                        onMode={setEndMode}
+                        onSeek={seek}
+                        onBig={() => toggleBig(bigBox.current)}
+                      />
                     )}
                   </div>
                 </div>
@@ -1095,7 +1566,11 @@ export default function ProjectPage({ id }: { id: string }) {
                     <PlatformTabs value={pview} onChange={choosePview} />
                     <div
                       className="vprev-frame"
-                      style={previewH ? { height: previewH, width: (previewH * 9) / 16 } : undefined}
+                      style={
+                        previewH
+                          ? { height: previewH, width: (previewH * 9) / 16 }
+                          : undefined
+                      }
                     >
                       <VerticalPreview
                         video={video}
@@ -1110,46 +1585,95 @@ export default function ProjectPage({ id }: { id: string }) {
                         brand={options.brand ? activeBrand : null}
                       />
                       <PlatformOverlay plan={plan} view={pview} />
+                      <EndBadge show={endShown} mode={endMode} />
                     </div>
-                    <FinalPreview projectId={id} cid={selected?.id ?? null} options={options} hook={hookText} />
+                    <FinalPreview
+                      projectId={id}
+                      cid={selected?.id ?? null}
+                      options={options}
+                      hook={hookText}
+                    />
                   </div>
                 </div>
               </div>
               <div className="player-bar">
-                <button className="btn btn-sm icon-btn" onClick={() => step(-1)} aria-label={t("player.prev")} title={t("player.prev")}>
+                <button
+                  className="btn btn-sm icon-btn"
+                  onClick={() => step(-1)}
+                  aria-label={t("player.prev")}
+                  title={t("player.prev")}
+                >
                   <Icon name="chevron-left" className="icon flip-rtl" />
                 </button>
                 {playingClip ? (
-                  <button className="btn btn-sm" onClick={() => video.current?.pause()}>
+                  <button
+                    className="btn btn-sm"
+                    onClick={() => video.current?.pause()}
+                  >
                     <Icon name={loopPlay ? "repeat" : "pause"} />
                     {loopPlay ? t("loop.stop") : t("player.stop")}
                   </button>
                 ) : (
-                  <button className="btn btn-sm btn-primary" onClick={() => playClip()} disabled={!selected}>
+                  <button
+                    className="btn btn-sm btn-primary"
+                    onClick={() => playClip()}
+                    disabled={!selected}
+                  >
                     <Icon name="play" />
                     {t("player.play_clip")}
                   </button>
                 )}
-                <button className="btn btn-sm icon-btn" onClick={() => step(1)} aria-label={t("player.next")} title={t("player.next")}>
+                <button
+                  className="btn btn-sm icon-btn"
+                  onClick={() => step(1)}
+                  aria-label={t("player.next")}
+                  title={t("player.next")}
+                >
                   <Icon name="chevron-right" className="icon flip-rtl" />
                 </button>
                 {selected && shownRange && (
                   <span className="tc" style={{ marginInlineStart: 4 }}>
-                    #{String(selected.rank).padStart(2, "0")} · {fmtTime(shownRange.start)} – {fmtTime(shownRange.end)}
-                    {options.loop && plan?.loop && <Icon name="repeat" size={12} />}
+                    #{String(selected.rank).padStart(2, "0")} ·{" "}
+                    {fmtTime(shownRange.start)} – {fmtTime(shownRange.end)}
+                    {options.loop && plan?.loop && (
+                      <Icon name="repeat" size={12} />
+                    )}
                   </span>
                 )}
                 <span style={{ flex: 1 }} />
                 <span className="tc">
                   {fmtTime(time, true)} / {fmtTime(project.duration)}
                 </span>
-                <button className="btn btn-sm btn-ghost" onClick={() => setMarks((m) => ({ ...m, in: video.current?.currentTime ?? time }))} title={t("manual.mark_in_hint")}>
+                <button
+                  className="btn btn-sm btn-ghost"
+                  onClick={() =>
+                    setMarks((m) => ({
+                      ...m,
+                      in: video.current?.currentTime ?? time,
+                    }))
+                  }
+                  title={t("manual.mark_in_hint")}
+                >
                   <kbd>I</kbd>
                 </button>
-                <button className="btn btn-sm btn-ghost" onClick={() => setMarks((m) => ({ ...m, out: video.current?.currentTime ?? time }))} title={t("manual.mark_out_hint")}>
+                <button
+                  className="btn btn-sm btn-ghost"
+                  onClick={() =>
+                    setMarks((m) => ({
+                      ...m,
+                      out: video.current?.currentTime ?? time,
+                    }))
+                  }
+                  title={t("manual.mark_out_hint")}
+                >
                   <kbd>O</kbd>
                 </button>
-                <button className="btn btn-sm btn-ghost icon-btn" onClick={() => setKeysOpen(true)} title={t("keys.title")} aria-label={t("keys.title")}>
+                <button
+                  className="btn btn-sm btn-ghost icon-btn"
+                  onClick={() => setKeysOpen(true)}
+                  title={t("keys.title")}
+                  aria-label={t("keys.title")}
+                >
                   <kbd>?</kbd>
                 </button>
               </div>
@@ -1157,24 +1681,43 @@ export default function ProjectPage({ id }: { id: string }) {
                 <div className="mark-bar">
                   <Icon name="scan" size={14} />
                   <span>
-                    {t("manual.in")} <b className="tc">{marks.in != null ? fmtTime(marks.in, true) : "–"}</b>
+                    {t("manual.in")}{" "}
+                    <b className="tc">
+                      {marks.in != null ? fmtTime(marks.in, true) : "–"}
+                    </b>
                   </span>
                   <span>
-                    {t("manual.out")} <b className="tc">{marks.out != null ? fmtTime(marks.out, true) : "–"}</b>
+                    {t("manual.out")}{" "}
+                    <b className="tc">
+                      {marks.out != null ? fmtTime(marks.out, true) : "–"}
+                    </b>
                   </span>
                   {marks.in != null && marks.out != null && (
-                    <span className="muted tc">{num(Math.round(Math.abs(marks.out - marks.in) * 10) / 10)} s</span>
+                    <span className="muted tc">
+                      {num(
+                        Math.round(Math.abs(marks.out - marks.in) * 10) / 10,
+                      )}{" "}
+                      s
+                    </span>
                   )}
                   <span style={{ flex: 1 }} />
                   <button
                     className="btn btn-sm btn-primary"
-                    disabled={marks.in == null || marks.out == null || Math.abs(marks.out - marks.in) < 2}
+                    disabled={
+                      marks.in == null ||
+                      marks.out == null ||
+                      Math.abs(marks.out - marks.in) < 2
+                    }
                     onClick={addManual}
                   >
                     <Icon name="plus" />
                     {t("manual.add")}
                   </button>
-                  <button className="btn btn-sm btn-ghost icon-btn" onClick={() => setMarks({ in: null, out: null })} aria-label={t("common.cancel")}>
+                  <button
+                    className="btn btn-sm btn-ghost icon-btn"
+                    onClick={() => setMarks({ in: null, out: null })}
+                    aria-label={t("common.cancel")}
+                  >
                     <Icon name="x" />
                   </button>
                 </div>
@@ -1245,8 +1788,7 @@ export default function ProjectPage({ id }: { id: string }) {
               </section>
             )}
 
-            <div className="lower-grid">
-              <SignalStats cand={selected} project={project} />
+            <div className="lower-grid single">
               <PublishPanel
                 cand={selected}
                 projectId={id}
@@ -1255,22 +1797,38 @@ export default function ProjectPage({ id }: { id: string }) {
                 lastAnalyze={lastAnalyze}
                 onAnalyze={analyzeAI}
               />
+              <Advanced label={t("adv.signals")}>
+                <SignalStats cand={selected} project={project} />
+              </Advanced>
             </div>
           </div>
 
           <aside className="card proj-side">
             <div className="side-tabs">
               <div className="side-tablist" role="tablist">
-                <button role="tab" aria-selected={tab === "cands"} onClick={() => setTab("cands")}>
-                  {t("cands.tab")} <span className="count mono">{cands.length}</span>
+                <button
+                  role="tab"
+                  aria-selected={tab === "cands"}
+                  onClick={() => setTab("cands")}
+                >
+                  {t("cands.tab")}{" "}
+                  <span className="count mono">{cands.length}</span>
                 </button>
-                <button role="tab" aria-selected={tab === "clips"} onClick={() => setTab("clips")}>
-                  {t("clips.tab")} <span className="count mono">{clips.length}</span>
+                <button
+                  role="tab"
+                  aria-selected={tab === "clips"}
+                  onClick={() => setTab("clips")}
+                >
+                  {t("clips.tab")}{" "}
+                  <span className="count mono">{clips.length}</span>
                 </button>
               </div>
               <span style={{ flex: 1 }} />
               {tab === "cands" && accepted.size > 0 && (
-                <span className="chip chip-success" style={{ alignSelf: "center" }}>
+                <span
+                  className="chip chip-success"
+                  style={{ alignSelf: "center" }}
+                >
                   {t("cands.accepted", { n: accepted.size })}
                 </span>
               )}
@@ -1309,21 +1867,43 @@ export default function ProjectPage({ id }: { id: string }) {
             {tab === "cands" ? (
               <>
                 {picking && (
-                  <div className="pick-bar" role="toolbar" aria-label={t("trash.select")}>
-                    <span className="field-hint">{t("trash.picked", { n: num(picked.size) })}</span>
-                    <button type="button" className="link-btn" onClick={() => setPicked(new Set(cands.map((c) => c.id)))}>
+                  <div
+                    className="pick-bar"
+                    role="toolbar"
+                    aria-label={t("trash.select")}
+                  >
+                    <span className="field-hint">
+                      {t("trash.picked", { n: num(picked.size) })}
+                    </span>
+                    <button
+                      type="button"
+                      className="link-btn"
+                      onClick={() => setPicked(new Set(cands.map((c) => c.id)))}
+                    >
                       {t("pq.pick_all")}
                     </button>
                     <span style={{ flex: 1 }} />
-                    <button className="btn btn-sm btn-danger" disabled={!picked.size} onClick={() => setDeleteIds([...picked])}>
-                      <Icon name="trash" size={13} /> {t("trash.delete_picked", { n: num(picked.size) })}
+                    <button
+                      className="btn btn-sm btn-danger"
+                      disabled={!picked.size}
+                      onClick={() => setDeleteIds([...picked])}
+                    >
+                      <Icon name="trash" size={13} />{" "}
+                      {t("trash.delete_picked", { n: num(picked.size) })}
                     </button>
-                    <button className="btn btn-sm btn-ghost" onClick={() => (setPicking(false), setPicked(new Set()))}>
+                    <button
+                      className="btn btn-sm btn-ghost"
+                      onClick={() => (setPicking(false), setPicked(new Set()))}
+                    >
                       {t("common.cancel")}
                     </button>
                   </div>
                 )}
-                <div className="side-scroll" role="list" aria-label={t("cands.tab")}>
+                <div
+                  className="side-scroll"
+                  role="list"
+                  aria-label={t("cands.tab")}
+                >
                   {cands.map((c) => (
                     <CandidateRow
                       key={c.id}
@@ -1356,7 +1936,11 @@ export default function ProjectPage({ id }: { id: string }) {
                         id="subs-sel"
                         className="select select-sm"
                         value={options.subtitles}
-                        onChange={(e) => setOption({ subtitles: e.target.value as SubtitleStyle })}
+                        onChange={(e) =>
+                          setOption({
+                            subtitles: e.target.value as SubtitleStyle,
+                          })
+                        }
                       >
                         {SUBS.map((st) => (
                           <option key={st} value={st}>
@@ -1366,11 +1950,16 @@ export default function ProjectPage({ id }: { id: string }) {
                       </select>
                       {options.subtitles !== "none" && (
                         <div className="edit-line">
-                          <label className="edit-check" title={t("render.speaker_colors_hint")}>
+                          <label
+                            className="edit-check"
+                            title={t("render.speaker_colors_hint")}
+                          >
                             <input
                               type="checkbox"
                               checked={options.speaker_colors ?? true}
-                              onChange={(e) => setOption({ speaker_colors: e.target.checked })}
+                              onChange={(e) =>
+                                setOption({ speaker_colors: e.target.checked })
+                              }
                             />
                             {t("render.speaker_colors")}
                           </label>
@@ -1378,7 +1967,9 @@ export default function ProjectPage({ id }: { id: string }) {
                             <input
                               type="checkbox"
                               checked={options.speaker_names ?? false}
-                              onChange={(e) => setOption({ speaker_names: e.target.checked })}
+                              onChange={(e) =>
+                                setOption({ speaker_names: e.target.checked })
+                              }
                             />
                             {t("render.speaker_names")}
                           </label>
@@ -1392,11 +1983,15 @@ export default function ProjectPage({ id }: { id: string }) {
                       id="layout-sel"
                       className="select select-sm"
                       value={options.layout}
-                      onChange={(e) => setOption({ layout: e.target.value as Layout })}
+                      onChange={(e) =>
+                        setOption({ layout: e.target.value as Layout })
+                      }
                     >
                       {LAYOUTS.map((l) => (
                         <option key={l} value={l}>
-                          {l === "auto" ? `${t("layout.auto")} (${t(`layout.${resolveLayout("auto", fc)}`)})` : t(`layout.${l}`)}
+                          {l === "auto"
+                            ? `${t("layout.auto")} (${t(`layout.${resolveLayout("auto", fc)}`)})`
+                            : t(`layout.${l}`)}
                         </option>
                       ))}
                     </select>
@@ -1405,8 +2000,16 @@ export default function ProjectPage({ id }: { id: string }) {
                     <label>{t("render.hook")}</label>
                     <Segmented<HookMode>
                       value={hookMode}
-                      options={HOOK_MODES.map((m) => ({ value: m, label: t(`hook.${m}`) }))}
-                      onChange={(m) => setOption({ hook: m === "text" || m === "both", hook_flash: m === "flash" || m === "both" })}
+                      options={HOOK_MODES.map((m) => ({
+                        value: m,
+                        label: t(`hook.${m}`),
+                      }))}
+                      onChange={(m) =>
+                        setOption({
+                          hook: m === "text" || m === "both",
+                          hook_flash: m === "flash" || m === "both",
+                        })
+                      }
                       label={t("render.hook")}
                     />
                   </div>
@@ -1414,7 +2017,9 @@ export default function ProjectPage({ id }: { id: string }) {
                     <div className="render-row">
                       <label htmlFor="hook-text">
                         {hookEdited ? (
-                          <span className="hook-badge">{t("render.hook_edited")}</span>
+                          <span className="hook-badge">
+                            {t("render.hook_edited")}
+                          </span>
                         ) : (
                           aiHook && (
                             <span className="hook-badge ai">
@@ -1452,19 +2057,28 @@ export default function ProjectPage({ id }: { id: string }) {
                   )}
                   {options.hook_flash && (
                     <p className="muted render-note">
-                      <Icon name="sparkles" size={12} /> {t("render.flash")}: {t("render.flash_hint")}
+                      <Icon name="sparkles" size={12} /> {t("render.flash")}:{" "}
+                      {t("render.flash_hint")}
                     </p>
                   )}
                   {subLangs.length > 0 && (
                     <div className="render-row">
-                      <label htmlFor="sublang-sel">{t("render.sub_lang")}</label>
+                      <label htmlFor="sublang-sel">
+                        {t("render.sub_lang")}
+                      </label>
                       <select
                         id="sublang-sel"
                         className="select select-sm"
                         value={options.subtitle_lang}
-                        onChange={(e) => setOption({ subtitle_lang: e.target.value })}
+                        onChange={(e) =>
+                          setOption({ subtitle_lang: e.target.value })
+                        }
                       >
-                        <option value="">{t("render.sub_lang_spoken", { lang: langName ?? "" })}</option>
+                        <option value="">
+                          {t("render.sub_lang_spoken", {
+                            lang: langName ?? "",
+                          })}
+                        </option>
                         {subLangs.map((l) => (
                           <option key={l} value={l}>
                             {UI_LANGUAGES.find((x) => x.code === l)?.name ?? l}
@@ -1479,34 +2093,71 @@ export default function ProjectPage({ id }: { id: string }) {
                     plan={plan}
                     tracks={tracks}
                     musicChoice={musicChoice}
-                    setMusicChoice={(v) => selected && setMusicChoice(selected.id, v)}
+                    setMusicChoice={(v) =>
+                      selected && setMusicChoice(selected.id, v)
+                    }
                     brand={brand}
                     hasClip={!!selected}
                     onLoopPreview={loopPreview}
                   />
                   {(project.mode === "study" || project.mode === "music") && (
                     <div className="render-row">
-                      <label>{t(project.mode === "study" ? "extras.cards" : "extras.viz")}</label>
+                      <label>
+                        {t(
+                          project.mode === "study"
+                            ? "extras.cards"
+                            : "extras.viz",
+                        )}
+                      </label>
                       <Segmented
-                        value={(project.mode === "study" ? options.study_cards : options.visualizer) ?? "auto"}
-                        label={t(project.mode === "study" ? "extras.cards" : "extras.viz")}
-                        options={(["off", "auto"] as const).map((v) => ({ value: v, label: t(`extras.${v}`) }))}
-                        onChange={(v) => setOption(project.mode === "study" ? { study_cards: v } : { visualizer: v })}
+                        value={
+                          (project.mode === "study"
+                            ? options.study_cards
+                            : options.visualizer) ?? "auto"
+                        }
+                        label={t(
+                          project.mode === "study"
+                            ? "extras.cards"
+                            : "extras.viz",
+                        )}
+                        options={(["off", "auto"] as const).map((v) => ({
+                          value: v,
+                          label: t(`extras.${v}`),
+                        }))}
+                        onChange={(v) =>
+                          setOption(
+                            project.mode === "study"
+                              ? { study_cards: v }
+                              : { visualizer: v },
+                          )
+                        }
                       />
                     </div>
                   )}
                   {selected && <DubSwitch pid={id} cid={selected.id} />}
                   <div className="facecam-line">
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
                       <Icon name="camera" size={14} />
                       {t("facecam.label")}:{" "}
                       {facecamJob ? (
                         <>
-                          <span className="spinner" style={{ width: 12, height: 12 }} /> {t("facecam.detecting")}
+                          <span
+                            className="spinner"
+                            style={{ width: 12, height: 12 }}
+                          />{" "}
+                          {t("facecam.detecting")}
                         </>
                       ) : fc ? (
                         fcUnsure ? (
-                          <span className="warn-text">{t("facecam.unsure")}</span>
+                          <span className="warn-text">
+                            {t("facecam.unsure")}
+                          </span>
                         ) : (
                           <span className="gold">
                             {fc.source === "manual"
@@ -1520,7 +2171,11 @@ export default function ProjectPage({ id }: { id: string }) {
                         t("facecam.none")
                       )}
                     </span>
-                    <button className={`btn btn-sm ${fcUnsure ? "" : "btn-ghost"}`} onClick={() => setFacecamOpen(true)} disabled={!!facecamJob}>
+                    <button
+                      className={`btn btn-sm ${fcUnsure ? "" : "btn-ghost"}`}
+                      onClick={() => setFacecamOpen(true)}
+                      disabled={!!facecamJob}
+                    >
                       <Icon name="scan" />
                       {fcUnsure ? t("facecam.pick") : t("common.edit")}
                     </button>
@@ -1536,21 +2191,43 @@ export default function ProjectPage({ id }: { id: string }) {
                   <div className="render-actions">
                     {renderJob ? (
                       <div style={{ display: "grid", gap: 6 }}>
-                        <JobLine job={renderJob} onCancel={() => api.queueCancel({ project_id: id, kind: "render" })} />
+                        <JobLine
+                          job={renderJob}
+                          onCancel={() =>
+                            api.queueCancel({ project_id: id, kind: "render" })
+                          }
+                        />
                         <a className="muted render-note" href={href.queue}>
-                          {renderJobs.length > 1 ? t("render.in_queue", { n: renderJobs.length }) : t("bestof.see_queue")}
+                          {renderJobs.length > 1
+                            ? t("render.in_queue", { n: renderJobs.length })
+                            : t("bestof.see_queue")}
                         </a>
                       </div>
                     ) : (
-                      <button className="btn btn-primary btn-lg btn-block" data-testid="render-btn" disabled={!accepted.size} onClick={render}>
+                      <button
+                        className="btn btn-primary btn-lg btn-block"
+                        data-testid="render-btn"
+                        disabled={!accepted.size}
+                        onClick={render}
+                      >
                         <Icon name="film" />
-                        {accepted.size ? t("render.button", { n: accepted.size }) : t("render.none")}
+                        {accepted.size
+                          ? t("render.button", { n: accepted.size })
+                          : t("render.none")}
                       </button>
                     )}
                     <button
                       className="btn btn-block"
                       disabled={!cands.length}
-                      onClick={() => setExportIds(accepted.size ? [...accepted] : selected ? [selected.id] : [])}
+                      onClick={() =>
+                        setExportIds(
+                          accepted.size
+                            ? [...accepted]
+                            : selected
+                              ? [selected.id]
+                              : [],
+                        )
+                      }
                       title={t("export.button_hint")}
                     >
                       <Icon name="download" />
@@ -1570,9 +2247,18 @@ export default function ProjectPage({ id }: { id: string }) {
                   <div className="cal-hint">
                     <Icon name="chart" size={14} />
                     {project.calibration.calibrated ? (
-                      <span>{t("cal.calibrated_n", { n: project.calibration.model_points })}</span>
+                      <span>
+                        {t("cal.calibrated_n", {
+                          n: project.calibration.model_points,
+                        })}
+                      </span>
                     ) : (
-                      <span>{t("cal.progress", { n: project.calibration.n, need: project.calibration.needed })}</span>
+                      <span>
+                        {t("cal.progress", {
+                          n: project.calibration.n,
+                          need: project.calibration.needed,
+                        })}
+                      </span>
                     )}
                     <a href={href.stats}>{t("nav.stats")}</a>
                   </div>
@@ -1585,21 +2271,25 @@ export default function ProjectPage({ id }: { id: string }) {
                   <div className="clips-grid">
                     {clips.map((c) => (
                       <div className="clip-card" key={c.id}>
-                        <video
-                          id={`clipvid-${c.id}`}
+                        <ClipVideo
+                          videoId={`clipvid-${c.id}`}
                           src={urls.clip(id, c.id, c.rendered_at)}
-                          controls
-                          playsInline
-                          preload="metadata"
-                          loop={!!c.options.loop}
+                          label={`#${c.rank}`}
                         />
                         <div className="foot">
                           <div style={{ display: "grid", minWidth: 0 }}>
                             <span className="tc">
-                              #{String(c.rank).padStart(2, "0")} · {num(Math.round(c.duration))} s
+                              #{String(c.rank).padStart(2, "0")} ·{" "}
+                              {num(Math.round(c.duration))} s
                             </span>
-                            <span className="muted" style={{ fontSize: 11 }} title={`${c.encoder} · ${fmtBytes(c.size_bytes)}`}>
-                              {t("clips.rendered", { when: relTime(c.rendered_at) })}
+                            <span
+                              className="muted"
+                              style={{ fontSize: 11 }}
+                              title={`${c.encoder} · ${fmtBytes(c.size_bytes)}`}
+                            >
+                              {t("clips.rendered", {
+                                when: relTime(c.rendered_at),
+                              })}
                             </span>
                             {c.edits?.loop && (
                               <span
@@ -1607,14 +2297,23 @@ export default function ProjectPage({ id }: { id: string }) {
                                 title={
                                   c.edits.loop.audio_seam
                                     ? t("loop.measured", {
-                                        click: num(c.edits.loop.audio_seam.click_ratio, 2),
-                                        step: num(c.edits.loop.audio_seam.loudness_step_lu, 1),
+                                        click: num(
+                                          c.edits.loop.audio_seam.click_ratio,
+                                          2,
+                                        ),
+                                        step: num(
+                                          c.edits.loop.audio_seam
+                                            .loudness_step_lu,
+                                          1,
+                                        ),
                                       })
                                     : t("loop.label")
                                 }
                               >
                                 <Icon name="repeat" size={11} />
-                                {c.edits.loop.audio_seam?.ok === false ? t("loop.seam_check") : t("loop.seamless")}
+                                {c.edits.loop.audio_seam?.ok === false
+                                  ? t("loop.seam_check")
+                                  : t("loop.seamless")}
                               </span>
                             )}
                           </div>
@@ -1637,44 +2336,90 @@ export default function ProjectPage({ id }: { id: string }) {
                           onChanged={load}
                         />
                         <div className="clip-pub">
-                          <button className="btn btn-sm btn-ghost" onClick={() => setExportIds([c.id])}>
-                            <Icon name="download" />
-                            {t("export.short")}
-                          </button>
-                          <button className="btn btn-sm btn-ghost" onClick={() => setPublishFor(c.id)} title={t("pub.publish_hint")}>
+                          <button
+                            className="btn btn-sm"
+                            onClick={() => setPublishFor(c.id)}
+                            title={t("pub.publish_hint")}
+                          >
                             <Icon name="calendar" />
                             {t("pub.publish_btn")}
                           </button>
-                          <button className="btn btn-sm btn-ghost" data-testid="publish-btn" onClick={() => setUploadFor({ cid: c.id })}>
+                        </div>
+                        <Advanced
+                          label={t("adv.more")}
+                          className="clip-more inline"
+                        >
+                          <button
+                            className="btn btn-sm btn-ghost"
+                            onClick={() => setExportIds([c.id])}
+                          >
+                            <Icon name="download" />
+                            {t("export.short")}
+                          </button>
+                          <button
+                            className="btn btn-sm btn-ghost"
+                            data-testid="publish-btn"
+                            onClick={() => setUploadFor({ cid: c.id })}
+                          >
                             <Icon name="upload" />
                             YouTube
                           </button>
                           {hookTests?.clips[c.id] ? (
-                            <button className="btn btn-sm btn-ghost" onClick={() => setHookFor(c.id)} title={t("ab.open")}>
+                            <button
+                              className="btn btn-sm btn-ghost"
+                              onClick={() => setHookFor(c.id)}
+                              title={t("ab.open")}
+                            >
                               <Icon name="split" />
-                              {t("ab.short_result", { label: hookTests.clips[c.id].winner })}
+                              {t("ab.short_result", {
+                                label: hookTests.clips[c.id].winner,
+                              })}
                             </button>
                           ) : (
                             <button
                               className="btn btn-sm btn-ghost"
-                              disabled={jobs.some((j) => j.kind === "ab" && j.project_id === id && j.params?.clip_id === c.id && isActive(j))}
+                              disabled={jobs.some(
+                                (j) =>
+                                  j.kind === "ab" &&
+                                  j.project_id === id &&
+                                  j.params?.clip_id === c.id &&
+                                  isActive(j),
+                              )}
                               onClick={() =>
                                 api
                                   .makeHookTest(id, c.id)
-                                  .then(() => toast({ kind: "ok", text: t("ab.queued") }))
-                                  .catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }))
+                                  .then(() =>
+                                    toast({ kind: "ok", text: t("ab.queued") }),
+                                  )
+                                  .catch((e) =>
+                                    toast({
+                                      kind: "err",
+                                      text: e.message,
+                                      hint: e.hint,
+                                    }),
+                                  )
                               }
                               title={t("ab.make_hint")}
                             >
                               <Icon name="split" />
-                              {jobs.some((j) => j.kind === "ab" && j.project_id === id && j.params?.clip_id === c.id && isActive(j))
+                              {jobs.some(
+                                (j) =>
+                                  j.kind === "ab" &&
+                                  j.project_id === id &&
+                                  j.params?.clip_id === c.id &&
+                                  isActive(j),
+                              )
                                 ? t("ab.making")
                                 : t("ab.make")}
                             </button>
                           )}
-                        </div>
+                          <PerformanceForm
+                            projectId={id}
+                            clip={c}
+                            onSaved={load}
+                          />
+                        </Advanced>
                         <UploadsLine uploads={uploads[c.id] ?? []} />
-                        <PerformanceForm projectId={id} clip={c} onSaved={load} />
                       </div>
                     ))}
                   </div>
@@ -1705,7 +2450,14 @@ export default function ProjectPage({ id }: { id: string }) {
           onClose={() => setExportIds(null)}
         />
       )}
-      {publishFor && <PublishSetupDialog projectId={id} clipId={publishFor} onClose={() => setPublishFor(null)} onDone={load} />}
+      {publishFor && (
+        <PublishSetupDialog
+          projectId={id}
+          clipId={publishFor}
+          onClose={() => setPublishFor(null)}
+          onDone={load}
+        />
+      )}
       {uploadFor && cands.find((c) => c.id === uploadFor.cid) && (
         <UploadDialog
           projectId={id}
@@ -1719,21 +2471,29 @@ export default function ProjectPage({ id }: { id: string }) {
           onClose={() => setUploadFor(null)}
         />
       )}
-      {hookFor && hookTests?.clips[hookFor] && cands.find((c) => c.id === hookFor) && (
-        <HookTestDialog
-          projectId={id}
-          cand={cands.find((c) => c.id === hookFor)!}
-          test={hookTests.clips[hookFor]}
-          realTest={hookTests.real_test}
-          busy={jobs.some((j) => j.kind === "ab" && j.project_id === id && j.params?.clip_id === hookFor && isActive(j))}
-          onUpload={(source) => {
-            setHookFor(null);
-            setUploadFor({ cid: hookFor, source });
-          }}
-          onChanged={loadExports}
-          onClose={() => setHookFor(null)}
-        />
-      )}
+      {hookFor &&
+        hookTests?.clips[hookFor] &&
+        cands.find((c) => c.id === hookFor) && (
+          <HookTestDialog
+            projectId={id}
+            cand={cands.find((c) => c.id === hookFor)!}
+            test={hookTests.clips[hookFor]}
+            realTest={hookTests.real_test}
+            busy={jobs.some(
+              (j) =>
+                j.kind === "ab" &&
+                j.project_id === id &&
+                j.params?.clip_id === hookFor &&
+                isActive(j),
+            )}
+            onUpload={(source) => {
+              setHookFor(null);
+              setUploadFor({ cid: hookFor, source });
+            }}
+            onChanged={loadExports}
+            onClose={() => setHookFor(null)}
+          />
+        )}
       {deleteIds && (
         <DeleteDialog
           projectId={id}
@@ -1747,7 +2507,8 @@ export default function ProjectPage({ id }: { id: string }) {
               window.location.hash = href.library;
               return;
             }
-            if (selectedId && item.clip_ids.includes(selectedId)) setSelectedId(null);
+            if (selectedId && item.clip_ids.includes(selectedId))
+              setSelectedId(null);
             load();
             undoDelete(item, load);
           }}
@@ -1800,7 +2561,9 @@ export default function ProjectPage({ id }: { id: string }) {
           onSave={saveFacecam}
           onDetect={() => {
             setFacecamOpen(false);
-            api.detectFacecam(id, true).catch((e) => toast({ kind: "err", text: e.message }));
+            api
+              .detectFacecam(id, true)
+              .catch((e) => toast({ kind: "err", text: e.message }));
           }}
         />
       )}

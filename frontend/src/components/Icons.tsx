@@ -4,6 +4,7 @@ const PATHS: Record<string, string> = {
   play: "M7 4.5v15l12.5-7.5z",
   pause: "M8 5v14M16 5v14",
   stop: "M6.5 6.5h11v11h-11z",
+  maximize: "M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5",
   sun: "M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z",
   moon: "M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z",
   check: "M5 12.5l4.5 4.5L19 7.5",

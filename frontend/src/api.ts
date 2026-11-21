@@ -31,7 +31,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue" | "reconcile" | "post" | "full_prepare" | "full_upload" | "channel_style" | "style_preview" | "setup";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "description" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue" | "reconcile" | "post" | "full_prepare" | "full_upload" | "channel_style" | "style_preview" | "setup";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;
@@ -220,6 +220,35 @@ export interface Publish {
   title_votes?: Record<string, number>;
   /** viral score adjusted to this channel's real views (null until calibrated) */
   calibrated?: Calibrated | null;
+  /** 1.2.63 My style: the description as it will be posted (social block + "Etiketler:" + hashtags) */
+  description_full?: string | null;
+  style?: { profile: string; format: string } | null;
+}
+
+/** 1.2.63 My style template (~/.sharkyclips/style/template.json) */
+export interface MyTemplate {
+  enabled: boolean;
+  lang: string;
+  channel_tag: string;
+  social_block: string;
+  shorts_socials: boolean;
+  title_words: string[];
+  title_examples: string[];
+  story_games: string[];
+  series: Record<string, { next: number }>;
+}
+export interface MyTemplateState {
+  template: MyTemplate;
+  exists: boolean;
+  strings: Record<string, string>;
+  games: { id: string; name: string; story: boolean }[];
+  limits: { title: number; options: number; hashtags: [number, number] };
+}
+export interface EpisodeState {
+  story: boolean;
+  enabled: boolean;
+  game: string;
+  episode: { series: string; n: number } | null;
 }
 
 export interface ChatStats {
@@ -1815,6 +1844,15 @@ export const api = {
   channelText: () => req<ChannelText>("GET", "/api/brand/channel"),
   saveChannelText: (d: Partial<Pick<ChannelText, "hashtags" | "names">> & { socials?: Partial<ChannelText["socials"]> }) =>
     req<ChannelText>("PUT", "/api/brand/channel", d),
+  myTemplate: () => req<MyTemplateState>("GET", "/api/mystyle/template"),
+  saveMyTemplate: (d: Partial<MyTemplate>) => req<MyTemplateState>("PUT", "/api/mystyle/template", d),
+  regenerateField: (id: string, cid: string, field: "title" | "description" | "hashtags") =>
+    req<{ field: string; job?: Job; hashtags?: string[]; description?: string | null }>(
+      "POST",
+      `${P(id)}/candidates/${cid}/regenerate/${field}`,
+    ),
+  episode: (id: string) => req<EpisodeState>("GET", `${P(id)}/episode`),
+  setEpisode: (id: string, n: number | null) => req<EpisodeState>("PUT", `${P(id)}/episode`, { n }),
   myStyle: () => req<StyleState>("GET", "/api/brand/style"),
   saveMyStyle: (d: { profile?: Partial<StyleProfile>; glossary?: Partial<StyleGlossary> }) =>
     req<StyleState>("PUT", "/api/brand/style", d),

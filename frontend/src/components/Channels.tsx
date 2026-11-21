@@ -14,7 +14,7 @@ import { useI18n } from "../i18n";
 import { href } from "../router";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
-import { Segmented, Toggle } from "./ui";
+import { revealById, Segmented, Toggle } from "./ui";
 
 /** 1.2.57 channel monitoring: Settings > Channels (Pro + Easy) and the Easy home card. */
 
@@ -356,7 +356,7 @@ export function ChannelsCard({ easy }: { easy?: boolean }) {
   const loaded = !!view;
   useEffect(() => {
     // the Easy home card links to #/settings/channels
-    if (loaded && /\/channels$/.test(window.location.hash)) document.getElementById("channels")?.scrollIntoView({ block: "start" });
+    if (loaded && /\/channels$/.test(window.location.hash)) revealById("channels");
   }, [loaded]);
   if (!view) return null;
   const s = view.settings;

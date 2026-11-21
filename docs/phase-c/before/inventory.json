@@ -1,0 +1,4476 @@
+{
+ "projects": [
+  {
+   "kind": "button",
+   "label": "Interface language: English",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Trash 2",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "New project",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Gaming 1:00 LAYOUT CHECK: a very long stream title that has to wrap over two lin",
+   "section": "LAYOUT CHECK: a very long stream title that has to wrap over",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete project \"LAYOUT CHECK: a very long stream title that has to wrap over two",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "New project",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "project": [
+  {
+   "kind": "a",
+   "label": "Projects",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete project",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Content type",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Game",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Game detection",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Re-analyze",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Game for titles & hashtags",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Mini stories from moments across the whole stream",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "The whole video as a scheduled YouTube video, in your channel's style",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Best-of video",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Chat log: chat-downloader / yt-dlp / TwitchDownloader JSON or text lines like [1",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Plain",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Shorts",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "TikTok",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Reels",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Renders the file that goes to the platforms (small) and plays it",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Previous clip",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Play clip",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Next clip",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Mark the start of your own clip here (I)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Mark the end of your own clip here (O)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Keyboard shortcuts",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cut (Del)",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Bleep / unbleep the selected words (B)",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Undo",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Redo",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Check thoroughly",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Classic bleep",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Silence",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Sound effect",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Show censored words as *** in the captions",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Play",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Bleep",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "New suggestions",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Good title, learn my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Not my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Good title, learn my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Not my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy all",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Candidates 18",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Clips 6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Select clips",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Fast review",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #1",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #1",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #2",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #2",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #3",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #3",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #4",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #4",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #5",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #5",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #7",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #7",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #8",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #8",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #9",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #9",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #10",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #10",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #11",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #11",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #12",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #12",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #13",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #13",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #14",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #14",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #15",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #15",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #16",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #16",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #17",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #17",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Accept #18",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete clip #18",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Subtitles",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Speaker colours",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Name tags",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Layout",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Off",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Text",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Flash",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Both",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Opening text, first 3 seconds",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Auto",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Bleep",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Mute",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Off",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Strictness",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Show bleeped words as **** with a pop",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Bleep badge near the facecam",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Hide them in the captions too (a**)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Bleep sound",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Listen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Off",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Light",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Strong",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Off",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Subtle",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Strong",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Music",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Seamless loop",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Instant replay",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Chat bubbles",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Off",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Light",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Strong",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Off",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Minimal",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Bold",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Brand kit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Set it up in Studio",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Speak English in my voice",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Name for Me",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Name for Friend",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Merge Efe Can Yıldırımoğlu into another voice",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Name for Friend 2",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Merge Friend 2 into another voice",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Run again",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Whole video (slower)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cancel",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "5 clips in the queue",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Formats, platform presets, subtitle files and editor timelines",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "project-edit-tab": [
+  {
+   "kind": "a",
+   "label": "Projects",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete project",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Content type",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Game",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Game detection",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Re-analyze",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Game for titles & hashtags",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Mini stories from moments across the whole stream",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "The whole video as a scheduled YouTube video, in your channel's style",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Best-of video",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Chat log: chat-downloader / yt-dlp / TwitchDownloader JSON or text lines like [1",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Plain",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Shorts",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "TikTok",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Reels",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Renders the file that goes to the platforms (small) and plays it",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Previous clip",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Play clip",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Next clip",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Mark the start of your own clip here (I)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Mark the end of your own clip here (O)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Keyboard shortcuts",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cut (Del)",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Bleep / unbleep the selected words (B)",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Undo",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Redo",
+   "section": "TRANSCRIPT",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Check thoroughly",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Classic bleep",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Silence",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Sound effect",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Show censored words as *** in the captions",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Play",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Bleep",
+   "section": "SWEARS",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "New suggestions",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Good title, learn my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Not my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Good title, learn my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Not my style",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy all",
+   "section": "PUBLISH PACKAGE",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Candidates 18",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Clips 6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Stats",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Download",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Bleep report · 1 bleep ✅",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Play this moment",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Export",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Title, cover, schedule: everything for YouTube on one screen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make two versions with different openings and predict which one keeps viewers",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add YouTube views",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Download",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Export",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Title, cover, schedule: everything for YouTube on one screen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make two versions with different openings and predict which one keeps viewers",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add YouTube views",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Download",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Export",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Title, cover, schedule: everything for YouTube on one screen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make two versions with different openings and predict which one keeps viewers",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add YouTube views",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Download",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Export",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Title, cover, schedule: everything for YouTube on one screen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make two versions with different openings and predict which one keeps viewers",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add YouTube views",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Download",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Export",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Title, cover, schedule: everything for YouTube on one screen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make two versions with different openings and predict which one keeps viewers",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add YouTube views",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Download",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Export",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Title, cover, schedule: everything for YouTube on one screen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make two versions with different openings and predict which one keeps viewers",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add YouTube views",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "library": [
+  {
+   "kind": "a",
+   "label": "Publishing settings",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Settings",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Publishing settings",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "List",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Calendar",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Check now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "All 6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Drafts 6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Scheduled 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Published 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Needs attention 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Locked private 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "All 6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Instagram 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "TikTok 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Everywhere 0",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Not everywhere yet 6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Select all",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Select Helikopterden atlayıp dört kişiyi birden indirdiğimiz o efsane an",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish everywhere",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Schedule",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit details",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Select Wait for it… the most unexpected revive of the whole stream",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish everywhere",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Schedule",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit details",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Select Sürekli önünden arkasından çıkıp duruyorlar",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish everywhere",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Schedule",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit details",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Select لحظة لا تصدق في آخر ثانية من المباراة",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish everywhere",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Schedule",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit details",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Select Altına atılan herkes neden öyle yere düştü",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish everywhere",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Schedule",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit details",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Select Takım arkadaşım beni neden bıraktı, son saniyede inanılmaz bir geri dönüş",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish everywhere",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Schedule",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Publish now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit details",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "calendar": [
+  {
+   "kind": "a",
+   "label": "Publishing settings",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Settings",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Publishing settings",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "List",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Calendar",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Check now",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Previous",
+   "section": "NOV 16, 2026",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Today",
+   "section": "NOV 16, 2026",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Next",
+   "section": "NOV 16, 2026",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Week",
+   "section": "NOV 16, 2026",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Month",
+   "section": "NOV 16, 2026",
+   "place": "visible"
+  }
+ ],
+ "queue": [
+  {
+   "kind": "input:checkbox",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "RENDER ALL ACCEPTED",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Also re-render finished clips",
+   "section": "RENDER ALL ACCEPTED",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Queue 3 renders",
+   "section": "RENDER ALL ACCEPTED",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Shut down the PC when the queue is finished",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Pause queue",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cancel all",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "#02 · Wait for it… the most unexpected revive of the whole stream",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cancel",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "#03 · Sürekli önünden arkasından çıkıp duruyorlar",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move up",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move down",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cancel",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "#04 · لحظة لا تصدق في آخر ثانية من المباراة",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move up",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move down",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cancel",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "#05 · Altına atılan herkes neden öyle yere düştü",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move up",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move down",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cancel",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "#06 · Takım arkadaşım beni neden bıraktı, son saniyede inanılmaz bir geri dönüş",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move up",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move down",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Cancel",
+   "section": "GPU QUEUE 5",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Clear list",
+   "section": "FINISHED",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "#01 · Helikopterden atlayıp dört kişiyi birden indirdiğimiz o efsane an",
+   "section": "FINISHED",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Remove",
+   "section": "FINISHED",
+   "place": "visible"
+  }
+ ],
+ "publish-queue": [
+  {
+   "kind": "button",
+   "label": "Prepare for Chrome (6)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy for Claude in Chrome",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Import status",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Open folder",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Pick all",
+   "section": "Approved clips",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Pick none",
+   "section": "Approved clips",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Helikopterden atlayıp dört kişiyi birden indirdiğimiz o efsane an",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Wait for it… the most unexpected revive of the whole stream",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Sürekli önünden arkasından çıkıp duruyorlar",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "لحظة لا تصدق في آخر ثانية من المباراة",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Altına atılan herkes neden öyle yere düştü",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Takım arkadaşım beni neden bıraktı, son saniyede inanılmaz bir geri dönüş",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Edit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Queue settings",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:number",
+   "label": "number",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "12:00, 18:00, 21:00",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "TikTok",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:number",
+   "label": "number",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "12:00, 18:00, 21:00",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:number",
+   "label": "number",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Instagram",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:number",
+   "label": "number",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "12:00, 18:00, 21:00",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "@mychannel, @mychannel.gaming",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "#mychannel",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "this computer's time",
+   "section": "",
+   "place": "advanced"
+  }
+ ],
+ "stories": [
+  {
+   "kind": "a",
+   "label": "Back: LAYOUT CHECK: a very long stream title that has to wrap over two lines and",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Find stories",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "bestof": [
+  {
+   "kind": "a",
+   "label": "Back: LAYOUT CHECK: a very long stream title that has to wrap over two lines and",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:number",
+   "label": "Top",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Pick the best",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move up",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move down",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Remove from the video",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move up",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move down",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Remove from the video",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move up",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Move down",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Remove from the video",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Add other clips (15 more)",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "CLIPS IN THE VIDEO 3",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Intro card",
+   "section": "VIDEO",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Title card before every clip",
+   "section": "VIDEO",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Outro card",
+   "section": "VIDEO",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Titles, description and chapters in",
+   "section": "VIDEO",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make the video (3 clips)",
+   "section": "VIDEO",
+   "place": "visible"
+  }
+ ],
+ "studio-music": [
+  {
+   "kind": "a",
+   "label": "Music",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Brand kit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Word lists",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Games",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add songs",
+   "section": "Your music",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Open folder",
+   "section": "Your music",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Songs copied into the folder by hand show up after a refresh",
+   "section": "Your music",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add the credit line to YouTube descriptions",
+   "section": "Song credit",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Credit line",
+   "section": "Song credit",
+   "place": "visible"
+  }
+ ],
+ "studio-brand": [
+  {
+   "kind": "a",
+   "label": "Music",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Brand kit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Word lists",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Games",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Analyse again",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Write in my channel's style",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Fixed parts (socials, signature)",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Fixed parts (socials, signature)",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Best and weakest titles",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Best and weakest titles",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Write again",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Capitals in Shorts titles Like my channel ALL CAPS Sentence case + CAPS for emph",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Capitals in Long video titles Like my channel ALL CAPS Sentence case + CAPS for ",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Hashtags that are always there",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Extra rules (one per line)E.g. \"Always name the champion\". The AI follows them i",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Never use these words",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Notes about your tone",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Readable summary",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "Channel style",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "Channel style",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Channel hashtagsThe first one always comes first in every clip's hashtags and is",
+   "section": "Channel text",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Channel names for YouTube tagsComma separated, e.g. how people search for your c",
+   "section": "Channel text",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Socials block at the end of descriptions",
+   "section": "Channel text",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Links (one per line)Short captions drop lines from the bottom; a link is never c",
+   "section": "Channel text",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Heading per language",
+   "section": "Channel text",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "🎮 Live Streams & Social Media:",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "🎮 Canlı Yayınlar & Sosyal Medya:",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "text",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "text",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "🎮 Стримы и соцсети:",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "🎮 Livestreams & Social Media:",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "text",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "🎮 البث المباشر ووسائل التواصل:",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "🎮 直播与社交媒体：",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "text",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "🎮 Élő adások és közösségi média:",
+   "section": "Channel text",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "Channel text",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Start from the sample",
+   "section": "My style",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add an example",
+   "section": "My style",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Gaming words that are never translatedComma separated: kill, revive, ulti, gank.",
+   "section": "My style",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Corrections (wrong => right)One per line. Fixed in every new title and descripti",
+   "section": "My style",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "My style",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "New preset",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "studio-words": [
+  {
+   "kind": "a",
+   "label": "Music",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Brand kit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Word lists",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Games",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "English",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Türkçe",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Español",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Português (Brasil)",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Русский",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Deutsch",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Français",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "العربية",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "中文",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "日本語",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Magyar",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Swear words",
+   "section": "Swear words",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Always cut",
+   "section": "Filler words",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Strong only, when the word stands alone (it is also a real word)",
+   "section": "Filler words",
+   "place": "visible"
+  },
+  {
+   "kind": "input:number",
+   "label": "Light ms",
+   "section": "Silence length",
+   "place": "visible"
+  },
+  {
+   "kind": "input:number",
+   "label": "Strong ms",
+   "section": "Silence length",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Choose a project",
+   "section": "Swear check: review",
+   "place": "visible"
+  }
+ ],
+ "studio-games": [
+  {
+   "kind": "a",
+   "label": "Music",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Brand kit",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Word lists",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Games",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "League of Legends",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delta Force",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Counter-Strike 2",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Valorant",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Unknown game",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Apex Legends",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "ARC Raiders",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Dota 2",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "EA Sports FC 27",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Fortnite",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "GTA V / GTA Online / GTA RP",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "GTA 6",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Marvel Rivals",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Minecraft",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Overwatch",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "PUBG: Battlegrounds",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Call of Duty: Warzone / MW4",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Game bank (JSON)",
+   "section": "League of Legends",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "League of Legends",
+   "place": "visible"
+  }
+ ],
+ "stats": [
+  {
+   "kind": "a",
+   "label": "Go to projects",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "settings": [
+  {
+   "kind": "a",
+   "label": "Disk space & trash",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Interface language",
+   "section": "Interface language",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Dark",
+   "section": "Interface language",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Light",
+   "section": "Interface language",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Full",
+   "section": "Interface language",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Reduced",
+   "section": "Interface language",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Off",
+   "section": "Interface language",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Play now",
+   "section": "Shark Snack",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Mini game while you wait",
+   "section": "Shark Snack",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Content language",
+   "section": "Content language",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Auto",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "CPU only",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "GPU",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Auto",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Light",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Normal",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Silent",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Balanced",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Turbo",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Away after 1 min without input 2 min without input 3 min without input 5 min wit",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "GPU temperature limit 75 °C 80 °C 83 °C 85 °C 87 °C 90 °C",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "GPU memory kept free Automatic (2.0 GB) 1.0 GB 1.5 GB 2.0 GB 3.0 GB 4.0 GB",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "A fullscreen app or game is in front",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "A video is playing",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Other apps keep the CPU or GPU busy",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Only work while I'm away",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Games",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Reset list",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "Performance",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Empty trash",
+   "section": "Trash",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Open the trash",
+   "section": "Trash",
+   "place": "visible"
+  },
+  {
+   "kind": "input:number",
+   "label": "Keep deleted things for",
+   "section": "Trash",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "Trash",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Model",
+   "section": "Local AI",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Analyze with AI after finding highlights",
+   "section": "Local AI",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Fast analysis",
+   "section": "Local AI",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Run speed test",
+   "section": "Local AI",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "Glossary",
+   "section": "Local AI",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "Local AI",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "English",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Türkçe",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Español",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Português (Brasil)",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Русский",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Deutsch",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Français",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "العربية",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "中文",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "日本語",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Magyar",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "textarea",
+   "label": "one word or phrase per line",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Save",
+   "section": "Custom trigger words",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Video encoder",
+   "section": "Video encoder",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Gaming",
+   "section": "Default mode",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Study",
+   "section": "Default mode",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Music",
+   "section": "Default mode",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "Other devices",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Set access PIN",
+   "section": "Other devices",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Kick",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Twitch",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Channel link or name Add",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "This is my channel",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Options",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Options",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Skip",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Open",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Try again",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Try again",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Try again",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Try again",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Skip",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Pause on metered connections",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Wait while I play",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Always keep free 2 GB 5 GB 10 GB 20 GB 50 GB 100 GB",
+   "section": "Channels",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Make clips when my stream ends",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Add folder",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Add folder",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Clips to render The best 3 The best 4 The best 6 The best 8 The best 10 The best",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Wait for me",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Plan the best",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Upload the best",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "select",
+   "label": "Skip recordings shorter than Never skip 2 minutes 5 minutes 10 minutes 20 minute",
+   "section": "Auto clips after a stream",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Hotkey",
+   "section": "Live markers",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Hotkey",
+   "section": "Live markers",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Twitch channel (read-only chat)",
+   "section": "Live markers",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "YouTube live chat",
+   "section": "Live markers",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Chat command",
+   "section": "Live markers",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Mark now",
+   "section": "Live markers",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "@BotFather",
+   "section": "Phone",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Paste the token here",
+   "section": "Phone",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Connect",
+   "section": "Phone",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Open it on my Wi-Fi",
+   "section": "Phone",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Set access PIN",
+   "section": "Phone",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Away from home? (optional, free: Tailscale)",
+   "section": "Phone",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Connect your own Google project",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Automatic",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Semi-automatic",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "developers.facebook.com/apps",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "instagram.com → Apps and websites",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "input:password",
+   "label": "Access token It stays encrypted on this PC. An Instagram Login token (IGAA…) wor",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Instagram account (optional) Only needed when the token reaches several accounts",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Connect Instagram",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Advanced: connect with the Instagram app ID + secret (Business login)",
+   "section": "Instagram",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "Instagram",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "text",
+   "section": "Instagram",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:password",
+   "label": "password",
+   "section": "Instagram",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "Instagram",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Log in to TikTok",
+   "section": "TikTok",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Automatic",
+   "section": "TikTok",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Semi-automatic",
+   "section": "TikTok",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Advanced: your own TikTok developer app (API)",
+   "section": "TikTok",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Copy",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:text",
+   "label": "text",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:password",
+   "label": "password",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "submit",
+   "section": "TikTok",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Connect your own Google project",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "YouTube Terms of Service",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Google Privacy Policy",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "SharkyClips privacy policy",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Manage access in your Google account",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Reads google_client.json in the settings folder again (e.g. after you rotated it",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Advanced: use your own Google project",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "input:number",
+   "label": "Daily API quota",
+   "section": "YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Upload scheduled clips automatically",
+   "section": "Publishing",
+   "place": "visible"
+  },
+  {
+   "kind": "input:number",
+   "label": "Daily limit",
+   "section": "Publishing",
+   "place": "visible"
+  },
+  {
+   "kind": "input:text",
+   "label": "Release times Used now: 12:00, 18:00, 21:00. Default times (later learned from y",
+   "section": "Publishing",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Learn the best times from my channel",
+   "section": "Publishing",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Open the Library",
+   "section": "Publishing",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Upload the full video to YouTube",
+   "section": "Full video on YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "input:time",
+   "label": "Release time The next evening without another full video, at this time.",
+   "section": "Full video on YouTube",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Run on Automatic Graphics card Processor (slow)",
+   "section": "AI covers",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Graphics card",
+   "section": "AI covers",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Processor (slow)",
+   "section": "AI covers",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Licenses",
+   "section": "AI covers",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "AI covers",
+   "place": "advanced"
+  },
+  {
+   "kind": "button",
+   "label": "Set up my voice",
+   "section": "My voice",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "Licenses",
+   "section": "My voice",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "My voice",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "My voice",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "My voice",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "My voice",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "My voice",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "My voice",
+   "place": "advanced"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Speech to text (large-v3-turbo) Turns what you say into subtitles. Needed.",
+   "section": "Downloads",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Quick test model A tiny model for quick checks. Needed.",
+   "section": "Downloads",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "NVIDIA GPU libraries Let your graphics card do the work. Needed on this PC.",
+   "section": "Downloads",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "YouTube helper (Deno) Needed to download videos from YouTube.",
+   "section": "Downloads",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Local AI app (Ollama) Writes titles, hashtags and the viral score on your PC.",
+   "section": "Downloads",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "AI model (qwen3.5:9b) The brain for titles and descriptions. Needs Ollama.",
+   "section": "Downloads",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Check for updates",
+   "section": "Updates",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "All updates",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "CC-BY-4.0",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "KevinAHM",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "k2-fsa/sherpa-onnx",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Apache-2.0",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Apache-2.0",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Apache-2.0",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Apache-2.0",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "MIT",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Apache-2.0",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "k2-fsa/sherpa-onnx",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "MIT",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "project page",
+   "section": "About & licenses",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "Systran (faster-whisper)",
+   "section": "About & licenses",
+   "place": "visible"
+  }
+ ],
+ "trash": [
+  {
+   "kind": "button",
+   "label": "Empty trash",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Restore",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete for good",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Restore",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Delete for good",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "LAYOUT CHECK: a very long stream title that has to wrap over two lines and get c",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Old previews 104 KB",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "input:checkbox",
+   "label": "Caches (made again when needed) 281 KB",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "button",
+   "label": "Clean up 385 KB",
+   "section": "",
+   "place": "visible"
+  }
+ ],
+ "updates": [
+  {
+   "kind": "input:search",
+   "label": "Search the updates",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.62 Your version November 21, 2026 Instagram is now switched off for publishi",
+   "section": "IMPROVED",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.61 November 21, 2026 A small safety update: the app now makes sure that some",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.60 November 21, 2026 A small fix for cover pictures: a single frame that onl",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.59 November 21, 2026 A small shark game to play while your project is proces",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.58 November 20, 2026 Animated graphics on your gaming clips, a new Updates p",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.57 November 20, 2026 Connect your Kick, Twitch or YouTube channel once, and ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.56 November 20, 2026 SharkyClips now has a real Windows installer: double-cl",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.55 November 19, 2026 Marvel Rivals: ACE and KO streaks now become clip momen",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.54 November 19, 2026 The new game profiles were tested on real gameplay, so ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.53 November 18, 2026 Much faster on slow PCs, 11 app languages with English ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.52 November 18, 2026 A security update: other websites can no longer control",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.51 November 16, 2026 The wrong \"updated to an older version\" bar is gone. Ne",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.50 November 16, 2026 To keep your Instagram accounts safe, Instagram is now ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.49 November 15, 2026 Fixed: after an update SharkyClips could get stuck and ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.48 November 15, 2026 Fixed: deleting a project no longer stops with \"is in u",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.47 November 15, 2026 Deleting a project now keeps its planned posts going ou",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.46 November 15, 2026 Fixed: Instagram posts that failed with \"Request proces",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.45 November 15, 2026 The preview now bleeps exactly like the exported file, ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.44 November 15, 2026 Automatic TikTok passed its first real test in TikTok S",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.43 November 14, 2026 Fixed: the TikTok login said \"too many attempts\" every ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.42 November 14, 2026 One Publish button now posts to YouTube, Instagram and ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.41 November 13, 2026 Delete clips and projects safely: everything goes to a ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.40 November 11, 2026 A new Publish queue page prepares your approved clips, ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.39 November 11, 2026 Publish now works for Instagram and TikTok without an a",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.38 November 10, 2026 Paste Kick VODs and clips like Twitch links (with chat ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.37 November 10, 2026 Both kinds of Instagram token now work, and captions, b",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.36 November 9, 2026 One Publish button for YouTube, Instagram and TikTok, wi",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.35 November 9, 2026 Clip length now follows what gets the most views on your",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.34 November 8, 2026 Easy mode 2.0: clips keep their setup and punchline, a s",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.33 November 8, 2026 Fixed: clips with every swear bleeped were sometimes mar",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.32 November 8, 2026 Fixed: a clip that looks like one of your examples in My",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.31 November 8, 2026 Every swear gets its bleep: missed swears are found, eve",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.30 November 8, 2026 Fixed: many more new titles survive, descriptions no lon",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.29 November 8, 2026 Fixed: full-video texts always get titles, labels no lon",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.28 November 8, 2026 My style: titles, descriptions, hashtags and tags are no",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.27 November 8, 2026 Fixed: every clip gets a description, clips keep enough ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.26 November 7, 2026 Fixed: no swear words hidden in player names, no clip ti",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.25 November 7, 2026 No more hashtags from other games: the game is decided o",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.24 November 7, 2026 Cancel is final: a cancelled job never starts again by i",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.23 November 7, 2026 Fixed: the 9:16 preview no longer zooms in and shifts, a",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.22 November 7, 2026 Captions say exactly what you said again, zoom can't run",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.21 November 7, 2026 Much stricter swear detection: a deep check listens to e",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.20 November 6, 2026 Dubbed clips on TikTok and Reels now say their voice is ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.19 November 6, 2026 Clips dubbed in your own voice now say on YouTube that t",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.18 November 6, 2026 AI covers made on your PC, TikTok and Reels exports, dub",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.17 November 3, 2026 Clips by themselves after a stream, live markers, approv",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.16 November 2, 2026 Easy mode is the new start screen: drop a video, press F",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.15 November 2, 2026 Hear every speaker: voices are separated and transcribed",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.14 November 1, 2026 Fixed: on very short windows the project page side panel",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.13 November 1, 2026 The project page now fits laptop screens: the clip list ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.12 November 1, 2026 Fixed: opening SharkyClips right after it crashed or was",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.11 November 1, 2026 SharkyClips' Google connection is now published, and sch",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.10 November 1, 2026 SharkyClips has a website now, and the privacy policy li",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "a",
+   "label": "",
+   "section": "",
+   "place": "advanced"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.9 November 1, 2026 Connect with Google now works out of the box, and loading",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.8 November 1, 2026 Connecting YouTube now takes one click and about 10 secon",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.7 October 30, 2026 Publish to YouTube on a schedule: a new Library for every",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.6 October 27, 2026 A safer phone mode, a faster start, better accessibility,",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.5 October 27, 2026 Retention tools: seamless loops, story clips from the who",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.4 October 26, 2026 Editing power tools: bleep swear words, cut silences, sma",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.3 October 26, 2026 A small reliability fix for the Export window. Details",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.2 October 25, 2026 Export your clips for every platform, upload them straigh",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.1 October 25, 2026 ClipForge is now SharkyClips, with a new logo, a welcome ",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.2.0 October 25, 2026 SharkyClips must never slow down your PC: performance mod",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.1.0 October 25, 2026 SharkyClips now reads the screen of League of Legends and",
+   "section": "",
+   "place": "visible"
+  },
+  {
+   "kind": "summary",
+   "label": "1.0.0 October 24, 2026 The first public release: find the best moments of your s",
+   "section": "",
+   "place": "visible"
+  }
+ ]
+}

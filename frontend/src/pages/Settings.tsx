@@ -1,12 +1,26 @@
 import { useEffect, useState } from "react";
 import { MiniGameSetting } from "../components/MiniGameSetting";
+import { MyTemplateCard } from "../components/MyTemplate";
 import { useAppState } from "../appstate";
-import { api, type LlmInfo, type Mode, type PerfMode, type Settings as SettingsT, type UpdateStatus } from "../api";
+import {
+  api,
+  type LlmInfo,
+  type Mode,
+  type PerfMode,
+  type Settings as SettingsT,
+  type UpdateStatus,
+} from "../api";
 import { SetupCard } from "../components/SetupDownloads";
 import { Icon } from "../components/Icons";
 import { ChannelsCard } from "../components/Channels";
 import { href } from "../router";
-import { CopyButton, JobLine, Segmented, Toggle } from "../components/ui";
+import {
+  Advanced,
+  CopyButton,
+  JobLine,
+  Segmented,
+  Toggle,
+} from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { chooseLanguage, useMeta } from "../meta";
@@ -32,17 +46,39 @@ function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
   const normal = info.speed.normal;
   const quick = info.speed.fast;
   const rows = [
-    { key: "normal", label: t("speed.normal"), model: info.normal_model, s: normal?.seconds_per_clip, on: !fast },
-    { key: "fast", label: t("speed.fast"), model: info.fast_model, s: quick?.seconds_per_clip, on: fast },
+    {
+      key: "normal",
+      label: t("speed.normal"),
+      model: info.normal_model,
+      s: normal?.seconds_per_clip,
+      on: !fast,
+    },
+    {
+      key: "fast",
+      label: t("speed.fast"),
+      model: info.fast_model,
+      s: quick?.seconds_per_clip,
+      on: fast,
+    },
   ];
   const max = Math.max(1, ...rows.map((r) => r.s ?? 0));
-  const ratio = normal && quick && quick.seconds_per_clip > 0 ? normal.seconds_per_clip / quick.seconds_per_clip : null;
-  const run = () => api.benchmark().catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
+  const ratio =
+    normal && quick && quick.seconds_per_clip > 0
+      ? normal.seconds_per_clip / quick.seconds_per_clip
+      : null;
+  const run = () =>
+    api
+      .benchmark()
+      .catch((e) => toast({ kind: "err", text: e.message, hint: e.hint }));
   return (
     <div className="speed-box">
       <div className="pub-row">
         <span className="field-label">{t("speed.title")}</span>
-        {ratio != null && <span className="chip chip-gold">{t("speed.faster", { x: num(ratio, 1) })}</span>}
+        {ratio != null && (
+          <span className="chip chip-gold">
+            {t("speed.faster", { x: num(ratio, 1) })}
+          </span>
+        )}
       </div>
       <ul className="bars">
         {rows.map((r) => (
@@ -50,12 +86,24 @@ function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
             <div className="bar-top">
               <span>
                 {r.label} <span className="muted mono">· {r.model}</span>
-                {r.on && <span className="chip chip-outline best-chip">{t("speed.active")}</span>}
+                {r.on && (
+                  <span className="chip chip-outline best-chip">
+                    {t("speed.active")}
+                  </span>
+                )}
               </span>
-              <span className="mono">{r.s != null ? t("speed.per_clip", { s: num(r.s, r.s < 10 ? 1 : 0) }) : t("speed.unknown")}</span>
+              <span className="mono">
+                {r.s != null
+                  ? t("speed.per_clip", { s: num(r.s, r.s < 10 ? 1 : 0) })
+                  : t("speed.unknown")}
+              </span>
             </div>
             <div className="sig-bar">
-              <span style={{ width: `${r.s != null ? Math.max(2, (r.s / max) * 100) : 0}%` }} />
+              <span
+                style={{
+                  width: `${r.s != null ? Math.max(2, (r.s / max) * 100) : 0}%`,
+                }}
+              />
             </div>
           </li>
         ))}
@@ -117,8 +165,12 @@ function UpdatesCard() {
   const [status, setStatus] = useState<UpdateStatus | null>(null);
   const [checking, setChecking] = useState(false);
   const [jobId, setJobId] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"idle" | "restarting" | "manual" | "installing">("idle");
-  const job = jobs.find((j) => j.kind === "update" && (j.id === jobId || isActive(j)));
+  const [phase, setPhase] = useState<
+    "idle" | "restarting" | "manual" | "installing"
+  >("idle");
+  const job = jobs.find(
+    (j) => j.kind === "update" && (j.id === jobId || isActive(j)),
+  );
 
   const check = () => {
     setChecking(true);
@@ -149,13 +201,23 @@ function UpdatesCard() {
           .catch(() => reloadWhenBack());
       } else setPhase("manual");
     } else if (job.status === "error") {
-      toast({ kind: "err", text: job.error?.message ?? t("update.failed"), hint: job.error?.hint });
+      toast({
+        kind: "err",
+        text: job.error?.message ?? t("update.failed"),
+        hint: job.error?.hint,
+      });
       setJobId(null);
     }
   }, [job, jobId, phase, status, t, toast, meta?.version]);
 
   let body: React.ReactNode = null;
-  if (phase === "restarting") body = <span className="status status-running"><span className="dot" />{t("update.restarting")}</span>;
+  if (phase === "restarting")
+    body = (
+      <span className="status status-running">
+        <span className="dot" />
+        {t("update.restarting")}
+      </span>
+    );
   else if (phase === "manual") body = <p>{t("update.done_manual")}</p>;
   else if (phase === "installing" || status?.pending_install)
     body = (
@@ -166,8 +228,10 @@ function UpdatesCard() {
     );
   else if (job && isActive(job)) body = <JobLine job={job} />;
   else if (status) {
-    if (status.reason === "fetch_failed") body = <p className="muted">{t("update.fetch_failed")}</p>;
-    else if (status.reason === "not_released") body = <p className="muted">{t("update.not_released")}</p>;
+    if (status.reason === "fetch_failed")
+      body = <p className="muted">{t("update.fetch_failed")}</p>;
+    else if (status.reason === "not_released")
+      body = <p className="muted">{t("update.not_released")}</p>;
     else if (status.reason && status.reason !== "not_newer")
       body = (
         <p className="muted">
@@ -177,16 +241,24 @@ function UpdatesCard() {
           </a>
         </p>
       );
-    else if (!status.available) body = <p className="muted">{t("update.current", { v: status.current })}</p>;
+    else if (!status.available)
+      body = (
+        <p className="muted">{t("update.current", { v: status.current })}</p>
+      );
     else
       body = (
         <div style={{ display: "grid", gap: 10 }}>
           <div className="pub-row">
             <strong>{t("update.available", { v: status.latest ?? "" })}</strong>
-            <span className="chip chip-gold">{t("update.changes", { n: status.behind })}</span>
+            <span className="chip chip-gold">
+              {t("update.changes", { n: status.behind })}
+            </span>
           </div>
           {status.changes.length > 0 && (
-            <ul className="muted" style={{ margin: 0, paddingInlineStart: 18, fontSize: 13 }}>
+            <ul
+              className="muted"
+              style={{ margin: 0, paddingInlineStart: 18, fontSize: 13 }}
+            >
               {status.changes.slice(0, 6).map((c, i) => (
                 <li key={i} dir="ltr">
                   {c}
@@ -195,7 +267,11 @@ function UpdatesCard() {
             </ul>
           )}
           <div>
-            <button className="btn btn-primary btn-sm" onClick={install} disabled={!meta?.is_local}>
+            <button
+              className="btn btn-primary btn-sm"
+              onClick={install}
+              disabled={!meta?.is_local}
+            >
               <Icon name="download" />
               {t("update.install")}
             </button>
@@ -233,9 +309,10 @@ function StaleDevNote() {
   const meta = useMeta();
   const stale = state?.dev_stale;
   if (!stale) return null;
-  const time = new Intl.DateTimeFormat(`${lang}-u-nu-latn`, { dateStyle: "medium", timeStyle: "short" }).format(
-    new Date(stale.started_at),
-  );
+  const time = new Intl.DateTimeFormat(`${lang}-u-nu-latn`, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(stale.started_at));
   return (
     <div className="notice" style={{ alignItems: "center", flexWrap: "wrap" }}>
       <Icon name="clock" />
@@ -244,7 +321,15 @@ function StaleDevNote() {
         {stale.task && <span className="muted"> ({stale.task})</span>}
       </span>
       {meta?.is_local && (
-        <button className="btn btn-sm" onClick={() => api.clearDevFlag().then(set).catch(() => {})}>
+        <button
+          className="btn btn-sm"
+          onClick={() =>
+            api
+              .clearDevFlag()
+              .then(set)
+              .catch(() => {})
+          }
+        >
           {t("dev.stale_clear")}
         </button>
       )}
@@ -261,15 +346,35 @@ function parseWords(text: string): string[] {
   return out;
 }
 
-function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Partial<SettingsT>) => Promise<void> }) {
+function PerformanceCard({
+  settings,
+  save,
+}: {
+  settings: SettingsT;
+  save: (p: Partial<SettingsT>) => Promise<void>;
+}) {
   const { t, num } = useI18n();
   const { governor } = useJobs();
-  const mode: PerfMode = governor && governor.state !== "off" ? governor.mode : settings.performance_mode;
+  const mode: PerfMode =
+    governor && governor.state !== "off"
+      ? governor.mode
+      : settings.performance_mode;
   const [games, setGames] = useState(settings.perf_games.join("\n"));
-  useEffect(() => setGames(settings.perf_games.join("\n")), [settings.perf_games]);
-  const gamesDirty = parseWords(games).join("\n") !== settings.perf_games.join("\n");
+  useEffect(
+    () => setGames(settings.perf_games.join("\n")),
+    [settings.perf_games],
+  );
+  const gamesDirty =
+    parseWords(games).join("\n") !== settings.perf_games.join("\n");
   const total = governor?.sample?.vram_total_mb;
-  const pauses: { key: "perf_pause_fullscreen" | "perf_pause_video" | "perf_pause_busy" | "perf_idle_only"; label: string }[] = [
+  const pauses: {
+    key:
+      | "perf_pause_fullscreen"
+      | "perf_pause_video"
+      | "perf_pause_busy"
+      | "perf_idle_only";
+    label: string;
+  }[] = [
     { key: "perf_pause_fullscreen", label: t("perf.pause_fullscreen") },
     { key: "perf_pause_video", label: t("perf.pause_video") },
     { key: "perf_pause_busy", label: t("perf.pause_busy") },
@@ -288,7 +393,9 @@ function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Pa
             block
             label={t("gov.mode_label")}
             value={mode}
-            options={(["silent", "balanced", "turbo"] as PerfMode[]).map((m) => ({ value: m, label: t(`gov.mode.${m}`) }))}
+            options={(["silent", "balanced", "turbo"] as PerfMode[]).map(
+              (m) => ({ value: m, label: t(`gov.mode.${m}`) }),
+            )}
             onChange={(m) => save({ performance_mode: m })}
           />
           <div className="field-hint" style={{ marginTop: 8 }}>
@@ -301,13 +408,19 @@ function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Pa
             <select
               className="select"
               value={String(settings.perf_idle_minutes)}
-              onChange={(e) => save({ perf_idle_minutes: Number(e.target.value) })}
+              onChange={(e) =>
+                save({ perf_idle_minutes: Number(e.target.value) })
+              }
             >
-              {[1, 2, 3, 5, 10, 15, 30].concat([settings.perf_idle_minutes]).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b).map((m) => (
-                <option key={m} value={String(m)}>
-                  {t("perf.minutes", { n: num(m) })}
-                </option>
-              ))}
+              {[1, 2, 3, 5, 10, 15, 30]
+                .concat([settings.perf_idle_minutes])
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .sort((a, b) => a - b)
+                .map((m) => (
+                  <option key={m} value={String(m)}>
+                    {t("perf.minutes", { n: num(m) })}
+                  </option>
+                ))}
             </select>
           </label>
           <label>
@@ -315,13 +428,19 @@ function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Pa
             <select
               className="select"
               value={String(settings.perf_gpu_temp_limit)}
-              onChange={(e) => save({ perf_gpu_temp_limit: Number(e.target.value) })}
+              onChange={(e) =>
+                save({ perf_gpu_temp_limit: Number(e.target.value) })
+              }
             >
-              {[75, 80, 83, 85, 87, 90].concat([settings.perf_gpu_temp_limit]).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b).map((c) => (
-                <option key={c} value={String(c)}>
-                  {num(c)} °C
-                </option>
-              ))}
+              {[75, 80, 83, 85, 87, 90]
+                .concat([settings.perf_gpu_temp_limit])
+                .filter((v, i, a) => a.indexOf(v) === i)
+                .sort((a, b) => a - b)
+                .map((c) => (
+                  <option key={c} value={String(c)}>
+                    {num(c)} °C
+                  </option>
+                ))}
             </select>
           </label>
           <label>
@@ -329,19 +448,33 @@ function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Pa
             <select
               className="select"
               value={String(settings.perf_vram_headroom_mb)}
-              onChange={(e) => save({ perf_vram_headroom_mb: Number(e.target.value) })}
+              onChange={(e) =>
+                save({ perf_vram_headroom_mb: Number(e.target.value) })
+              }
             >
               <option value="0">
                 {t("perf.headroom_auto")}
-                {governor?.limits?.vram_headroom_mb && settings.perf_vram_headroom_mb === 0
+                {governor?.limits?.vram_headroom_mb &&
+                settings.perf_vram_headroom_mb === 0
                   ? ` (${num(governor.limits.vram_headroom_mb / 1024, 1)} GB)`
                   : ""}
               </option>
-              {[1024, 1536, 2048, 3072, 4096].concat(settings.perf_vram_headroom_mb ? [settings.perf_vram_headroom_mb] : []).filter((v, i, a) => a.indexOf(v) === i && (!total || v < total * 0.6)).sort((a, b) => a - b).map((mb) => (
-                <option key={mb} value={String(mb)}>
-                  {num(mb / 1024, 1)} GB
-                </option>
-              ))}
+              {[1024, 1536, 2048, 3072, 4096]
+                .concat(
+                  settings.perf_vram_headroom_mb
+                    ? [settings.perf_vram_headroom_mb]
+                    : [],
+                )
+                .filter(
+                  (v, i, a) =>
+                    a.indexOf(v) === i && (!total || v < total * 0.6),
+                )
+                .sort((a, b) => a - b)
+                .map((mb) => (
+                  <option key={mb} value={String(mb)}>
+                    {num(mb / 1024, 1)} GB
+                  </option>
+                ))}
             </select>
           </label>
         </div>
@@ -364,13 +497,21 @@ function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Pa
           <div className="field-label">{t("perf.silent_pauses")}</div>
           {pauses.map((p) => (
             <div className="toggle-line" key={p.key}>
-              <Toggle checked={settings[p.key]} onChange={(v) => save({ [p.key]: v })} label={p.label} />
+              <Toggle
+                checked={settings[p.key]}
+                onChange={(v) => save({ [p.key]: v })}
+                label={p.label}
+              />
               <span>{p.label}</span>
             </div>
           ))}
         </div>
         <div>
-          <label className="field-label" htmlFor="perf-games" style={{ display: "block", marginBottom: 4 }}>
+          <label
+            className="field-label"
+            htmlFor="perf-games"
+            style={{ display: "block", marginBottom: 4 }}
+          >
             {t("perf.games")}
           </label>
           <div className="field-hint" style={{ marginBottom: 8 }}>
@@ -387,11 +528,18 @@ function PerformanceCard({ settings, save }: { settings: SettingsT; save: (p: Pa
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => save({ perf_games: settings.perf_games_default })}
-              disabled={settings.perf_games.join("\n") === settings.perf_games_default.join("\n")}
+              disabled={
+                settings.perf_games.join("\n") ===
+                settings.perf_games_default.join("\n")
+              }
             >
               {t("perf.games_reset")}
             </button>
-            <button className="btn btn-primary btn-sm" disabled={!gamesDirty} onClick={() => save({ perf_games: parseWords(games) })}>
+            <button
+              className="btn btn-primary btn-sm"
+              disabled={!gamesDirty}
+              onClick={() => save({ perf_games: parseWords(games) })}
+            >
               {t("common.save")}
             </button>
           </div>
@@ -415,19 +563,35 @@ export default function Settings() {
   const { finishedTick, lastFinished } = useJobs();
 
   useEffect(() => {
-    if (lastFinished?.kind === "benchmark") api.llm().then(setLlmInfo).catch(() => {});
+    if (lastFinished?.kind === "benchmark")
+      api
+        .llm()
+        .then(setLlmInfo)
+        .catch(() => {});
   }, [finishedTick]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     api.settings().then((s) => {
       setSettings(s);
-      setDrafts(Object.fromEntries(UI_LANGUAGES.map((l) => [l.code, (s.custom_triggers[l.code] ?? []).join("\n")])));
+      setDrafts(
+        Object.fromEntries(
+          UI_LANGUAGES.map((l) => [
+            l.code,
+            (s.custom_triggers[l.code] ?? []).join("\n"),
+          ]),
+        ),
+      );
       setGlossary(s.glossary.join("\n"));
     });
-    api.llm().then(setLlmInfo).catch(() => setLlmInfo(null));
+    api
+      .llm()
+      .then(setLlmInfo)
+      .catch(() => setLlmInfo(null));
   }, []);
 
-  const glossaryDirty = settings && parseWords(glossary).join("\n") !== settings.glossary.join("\n");
+  const glossaryDirty =
+    settings &&
+    parseWords(glossary).join("\n") !== settings.glossary.join("\n");
 
   const save = async (patch: Partial<SettingsT>) => {
     try {
@@ -441,7 +605,9 @@ export default function Settings() {
 
   const saveTriggers = async () => {
     setSavingTriggers(true);
-    const all = Object.fromEntries(Object.entries(drafts).map(([k, v]) => [k, parseWords(v)]));
+    const all = Object.fromEntries(
+      Object.entries(drafts).map(([k, v]) => [k, parseWords(v)]),
+    );
     await save({ custom_triggers: all });
     setSavingTriggers(false);
   };
@@ -449,7 +615,9 @@ export default function Settings() {
   const dirty =
     settings &&
     UI_LANGUAGES.some(
-      (l) => parseWords(drafts[l.code] ?? "").join("\n") !== (settings.custom_triggers[l.code] ?? []).join("\n"),
+      (l) =>
+        parseWords(drafts[l.code] ?? "").join("\n") !==
+        (settings.custom_triggers[l.code] ?? []).join("\n"),
     );
 
   return (
@@ -478,7 +646,12 @@ export default function Settings() {
               <p>{t("settings.ui_language_desc")}</p>
             </div>
             <div style={{ display: "grid", gap: 14, alignContent: "start" }}>
-              <select className="select" aria-label={t("lang.label")} value={lang} onChange={(e) => chooseLanguage(e.target.value, setLang)}>
+              <select
+                className="select"
+                aria-label={t("lang.label")}
+                value={lang}
+                onChange={(e) => chooseLanguage(e.target.value, setLang)}
+              >
                 {UI_LANGUAGES.map((l) => (
                   <option key={l.code} value={l.code}>
                     {l.name}
@@ -507,7 +680,9 @@ export default function Settings() {
                 </div>
                 <Segmented<MotionSetting>
                   value={settings.ui_motion}
-                  options={(["full", "reduced", "off"] as MotionSetting[]).map((m) => ({ value: m, label: t(`settings.motion.${m}`) }))}
+                  options={(["full", "reduced", "off"] as MotionSetting[]).map(
+                    (m) => ({ value: m, label: t(`settings.motion.${m}`) }),
+                  )}
                   onChange={(m) => {
                     applyMotion(m);
                     save({ ui_motion: m });
@@ -518,14 +693,6 @@ export default function Settings() {
                 </div>
               </div>
             </div>
-          </section>
-
-          <section className="card setting" id="minigame-card">
-            <div>
-              <h2>{t("mg.title")}</h2>
-              <p>{t("mg.tagline")}</p>
-            </div>
-            <MiniGameSetting />
           </section>
 
           <section className="card setting" id="content-language">
@@ -541,7 +708,14 @@ export default function Settings() {
                 onChange={(e) => {
                   const code = e.target.value;
                   save({ output_language: code }).then(() =>
-                    toast({ kind: "ok", text: t("settings.content_language_changed", { lang: UI_LANGUAGES.find((l) => l.code === code)?.name ?? code }) }),
+                    toast({
+                      kind: "ok",
+                      text: t("settings.content_language_changed", {
+                        lang:
+                          UI_LANGUAGES.find((l) => l.code === code)?.name ??
+                          code,
+                      }),
+                    }),
                   );
                 }}
               >
@@ -555,220 +729,19 @@ export default function Settings() {
                 <Segmented<"es-419" | "es-ES">
                   label={t("settings.spanish_variant")}
                   value={settings.spanish_variant ?? "es-419"}
-                  options={(["es-419", "es-ES"] as const).map((v) => ({ value: v, label: t(`settings.spanish_variant.${v}`) }))}
+                  options={(["es-419", "es-ES"] as const).map((v) => ({
+                    value: v,
+                    label: t(`settings.spanish_variant.${v}`),
+                  }))}
                   onChange={(v) => save({ spanish_variant: v })}
                 />
               )}
             </div>
           </section>
 
+          <MyTemplateCard />
+
           <PerformanceCard settings={settings} save={save} />
-          <TrashCard />
-          <section className="card setting" id="ai">
-            <div>
-              <h2>{t("settings.ai")}</h2>
-              <p>{t("settings.ai_desc")}</p>
-            </div>
-            <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
-              <div>
-                <label className="field-label" htmlFor="llm-model" style={{ display: "block", marginBottom: 6 }}>
-                  {t("settings.llm_model")}
-                </label>
-                <select
-                  id="llm-model"
-                  className="select"
-                  value={settings.llm_model}
-                  disabled={!llmInfo?.server}
-                  onChange={(e) => save({ llm_model: e.target.value })}
-                >
-                  <option value="auto">{t("settings.llm_auto", { model: llmInfo?.auto ?? "…" })}</option>
-                  {llmInfo?.installed.map((m) => (
-                    <option key={m.name} value={m.name}>
-                      {m.name}
-                      {m.params ? ` · ${m.params}` : ""}
-                      {m.size_gb ? ` · ${m.size_gb} GB` : ""}
-                    </option>
-                  ))}
-                  {settings.llm_model !== "auto" && !llmInfo?.installed.some((m) => m.name === settings.llm_model) && (
-                    <option value={settings.llm_model}>{settings.llm_model}</option>
-                  )}
-                </select>
-                {settings.fast_analysis && (
-                  <div className="field-hint" style={{ marginTop: 6 }}>
-                    {t("settings.fast_overrides", { model: llmInfo?.fast_model ?? "qwen3.5:4b" })}
-                  </div>
-                )}
-                {llmInfo && !llmInfo.server && (
-                  <div className="field-hint" style={{ marginTop: 6 }}>
-                    {t("settings.llm_offline")}
-                  </div>
-                )}
-              </div>
-              <div className="toggle-line">
-                <Toggle
-                  checked={settings.auto_analyze}
-                  onChange={(v) => save({ auto_analyze: v })}
-                  label={t("settings.auto_analyze")}
-                />
-                <span>{t("settings.auto_analyze")}</span>
-              </div>
-              <div className="fast-box">
-                <div className="toggle-line" style={{ alignItems: "flex-start" }}>
-                  <Toggle
-                    checked={settings.fast_analysis}
-                    onChange={(v) => save({ fast_analysis: v })}
-                    label={t("settings.fast")}
-                  />
-                  <div>
-                    <div style={{ fontWeight: 550 }}>{t("settings.fast")}</div>
-                    <div className="field-hint">
-                      {t("settings.fast_desc", { model: llmInfo?.fast_model ?? "qwen3.5:4b" })}
-                      {llmInfo && !llmInfo.fast_installed && llmInfo.server && <> {t("settings.fast_download")}</>}
-                    </div>
-                  </div>
-                </div>
-                {llmInfo && <SpeedCompare info={llmInfo} fast={settings.fast_analysis} />}
-              </div>
-              <div>
-                <label className="field-label" htmlFor="glossary" style={{ display: "block", marginBottom: 4 }}>
-                  {t("settings.glossary")}
-                </label>
-                <div className="field-hint" style={{ marginBottom: 8 }}>
-                  {t("settings.glossary_desc")}
-                </div>
-                <textarea
-                  id="glossary"
-                  className="textarea"
-                  dir="auto"
-                  value={glossary}
-                  placeholder={t("settings.glossary_placeholder")}
-                  onChange={(e) => setGlossary(e.target.value)}
-                />
-                <div className="save-line">
-                  <span className="muted">{t("settings.glossary_note")}</span>
-                  <button
-                    className="btn btn-primary btn-sm"
-                    disabled={!glossaryDirty}
-                    onClick={() => save({ glossary: parseWords(glossary) })}
-                  >
-                    {t("common.save")}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="card setting">
-            <div>
-              <h2>{t("settings.triggers")}</h2>
-              <p>{t("settings.triggers_desc")}</p>
-            </div>
-            <div>
-              <div className="lang-tabs" role="group">
-                {UI_LANGUAGES.map((l) => {
-                  const n = parseWords(drafts[l.code] ?? "").length;
-                  return (
-                    <button key={l.code} type="button" aria-pressed={trigLang === l.code} onClick={() => setTrigLang(l.code)}>
-                      {l.name}
-                      {n > 0 && <span className="n mono">{n}</span>}
-                    </button>
-                  );
-                })}
-              </div>
-              <textarea
-                className="textarea"
-                dir={trigLang === "ar" ? "rtl" : "auto"}
-                lang={trigLang}
-                value={drafts[trigLang] ?? ""}
-                placeholder={t("settings.triggers_placeholder")}
-                onChange={(e) => setDrafts({ ...drafts, [trigLang]: e.target.value })}
-              />
-              <div className="save-line">
-                <span className="muted">
-                  {t("settings.triggers_count", { n: parseWords(drafts[trigLang] ?? "").length })} ·{" "}
-                  {t("settings.triggers_note")}
-                </span>
-                <button className="btn btn-primary btn-sm" disabled={!dirty || savingTriggers} onClick={saveTriggers}>
-                  {t("common.save")}
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <section className="card setting">
-            <div>
-              <h2>{t("settings.encoder")}</h2>
-              <p>{t("settings.encoder_desc")}</p>
-            </div>
-            <div>
-              <select
-                className="select"
-                aria-label={t("settings.encoder")}
-                value={settings.video_encoder}
-                onChange={(e) => save({ video_encoder: e.target.value })}
-              >
-                <option value="auto">{t("settings.encoder_auto")}</option>
-                {meta?.encoders.map((e) => (
-                  <option key={e.name} value={e.name}>
-                    {e.label} ({e.name})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </section>
-
-          <section className="card setting">
-            <div>
-              <h2>{t("settings.mode")}</h2>
-              <p>{t("settings.mode_desc")}</p>
-            </div>
-            <div>
-              <Segmented<Mode>
-                block
-                value={settings.default_mode}
-                options={(["gaming", "study", "music"] as Mode[]).map((m) => ({ value: m, label: t(`mode.${m}`) }))}
-                onChange={(m) => save({ default_mode: m })}
-              />
-            </div>
-          </section>
-
-          <section className="card setting">
-            <div>
-              <h2>{t("settings.lan")}</h2>
-              <p>{t("settings.lan_desc")}</p>
-            </div>
-            <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
-              {meta?.lan_url ? (
-                <div style={{ display: "grid", gap: 6 }}>
-                  <span className="muted">{t("settings.lan_on")}</span>
-                  <div className="sugg">
-                    <Icon name="globe" />
-                    <span className="mono" dir="ltr">
-                      {meta.lan_url}
-                    </span>
-                    <CopyButton text={meta.lan_url} />
-                  </div>
-                </div>
-              ) : (
-                <div className="sugg">
-                  <span className="mono" dir="ltr">
-                    python cli.py serve --lan
-                  </span>
-                  <CopyButton text="python cli.py serve --lan" />
-                </div>
-              )}
-              <LanPinBox lanOn={!!meta?.lan_url} isLocal={!!meta?.is_local} />
-            </div>
-          </section>
-
-          <ChannelsCard />
-
-          <AutoClipCard />
-
-          <MarkersCard />
-
-          <PhoneCard />
-
           <AccountsSection />
 
           <YoutubeCard
@@ -779,44 +752,319 @@ export default function Settings() {
 
           <PublishingCard />
 
-          <section className="card setting" id="full-video">
-            <div>
-              <h2>{t("full.settings_title")}</h2>
-              <p>{t("full.settings_desc")}</p>
-            </div>
-            <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
-              <div className="toggle-line">
-                <Toggle
-                  checked={settings.full_upload_default !== false}
-                  onChange={(v) => save({ full_upload_default: v })}
-                  label={t("full.import_switch")}
-                />
-                <span>{t("full.import_switch")}</span>
-              </div>
-              <label className="field" style={{ maxWidth: 220 }}>
-                <span className="field-label">{t("full.settings_time")}</span>
-                <input
-                  className="input"
-                  type="time"
-                  value={settings.full_upload_time ?? "20:00"}
-                  onChange={(e) => e.target.value && save({ full_upload_time: e.target.value })}
-                />
-                <span className="field-hint">{t("full.settings_time_hint")}</span>
-              </label>
-            </div>
-          </section>
-
-          <CoverAiCard />
-
-          <MyVoiceCard />
-
-          <SetupCard />
-
           <UpdatesCard />
 
-          <AboutCard />
+          <Advanced
+            label={t("adv.title")}
+            hint={t("adv.hint")}
+            className="settings-advanced"
+            id="settings-advanced"
+          >
+            <section className="card setting" id="ai">
+              <div>
+                <h2>{t("settings.ai")}</h2>
+                <p>{t("settings.ai_desc")}</p>
+              </div>
+              <div style={{ display: "grid", gap: 16, alignContent: "start" }}>
+                <div>
+                  <label
+                    className="field-label"
+                    htmlFor="llm-model"
+                    style={{ display: "block", marginBottom: 6 }}
+                  >
+                    {t("settings.llm_model")}
+                  </label>
+                  <select
+                    id="llm-model"
+                    className="select"
+                    value={settings.llm_model}
+                    disabled={!llmInfo?.server}
+                    onChange={(e) => save({ llm_model: e.target.value })}
+                  >
+                    <option value="auto">
+                      {t("settings.llm_auto", { model: llmInfo?.auto ?? "…" })}
+                    </option>
+                    {llmInfo?.installed.map((m) => (
+                      <option key={m.name} value={m.name}>
+                        {m.name}
+                        {m.params ? ` · ${m.params}` : ""}
+                        {m.size_gb ? ` · ${m.size_gb} GB` : ""}
+                      </option>
+                    ))}
+                    {settings.llm_model !== "auto" &&
+                      !llmInfo?.installed.some(
+                        (m) => m.name === settings.llm_model,
+                      ) && (
+                        <option value={settings.llm_model}>
+                          {settings.llm_model}
+                        </option>
+                      )}
+                  </select>
+                  {settings.fast_analysis && (
+                    <div className="field-hint" style={{ marginTop: 6 }}>
+                      {t("settings.fast_overrides", {
+                        model: llmInfo?.fast_model ?? "qwen3.5:4b",
+                      })}
+                    </div>
+                  )}
+                  {llmInfo && !llmInfo.server && (
+                    <div className="field-hint" style={{ marginTop: 6 }}>
+                      {t("settings.llm_offline")}
+                    </div>
+                  )}
+                </div>
+                <div className="toggle-line">
+                  <Toggle
+                    checked={settings.auto_analyze}
+                    onChange={(v) => save({ auto_analyze: v })}
+                    label={t("settings.auto_analyze")}
+                  />
+                  <span>{t("settings.auto_analyze")}</span>
+                </div>
+                <div className="fast-box">
+                  <div
+                    className="toggle-line"
+                    style={{ alignItems: "flex-start" }}
+                  >
+                    <Toggle
+                      checked={settings.fast_analysis}
+                      onChange={(v) => save({ fast_analysis: v })}
+                      label={t("settings.fast")}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 550 }}>
+                        {t("settings.fast")}
+                      </div>
+                      <div className="field-hint">
+                        {t("settings.fast_desc", {
+                          model: llmInfo?.fast_model ?? "qwen3.5:4b",
+                        })}
+                        {llmInfo &&
+                          !llmInfo.fast_installed &&
+                          llmInfo.server && <> {t("settings.fast_download")}</>}
+                      </div>
+                    </div>
+                  </div>
+                  {llmInfo && (
+                    <SpeedCompare
+                      info={llmInfo}
+                      fast={settings.fast_analysis}
+                    />
+                  )}
+                </div>
+                <div>
+                  <label
+                    className="field-label"
+                    htmlFor="glossary"
+                    style={{ display: "block", marginBottom: 4 }}
+                  >
+                    {t("settings.glossary")}
+                  </label>
+                  <div className="field-hint" style={{ marginBottom: 8 }}>
+                    {t("settings.glossary_desc")}
+                  </div>
+                  <textarea
+                    id="glossary"
+                    className="textarea"
+                    dir="auto"
+                    value={glossary}
+                    placeholder={t("settings.glossary_placeholder")}
+                    onChange={(e) => setGlossary(e.target.value)}
+                  />
+                  <div className="save-line">
+                    <span className="muted">{t("settings.glossary_note")}</span>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      disabled={!glossaryDirty}
+                      onClick={() => save({ glossary: parseWords(glossary) })}
+                    >
+                      {t("common.save")}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-          <p className="muted mono" style={{ textAlign: "center", fontSize: 12 }}>
+            <section className="card setting" id="minigame-card">
+              <div>
+                <h2>{t("mg.title")}</h2>
+                <p>{t("mg.tagline")}</p>
+              </div>
+              <MiniGameSetting />
+            </section>
+
+            <TrashCard />
+            <section className="card setting" id="full-video">
+              <div>
+                <h2>{t("full.settings_title")}</h2>
+                <p>{t("full.settings_desc")}</p>
+              </div>
+              <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+                <div className="toggle-line">
+                  <Toggle
+                    checked={settings.full_upload_default !== false}
+                    onChange={(v) => save({ full_upload_default: v })}
+                    label={t("full.import_switch")}
+                  />
+                  <span>{t("full.import_switch")}</span>
+                </div>
+                <label className="field" style={{ maxWidth: 220 }}>
+                  <span className="field-label">{t("full.settings_time")}</span>
+                  <input
+                    className="input"
+                    type="time"
+                    value={settings.full_upload_time ?? "20:00"}
+                    onChange={(e) =>
+                      e.target.value &&
+                      save({ full_upload_time: e.target.value })
+                    }
+                  />
+                  <span className="field-hint">
+                    {t("full.settings_time_hint")}
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <section className="card setting">
+              <div>
+                <h2>{t("settings.triggers")}</h2>
+                <p>{t("settings.triggers_desc")}</p>
+              </div>
+              <div>
+                <div className="lang-tabs" role="group">
+                  {UI_LANGUAGES.map((l) => {
+                    const n = parseWords(drafts[l.code] ?? "").length;
+                    return (
+                      <button
+                        key={l.code}
+                        type="button"
+                        aria-pressed={trigLang === l.code}
+                        onClick={() => setTrigLang(l.code)}
+                      >
+                        {l.name}
+                        {n > 0 && <span className="n mono">{n}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                <textarea
+                  className="textarea"
+                  dir={trigLang === "ar" ? "rtl" : "auto"}
+                  lang={trigLang}
+                  value={drafts[trigLang] ?? ""}
+                  placeholder={t("settings.triggers_placeholder")}
+                  onChange={(e) =>
+                    setDrafts({ ...drafts, [trigLang]: e.target.value })
+                  }
+                />
+                <div className="save-line">
+                  <span className="muted">
+                    {t("settings.triggers_count", {
+                      n: parseWords(drafts[trigLang] ?? "").length,
+                    })}{" "}
+                    · {t("settings.triggers_note")}
+                  </span>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    disabled={!dirty || savingTriggers}
+                    onClick={saveTriggers}
+                  >
+                    {t("common.save")}
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            <section className="card setting">
+              <div>
+                <h2>{t("settings.encoder")}</h2>
+                <p>{t("settings.encoder_desc")}</p>
+              </div>
+              <div>
+                <select
+                  className="select"
+                  aria-label={t("settings.encoder")}
+                  value={settings.video_encoder}
+                  onChange={(e) => save({ video_encoder: e.target.value })}
+                >
+                  <option value="auto">{t("settings.encoder_auto")}</option>
+                  {meta?.encoders.map((e) => (
+                    <option key={e.name} value={e.name}>
+                      {e.label} ({e.name})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </section>
+
+            <section className="card setting">
+              <div>
+                <h2>{t("settings.mode")}</h2>
+                <p>{t("settings.mode_desc")}</p>
+              </div>
+              <div>
+                <Segmented<Mode>
+                  block
+                  value={settings.default_mode}
+                  options={(["gaming", "study", "music"] as Mode[]).map(
+                    (m) => ({ value: m, label: t(`mode.${m}`) }),
+                  )}
+                  onChange={(m) => save({ default_mode: m })}
+                />
+              </div>
+            </section>
+
+            <ChannelsCard />
+
+            <AutoClipCard />
+
+            <MarkersCard />
+
+            <PhoneCard />
+
+            <section className="card setting">
+              <div>
+                <h2>{t("settings.lan")}</h2>
+                <p>{t("settings.lan_desc")}</p>
+              </div>
+              <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+                {meta?.lan_url ? (
+                  <div style={{ display: "grid", gap: 6 }}>
+                    <span className="muted">{t("settings.lan_on")}</span>
+                    <div className="sugg">
+                      <Icon name="globe" />
+                      <span className="mono" dir="ltr">
+                        {meta.lan_url}
+                      </span>
+                      <CopyButton text={meta.lan_url} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="sugg">
+                    <span className="mono" dir="ltr">
+                      python cli.py serve --lan
+                    </span>
+                    <CopyButton text="python cli.py serve --lan" />
+                  </div>
+                )}
+                <LanPinBox lanOn={!!meta?.lan_url} isLocal={!!meta?.is_local} />
+              </div>
+            </section>
+
+            <CoverAiCard />
+
+            <MyVoiceCard />
+
+            <SetupCard />
+
+            <AboutCard />
+          </Advanced>
+
+          <p
+            className="muted mono"
+            style={{ textAlign: "center", fontSize: 12 }}
+          >
             {t("settings.version", { v: meta?.version ?? "" })}
           </p>
         </div>

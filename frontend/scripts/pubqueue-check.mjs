@@ -3,6 +3,7 @@
 // Picks the first n clips, "Prepare for Chrome" -> files under 10 MB + queue.json + calendar,
 // copies the brief, imports a status answer, checks the calendar table; also at phone width.
 import { mkdirSync } from "node:fs";
+import { apiHeaders } from "./api-token.mjs";
 
 const [base, shots, nArg] = process.argv.slice(2);
 const n = Number(nArg || 2);
@@ -29,6 +30,10 @@ const shot = async (name, full = false) => {
   await page.screenshot({ path: `${shots}/${name}.png`, fullPage: full });
 };
 
+// 1.2.63: the brand hashtag is a publish-queue setting (1.2.41); set it here instead of relying on
+// an old fixture value, so the "always first" check below tests something real
+const H = await apiHeaders(base);
+await page.request.put(`${base}/api/pubqueue/settings`, { data: { brand_hashtag: "#democreator", timezone: "Europe/Budapest" }, headers: H });
 await page.goto(`${base}/#/publish-queue`);
 await page.locator(".pq-actions").waitFor({ timeout: 30000 });
 if (await page.locator(".modal-backdrop").count()) {

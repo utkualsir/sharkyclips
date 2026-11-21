@@ -85,8 +85,10 @@ def write(project: Project, items: list[dict] | None = None, *, kind: str = "ful
         items = sorted(items, key=lambda c: c["start"])
     if not items:
         raise SharkyClipsError("Analyze the clips with the AI first.")
-    mine = style_mod.active(lang) or style_mod.sample()
     game = banks.project_game(project)
+    from .titles import mytemplate
+
+    mine = mytemplate.for_project(style_mod.active(lang), project, game, lang) or style_mod.sample()
     gid = game["id"]
     bank = banks.get(gid)
     transcript = project.load_transcript() if project.transcript_path.is_file() else {}

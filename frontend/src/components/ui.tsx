@@ -28,6 +28,42 @@ export function Segmented<T extends string>({
   );
 }
 
+/** Scroll to an element, opening any folded "Advanced" section around it first (1.2.63). */
+export function revealById(id: string, opts: ScrollIntoViewOptions = { block: "start" }) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  for (let d = el.closest("details"); d; d = d.parentElement?.closest("details") ?? null) d.open = true;
+  el.scrollIntoView(opts);
+}
+
+/** 1.2.63 Pro mode: the less used controls of a screen, folded away (one look on every screen). */
+export function Advanced({
+  label,
+  children,
+  className = "",
+  id,
+  hint,
+}: {
+  label: string;
+  children: ReactNode;
+  className?: string;
+  id?: string;
+  hint?: string;
+}) {
+  return (
+    <details className={`advanced ${className}`.trim()} id={id}>
+      <summary>
+        <span className="advanced-chev" aria-hidden="true" />
+        {label}
+      </summary>
+      <div className="advanced-body">
+        {hint && <p className="field-hint advanced-hint">{hint}</p>}
+        {children}
+      </div>
+    </details>
+  );
+}
+
 export function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: string; disabled?: boolean }) {
   return (
     <button

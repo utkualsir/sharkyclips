@@ -761,3 +761,7 @@
 .ez-settings .btn { white-space: normal; height: auto; min-height: 40px; text-align: center; }
 .ez-card-body { min-width: 0; }
 .ez-card .ez-big { white-space: normal; height: auto; min-height: 44px; line-height: 1.2; min-width: 0; }
+.ez-video-box { display: grid; min-width: 0; }
+.ez-video-box:fullscreen { background: #000; grid-template-rows: 1fr auto; padding: 12px; }
+.ez-video-box:fullscreen .ez-video { max-height: none; height: calc(100vh - 80px); margin: 0 auto; }
+.ez-video-box:fullscreen .clipbar { color: #fff; }

@@ -1,20 +1,39 @@
 import { useEffect, useState } from "react";
 import { useCountUp } from "../motion";
-import { api, type Candidate, type ChatStats, type Job, type ProjectDetail } from "../api";
+import {
+  api,
+  type Candidate,
+  type ChatStats,
+  type Job,
+  type ProjectDetail,
+} from "../api";
 import { fmtCompact, fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
-import { CopyButton, jobLabel } from "./ui";
+import { Advanced, CopyButton, jobLabel } from "./ui";
 import { Icon } from "./Icons";
+import { EpisodeBox } from "./MyTemplate";
 
 // ----------------------------------------------------------------- signals
 
-export function SignalStats({ cand, project }: { cand: Candidate | null; project: ProjectDetail }) {
+export function SignalStats({
+  cand,
+  project,
+}: {
+  cand: Candidate | null;
+  project: ProjectDetail;
+}) {
   const { t, num } = useI18n();
   const signals = project.highlights?.signals ?? {};
   const order = Object.keys(signals).filter((k) => signals[k].status === "ok");
   const keywords = cand
-    ? [...new Set(cand.reasons.filter((r) => r.code === "keyword" && r.value).map((r) => r.value!))]
+    ? [
+        ...new Set(
+          cand.reasons
+            .filter((r) => r.code === "keyword" && r.value)
+            .map((r) => r.value!),
+        ),
+      ]
     : [];
   return (
     <section className="panel" aria-labelledby="sig-title">
@@ -22,7 +41,11 @@ export function SignalStats({ cand, project }: { cand: Candidate | null; project
         <h2 className="section-title" id="sig-title">
           {t("signals.title")}
         </h2>
-        {cand && <span className="chip chip-outline mono">#{String(cand.rank).padStart(2, "0")}</span>}
+        {cand && (
+          <span className="chip chip-outline mono">
+            #{String(cand.rank).padStart(2, "0")}
+          </span>
+        )}
       </div>
       {cand ? (
         <>
@@ -36,7 +59,10 @@ export function SignalStats({ cand, project }: { cand: Candidate | null; project
                     <span className="val">{num(Math.round(v * 100))}</span>
                   </div>
                   <div className="sig-bar">
-                    <span className={v >= 0.6 ? "hot" : ""} style={{ width: `${Math.max(2, v * 100)}%` }} />
+                    <span
+                      className={v >= 0.6 ? "hot" : ""}
+                      style={{ width: `${Math.max(2, v * 100)}%` }}
+                    />
                   </div>
                 </div>
               );
@@ -51,7 +77,9 @@ export function SignalStats({ cand, project }: { cand: Candidate | null; project
             <dt>{t("signals.length")}</dt>
             <dd className="tc">{num(Math.round(cand.duration))} s</dd>
           </dl>
-          {project.chat?.status === "ok" && cand.chat && <ChatSection chat={cand.chat} clipStart={cand.start} />}
+          {project.chat?.status === "ok" && cand.chat && (
+            <ChatSection chat={cand.chat} clipStart={cand.start} />
+          )}
           {keywords.length > 0 && (
             <>
               <div className="divider" />
@@ -78,12 +106,21 @@ export function SignalStats({ cand, project }: { cand: Candidate | null; project
 }
 
 /** "5.2x" from the chat signal -> "5,2×" in the UI language's number format. */
-export function fmtRatio(value: string, num: (n: number, digits?: number) => string): string {
+export function fmtRatio(
+  value: string,
+  num: (n: number, digits?: number) => string,
+): string {
   const x = parseFloat(value);
   return Number.isFinite(x) ? `${num(x, 1)}×` : value;
 }
 
-function ChatSection({ chat, clipStart }: { chat: ChatStats; clipStart: number }) {
+function ChatSection({
+  chat,
+  clipStart,
+}: {
+  chat: ChatStats;
+  clipStart: number;
+}) {
   const { t, num } = useI18n();
   const hot = chat.ratio != null && chat.ratio >= 2;
   return (
@@ -109,7 +146,10 @@ function ChatSection({ chat, clipStart }: { chat: ChatStats; clipStart: number }
               <dd>
                 <span className="mono">{num(chat.per_minute, 1)}</span>
                 {chat.ratio != null && (
-                  <span className={hot ? "gold" : "muted"} style={{ fontSize: 12 }}>
+                  <span
+                    className={hot ? "gold" : "muted"}
+                    style={{ fontSize: 12 }}
+                  >
                     {" · "}
                     {t("chat.vs_usual", { x: num(chat.ratio, 1) })}
                   </span>
@@ -126,13 +166,21 @@ function ChatSection({ chat, clipStart }: { chat: ChatStats; clipStart: number }
                 {s.value && (
                   <span className="mono" dir="ltr">
                     {" "}
-                    {t("chat.spike_at", { value: fmtRatio(s.value, num), time: fmtTime(Math.max(0, s.t - clipStart)) })}
+                    {t("chat.spike_at", {
+                      value: fmtRatio(s.value, num),
+                      time: fmtTime(Math.max(0, s.t - clipStart)),
+                    })}
                   </span>
                 )}
               </span>
             ))}
             {chat.reactions.map((r) => (
-              <span key={`r${r}`} className="chip" title={t("reason.chat_reactions")} dir="auto">
+              <span
+                key={`r${r}`}
+                className="chip"
+                title={t("reason.chat_reactions")}
+                dir="auto"
+              >
                 {t("chat.reactions")}: “{r}”
               </span>
             ))}
@@ -145,7 +193,13 @@ function ChatSection({ chat, clipStart }: { chat: ChatStats; clipStart: number }
 
 // ----------------------------------------------------------------- publish
 
-function ScoreRing({ score, label }: { score: number | null; label: string | null }) {
+function ScoreRing({
+  score,
+  label,
+}: {
+  score: number | null;
+  label: string | null;
+}) {
   const { t, num } = useI18n();
   const r = 50;
   const c = 2 * Math.PI * r;
@@ -153,23 +207,46 @@ function ScoreRing({ score, label }: { score: number | null; label: string | nul
   const frac = shown == null ? 0 : shown / 100;
   return (
     <div style={{ display: "grid", gap: 8, justifyItems: "center" }}>
-      <div className="score-ring" role="img" aria-label={`${t("publish.viral")}: ${score ?? "—"}/100`}>
+      <div
+        className="score-ring"
+        role="img"
+        aria-label={`${t("publish.viral")}: ${score ?? "—"}/100`}
+      >
         <svg viewBox="0 0 116 116">
-          <circle cx="58" cy="58" r={r} fill="none" stroke="var(--track)" strokeWidth="8" />
+          <circle
+            cx="58"
+            cy="58"
+            r={r}
+            fill="none"
+            stroke="var(--track)"
+            strokeWidth="8"
+          />
           {score != null && (
-            <circle cx="58" cy="58" r={r} fill="none" stroke="var(--gold)" strokeWidth="8" strokeLinecap="round"
-              strokeDasharray={`${c * frac} ${c}`} />
+            <circle
+              cx="58"
+              cy="58"
+              r={r}
+              fill="none"
+              stroke="var(--gold)"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${c * frac} ${c}`}
+            />
           )}
         </svg>
         <div className="center">
-          <span className="num">{shown == null ? "—" : num(Math.round(shown))}</span>
+          <span className="num">
+            {shown == null ? "—" : num(Math.round(shown))}
+          </span>
           <span className="den">/100</span>
         </div>
       </div>
       {label ? (
         <span className="chip chip-gold">{t(`publish.label.${label}`)}</span>
       ) : (
-        <span className="muted" style={{ fontSize: 12 }}>{t("publish.viral")}</span>
+        <span className="muted" style={{ fontSize: 12 }}>
+          {t("publish.viral")}
+        </span>
       )}
     </div>
   );
@@ -189,20 +266,37 @@ type PubState =
   | { kind: "clip_failed"; message: string };
 
 /** Which state the publish package of this clip is in: never just empty boxes. */
-function publishState(cand: Candidate | null, llmAvailable: boolean, llmJob: Job | null, lastAnalyze: Job | null): PubState {
+function publishState(
+  cand: Candidate | null,
+  llmAvailable: boolean,
+  llmJob: Job | null,
+  lastAnalyze: Job | null,
+): PubState {
   if (cand?.publish.available) return { kind: "ready" };
   const job = llmJob?.kind === "analyze" ? llmJob : null;
   if (job) {
     if (job.status === "queued") return { kind: "queued" };
     if (job.paused) return { kind: "paused", reason: job.paused };
-    if (job.detail?.count) return { kind: "analyzing", index: Math.min(job.detail.index + 1, job.detail.count), count: job.detail.count };
+    if (job.detail?.count)
+      return {
+        kind: "analyzing",
+        index: Math.min(job.detail.index + 1, job.detail.count),
+        count: job.detail.count,
+      };
     return { kind: "loading" };
   }
   if (!llmAvailable) return { kind: "no_llm" };
   if (lastAnalyze?.status === "error" && lastAnalyze.error) {
-    return { kind: "error", message: lastAnalyze.error.message, hint: lastAnalyze.error.hint, job: lastAnalyze };
+    return {
+      kind: "error",
+      message: lastAnalyze.error.message,
+      hint: lastAnalyze.error.hint,
+      job: lastAnalyze,
+    };
   }
-  const failed = (lastAnalyze?.status === "done" ? lastAnalyze.result?.failed : null) as { rank: number; error: string }[] | null;
+  const failed = (
+    lastAnalyze?.status === "done" ? lastAnalyze.result?.failed : null
+  ) as { rank: number; error: string }[] | null;
   const mine = cand && failed?.find((f) => f.rank === cand.rank);
   if (mine) return { kind: "clip_failed", message: mine.error };
   return { kind: "none" };
@@ -230,9 +324,57 @@ export function PublishPanel({
   const state = publishState(cand, llmAvailable, llmJob, lastAnalyze);
   const ready = state.kind === "ready";
   const working = !!llmJob;
-  const writingTitles = llmJob?.kind === "titles" && llmJob.params?.clip_id === cand?.id;
+  const writingTitles =
+    llmJob?.kind === "titles" && llmJob.params?.clip_id === cand?.id;
+  const writingDesc =
+    llmJob?.kind === "description" && llmJob.params?.clip_id === cand?.id;
+  const [tagsBusy, setTagsBusy] = useState(false);
+  const [tagsOverride, setTagsOverride] = useState<{
+    id: string;
+    tags: string[];
+    desc: string | null;
+  } | null>(null);
+  const hashtags =
+    tagsOverride && tagsOverride.id === cand?.id
+      ? tagsOverride.tags
+      : (pub?.hashtags ?? []);
+  const regenTags = async () => {
+    if (!cand) return;
+    setTagsBusy(true);
+    try {
+      const r = await api.regenerateField(projectId, cand.id, "hashtags");
+      setTagsOverride({
+        id: cand.id,
+        tags: r.hashtags ?? [],
+        desc: r.description ?? null,
+      });
+      toast({ kind: "ok", text: t("publish.regenerated") });
+    } catch (e: any) {
+      toast({ kind: "err", text: e.message, hint: e.hint });
+    } finally {
+      setTagsBusy(false);
+    }
+  };
+  const regenBtn = (busy: boolean, onClick: () => void, what: string) => (
+    <button
+      className="btn btn-sm btn-ghost"
+      disabled={working || busy}
+      onClick={onClick}
+      aria-label={t("publish.regenerate_field", { what })}
+    >
+      {busy ? (
+        <span className="spinner" style={{ width: 13, height: 13 }} />
+      ) : (
+        <Icon name="refresh" />
+      )}
+      {t("publish.regenerate")}
+    </button>
+  );
   const [votes, setVotes] = useState<Record<string, number>>({});
-  useEffect(() => setVotes(pub?.title_votes ?? {}), [cand?.id, pub?.title_votes]);
+  useEffect(
+    () => setVotes(pub?.title_votes ?? {}),
+    [cand?.id, pub?.title_votes],
+  );
 
   const vote = async (title: string, v: 1 | -1) => {
     if (!cand) return;
@@ -257,7 +399,8 @@ export function PublishPanel({
   };
 
   const retry = () => {
-    if (state.kind === "error" && state.job) run(() => api.retryJob(state.job!.id));
+    if (state.kind === "error" && state.job)
+      run(() => api.retryJob(state.job!.id));
     else onAnalyze();
   };
 
@@ -282,17 +425,42 @@ export function PublishPanel({
         </div>
       )}
 
-      {!ready && <PublishStatus state={state} onAnalyze={onAnalyze} onRetry={retry} />}
+      {!ready && (
+        <PublishStatus state={state} onAnalyze={onAnalyze} onRetry={retry} />
+      )}
 
       {ready && pub && (
         <div className="pub-grid">
-          <div style={{ display: "grid", gap: 14, justifyItems: "center", alignContent: "start" }}>
-            <ScoreRing score={pub.calibrated?.score ?? pub.viral_score} label={!pub.calibrated ? pub.viral_label : null} />
+          <div
+            style={{
+              display: "grid",
+              gap: 14,
+              justifyItems: "center",
+              alignContent: "start",
+            }}
+          >
+            <ScoreRing
+              score={pub.calibrated?.score ?? pub.viral_score}
+              label={!pub.calibrated ? pub.viral_label : null}
+            />
             {pub.calibrated && (
-              <div className="cal-box" title={t("cal.tooltip", { score: pub.calibrated.score, def: pub.calibrated.default, n: pub.calibrated.n })}>
+              <div
+                className="cal-box"
+                title={t("cal.tooltip", {
+                  score: pub.calibrated.score,
+                  def: pub.calibrated.default,
+                  n: pub.calibrated.n,
+                })}
+              >
                 <span className="chip chip-gold">{t("cal.badge")}</span>
-                <span className="muted">{t("cal.default_was", { def: num(pub.calibrated.default) })}</span>
-                <span className="muted">{t("cal.predicted_views", { v: fmtCompact(pub.calibrated.predicted_views, lang) })}</span>
+                <span className="muted">
+                  {t("cal.default_was", { def: num(pub.calibrated.default) })}
+                </span>
+                <span className="muted">
+                  {t("cal.predicted_views", {
+                    v: fmtCompact(pub.calibrated.predicted_views, lang),
+                  })}
+                </span>
               </div>
             )}
             {pub.sub_scores && (
@@ -304,7 +472,9 @@ export function PublishPanel({
                       <span className="val">{num(pub.sub_scores![k])}</span>
                     </div>
                     <div className="sig-bar" style={{ height: 4 }}>
-                      <span style={{ width: `${Math.max(2, pub.sub_scores![k])}%` }} />
+                      <span
+                        style={{ width: `${Math.max(2, pub.sub_scores![k])}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -313,25 +483,34 @@ export function PublishPanel({
           </div>
           <div style={{ minWidth: 0 }}>
             {cand?.llm?.what_happens && (
-              <p className="muted" style={{ margin: "0 0 12px", fontSize: 12.5, lineHeight: 1.5 }} lang="en" dir="ltr">
+              <p
+                className="muted"
+                style={{ margin: "0 0 12px", fontSize: 12.5, lineHeight: 1.5 }}
+                lang="en"
+                dir="ltr"
+              >
                 {cand.llm.what_happens}
               </p>
             )}
+            <EpisodeBox projectId={projectId} />
             <div className="pub-block">
               <div className="pub-row">
                 <span className="field-label">{t("publish.titles")}</span>
-                <button
-                  className="btn btn-sm btn-ghost"
-                  disabled={working}
-                  onClick={() => cand && run(() => api.regeneratePublish(projectId, cand.id))}
-                >
-                  {writingTitles ? <span className="spinner" style={{ width: 13, height: 13 }} /> : <Icon name="refresh" />}
-                  {t("publish.new")}
-                </button>
+                {regenBtn(
+                  writingTitles,
+                  () =>
+                    cand &&
+                    run(() => api.regeneratePublish(projectId, cand.id)),
+                  t("publish.titles"),
+                )}
               </div>
               {pub.titles.length ? (
                 pub.titles.map((title) => (
-                  <div className="sugg" key={title} style={writingTitles ? { opacity: 0.5 } : undefined}>
+                  <div
+                    className="sugg"
+                    key={title}
+                    style={writingTitles ? { opacity: 0.5 } : undefined}
+                  >
                     <span dir="auto">{title}</span>
                     <button
                       type="button"
@@ -363,17 +542,49 @@ export function PublishPanel({
             <div className="pub-block">
               <div className="pub-row">
                 <span className="field-label">{t("publish.description")}</span>
-                {pub.description && <CopyButton text={pub.description} />}
+                <span className="pub-row-actions">
+                  {pub.description &&
+                    llmAvailable &&
+                    regenBtn(
+                      writingDesc,
+                      () =>
+                        cand &&
+                        run(() =>
+                          api.regenerateField(
+                            projectId,
+                            cand.id,
+                            "description",
+                          ),
+                        ),
+                      t("publish.description"),
+                    )}
+                  {pub.description && (
+                    <CopyButton
+                      text={pub.description_full || pub.description}
+                    />
+                  )}
+                </span>
               </div>
               {pub.description ? (
-                <div className="desc-box" dir="auto" lang={pub.language ?? undefined}>
-                  {pub.description}
+                <div
+                  className="desc-box"
+                  dir="auto"
+                  lang={pub.language ?? undefined}
+                  style={writingDesc ? { opacity: 0.5 } : undefined}
+                >
+                  {(tagsOverride?.id === cand?.id && tagsOverride?.desc) ||
+                    pub.description_full ||
+                    pub.description}
                 </div>
               ) : (
                 <div className="pub-missing">
                   <span>{t("publish.desc_missing")}</span>
                   {llmAvailable && (
-                    <button className="btn btn-sm" onClick={onAnalyze} disabled={working}>
+                    <button
+                      className="btn btn-sm"
+                      onClick={onAnalyze}
+                      disabled={working}
+                    >
                       <Icon name="sparkles" />
                       {t("publish.desc_write")}
                     </button>
@@ -383,12 +594,25 @@ export function PublishPanel({
             </div>
             <div className="pub-block">
               <div className="pub-row">
-                <span className="field-label">{t("publish.hashtags")}</span>
-                {pub.hashtags.length > 0 && <CopyButton text={pub.hashtags.join(" ")} label={t("common.copy_all")} />}
+                <span className="field-label">
+                  {t("publish.hashtags")}{" "}
+                  {hashtags.length > 0 && (
+                    <span className="muted mono">({hashtags.length})</span>
+                  )}
+                </span>
+                <span className="pub-row-actions">
+                  {regenBtn(tagsBusy, regenTags, t("publish.hashtags"))}
+                  {hashtags.length > 0 && (
+                    <CopyButton
+                      text={hashtags.join(" ")}
+                      label={t("common.copy_all")}
+                    />
+                  )}
+                </span>
               </div>
-              {pub.hashtags.length ? (
+              {hashtags.length ? (
                 <div className="cand-reasons">
-                  {pub.hashtags.map((h) => (
+                  {hashtags.map((h) => (
                     <span key={h} className="chip" dir="auto">
                       {h}
                     </span>
@@ -398,19 +622,23 @@ export function PublishPanel({
                 <p className="pub-missing">{t("publish.hashtags_missing")}</p>
               )}
             </div>
-            <div className="pub-block">
-              <div className="pub-row">
-                <span className="field-label">{t("publish.cover")}</span>
-                {pub.cover_prompt && <CopyButton text={pub.cover_prompt} />}
-              </div>
-              {pub.cover_prompt ? (
-                <div className="prompt-box" dir="ltr" lang="en">
-                  {pub.cover_prompt}
+            <Advanced label={t("publish.cover")} className="pub-block inline">
+              <div className="pub-block">
+                <div className="pub-row">
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    {t("publish.cover_hint")}
+                  </span>
+                  {pub.cover_prompt && <CopyButton text={pub.cover_prompt} />}
                 </div>
-              ) : (
-                <p className="pub-missing">{t("publish.cover_missing")}</p>
-              )}
-            </div>
+                {pub.cover_prompt ? (
+                  <div className="prompt-box" dir="ltr" lang="en">
+                    {pub.cover_prompt}
+                  </div>
+                ) : (
+                  <p className="pub-missing">{t("publish.cover_missing")}</p>
+                )}
+              </div>
+            </Advanced>
           </div>
         </div>
       )}
@@ -418,7 +646,15 @@ export function PublishPanel({
   );
 }
 
-function PublishStatus({ state, onAnalyze, onRetry }: { state: PubState; onAnalyze: () => void; onRetry: () => void }) {
+function PublishStatus({
+  state,
+  onAnalyze,
+  onRetry,
+}: {
+  state: PubState;
+  onAnalyze: () => void;
+  onRetry: () => void;
+}) {
   const { t, num } = useI18n();
   let icon: string = "sparkles";
   let title = "";
@@ -459,15 +695,23 @@ function PublishStatus({ state, onAnalyze, onRetry }: { state: PubState; onAnaly
       break;
     case "analyzing":
       busy = true;
-      title = t("publish.state.analyzing", { i: num(state.index), n: num(state.count) });
+      title = t("publish.state.analyzing", {
+        i: num(state.index),
+        n: num(state.count),
+      });
       body = t("publish.state.analyzing_body");
       break;
     case "error":
     case "clip_failed":
       icon = "alert";
       tone = "error";
-      title = state.kind === "error" ? t("publish.state.error") : t("publish.state.clip_failed");
-      body = state.message + (state.kind === "error" && state.hint ? ` ${state.hint}` : "");
+      title =
+        state.kind === "error"
+          ? t("publish.state.error")
+          : t("publish.state.clip_failed");
+      body =
+        state.message +
+        (state.kind === "error" && state.hint ? ` ${state.hint}` : "");
       action = (
         <button className="btn btn-sm" onClick={onRetry}>
           <Icon name="refresh" />
@@ -477,9 +721,17 @@ function PublishStatus({ state, onAnalyze, onRetry }: { state: PubState; onAnaly
       break;
   }
   return (
-    <div className={`pub-state ${tone ? `pub-state-${tone}` : ""}`} role="status" aria-live="polite">
+    <div
+      className={`pub-state ${tone ? `pub-state-${tone}` : ""}`}
+      role="status"
+      aria-live="polite"
+    >
       <span className="pub-state-icon" aria-hidden="true">
-        {busy ? <span className="spinner" /> : <Icon name={icon as any} size={18} />}
+        {busy ? (
+          <span className="spinner" />
+        ) : (
+          <Icon name={icon as any} size={18} />
+        )}
       </span>
       <div className="pub-state-text">
         <b>{title}</b>

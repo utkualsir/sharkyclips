@@ -9,6 +9,253 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.63] - 2026-11-21
+Titles, descriptions and hashtags can now follow your own fixed style. Pro mode is calmer, and when you watch a clip you can always see where it ends.
+
+### New
+- **My style.** A new card in Settings: switch it on and every gaming title, description and hashtag list follows one fixed layout. You get 3 title options in capital letters with 1-2 emojis at the end. The description starts with a short greeting, tells what happened in a few sentences, then adds your subscribe line, your social links and the hashtags. Other languages get the same layout, translated. Your social links are always used exactly as you typed them.
+- **Episode numbers for story games.** For a story game (like Spider-Man 2) the long-video title gets the episode number, and the next project of the same game gets the next number. You can change the number in the project.
+- **Only real facts.** The texts use only what was said in the clip, what the game showed, the project name or what you typed. If a text names a character or event that is not in the clip, it is written again. When it is not sure, it stays general.
+- **Write one field again.** The title, the description and the hashtags each have their own "Regenerate" button now.
+- **See where a clip ends.** When you watch a clip, the progress bar shows the clip's start and end, the part of the clip is highlighted, and you see how many seconds are left. At the end, the clip stops exactly on its last frame (or starts again, if you choose "Loop"), and a small "End of clip" sign appears. This works in both modes, in the big full-screen preview and on every screen size.
+
+### Improved
+- **A calmer Pro mode.** Every Pro screen now shows only the actions you use most. The others are still there, in a closed "More options" or "Advanced" section. Settings shows the main cards first and keeps the rest under "Advanced".
+- **Clearer names.** "Queue" is now called "Jobs", so it is not mixed up with "Publish queue". In the Library, the YouTube-only button is now called "YouTube now".
+- **Games from the project name.** When the project name says Battlefield 6, Rematch or Spider-Man 2, the texts now name and tag the right game.
+
+### Fixed
+- **Hidden "Updates" link.** On a 1280 px wide screen the last link of the Pro top bar was cut off. All links fit now.
+- **Turkish letters in titles.** Words written without Turkish letters (like "MUKEMMEL") are now corrected ("MÜKEMMEL"). English names stay as they are.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Başlıklar, açıklamalar ve etiketler artık senin sabit tarzına uyabiliyor. Pro mod daha sade, bir klibi izlerken nerede bittiğini de her zaman görüyorsun.
+
+### Yeni
+- **Benim tarzım.** Ayarlar'da yeni bir kart: açınca her oyun başlığı, açıklaması ve etiket listesi tek bir sabit düzene uyuyor. Sonunda 1-2 emoji olan, büyük harfli 3 başlık seçeneği alıyorsun. Açıklama kısa bir selamla başlıyor, ne olduğunu birkaç cümleyle anlatıyor, sonra abone ol satırını, sosyal medya bağlantılarını ve etiketleri ekliyor. Diğer diller aynı düzeni çevrilmiş olarak alıyor. Sosyal medya bağlantıların her zaman tam yazdığın gibi kullanılıyor.
+- **Hikaye oyunları için bölüm numarası.** Hikaye oyunlarında (Spider-Man 2 gibi) uzun video başlığına bölüm numarası ekleniyor, aynı oyunun sonraki projesi bir sonraki numarayı alıyor. Numarayı projede değiştirebilirsin.
+- **Sadece gerçek bilgiler.** Metinler sadece klipte söylenenleri, oyunun gösterdiklerini, proje adını ya da senin yazdıklarını kullanıyor. Bir metin klipte olmayan bir karakter ya da olaydan bahsederse yeniden yazılıyor. Emin değilse genel kalıyor.
+- **Tek bir alanı yeniden yaz.** Başlık, açıklama ve etiketlerin artık her birinin kendi "Yeniden yaz" düğmesi var.
+- **Klibin nerede bittiğini gör.** Bir klibi izlerken ilerleme çubuğu klibin başını ve sonunu gösteriyor, klip kısmı vurgulanıyor ve kaç saniye kaldığını görüyorsun. Sonunda klip tam son karesinde duruyor (ya da "Döngü" seçtiysen baştan başlıyor) ve küçük bir "Klibin sonu" yazısı çıkıyor. Bu iki modda da, büyük tam ekran önizlemede ve her ekran boyutunda çalışıyor.
+
+### İyileştirmeler
+- **Daha sade Pro mod.** Her Pro ekranı artık sadece en çok kullandığın işlemleri gösteriyor. Diğerleri hâlâ orada, kapalı bir "Daha fazla seçenek" ya da "Gelişmiş" bölümünde. Ayarlar önce ana kartları gösteriyor, gerisini "Gelişmiş" altında tutuyor.
+- **Daha net isimler.** "Kuyruk" artık "İşler" diye geçiyor, böylece "Yayın Kuyruğu" ile karışmıyor. Kitaplık'ta sadece YouTube'a gönderen düğmenin adı artık "Şimdi YouTube'a".
+- **Proje adından oyun.** Proje adında Battlefield 6, Rematch ya da Spider-Man 2 yazıyorsa metinler artık doğru oyunu adıyla ve etiketiyle kullanıyor.
+
+### Düzeltmeler
+- **Gizlenen "Güncellemeler" bağlantısı.** 1280 px genişliğindeki ekranda Pro üst çubuğunun son bağlantısı kesiliyordu. Artık bütün bağlantılar sığıyor.
+- **Başlıklarda Türkçe harfler.** Türkçe harfleri olmadan yazılan kelimeler ("MUKEMMEL" gibi) artık düzeltiliyor ("MÜKEMMEL"). İngilizce isimler olduğu gibi kalıyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Los títulos, descripciones y hashtags ahora pueden seguir tu propio estilo fijo. El modo Pro está más tranquilo y, cuando ves un clip, siempre ves dónde termina.
+
+### Nuevo
+- **Mi estilo.** Una tarjeta nueva en Ajustes: actívala y cada título, descripción y lista de hashtags de juegos sigue un formato fijo. Recibes 3 opciones de título en mayúsculas con 1-2 emojis al final. La descripción empieza con un saludo corto, cuenta lo que pasó en unas frases y luego añade tu frase para suscribirse, tus redes y los hashtags. Los otros idiomas usan el mismo formato, traducido. Tus enlaces de redes se usan siempre tal como los escribiste.
+- **Números de episodio para juegos de historia.** En un juego de historia (como Spider-Man 2) el título del vídeo largo lleva el número de episodio, y el siguiente proyecto del mismo juego recibe el número siguiente. Puedes cambiar el número en el proyecto.
+- **Solo hechos reales.** Los textos usan solo lo que se dijo en el clip, lo que mostró el juego, el nombre del proyecto o lo que escribiste. Si un texto nombra un personaje o un hecho que no está en el clip, se vuelve a escribir. Si no está seguro, se queda general.
+- **Vuelve a escribir un solo campo.** El título, la descripción y los hashtags tienen ahora cada uno su propio botón "Regenerar".
+- **Mira dónde termina un clip.** Cuando ves un clip, la barra de progreso muestra el inicio y el final del clip, la parte del clip se resalta y ves cuántos segundos quedan. Al final, el clip se para justo en su último fotograma (o vuelve a empezar si eliges "Repetir") y aparece un pequeño aviso "Fin del clip". Funciona en los dos modos, en la vista grande a pantalla completa y en cualquier tamaño de pantalla.
+
+### Mejoras
+- **Un modo Pro más tranquilo.** Cada pantalla Pro muestra ahora solo las acciones que más usas. Las demás siguen ahí, en una sección cerrada "Más opciones" o "Avanzado". Ajustes muestra primero las tarjetas principales y guarda el resto en "Avanzado".
+- **Nombres más claros.** "Cola" ahora se llama "Tareas", para no confundirla con "Cola de publicación". En la Biblioteca, el botón que solo publica en YouTube ahora se llama "YouTube ahora".
+- **Juegos desde el nombre del proyecto.** Cuando el nombre del proyecto dice Battlefield 6, Rematch o Spider-Man 2, los textos ahora nombran y etiquetan el juego correcto.
+
+### Correcciones
+- **Enlace "Actualizaciones" oculto.** En una pantalla de 1280 px de ancho se cortaba el último enlace de la barra superior del modo Pro. Ahora caben todos.
+- **Letras turcas en los títulos.** Las palabras turcas escritas sin sus letras propias (como "MUKEMMEL") ahora se corrigen ("MÜKEMMEL"). Los nombres en inglés se quedan igual.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Títulos, descrições e hashtags agora podem seguir o seu próprio estilo fixo. O modo Pro está mais calmo e, quando você assiste a um clipe, sempre vê onde ele termina.
+
+### Novo
+- **Meu estilo.** Um cartão novo nas Configurações: ligue e cada título, descrição e lista de hashtags de jogos segue um formato fixo. Você recebe 3 opções de título em maiúsculas com 1-2 emojis no fim. A descrição começa com um cumprimento curto, conta o que aconteceu em poucas frases e depois adiciona sua frase de inscrição, suas redes sociais e as hashtags. Os outros idiomas usam o mesmo formato, traduzido. Seus links de redes sociais são sempre usados do jeito que você digitou.
+- **Números de episódio para jogos de história.** Em um jogo de história (como Spider-Man 2) o título do vídeo longo ganha o número do episódio, e o próximo projeto do mesmo jogo recebe o número seguinte. Você pode mudar o número no projeto.
+- **Só fatos reais.** Os textos usam só o que foi dito no clipe, o que o jogo mostrou, o nome do projeto ou o que você digitou. Se um texto cita um personagem ou acontecimento que não está no clipe, ele é escrito de novo. Quando não tem certeza, fica geral.
+- **Escreva um campo de novo.** O título, a descrição e as hashtags agora têm cada um seu próprio botão "Gerar de novo".
+- **Veja onde um clipe termina.** Quando você assiste a um clipe, a barra de progresso mostra o início e o fim do clipe, a parte do clipe fica destacada e você vê quantos segundos faltam. No fim, o clipe para exatamente no último quadro (ou recomeça, se você escolher "Repetir") e aparece um pequeno aviso "Fim do clipe". Funciona nos dois modos, na prévia grande em tela cheia e em qualquer tamanho de tela.
+
+### Melhorias
+- **Um modo Pro mais calmo.** Cada tela do modo Pro agora mostra só as ações que você mais usa. As outras continuam lá, numa seção fechada "Mais opções" ou "Avançado". As Configurações mostram primeiro os cartões principais e guardam o resto em "Avançado".
+- **Nomes mais claros.** "Fila" agora se chama "Tarefas", para não confundir com "Fila de publicação". Na Biblioteca, o botão que publica só no YouTube agora se chama "YouTube agora".
+- **Jogos pelo nome do projeto.** Quando o nome do projeto diz Battlefield 6, Rematch ou Spider-Man 2, os textos agora citam e marcam o jogo certo.
+
+### Correções
+- **Link "Atualizações" escondido.** Numa tela de 1280 px de largura, o último link da barra superior do modo Pro ficava cortado. Agora todos cabem.
+- **Letras turcas nos títulos.** Palavras turcas escritas sem as letras próprias (como "MUKEMMEL") agora são corrigidas ("MÜKEMMEL"). Nomes em inglês ficam como estão.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Titel, Beschreibungen und Hashtags können jetzt deinem eigenen festen Stil folgen. Der Pro-Modus ist ruhiger, und wenn du einen Clip ansiehst, siehst du immer, wo er endet.
+
+### Neu
+- **Mein Stil.** Eine neue Karte in den Einstellungen: Schalte sie ein, und jeder Gaming-Titel, jede Beschreibung und jede Hashtag-Liste folgt einem festen Aufbau. Du bekommst 3 Titelvorschläge in Großbuchstaben mit 1-2 Emojis am Ende. Die Beschreibung beginnt mit einem kurzen Gruß, erzählt in ein paar Sätzen, was passiert ist, und fügt dann deine Abo-Zeile, deine Social-Media-Links und die Hashtags an. Andere Sprachen bekommen denselben Aufbau, übersetzt. Deine Social-Media-Links werden immer genau so verwendet, wie du sie geschrieben hast.
+- **Folgennummern für Story-Spiele.** Bei einem Story-Spiel (wie Spider-Man 2) bekommt der Titel des langen Videos die Folgennummer, und das nächste Projekt desselben Spiels bekommt die nächste Nummer. Du kannst die Nummer im Projekt ändern.
+- **Nur echte Fakten.** Die Texte nutzen nur, was im Clip gesagt wurde, was das Spiel gezeigt hat, den Projektnamen oder was du geschrieben hast. Nennt ein Text eine Figur oder ein Ereignis, das nicht im Clip vorkommt, wird er neu geschrieben. Ist es unsicher, bleibt er allgemein.
+- **Ein Feld neu schreiben.** Titel, Beschreibung und Hashtags haben jetzt jeweils einen eigenen Knopf "Neu erstellen".
+- **Sieh, wo ein Clip endet.** Wenn du einen Clip ansiehst, zeigt die Fortschrittsleiste Anfang und Ende des Clips, der Clip-Teil ist hervorgehoben, und du siehst, wie viele Sekunden noch übrig sind. Am Ende hält der Clip genau auf seinem letzten Bild an (oder beginnt von vorn, wenn du "Wiederholen" wählst), und ein kleiner Hinweis "Clip-Ende" erscheint. Das funktioniert in beiden Modi, in der großen Vollbild-Vorschau und auf jeder Bildschirmgröße.
+
+### Verbessert
+- **Ein ruhigerer Pro-Modus.** Jeder Pro-Bildschirm zeigt jetzt nur die Aktionen, die du am meisten nutzt. Die anderen sind noch da, in einem geschlossenen Bereich "Weitere Optionen" oder "Erweitert". Die Einstellungen zeigen zuerst die wichtigsten Karten und den Rest unter "Erweitert".
+- **Klarere Namen.** "Warteschlange" heißt jetzt "Aufgaben", damit man sie nicht mit der "Veröffentlichungs-Warteschlange" verwechselt. In der Bibliothek heißt der Knopf, der nur auf YouTube veröffentlicht, jetzt "Jetzt auf YouTube".
+- **Spiele aus dem Projektnamen.** Wenn im Projektnamen Battlefield 6, Rematch oder Spider-Man 2 steht, nennen und taggen die Texte jetzt das richtige Spiel.
+
+### Behoben
+- **Versteckter Link "Updates".** Auf einem 1280 px breiten Bildschirm war der letzte Link der oberen Leiste im Pro-Modus abgeschnitten. Jetzt passen alle Links.
+- **Türkische Buchstaben in Titeln.** Türkische Wörter ohne ihre eigenen Buchstaben (wie "MUKEMMEL") werden jetzt korrigiert ("MÜKEMMEL"). Englische Namen bleiben, wie sie sind.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Les titres, descriptions et hashtags peuvent maintenant suivre ton propre style fixe. Le mode Pro est plus calme et, quand tu regardes un clip, tu vois toujours où il se termine.
+
+### Nouveau
+- **Mon style.** Une nouvelle carte dans les Réglages : active-la et chaque titre, description et liste de hashtags de jeu suit une mise en forme fixe. Tu reçois 3 titres au choix en majuscules avec 1-2 emojis à la fin. La description commence par un court bonjour, raconte ce qui s'est passé en quelques phrases, puis ajoute ta phrase d'abonnement, tes réseaux sociaux et les hashtags. Les autres langues ont la même mise en forme, traduite. Tes liens de réseaux sociaux sont toujours repris exactement comme tu les as écrits.
+- **Numéros d'épisode pour les jeux à histoire.** Pour un jeu à histoire (comme Spider-Man 2), le titre de la vidéo longue reçoit le numéro d'épisode, et le projet suivant du même jeu reçoit le numéro suivant. Tu peux changer le numéro dans le projet.
+- **Seulement des faits réels.** Les textes n'utilisent que ce qui a été dit dans le clip, ce que le jeu a montré, le nom du projet ou ce que tu as écrit. Si un texte cite un personnage ou un événement absent du clip, il est réécrit. En cas de doute, il reste général.
+- **Réécrire un seul champ.** Le titre, la description et les hashtags ont maintenant chacun leur bouton « Régénérer ».
+- **Vois où un clip se termine.** Quand tu regardes un clip, la barre de progression montre le début et la fin du clip, la partie du clip est mise en avant et tu vois combien de secondes il reste. À la fin, le clip s'arrête exactement sur sa dernière image (ou recommence si tu choisis « En boucle ») et un petit message « Fin du clip » apparaît. Cela marche dans les deux modes, dans le grand aperçu en plein écran et sur toutes les tailles d'écran.
+
+### Améliorations
+- **Un mode Pro plus calme.** Chaque écran du mode Pro ne montre plus que les actions que tu utilises le plus. Les autres sont toujours là, dans une section fermée « Plus d'options » ou « Avancé ». Les Réglages montrent d'abord les cartes principales et gardent le reste sous « Avancé ».
+- **Des noms plus clairs.** « File d'attente » s'appelle maintenant « Tâches », pour ne pas la confondre avec la « File de publication ». Dans la Bibliothèque, le bouton qui publie seulement sur YouTube s'appelle maintenant « YouTube maintenant ».
+- **Les jeux d'après le nom du projet.** Quand le nom du projet dit Battlefield 6, Rematch ou Spider-Man 2, les textes nomment et taguent maintenant le bon jeu.
+
+### Corrections
+- **Lien « Mises à jour » caché.** Sur un écran de 1280 px de large, le dernier lien de la barre du haut en mode Pro était coupé. Tous les liens tiennent maintenant.
+- **Lettres turques dans les titres.** Les mots turcs écrits sans leurs lettres propres (comme « MUKEMMEL ») sont maintenant corrigés (« MÜKEMMEL »). Les noms anglais restent tels quels.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A címek, leírások és hashtagek mostantól a saját, rögzített stílusodat követhetik. A Pro mód nyugodtabb, és amikor megnézel egy klipet, mindig látod, hol ér véget.
+
+### Új
+- **Saját stílus.** Új kártya a Beállításokban: kapcsold be, és minden játékos cím, leírás és hashtaglista egy rögzített felépítést követ. 3 nagybetűs címjavaslatot kapsz, a végükön 1-2 emojival. A leírás rövid köszönéssel indul, néhány mondatban elmondja, mi történt, majd hozzáteszi a feliratkozós sort, a közösségi linkjeidet és a hashtageket. A többi nyelv ugyanezt a felépítést kapja, lefordítva. A közösségi linkjeidet mindig pontosan úgy használjuk, ahogy beírtad.
+- **Részszámok sztorijátékokhoz.** Sztorijátéknál (például Spider-Man 2) a hosszú videó címébe bekerül a rész száma, és ugyanannak a játéknak a következő projektje a következő számot kapja. A számot a projektben módosíthatod.
+- **Csak valódi tények.** A szövegek csak azt használják, ami a klipben elhangzott, amit a játék mutatott, a projekt nevét vagy amit te írtál. Ha egy szöveg olyan szereplőt vagy eseményt említ, ami nincs a klipben, újraírjuk. Ha bizonytalan, általános marad.
+- **Egy mező újraírása.** A címnek, a leírásnak és a hashtageknek most külön "Újraírás" gombja van.
+- **Lásd, hol ér véget egy klip.** Amikor megnézel egy klipet, a folyamatjelző mutatja a klip elejét és végét, a klip része ki van emelve, és látod, hány másodperc van még hátra. A végén a klip pontosan az utolsó képkockáján áll meg (vagy elölről kezdi, ha az "Ismétlés"-t választod), és megjelenik egy kis "A klip vége" felirat. Ez mindkét módban működik, a nagy teljes képernyős előnézetben és minden képernyőméreten.
+
+### Fejlesztések
+- **Nyugodtabb Pro mód.** Minden Pro képernyő most csak a leggyakrabban használt műveleteket mutatja. A többi is megvan, egy zárt "További beállítások" vagy "Haladó" részben. A Beállítások előbb a fő kártyákat mutatja, a többit a "Haladó" alatt tartja.
+- **Világosabb nevek.** A "Sor" neve most "Feladatok", hogy ne keverd össze a "Közzétételi sorral". A Könyvtárban a csak YouTube-ra küldő gomb neve most "YouTube most".
+- **Játék a projekt nevéből.** Ha a projekt nevében Battlefield 6, Rematch vagy Spider-Man 2 szerepel, a szövegek most a helyes játékot nevezik meg és jelölik.
+
+### Javítások
+- **Elrejtett "Frissítések" link.** 1280 px széles képernyőn a Pro mód felső sávjának utolsó linkje le volt vágva. Most minden link elfér.
+- **Török betűk a címekben.** A saját betűik nélkül írt török szavakat (például "MUKEMMEL") most kijavítjuk ("MÜKEMMEL"). Az angol nevek változatlanok maradnak.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Названия, описания и хэштеги теперь могут следовать твоему собственному стилю. Режим Pro стал спокойнее, а когда смотришь клип, всегда видно, где он заканчивается.
+
+### Новое
+- **Мой стиль.** Новая карточка в настройках: включи её, и каждое название, описание и список хэштегов для игр будут по одной схеме. Ты получаешь 3 варианта названия заглавными буквами с 1-2 эмодзи в конце. Описание начинается с короткого приветствия, в нескольких предложениях рассказывает, что произошло, а потом добавляет строку про подписку, твои соцсети и хэштеги. Другие языки получают ту же схему в переводе. Ссылки на соцсети всегда используются точно так, как ты их написал.
+- **Номера серий для сюжетных игр.** В сюжетной игре (например, Spider-Man 2) в название длинного видео добавляется номер серии, а следующий проект той же игры получает следующий номер. Номер можно изменить в проекте.
+- **Только настоящие факты.** Тексты используют только то, что сказано в клипе, что показала игра, название проекта или то, что ты написал. Если текст называет персонажа или событие, которого нет в клипе, он пишется заново. Если нет уверенности, текст остаётся общим.
+- **Переписать одно поле.** У названия, описания и хэштегов теперь своя кнопка «Заново».
+- **Видно, где заканчивается клип.** Когда смотришь клип, полоса прогресса показывает начало и конец клипа, часть клипа выделена, и видно, сколько секунд осталось. В конце клип останавливается ровно на последнем кадре (или начинается снова, если выбрано «По кругу»), и появляется небольшая надпись «Конец клипа». Это работает в обоих режимах, в большом полноэкранном просмотре и на любом размере экрана.
+
+### Улучшения
+- **Более спокойный режим Pro.** Каждый экран Pro теперь показывает только самые нужные действия. Остальные никуда не делись: они в закрытом разделе «Больше настроек» или «Дополнительно». Настройки сначала показывают главные карточки, а остальное — в разделе «Дополнительно».
+- **Понятнее названия.** «Очередь» теперь называется «Задачи», чтобы не путать её с «Очередью публикаций». В библиотеке кнопка, которая публикует только на YouTube, теперь называется «На YouTube сейчас».
+- **Игра из названия проекта.** Если в названии проекта есть Battlefield 6, Rematch или Spider-Man 2, тексты теперь называют и отмечают правильную игру.
+
+### Исправления
+- **Скрытая ссылка «Обновления».** На экране шириной 1280 px последняя ссылка верхней панели режима Pro обрезалась. Теперь все ссылки помещаются.
+- **Турецкие буквы в названиях.** Турецкие слова, написанные без своих букв (например, «MUKEMMEL»), теперь исправляются («MÜKEMMEL»). Английские имена остаются как есть.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+يمكن الآن أن تتبع العناوين والأوصاف والوسوم أسلوبك الثابت الخاص. وضع Pro أهدأ، وعندما تشاهد مقطعًا ترى دائمًا أين ينتهي.
+
+### جديد
+- **أسلوبي.** بطاقة جديدة في الإعدادات: فعّلها وسيتبع كل عنوان ووصف وقائمة وسوم للألعاب تنسيقًا ثابتًا واحدًا. تحصل على 3 خيارات للعنوان بأحرف كبيرة مع 1-2 رموز تعبيرية في النهاية. يبدأ الوصف بتحية قصيرة، ويحكي ما حدث في بضع جمل، ثم يضيف سطر الاشتراك وروابط حساباتك والوسوم. اللغات الأخرى تحصل على نفس التنسيق مترجمًا. روابط حساباتك تُستخدم دائمًا كما كتبتها تمامًا.
+- **أرقام الحلقات لألعاب القصة.** في لعبة قصة (مثل Spider-Man 2) يحصل عنوان الفيديو الطويل على رقم الحلقة، ويحصل المشروع التالي لنفس اللعبة على الرقم التالي. يمكنك تغيير الرقم في المشروع.
+- **حقائق حقيقية فقط.** تستخدم النصوص فقط ما قيل في المقطع، وما أظهرته اللعبة، واسم المشروع أو ما كتبته. إذا ذكر نص شخصية أو حدثًا غير موجود في المقطع، تُعاد كتابته. وعند عدم التأكد يبقى النص عامًا.
+- **أعد كتابة حقل واحد.** صار للعنوان والوصف والوسوم الآن زر "إعادة الإنشاء" خاص بكل منها.
+- **شاهد أين ينتهي المقطع.** عندما تشاهد مقطعًا، يُظهر شريط التقدم بداية المقطع ونهايته، ويُميَّز جزء المقطع، وترى كم ثانية بقيت. في النهاية يتوقف المقطع تمامًا عند آخر إطار له (أو يبدأ من جديد إذا اخترت "تكرار")، وتظهر علامة صغيرة "نهاية المقطع". يعمل هذا في الوضعين، وفي المعاينة الكبيرة بملء الشاشة، وعلى كل أحجام الشاشات.
+
+### تحسينات
+- **وضع Pro أهدأ.** كل شاشة في وضع Pro تعرض الآن فقط الإجراءات التي تستخدمها أكثر. الباقي ما زال موجودًا في قسم مغلق "خيارات أكثر" أو "متقدم". تعرض الإعدادات البطاقات الرئيسية أولًا وتضع الباقي تحت "متقدم".
+- **أسماء أوضح.** صار اسم "قائمة الانتظار" الآن "المهام" حتى لا تختلط بـ"قائمة النشر". في المكتبة، صار اسم الزر الذي ينشر على يوتيوب فقط "يوتيوب الآن".
+- **اللعبة من اسم المشروع.** عندما يذكر اسم المشروع Battlefield 6 أو Rematch أو Spider-Man 2، تذكر النصوص الآن اللعبة الصحيحة وتضع وسمها.
+
+### إصلاحات
+- **رابط "التحديثات" المخفي.** على شاشة بعرض 1280 بكسل كان آخر رابط في الشريط العلوي لوضع Pro مقطوعًا. الآن تتسع كل الروابط.
+- **الحروف التركية في العناوين.** الكلمات التركية المكتوبة دون حروفها الخاصة (مثل "MUKEMMEL") تُصحَّح الآن ("MÜKEMMEL"). الأسماء الإنجليزية تبقى كما هي.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+标题、简介和标签现在可以按你自己的固定风格来写。专业模式更简洁，看片段时也总能看到它在哪里结束。
+
+### 新功能
+- **我的风格。** 设置里新增一张卡片：打开后，每个游戏标题、简介和标签列表都按同一个固定格式生成。你会得到 3 个全大写的标题选项，结尾带 1-2 个表情。简介以简短的问候开头，用几句话讲清发生了什么，然后加上订阅提醒、你的社交媒体链接和标签。其他语言使用相同格式的翻译版。你的社交媒体链接始终按你写的原样使用。
+- **剧情游戏的集数。** 对于剧情游戏（比如 Spider-Man 2），长视频标题会带上集数，同一游戏的下一个项目会自动用下一个编号。你可以在项目里修改编号。
+- **只用真实信息。** 文字只使用片段里说过的话、游戏画面显示的内容、项目名称或你输入的内容。如果文字提到了片段里没有的角色或事件，就会重写。不确定时就写得笼统一些。
+- **单独重写一项。** 标题、简介和标签现在各有自己的"重新生成"按钮。
+- **看清片段在哪里结束。** 看片段时，进度条会显示片段的开始和结束，片段部分会高亮，并显示还剩几秒。到结尾时，片段会正好停在最后一帧（如果选择"循环"则从头再播），并出现一个小小的"片段结束"提示。两种模式、全屏大预览和各种屏幕尺寸下都有效。
+
+### 改进
+- **更简洁的专业模式。** 每个专业模式页面现在只显示最常用的操作。其他功能都还在，放在收起的"更多选项"或"高级"区域里。设置页先显示主要卡片，其余放在"高级"下面。
+- **更清楚的名称。** "队列"现在叫"任务"，不会再和"发布队列"混淆。在媒体库里，只发到 YouTube 的按钮现在叫"立即发到 YouTube"。
+- **从项目名识别游戏。** 当项目名包含 Battlefield 6、Rematch 或 Spider-Man 2 时，文字现在会写出并标记正确的游戏。
+
+### 修复
+- **被隐藏的"更新"链接。** 在 1280 像素宽的屏幕上，专业模式顶部栏的最后一个链接会被截掉。现在所有链接都能显示。
+- **标题里的土耳其字母。** 没有用土耳其字母书写的土耳其单词（比如"MUKEMMEL"）现在会被改正（"MÜKEMMEL"）。英文名称保持不变。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+タイトル・説明・ハッシュタグを、自分の決まったスタイルに合わせられるようになりました。プロモードはすっきりし、クリップを見ている時はいつでも終わりの位置がわかります。
+
+### 新機能
+- **マイスタイル。** 設定に新しいカードが加わりました。オンにすると、ゲームのタイトル・説明・ハッシュタグがすべて同じ決まった形で作られます。最後に絵文字1-2個が付いた大文字のタイトル候補が3つ出ます。説明は短いあいさつで始まり、何が起きたかを数文で伝え、そのあとチャンネル登録のお願い、SNSのリンク、ハッシュタグが続きます。他の言語も同じ形を翻訳して使います。SNSのリンクはいつも入力したとおりに使われます。
+- **ストーリーゲームの話数。** ストーリーゲーム（Spider-Man 2 など）では長い動画のタイトルに話数が入り、同じゲームの次のプロジェクトには次の番号が付きます。番号はプロジェクトで変更できます。
+- **本当の事実だけ。** 文章に使うのは、クリップで話された内容、ゲーム画面に出た内容、プロジェクト名、または自分で入力した内容だけです。クリップにないキャラクターや出来事を書いた場合は作り直します。確かでない時は一般的な書き方にします。
+- **1つの項目だけ作り直す。** タイトル・説明・ハッシュタグに、それぞれ「作り直す」ボタンが付きました。
+- **クリップの終わりが見える。** クリップを見ている時、進行バーにクリップの始まりと終わりが表示され、クリップの部分が強調され、残り秒数も表示されます。最後はクリップの最後のフレームでぴったり止まり（「ループ」を選ぶと最初から再生）、小さな「クリップの終わり」の表示が出ます。両方のモード、全画面の大きなプレビュー、どの画面サイズでも使えます。
+
+### 改善
+- **すっきりしたプロモード。** プロモードの各画面には、よく使う操作だけが表示されるようになりました。ほかの機能も消えておらず、閉じた「その他の設定」や「詳細設定」の中にあります。設定画面は主なカードを先に表示し、残りは「詳細設定」にまとめました。
+- **わかりやすい名前。** 「キュー」は「処理」という名前になり、「投稿キュー」と混ざらなくなりました。ライブラリで YouTube だけに投稿するボタンは「今すぐYouTubeへ」になりました。
+- **プロジェクト名からゲームを判断。** プロジェクト名に Battlefield 6、Rematch、Spider-Man 2 が入っていると、正しいゲーム名とタグが使われるようになりました。
+
+### 修正
+- **隠れていた「アップデート」リンク。** 幅1280pxの画面で、プロモードの上部バーの最後のリンクが切れていました。今はすべて表示されます。
+- **タイトルのトルコ語の文字。** トルコ語の文字を使わずに書かれた単語（「MUKEMMEL」など）が直るようになりました（「MÜKEMMEL」）。英語の名前はそのままです。
+
+</details>
+
 ## [1.2.62] - 2026-11-21
 Instagram is now switched off for publishing until you turn it on again, and when you do post there, the app keeps a safe pace so your account looks less like a robot.
 

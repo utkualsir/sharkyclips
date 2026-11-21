@@ -4896,3 +4896,69 @@ a.edit-note:hover { text-decoration: underline; }
 .mg-dock span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mg-dock-ready { border-color: var(--gold); color: var(--strong); }
 body:has(.mg-dock) .app-footer { padding-bottom: 72px; }
+
+/* 1.2.63 Pro mode: one "Advanced" look for the less used controls of every screen */
+.advanced { border: 1px dashed var(--border-strong); border-radius: var(--r-sm); padding: 0 12px; background: transparent; }
+.advanced > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; min-height: 38px;
+  font-size: 13px; font-weight: 550; color: var(--muted); user-select: none;
+}
+.advanced > summary::-webkit-details-marker { display: none; }
+.advanced > summary:hover { color: var(--strong); }
+.advanced > summary:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+.advanced-chev { width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg); transition: transform 0.15s; flex: none; }
+[dir="rtl"] .advanced-chev { transform: rotate(135deg); }
+.advanced[open] > summary .advanced-chev { transform: rotate(45deg); }
+.advanced-body { display: grid; gap: 12px; padding: 4px 0 12px; min-width: 0; }
+.advanced-hint { margin: 0; }
+.advanced.inline { border: 0; padding: 0; }
+.advanced.inline > summary { min-height: 32px; }
+.proj-more .advanced-body { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.clip-more { margin: 0 10px 8px; }
+.clip-more .advanced-body { display: flex; flex-wrap: wrap; gap: 4px; }
+.lower-grid.single { grid-template-columns: minmax(0, 1fr); }
+.settings-advanced > .advanced-body { gap: 16px; }
+.pub-row-actions { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+@media (prefers-reduced-motion: reduce) { .advanced-chev { transition: none; } }
+/* 1.2.63: every Pro nav link fits at 1280 px (the 8th, "Updates", used to hide behind the edge) */
+@media (max-width: 1500px) {
+  .nav a { padding: 7px 9px; }
+  .job-pill b { max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+}
+@media (max-width: 1300px) {
+  .nav a { padding: 7px 7px; font-size: 13.5px; }
+  .job-pill b { display: none; }
+}
+
+/* 1.2.63 clip end point: range on the progress bar, start / end markers, time left, End of clip */
+.btn-xs { height: 26px; padding: 0 8px; font-size: 12px; gap: 4px; }
+.btn-xs.icon-btn { width: 26px; padding: 0; }
+.clipbar { display: grid; gap: 4px; padding: 6px 2px 2px; min-width: 0; }
+.clipbar-track { position: relative; height: 14px; cursor: pointer; touch-action: none; border-radius: 7px; }
+.clipbar-track::before { content: ""; position: absolute; inset-inline: 0; top: 5px; height: 4px; border-radius: 2px; background: var(--surface-3); }
+.clipbar-track:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.clipbar-range { position: absolute; top: 3px; height: 8px; border-radius: 4px; background: var(--gold-soft); border: 1px solid var(--gold-line); box-sizing: border-box; }
+.clipbar-done { position: absolute; top: 5px; height: 4px; border-radius: 2px; background: var(--gold); }
+.clipbar-mark { position: absolute; top: -1px; width: 3px; height: 16px; margin-inline-start: -1.5px; border-radius: 2px; background: var(--strong); }
+.clipbar-mark.end { background: var(--danger); }
+.clipbar-mark.end.hit { box-shadow: 0 0 0 3px var(--danger-soft); }
+.clipbar-head { position: absolute; top: 1px; width: 12px; height: 12px; margin-inline-start: -6px; border-radius: 50%; background: var(--text); border: 2px solid var(--bg); box-sizing: border-box; pointer-events: none; }
+.clipbar-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; min-width: 0; }
+.clipbar-left { font-weight: 600; color: var(--strong); }
+.clipbar.compact { padding: 4px 8px 2px; }
+.clipbar.compact .clipbar-range-text { display: none; }
+.clip-end-badge { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 4; pointer-events: none;
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 650;
+  background: rgba(10, 16, 32, 0.82); color: #fff; opacity: 0; transition: opacity 0.18s; white-space: nowrap; }
+.clip-end-badge.on { opacity: 1; }
+.clip-video { display: grid; min-width: 0; }
+.clip-video-frame { position: relative; min-width: 0; }
+.clip-video-frame video { display: block; width: 100%; }
+.clip-video:fullscreen, .player-box:fullscreen { background: #000; display: grid; grid-template-rows: 1fr auto; padding: 12px; }
+.clip-video:fullscreen .clip-video-frame, .player-box:fullscreen .player { display: grid; place-items: center; min-height: 0; }
+.clip-video:fullscreen video, .player-box:fullscreen video { max-height: calc(100vh - 90px); width: auto; max-width: 100%; margin: auto; }
+.clip-video:fullscreen .clipbar, .player-box:fullscreen .clipbar { color: #fff; }
+.player-box { position: relative; min-width: 0; }
+.vprev-frame { position: relative; }
+@media (prefers-reduced-motion: reduce) { .clip-end-badge { transition: none; } }

@@ -13,8 +13,18 @@ import {
 import { BleepBadge, BleepCheckedButton } from "../components/BleepReport";
 import { EasyProgress, ModeChip } from "../components/Easy";
 import { GameChip } from "../components/GameChip";
-import { CaptionFixer, CutRow, ReasonChips, SmartBanner, TasteButtons } from "../components/EasyCut";
-import { ConnectionPill, ShortsOverlay, usePhonePreview } from "../components/EasyAuto";
+import {
+  CaptionFixer,
+  CutRow,
+  ReasonChips,
+  SmartBanner,
+  TasteButtons,
+} from "../components/EasyCut";
+import {
+  ConnectionPill,
+  ShortsOverlay,
+  usePhonePreview,
+} from "../components/EasyAuto";
 import { CoverStudio } from "../components/CoverStudio";
 import { DubSwitch } from "../components/MyVoice";
 import { DeleteDialog, useUndoToast } from "../components/Trash";
@@ -22,6 +32,16 @@ import { PublishBlock, useTargets } from "../components/PublishAll";
 import { publishApi } from "../multipost";
 import { Icon } from "../components/Icons";
 import { Modal, ProgressBar, Toggle } from "../components/ui";
+import {
+  ClipBar,
+  EndBadge,
+  toggleBig,
+  useClipEndMode,
+  useClipEnforcer,
+  useEndShown,
+  useVideoEl,
+  useVideoTime,
+} from "../components/ClipEnd";
 import { ConnectPrompt } from "../components/YoutubeConnect";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
@@ -45,7 +65,13 @@ function once(key: string): boolean {
 
 function fmtWhen(iso: string | null | undefined, lang: string): string {
   if (!iso) return "";
-  return new Intl.DateTimeFormat(`${lang}-u-nu-latn`, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+  return new Intl.DateTimeFormat(`${lang}-u-nu-latn`, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
 }
 
 /** Easy mode: one project = progress, then the best clips with two big buttons each. */
@@ -71,7 +97,9 @@ export default function EasyProject({ id }: { id: string }) {
 
   const load = useCallback(async () => {
     try {
-      const v = prepared.current ? await easyApi.view(id) : await easyApi.prepare(id);
+      const v = prepared.current
+        ? await easyApi.view(id)
+        : await easyApi.prepare(id);
       prepared.current = true;
       setView(v);
     } catch (e) {
@@ -87,13 +115,28 @@ export default function EasyProject({ id }: { id: string }) {
   const moving =
     !!view &&
     (view.state === "working" ||
-      view.clips.some((c) => ["rendering", "queued"].includes(c.render.status) || ["uploading", "queued_uploading", "rendering"].includes(c.upload.step ?? "") ||
-        Object.values(c.platforms ?? {}).some((x) => x.status === "exporting" || x.status === "uploading") ||
-        (["youtube", "tiktok", "reels"] as const).some((p) => ["preparing", "uploading", "processing"].includes(c.posts?.[p]?.status ?? ""))) ||
+      view.clips.some(
+        (c) =>
+          ["rendering", "queued"].includes(c.render.status) ||
+          ["uploading", "queued_uploading", "rendering"].includes(
+            c.upload.step ?? "",
+          ) ||
+          Object.values(c.platforms ?? {}).some(
+            (x) => x.status === "exporting" || x.status === "uploading",
+          ) ||
+          (["youtube", "tiktok", "reels"] as const).some((p) =>
+            ["preparing", "uploading", "processing"].includes(
+              c.posts?.[p]?.status ?? "",
+            ),
+          ),
+      ) ||
       Object.keys(tracked).length > 0);
   useEffect(() => {
     const ms = moving ? 1500 : 15000;
-    const iv = window.setInterval(() => document.visibilityState === "visible" && load(), ms);
+    const iv = window.setInterval(
+      () => document.visibilityState === "visible" && load(),
+      ms,
+    );
     return () => window.clearInterval(iv);
   }, [moving, load]);
 
@@ -104,20 +147,41 @@ export default function EasyProject({ id }: { id: string }) {
     for (const [cid, title] of Object.entries(tracked)) {
       const c = view.clips.find((x) => x.id === cid);
       if (!c) continue;
-      if (c.upload.status === "published" || c.upload.status === "locked" || (c.upload.status === "scheduled" && c.upload.step === "uploaded")) {
+      if (
+        c.upload.status === "published" ||
+        c.upload.status === "locked" ||
+        (c.upload.status === "scheduled" && c.upload.step === "uploaded")
+      ) {
         done.push(cid);
         const url = c.upload.url;
         toast({
           kind: "ok",
-          text: c.upload.status === "scheduled" ? t("easy.toast_planned_up", { title }) : t("easy.toast_uploaded", { title }),
-          action: url ? { label: t("easy.open_youtube"), run: () => window.open(url, "_blank", "noopener") } : undefined,
+          text:
+            c.upload.status === "scheduled"
+              ? t("easy.toast_planned_up", { title })
+              : t("easy.toast_uploaded", { title }),
+          action: url
+            ? {
+                label: t("easy.open_youtube"),
+                run: () => window.open(url, "_blank", "noopener"),
+              }
+            : undefined,
         });
       } else if (c.upload.status === "failed") {
         done.push(cid);
-        toast({ kind: "err", text: t("easy.toast_upload_failed", { title }), hint: c.upload.error?.message });
+        toast({
+          kind: "err",
+          text: t("easy.toast_upload_failed", { title }),
+          hint: c.upload.error?.message,
+        });
       }
     }
-    if (done.length) setTracked((cur) => Object.fromEntries(Object.entries(cur).filter(([k]) => !done.includes(k))));
+    if (done.length)
+      setTracked((cur) =>
+        Object.fromEntries(
+          Object.entries(cur).filter(([k]) => !done.includes(k)),
+        ),
+      );
   }, [view]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (missing) {
@@ -136,7 +200,10 @@ export default function EasyProject({ id }: { id: string }) {
   if (!view) {
     return (
       <main className="page ez-page" aria-busy="true">
-        <div className="skeleton" style={{ height: 40, width: "50%", marginBottom: 24 }} />
+        <div
+          className="skeleton"
+          style={{ height: 40, width: "50%", marginBottom: 24 }}
+        />
         <div className="ez-grid">
           {[0, 1, 2].map((i) => (
             <div key={i} className="skeleton ez-card-skel" />
@@ -148,7 +215,11 @@ export default function EasyProject({ id }: { id: string }) {
 
   const tellLock = () => {
     if (view.youtube.lock === "locked" && once(LOCK_TOLD)) {
-      toast({ kind: "info", text: t("easy.lock_title"), hint: t("easy.lock_body") });
+      toast({
+        kind: "info",
+        text: t("easy.lock_title"),
+        hint: t("easy.lock_body"),
+      });
     }
   };
 
@@ -160,11 +231,25 @@ export default function EasyProject({ id }: { id: string }) {
     } else if (r.status === "scheduled") {
       toast({
         kind: "ok",
-        text: t("easy.toast_planned", { title, when: fmtWhen(r.publish_at, lang) }),
-        hint: r.today_full ? t("easy.today_full", { n: view.daily_limit }) : null,
+        text: t("easy.toast_planned", {
+          title,
+          when: fmtWhen(r.publish_at, lang),
+        }),
+        hint: r.today_full
+          ? t("easy.today_full", { n: view.daily_limit })
+          : null,
       });
     } else if (r.status === "published") {
-      toast({ kind: "ok", text: t("easy.already_up"), action: r.url ? { label: t("easy.open_youtube"), run: () => window.open(r.url!, "_blank", "noopener") } : undefined });
+      toast({
+        kind: "ok",
+        text: t("easy.already_up"),
+        action: r.url
+          ? {
+              label: t("easy.open_youtube"),
+              run: () => window.open(r.url!, "_blank", "noopener"),
+            }
+          : undefined,
+      });
     } else if (r.status === "error") {
       toast({ kind: "err", text: r.error || t("common.error") });
     }
@@ -174,22 +259,42 @@ export default function EasyProject({ id }: { id: string }) {
     if (!cids.length) return;
     if (!(targets.length === 1 && targets[0] === "youtube")) {
       // 1.2.36: every platform that's switched on (a clip that needs a look is left out and said)
-      setBusy((b) => ({ ...b, ...Object.fromEntries(cids.map((c) => [c, "upload" as const])) }));
+      setBusy((b) => ({
+        ...b,
+        ...Object.fromEntries(cids.map((c) => [c, "upload" as const])),
+      }));
       let ok = 0;
       const need: string[] = [];
       for (const cid of cids) {
         try {
-          await publishApi.start(id, cid, { platforms: targets, when, consent: targets.includes("tiktok") });
+          await publishApi.start(id, cid, {
+            platforms: targets,
+            when,
+            consent: targets.includes("tiktok"),
+          });
           ok++;
         } catch (e) {
           need.push(view.clips.find((c) => c.id === cid)?.title ?? cid);
-          if (!(e instanceof ApiError && e.code === "problems") && e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+          if (
+            !(e instanceof ApiError && e.code === "problems") &&
+            e instanceof ApiError
+          )
+            toast({ kind: "err", text: e.message, hint: e.hint });
         }
       }
       if (ok) toast({ kind: "ok", text: t("mp.bulk_started", { n: ok }) });
-      if (need.length) toast({ kind: "info", text: t("mp.bulk_need_look", { n: need.length }), hint: need.join(" · ") });
+      if (need.length)
+        toast({
+          kind: "info",
+          text: t("mp.bulk_need_look", { n: need.length }),
+          hint: need.join(" · "),
+        });
       setSelected([]);
-      setBusy((b) => Object.fromEntries(Object.entries(b).filter(([k]) => !cids.includes(k))));
+      setBusy((b) =>
+        Object.fromEntries(
+          Object.entries(b).filter(([k]) => !cids.includes(k)),
+        ),
+      );
       load();
       return;
     }
@@ -197,22 +302,41 @@ export default function EasyProject({ id }: { id: string }) {
       setConnectFor(cids);
       return;
     }
-    setBusy((b) => ({ ...b, ...Object.fromEntries(cids.map((c) => [c, "upload" as const])) }));
+    setBusy((b) => ({
+      ...b,
+      ...Object.fromEntries(cids.map((c) => [c, "upload" as const])),
+    }));
     try {
       if (cids.length === 1) {
-        report(await easyApi.upload(id, cids[0], when), view.clips.find((c) => c.id === cids[0]));
+        report(
+          await easyApi.upload(id, cids[0], when),
+          view.clips.find((c) => c.id === cids[0]),
+        );
       } else {
-        const res = await easyApi.uploadMany(cids.map((c) => ({ project_id: id, clip_id: c })), when);
-        for (const r of res.results) report(r, view.clips.find((c) => c.id === r.clip_id));
+        const res = await easyApi.uploadMany(
+          cids.map((c) => ({ project_id: id, clip_id: c })),
+          when,
+        );
+        for (const r of res.results)
+          report(
+            r,
+            view.clips.find((c) => c.id === r.clip_id),
+          );
         setSelected([]);
       }
       tellLock();
       load();
     } catch (e) {
-      if (e instanceof ApiError && e.code === "not_connected") setConnectFor(cids);
-      else if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+      if (e instanceof ApiError && e.code === "not_connected")
+        setConnectFor(cids);
+      else if (e instanceof ApiError)
+        toast({ kind: "err", text: e.message, hint: e.hint });
     } finally {
-      setBusy((b) => Object.fromEntries(Object.entries(b).filter(([k]) => !cids.includes(k))));
+      setBusy((b) =>
+        Object.fromEntries(
+          Object.entries(b).filter(([k]) => !cids.includes(k)),
+        ),
+      );
     }
   };
 
@@ -227,9 +351,12 @@ export default function EasyProject({ id }: { id: string }) {
       const r = await easyApi.download(id, c.id);
       toast({ kind: "ok", text: t("easy.toast_saved"), hint: r.folder });
     } catch (e) {
-      if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+      if (e instanceof ApiError)
+        toast({ kind: "err", text: e.message, hint: e.hint });
     } finally {
-      setBusy((b) => Object.fromEntries(Object.entries(b).filter(([k]) => k !== c.id)));
+      setBusy((b) =>
+        Object.fromEntries(Object.entries(b).filter(([k]) => k !== c.id)),
+      );
     }
   };
 
@@ -237,9 +364,14 @@ export default function EasyProject({ id }: { id: string }) {
     setAllBusy(true);
     try {
       const r = await easyApi.downloadAll(id, false);
-      toast({ kind: "ok", text: t("easy.toast_saved_all", { n: r.count ?? 0 }), hint: r.folder });
+      toast({
+        kind: "ok",
+        text: t("easy.toast_saved_all", { n: r.count ?? 0 }),
+        hint: r.folder,
+      });
     } catch (e) {
-      if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+      if (e instanceof ApiError)
+        toast({ kind: "err", text: e.message, hint: e.hint });
     } finally {
       setAllBusy(false);
     }
@@ -251,7 +383,8 @@ export default function EasyProject({ id }: { id: string }) {
       setSelected((s) => s.filter((x) => x !== c.id));
       toast({ kind: "ok", text: t("easy.discarded") });
     } catch (e) {
-      if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+      if (e instanceof ApiError)
+        toast({ kind: "err", text: e.message, hint: e.hint });
     }
   };
 
@@ -260,18 +393,23 @@ export default function EasyProject({ id }: { id: string }) {
     try {
       setView(await easyApi.setMode(id, m));
     } catch (e) {
-      if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+      if (e instanceof ApiError)
+        toast({ kind: "err", text: e.message, hint: e.hint });
     }
   };
 
   const ready = view.clips.filter((c) => c.render.status === "ready");
-  const toggleSel = (cid: string) => setSelected((s) => (s.includes(cid) ? s.filter((x) => x !== cid) : [...s, cid]));
+  const toggleSel = (cid: string) =>
+    setSelected((s) =>
+      s.includes(cid) ? s.filter((x) => x !== cid) : [...s, cid],
+    );
   const working = view.state === "working";
 
   return (
     <main className="page ez-page">
       <a className="ez-back" href={href.library}>
-        <Icon name="chevron-left" size={16} className="flip-rtl" /> {t("easy.new_video")}
+        <Icon name="chevron-left" size={16} className="flip-rtl" />{" "}
+        {t("easy.new_video")}
       </a>
       <div className="ez-head">
         <div className="ez-head-text">
@@ -279,21 +417,38 @@ export default function EasyProject({ id }: { id: string }) {
             {view.title}
           </h1>
           <div className="ez-head-meta">
-            <ModeChip value={view.mode} onChange={changeMode} auto={view.mode_auto} disabled={working} />
+            <ModeChip
+              value={view.mode}
+              onChange={changeMode}
+              auto={view.mode_auto}
+              disabled={working}
+            />
             {view.mode === "gaming" && <GameChip pid={id} disabled={working} />}
-            {view.duration > 0 && <span className="muted">{fmtTime(view.duration)}</span>}
+            {view.duration > 0 && (
+              <span className="muted">{fmtTime(view.duration)}</span>
+            )}
             <ConnectionPill />
           </div>
         </div>
         {ready.length > 1 && (
-          <button className="btn btn-lg" onClick={downloadAll} disabled={allBusy}>
+          <button
+            className="btn btn-lg"
+            onClick={downloadAll}
+            disabled={allBusy}
+          >
             {allBusy ? <span className="spinner" /> : <Icon name="download" />}
             {t("easy.download_all")}
           </button>
         )}
       </div>
 
-      {working && <EasyProgress steps={view.steps} eta={view.eta_seconds} compact={view.clips.length > 0} />}
+      {working && (
+        <EasyProgress
+          steps={view.steps}
+          eta={view.eta_seconds}
+          compact={view.clips.length > 0}
+        />
+      )}
       {working && view.pc?.slow && <SlowPcNote light={view.pc.light} />}
 
       {view.state === "error" && view.error && (
@@ -303,7 +458,15 @@ export default function EasyProject({ id }: { id: string }) {
             <div className="notice-title">{t("easy.failed")}</div>
             <div className="muted">{view.error.message}</div>
           </div>
-          <button className="btn" onClick={() => easyApi.retry(id).then(setView).catch(() => {})}>
+          <button
+            className="btn"
+            onClick={() =>
+              easyApi
+                .retry(id)
+                .then(setView)
+                .catch(() => {})
+            }
+          >
             {t("common.retry")}
           </button>
         </div>
@@ -313,11 +476,15 @@ export default function EasyProject({ id }: { id: string }) {
         <div className="empty">
           <Icon name="sparkles" size={30} />
           <h2 className="display">{t("easy.no_clips")}</h2>
-          <p style={{ maxWidth: "46ch", margin: 0 }}>{t("easy.no_clips_body")}</p>
+          <p style={{ maxWidth: "46ch", margin: 0 }}>
+            {t("easy.no_clips_body")}
+          </p>
         </div>
       )}
 
-      {view.smart === false && view.clips.length > 0 && !working && <SmartBanner pid={id} onView={setView} />}
+      {view.smart === false && view.clips.length > 0 && !working && (
+        <SmartBanner pid={id} onView={setView} />
+      )}
 
       {view.clips.length > 0 && (
         <>
@@ -346,7 +513,15 @@ export default function EasyProject({ id }: { id: string }) {
           </ul>
           {view.total > view.shown && (
             <div className="ez-more">
-              <button className="btn btn-lg" onClick={() => easyApi.more(id).then(setView).catch(() => {})}>
+              <button
+                className="btn btn-lg"
+                onClick={() =>
+                  easyApi
+                    .more(id)
+                    .then(setView)
+                    .catch(() => {})
+                }
+              >
                 <Icon name="plus" /> {t("easy.show_more")}
               </button>
             </div>
@@ -355,12 +530,21 @@ export default function EasyProject({ id }: { id: string }) {
       )}
 
       {selected.length > 0 && (
-        <div className="ez-selbar" role="region" aria-label={t("easy.selection")}>
+        <div
+          className="ez-selbar"
+          role="region"
+          aria-label={t("easy.selection")}
+        >
           <span>{t("easy.selected", { n: selected.length })}</span>
           <button className="btn btn-ghost" onClick={() => setSelected([])}>
             {t("easy.clear_selection")}
           </button>
-          <button className="btn btn-primary btn-lg" onClick={() => uploadClips(selected.filter((s) => ready.some((r) => r.id === s)))}>
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() =>
+              uploadClips(selected.filter((s) => ready.some((r) => r.id === s)))
+            }
+          >
             <Icon name="upload" /> {t("easy.upload_selected")}
           </button>
         </div>
@@ -381,25 +565,48 @@ export default function EasyProject({ id }: { id: string }) {
       )}
 
       {connectFor && (
-        <Modal title={t("easy.connect_title")} onClose={() => setConnectFor(null)}>
+        <Modal
+          title={t("easy.connect_title")}
+          onClose={() => setConnectFor(null)}
+        >
           <p style={{ marginTop: 0 }}>{t("easy.connect_body")}</p>
           <ConnectPrompt
             onConnected={() => {
               const cids = connectFor;
               setConnectFor(null);
-              setView((v) => (v ? { ...v, youtube: { ...v.youtube, connected: true } } : v));
+              setView((v) =>
+                v ? { ...v, youtube: { ...v.youtube, connected: true } } : v,
+              );
               // continue the upload by itself
               window.setTimeout(() => {
                 easyApi.view(id).then((v) => {
                   setView(v);
                   if (cids) {
-                    const run = cids.length === 1 ? easyApi.upload(id, cids[0], when).then((r) => [{ ...r, clip_id: cids[0] }]) : easyApi.uploadMany(cids.map((c) => ({ project_id: id, clip_id: c })), when).then((r) => r.results);
+                    const run =
+                      cids.length === 1
+                        ? easyApi
+                            .upload(id, cids[0], when)
+                            .then((r) => [{ ...r, clip_id: cids[0] }])
+                        : easyApi
+                            .uploadMany(
+                              cids.map((c) => ({ project_id: id, clip_id: c })),
+                              when,
+                            )
+                            .then((r) => r.results);
                     run
                       .then((rs) => {
-                        for (const r of rs) report(r, v.clips.find((c) => c.id === r.clip_id));
+                        for (const r of rs)
+                          report(
+                            r,
+                            v.clips.find((c) => c.id === r.clip_id),
+                          );
                         load();
                       })
-                      .catch((e) => e instanceof ApiError && toast({ kind: "err", text: e.message, hint: e.hint }));
+                      .catch(
+                        (e) =>
+                          e instanceof ApiError &&
+                          toast({ kind: "err", text: e.message, hint: e.hint }),
+                      );
                   }
                 });
               }, 50);
@@ -469,13 +676,42 @@ function ClipCard({
   const hold = !cleared && (r.bleeps?.hold ?? 0) > 0;
   const up = c.upload;
   const uploading =
-    up.step === "uploading" || up.step === "queued_uploading" || busy === "upload" ||
-    (["tiktok", "reels"] as const).some((p) => ["published", "scheduled", "preparing", "uploading", "processing"].includes(c.posts?.[p]?.status ?? ""));
+    up.step === "uploading" ||
+    up.step === "queued_uploading" ||
+    busy === "upload" ||
+    (["tiktok", "reels"] as const).some((p) =>
+      [
+        "published",
+        "scheduled",
+        "preparing",
+        "uploading",
+        "processing",
+      ].includes(c.posts?.[p]?.status ?? ""),
+    );
   const titleId = `ez-t-${c.id}`;
+  // 1.2.63: where the clip ends - markers, time left, Stop / Loop and "End of clip", also full screen
+  const [cardVid, setCardVid] = useState<HTMLVideoElement | null>(null);
+  const [endMode, setEndMode] = useClipEndMode();
+  const cv = useVideoTime(cardVid);
+  const cardEndedAt = useClipEnforcer(
+    cardVid,
+    0,
+    cv.total,
+    endMode,
+    cv.total > 0,
+  );
+  const cardEndShown = useEndShown(
+    cardEndedAt,
+    cv.total > 0 && cv.t >= cv.total - 0.05,
+    cv.playing,
+    endMode,
+  );
+  const cardBox = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!menu) return;
-    const close = (e: MouseEvent) => !menuRef.current?.contains(e.target as Node) && setMenu(false);
+    const close = (e: MouseEvent) =>
+      !menuRef.current?.contains(e.target as Node) && setMenu(false);
     const key = (e: KeyboardEvent) => e.key === "Escape" && setMenu(false);
     window.addEventListener("mousedown", close);
     window.addEventListener("keydown", key);
@@ -486,58 +722,115 @@ function ClipCard({
   }, [menu]);
 
   return (
-    <li className={`ez-card${selected ? " selected" : ""}`} aria-labelledby={titleId}>
-      <div className="ez-video">
-        {ok ? (
-          <video
-            src={urls.clip(pid, c.id, r.stamp ?? "")}
-            controls
-            playsInline
-            preload="metadata"
-            aria-label={c.title}
+    <li
+      className={`ez-card${selected ? " selected" : ""}`}
+      aria-labelledby={titleId}
+    >
+      <div className="ez-video-box" ref={cardBox}>
+        <div className="ez-video">
+          {ok ? (
+            <video
+              ref={setCardVid}
+              src={urls.clip(pid, c.id, r.stamp ?? "")}
+              controls
+              controlsList="nofullscreen"
+              playsInline
+              preload="metadata"
+              aria-label={c.title}
+            />
+          ) : (
+            <div className="ez-video-wait">
+              {r.status === "error" ? (
+                <>
+                  <Icon name="alert" size={26} />
+                  <span>{t("easy.render_failed")}</span>
+                </>
+              ) : (
+                <>
+                  <span className="spinner" />
+                  <span>{t("easy.preparing")}</span>
+                  {r.progress != null && (
+                    <ProgressBar
+                      value={r.progress}
+                      label={t("easy.preparing")}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+          <label className="ez-check" title={t("easy.select")}>
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={onSelect}
+              disabled={!ok}
+              aria-label={t("easy.select_clip", { title: c.title })}
+            />
+          </label>
+          <span className="ez-dur mono">{fmtTime(c.duration)}</span>
+          {ok && phone && <ShortsOverlay title={c.title} channel={channel} />}
+          {ok && (
+            <button
+              type="button"
+              className={`ez-phone-btn${phone ? " on" : ""}`}
+              aria-pressed={phone}
+              aria-label={t("easy2.phone_view")}
+              title={t("easy2.phone_hint")}
+              onClick={() => setPhone(!phone)}
+            >
+              <Icon name="phone" size={18} />
+            </button>
+          )}
+          {ok && <EndBadge show={cardEndShown} mode={endMode} />}
+        </div>
+        {ok && cv.total > 0 && (
+          <ClipBar
+            compact
+            t={cv.t}
+            start={0}
+            end={cv.total}
+            total={cv.total}
+            mode={endMode}
+            onMode={setEndMode}
+            onSeek={(x) =>
+              cardVid && (cardVid.currentTime = Math.min(x, cv.total))
+            }
+            onBig={() => toggleBig(cardBox.current)}
           />
-        ) : (
-          <div className="ez-video-wait">
-            {r.status === "error" ? (
-              <>
-                <Icon name="alert" size={26} />
-                <span>{t("easy.render_failed")}</span>
-              </>
-            ) : (
-              <>
-                <span className="spinner" />
-                <span>{t("easy.preparing")}</span>
-                {r.progress != null && <ProgressBar value={r.progress} label={t("easy.preparing")} />}
-              </>
-            )}
-          </div>
-        )}
-        <label className="ez-check" title={t("easy.select")}>
-          <input type="checkbox" checked={selected} onChange={onSelect} disabled={!ok} aria-label={t("easy.select_clip", { title: c.title })} />
-        </label>
-        <span className="ez-dur mono">{fmtTime(c.duration)}</span>
-        {ok && phone && <ShortsOverlay title={c.title} channel={channel} />}
-        {ok && (
-          <button
-            type="button"
-            className={`ez-phone-btn${phone ? " on" : ""}`}
-            aria-pressed={phone}
-            aria-label={t("easy2.phone_view")}
-            title={t("easy2.phone_hint")}
-            onClick={() => setPhone(!phone)}
-          >
-            <Icon name="phone" size={18} />
-          </button>
         )}
       </div>
       <div className="ez-card-body">
-        <ReasonChips c={c}>{ok && <BleepBadge s={cleared && r.bleeps ? { ...r.bleeps, checked: "now", hold: 0 } : r.bleeps} />}</ReasonChips>
+        <ReasonChips c={c}>
+          {ok && (
+            <BleepBadge
+              s={
+                cleared && r.bleeps
+                  ? { ...r.bleeps, checked: "now", hold: 0 }
+                  : r.bleeps
+              }
+            />
+          )}
+        </ReasonChips>
         <h3 className="ez-card-title" id={titleId} dir="auto">
           {c.title}
         </h3>
-        <CutRow pid={pid} c={c} onView={onView} disabled={up.status === "published" || up.status === "scheduled" || uploading} />
+        <CutRow
+          pid={pid}
+          c={c}
+          onView={onView}
+          disabled={
+            up.status === "published" || up.status === "scheduled" || uploading
+          }
+        />
         <div className="ez-actions">
-          {ok && hold && <BleepCheckedButton pid={pid} cid={c.id} onDone={() => setCleared(true)} />}
+          {ok && hold && (
+            <BleepCheckedButton
+              pid={pid}
+              cid={c.id}
+              onDone={() => setCleared(true)}
+            />
+          )}
           <PublishBlock
             pid={pid}
             cid={c.id}
@@ -550,15 +843,35 @@ function ClipCard({
             onWhen={onWhen}
             onChanged={onRefresh}
           />
-          <button className="btn ez-big" disabled={!ok || !!busy} onClick={onDownload}>
-            {busy === "download" ? <span className="spinner" /> : <Icon name="download" />} {t("easy.download_pc")}
+          <button
+            className="btn ez-big"
+            disabled={!ok || !!busy}
+            onClick={onDownload}
+          >
+            {busy === "download" ? (
+              <span className="spinner" />
+            ) : (
+              <Icon name="download" />
+            )}{" "}
+            {t("easy.download_pc")}
           </button>
         </div>
         <div className="ez-card-foot">
-          <button className="link-btn" data-testid="ez-edit" onClick={onEdit} disabled={up.status === "published" || uploading}>
+          <button
+            className="link-btn"
+            data-testid="ez-edit"
+            onClick={onEdit}
+            disabled={up.status === "published" || uploading}
+          >
             <Icon name="wand" size={14} /> {t("easy.edit")}
           </button>
-          <TasteButtons pid={pid} c={c} need={tasteNeed} onView={onView} onDiscard={onDiscard} />
+          <TasteButtons
+            pid={pid}
+            c={c}
+            need={tasteNeed}
+            onView={onView}
+            onDiscard={onDiscard}
+          />
           <div className="ez-menu" ref={menuRef}>
             <button
               className="btn btn-ghost icon-btn"
@@ -577,7 +890,9 @@ function ClipCard({
                     setMenu(false);
                     onDiscard();
                   }}
-                  disabled={up.status === "published" || up.status === "scheduled"}
+                  disabled={
+                    up.status === "published" || up.status === "scheduled"
+                  }
                 >
                   <Icon name="thumb-down" size={15} /> {t("easy.discard")}
                 </button>
@@ -619,25 +934,45 @@ function EditSheet({
 }) {
   const { t, num } = useI18n();
   const toast = useToast();
-  const ideas = Array.from(new Set([clip.title, ...clip.titles].filter(Boolean)));
+  const ideas = Array.from(
+    new Set([clip.title, ...clip.titles].filter(Boolean)),
+  );
   const [title, setTitle] = useState(clip.title);
   const [start, setStart] = useState(clip.start);
   const [end, setEnd] = useState(clip.end);
   const [subs, setSubs] = useState(clip.prefs.subtitles);
   const [music, setMusic] = useState(clip.prefs.music);
   // 1.2.34 headline banner: the AI's text unless the user typed one ("" = no banner)
-  const aiBanner = clip.prefs.banner == null ? clip.shape?.banner ?? "" : "";
-  const [banner, setBanner] = useState<string>(clip.prefs.banner ?? clip.shape?.banner ?? "");
-  const [bannerOn, setBannerOn] = useState(clip.prefs.banner !== "" && !!(clip.prefs.banner ?? clip.shape?.banner));
+  const aiBanner = clip.prefs.banner == null ? (clip.shape?.banner ?? "") : "";
+  const [banner, setBanner] = useState<string>(
+    clip.prefs.banner ?? clip.shape?.banner ?? "",
+  );
+  const [bannerOn, setBannerOn] = useState(
+    clip.prefs.banner !== "" && !!(clip.prefs.banner ?? clip.shape?.banner),
+  );
   const [saving, setSaving] = useState(false);
   const [srcOk, setSrcOk] = useState(true);
   const vid = useRef<HTMLVideoElement>(null);
+  // 1.2.63: playing inside the trimmed range stops / loops exactly at the new end
+  const trimEl = useVideoEl(vid);
+  const [trimMode, setTrimMode] = useClipEndMode();
+  const tv = useVideoTime(trimEl);
+  const trimEndedAt = useClipEnforcer(trimEl, start, end, trimMode);
+  const trimEndShown = useEndShown(
+    trimEndedAt,
+    tv.t >= end - 0.05 && tv.t <= end + 0.2,
+    tv.playing,
+    trimMode,
+  );
   // a fixed src: changing it on every trim move reloaded the video and made the sheet jump (#5)
-  const [vidSrc] = useState(() => `${urls.source(pid)}#t=${clip.start.toFixed(1)}`);
+  const [vidSrc] = useState(
+    () => `${urls.source(pid)}#t=${clip.start.toFixed(1)}`,
+  );
   const lo = clip.bounds.start;
   const hi = clip.bounds.end;
   const len = end - start;
-  const trimmed = Math.abs(start - clip.start) > 0.04 || Math.abs(end - clip.end) > 0.04;
+  const trimmed =
+    Math.abs(start - clip.start) > 0.04 || Math.abs(end - clip.end) > 0.04;
   const bad = trimmed && (len < 3 || len > 180);
 
   const seek = (s: number) => {
@@ -653,7 +988,11 @@ function EditSheet({
       if (subs !== clip.prefs.subtitles) body.subtitles = subs;
       if (music !== clip.prefs.music) body.music = music;
       if (clip.shape) {
-        const want = !bannerOn ? "" : banner.trim() === aiBanner.trim() && clip.prefs.banner == null ? null : banner.trim();
+        const want = !bannerOn
+          ? ""
+          : banner.trim() === aiBanner.trim() && clip.prefs.banner == null
+            ? null
+            : banner.trim();
         if (want !== (clip.prefs.banner ?? null)) body.banner = want;
       }
       if (trimmed) {
@@ -661,9 +1000,19 @@ function EditSheet({
         body.end = end;
       }
       onSaved(await easyApi.edit(pid, clip.id, body));
-      toast({ kind: "ok", text: body.start != null || body.subtitles != null || body.music != null || body.banner !== undefined ? t("easy.saved_rerender") : t("common.saved") });
+      toast({
+        kind: "ok",
+        text:
+          body.start != null ||
+          body.subtitles != null ||
+          body.music != null ||
+          body.banner !== undefined
+            ? t("easy.saved_rerender")
+            : t("common.saved"),
+      });
     } catch (e) {
-      if (e instanceof ApiError) toast({ kind: "err", text: e.message, hint: e.hint });
+      if (e instanceof ApiError)
+        toast({ kind: "err", text: e.message, hint: e.hint });
     } finally {
       setSaving(false);
     }
@@ -680,7 +1029,11 @@ function EditSheet({
           <button className="btn" onClick={onClose}>
             {t("common.cancel")}
           </button>
-          <button className="btn btn-primary" onClick={save} disabled={saving || bad || !title.trim()}>
+          <button
+            className="btn btn-primary"
+            onClick={save}
+            disabled={saving || bad || !title.trim()}
+          >
             {saving && <span className="spinner" />} {t("common.save")}
           </button>
         </>
@@ -690,36 +1043,70 @@ function EditSheet({
         <legend>{t("easy.edit_pick_title")}</legend>
         <div className="ez-titles">
           {ideas.map((x) => (
-            <label key={x} className={`ez-title-opt${title === x ? " on" : ""}`}>
-              <input type="radio" name="ez-title" checked={title === x} onChange={() => setTitle(x)} />
+            <label
+              key={x}
+              className={`ez-title-opt${title === x ? " on" : ""}`}
+            >
+              <input
+                type="radio"
+                name="ez-title"
+                checked={title === x}
+                onChange={() => setTitle(x)}
+              />
               <span dir="auto">{x}</span>
             </label>
           ))}
         </div>
         <label className="field" style={{ marginTop: 10 }}>
           <span className="field-label">{t("easy.edit_own_title")}</span>
-          <input className="input" data-testid="ez-title-input" dir="auto" value={title} maxLength={100} onChange={(e) => setTitle(e.target.value)} />
+          <input
+            className="input"
+            data-testid="ez-title-input"
+            dir="auto"
+            value={title}
+            maxLength={100}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </label>
       </fieldset>
 
       <fieldset className="ez-field">
         <legend>{t("easy.edit_trim")}</legend>
         {srcOk && (
-          <video
-            ref={vid}
-            className="ez-trim-video"
-            src={vidSrc}
-            preload="metadata"
-            muted
-            playsInline
-            controls
-            onError={() => setSrcOk(false)}
-            aria-label={t("easy.edit_trim")}
+          <div className="clip-video-frame">
+            <video
+              ref={vid}
+              className="ez-trim-video"
+              src={vidSrc}
+              preload="metadata"
+              muted
+              playsInline
+              controls
+              onError={() => setSrcOk(false)}
+              aria-label={t("easy.edit_trim")}
+            />
+            <EndBadge show={trimEndShown} mode={trimMode} />
+          </div>
+        )}
+        {srcOk && tv.total > 0 && (
+          <ClipBar
+            t={tv.t}
+            start={start}
+            end={end}
+            total={tv.total}
+            mode={trimMode}
+            onMode={setTrimMode}
+            onSeek={(x) => trimEl && (trimEl.currentTime = x)}
           />
         )}
         <div className="ez-trim">
           <div className="ez-trim-track" aria-hidden="true">
-            <span style={{ insetInlineStart: `${pct(start)}%`, width: `${pct(end) - pct(start)}%` }} />
+            <span
+              style={{
+                insetInlineStart: `${pct(start)}%`,
+                width: `${pct(end) - pct(start)}%`,
+              }}
+            />
           </div>
           <input
             type="range"
@@ -750,7 +1137,9 @@ function EditSheet({
         </div>
         <div className="ez-trim-times mono">
           <span>{fmtTime(start)}</span>
-          <span className={bad ? "danger" : "muted"}>{t("easy.trim_length", { s: num(len, 1) })}</span>
+          <span className={bad ? "danger" : "muted"}>
+            {t("easy.trim_length", { s: num(len, 1) })}
+          </span>
           <span>{fmtTime(end)}</span>
         </div>
         <button
@@ -771,7 +1160,11 @@ function EditSheet({
           <p className="muted ez-hint" style={{ marginTop: 0 }}>
             {t("easy2.cap_hint")}
           </p>
-          <CaptionFixer pid={pid} cid={clip.id} onChanged={() => onRefresh?.()} />
+          <CaptionFixer
+            pid={pid}
+            cid={clip.id}
+            onChanged={() => onRefresh?.()}
+          />
         </fieldset>
       )}
 
@@ -780,14 +1173,24 @@ function EditSheet({
           <span>
             <b>{t("easy.subtitles")}</b>
           </span>
-          <Toggle checked={subs} onChange={setSubs} label={t("easy.subtitles")} />
+          <Toggle
+            checked={subs}
+            onChange={setSubs}
+            label={t("easy.subtitles")}
+          />
         </div>
         <div className="toggle-line">
           <span>
             <b>{t("easy.music")}</b>
-            {!musicAvailable && <span className="muted ez-hint">{t("easy.music_none")}</span>}
+            {!musicAvailable && (
+              <span className="muted ez-hint">{t("easy.music_none")}</span>
+            )}
           </span>
-          <Toggle checked={music && musicAvailable} onChange={(v) => musicAvailable && setMusic(v)} label={t("easy.music")} />
+          <Toggle
+            checked={music && musicAvailable}
+            onChange={(v) => musicAvailable && setMusic(v)}
+            label={t("easy.music")}
+          />
         </div>
       </div>
 
@@ -796,13 +1199,28 @@ function EditSheet({
           <legend>{t("easy2.banner")}</legend>
           <div className="toggle-line">
             <span className="muted ez-hint">{t("easy2.banner_hint")}</span>
-            <Toggle checked={bannerOn} onChange={setBannerOn} label={t("easy2.banner")} />
+            <Toggle
+              checked={bannerOn}
+              onChange={setBannerOn}
+              label={t("easy2.banner")}
+            />
           </div>
           {bannerOn && (
             <div className="ez-banner-row">
-              <input className="input" dir="auto" value={banner} maxLength={80} onChange={(e) => setBanner(e.target.value)} aria-label={t("easy2.banner")} />
+              <input
+                className="input"
+                dir="auto"
+                value={banner}
+                maxLength={80}
+                onChange={(e) => setBanner(e.target.value)}
+                aria-label={t("easy2.banner")}
+              />
               {aiBanner && banner !== aiBanner && (
-                <button type="button" className="link-btn" onClick={() => setBanner(aiBanner)}>
+                <button
+                  type="button"
+                  className="link-btn"
+                  onClick={() => setBanner(aiBanner)}
+                >
                   {t("easy2.banner_ai")}
                 </button>
               )}
@@ -815,7 +1233,14 @@ function EditSheet({
 
       <fieldset className="ez-field">
         <legend>{t("cover_ai.easy_title")}</legend>
-        <CoverStudio pid={pid} cid={clip.id} frames={["tall", "wide"]} text={title} lang={null} compact />
+        <CoverStudio
+          pid={pid}
+          cid={clip.id}
+          frames={["tall", "wide"]}
+          text={title}
+          lang={null}
+          compact
+        />
       </fieldset>
     </Modal>
   );
@@ -827,7 +1252,11 @@ function SlowPcNote({ light }: { light: boolean }) {
   const [on, setOn] = useState(light);
   const [busy, setBusy] = useState(false);
   return (
-    <div className={`notice perf-note${on ? "" : " notice-warn"}`} role="status" style={{ marginTop: 12 }}>
+    <div
+      className={`notice perf-note${on ? "" : " notice-warn"}`}
+      role="status"
+      style={{ marginTop: 12 }}
+    >
       <span>
         {t("perf.slow_pc")} {on && t("perf.slow_pc_light")}
       </span>
@@ -850,4 +1279,3 @@ function SlowPcNote({ light }: { light: boolean }) {
     </div>
   );
 }
-

@@ -1682,6 +1682,11 @@ def api_project(project_id: str) -> dict:
         c["default_hook"] = c["publish"].get("hook_text") or first_sentence(c.get("text") or "")
         c["publish"]["title_votes"] = {t: votes[t] for t in c["publish"]["titles"] if t in votes}
         c["publish"]["calibrated"] = calibration.adjust(raw[c["id"]], cal_model) if cal_model else None
+        if c["publish"].get("description") and c["publish"].get("style"):  # 1.2.63: as it will be posted
+            from ..edit import brand
+
+            c["publish"]["description_full"] = brand.with_socials(c["publish"]["description"],
+                                                                  c["publish"].get("language"), limit=4900, short=True)
         c["chat"] = chat_stats.get(c["id"])
     performance = calibration.entries_for(project.id)
     clips = state.load_clips(project)
@@ -2625,6 +2630,7 @@ from .pubqueue_api import router as _pubqueue_router  # noqa: E402 - publish que
 from .trash_api import router as _trash_router  # noqa: E402 - delete + trash + disk usage (1.2.41)
 from .fullvideo_api import router as _fullvideo_router  # noqa: E402 - full video + Channel style (1.2.51)
 from .setup_api import router as _setup_router  # noqa: E402 - first-run downloads + diagnostics (1.2.56)
+from .mystyle_api import router as _mystyle_router  # noqa: E402 - My style template (1.2.63)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2643,6 +2649,7 @@ app.include_router(_pubqueue_router)
 app.include_router(_platforms_router)
 app.include_router(_dub_router)
 app.include_router(_fullvideo_router)
+app.include_router(_mystyle_router)
 
 
 @app.get("/api/{rest:path}")

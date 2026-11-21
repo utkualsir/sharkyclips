@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ClipVideo } from "./ClipEnd";
 import { api, urls, type ClipOptions, type EditPlanView, type FinalPreviewState } from "../api";
 import { useJobs } from "../jobs";
 import { useI18n } from "../i18n";
@@ -132,7 +133,7 @@ export function FinalPreview({
           )}
           {state?.ready && cid && (
             <div className="final-play">
-              <video src={urls.finalPreview(projectId, cid, state.at ?? "")} controls autoPlay playsInline aria-label={t("final.title")} />
+              <ClipVideo src={urls.finalPreview(projectId, cid, state.at ?? "")} autoPlay compact={false} label={t("final.title")} />
               <p className="muted small">
                 {t("final.bleeps", { n: state.bleeps?.length ?? 0 })}
               </p>

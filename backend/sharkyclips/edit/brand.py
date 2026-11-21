@@ -328,7 +328,8 @@ def _my_layout(text: str, lang: str | None, limit: int | None, short: bool) -> s
     body, tags = split_tail_hashtags(text)
     before, block = split_socials(body)  # a block typed by the user stays, before the hashtags
     if not block and (not short or lay["short_socials"]):
-        block = socials_block(lang)
+        # 1.2.63 My style template: the creator's own social block, word for word
+        block = lay.get("block") or socials_block(lang)
     tail = f"{lay['label']}\n{' '.join(tags)}" if tags else ""
     if limit is not None and block:
         block = fit_block(block, max(0, limit - len(before) - len(tail) - 4))

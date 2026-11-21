@@ -750,6 +750,10 @@ def analyze_project(project: Project, out_lang: str | None = None, force: bool =
     gtag = f"{game['id']}:{banks.BANK_VERSION}" if mode == "gaming" else "-"
     # My style (Brand kit): the creator's own title / description / hashtag style
     mine = style_mod.active(out_lang) if mode == "gaming" else None
+    if mine:
+        from .titles import mytemplate
+
+        mine = mytemplate.for_project(mine, project, game, out_lang)  # 1.2.63: episode, game, platform
     sdig = style_mod.digest(out_lang, gid, "short") if mine else "-"
     strong = bool(mine) and llm.metadata_boost()  # idle PC / Turbo: the big model, more drafts
     with llm.lazy_session(llm.choose_model(ignore_fast=True) if strong else None) as model:
@@ -1169,15 +1173,90 @@ def regenerate_titles(project: Project, cid: str) -> dict:
     j = {"what_happens": what, "game_or_topic": topic, "moment_type": c["llm"].get("moment_type"),
          "hook_text": pub.get("hook_text") or "", "cover_text": pub.get("cover_text") or ""}
     facts = banks.clip_facts(bank, c, transcript) if gaming else {}
+    from .titles import mytemplate
+
+    mine = mytemplate.for_project(style_mod.active(out_lang), project, game, out_lang) if gaming else None
     with llm.session() as model:
         tw = _write_titles(model, meta, mode, c, transcript, out_lang, j, gl, others,
                            avoid=list(pub["titles"]), temperature=0.95, fast=llm.fast_analysis(),
-                           game=game, facts=facts, bank=bank, mine=style_mod.active(out_lang) if gaming else None)
+                           game=game, facts=facts, bank=bank, mine=mine)
     if tw["titles"]:
         pub["titles"] = [t["text"] for t in tw["titles"]]
         pub["title_styles"] = [t["style"] for t in tw["titles"]]
         pub["title_checks"] = tw["checks"]
     write_json_atomic(hl_path, hl)
+    return pub
+
+
+def _regen_setup(project: Project, cid: str) -> dict:
+    """What a per-field rewrite of one clip needs (1.2.63: Regenerate per field)."""
+    hl = read_json(project.dir / "highlights.json")
+    c = next((x for x in hl["candidates"] if x["id"] == cid), None)
+    if c is None or not (c.get("publish") or {}).get("available") or not c.get("llm"):
+        raise SharkyClipsError("Analyze this clip with the LLM first.", f"python cli.py analyze {project.id}")
+    out_lang = languages.content_language(None, project)
+    transcript = project.load_transcript()
+    meta = project.load_meta()
+    mode = hl.get("mode") or meta.get("mode") or "gaming"
+    from .titles import banks, mytemplate
+
+    game = banks.project_game(project)
+    bank = banks.get(game["id"])
+    gaming = mode == "gaming"
+    topic = (game["name"] or "Gaming") if gaming else c["llm"].get("game_or_topic", "")
+    gl = titles_mod.glossary.build(
+        transcript, out_lang, meta.get("title", ""), topic, game=(game["name"] if gaming else None),
+        game_terms=banks.glossary_terms(bank) if gaming else None,
+        extra_allowed=banks.caps_words(bank) if gaming else None)
+    what = scrub_profanity(banks.scrub(c["llm"]["what_happens"], game["id"]) if gaming else c["llm"]["what_happens"])
+    j = {"what_happens": what, "game_or_topic": topic, "moment_type": c["llm"].get("moment_type"),
+         "hook_text": c["publish"].get("hook_text") or "", "cover_text": c["publish"].get("cover_text") or ""}
+    facts = banks.clip_facts(bank, c, transcript) if gaming else {}
+    mine = mytemplate.for_project(style_mod.active(out_lang), project, game, out_lang) if gaming else None
+    return {"hl": hl, "c": c, "lang": out_lang, "transcript": transcript, "meta": meta, "mode": mode, "game": game,
+            "bank": bank, "gl": gl, "j": j, "facts": facts, "mine": mine}
+
+
+def regenerate_description(project: Project, cid: str) -> dict:
+    """A new description for one clip (keeps the titles and hashtags)."""
+    from . import llm
+
+    x = _regen_setup(project, cid)
+    c, pub, lang = x["c"], x["c"]["publish"], x["lang"]
+    title = (pub.get("titles") or [""])[0]
+    with llm.session() as model:
+        if x["mine"]:
+            d = _my_description(model, x["mine"], x["meta"], x["mode"], c, x["transcript"], lang, x["j"], title,
+                                x["gl"], x["game"], x["facts"], project.cache_dir / "llm", extra="regen",
+                                force=True, strong=False)
+            pub["description"] = style_mod.compose(d["text"], pub.get("hashtags") or []) if d["text"] else None
+        else:
+            raw = write_description(model, x["meta"], x["mode"], c, x["transcript"], lang, x["j"], title, x["gl"],
+                                    game=x["game"], facts=x["facts"])
+            pub["description"] = finish_description(raw, lang, x["gl"], pub.get("hashtags") or [],
+                                                    game_id=x["game"]["id"]) or None
+    write_json_atomic(project.dir / "highlights.json", x["hl"])
+    return pub
+
+
+def regenerate_hashtags(project: Project, cid: str) -> dict:
+    """The hashtags (and tags) of one clip built again from its facts; no AI needed."""
+    x = _regen_setup(project, cid)
+    c, pub, lang = x["c"], x["c"]["publish"], x["lang"]
+    old = list(pub.get("hashtags") or [])
+    hashtags, tags = clip_tags(x["mode"], x["game"], x["facts"], x["j"].get("moment_type"), lang, [],
+                               x["j"]["game_or_topic"], _channel_names(x["meta"]))
+    if x["mine"]:
+        hashtags, tags = _my_tags(x["mine"], "short", x["game"], x["facts"], x["j"], c, x["transcript"], lang, None,
+                                  tags)
+    pub["hashtags"], pub["tags"] = hashtags, tags
+    desc = pub.get("description") or ""
+    if desc and old:
+        from .edit import brand
+
+        body, _tags = brand.split_tail_hashtags(desc)
+        pub["description"] = style_mod.compose(body, hashtags)
+    write_json_atomic(project.dir / "highlights.json", x["hl"])
     return pub
 
 

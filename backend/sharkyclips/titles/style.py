@@ -217,8 +217,17 @@ def load_sample() -> dict:
 
 
 def active(lang: str | None) -> dict | None:
-    """The profile when it applies to this output language."""
+    """The profile when it applies to this output language. With the My style template on
+    (1.2.63), every output language gets a profile: the creator's examples only in the profile's
+    own language, the template's rules everywhere (p["template"])."""
+    from . import mytemplate
+
     p = load()
+    tpl = mytemplate.resolved(lang or p["lang"])
+    if tpl is not None:
+        same = p["examples"] and (not lang or lang == p["lang"])
+        base = p if same else {**p, "lang": lang or p["lang"], "examples": []}
+        return {**base, "enabled": True, "template": tpl, "channel_tag": tpl["channel_tag"] or base["channel_tag"]}
     if not p["enabled"] or not p["examples"] or (lang and lang != p["lang"]):
         return None
     return p
@@ -234,8 +243,11 @@ def digest(lang: str, gid: str | None, fmt: str) -> str:
         return "-"
     from .. import channelstyle
 
+    from . import mytemplate
+
     payload = [STYLE_VERSION, gid, fmt, [(e["id"], e["title"]) for e in p["examples"]], p["templates"],
-               p["channel_tag"], p["name"], sorted(glossary()["corrections"].items()), channelstyle.digest(fmt)]
+               p["channel_tag"], p["name"], sorted(glossary()["corrections"].items()), channelstyle.digest(fmt),
+               mytemplate.digest()]
     return hashlib.sha1(json.dumps(payload, ensure_ascii=False).encode()).hexdigest()[:10]
 
 
@@ -909,7 +921,8 @@ def title_task(p: dict, *, fmt: str, gid: str | None, game_name: str, what_happe
             'Kinds: quote = opens with a REAL line from the CLIP in double quotes ("NASIL ÖLDÜM LAN?!" style) + what it is about; '
             'situation = a relatable fail / situation line ("X DEDİKTEN 1 SANİYE SONRA..."); fact = numbers / names from the facts; '
             "question = a question to the viewer.",
-            "- at least half are quote titles when the CLIP has a quotable line",
+            ("- a quote title only when the CLIP has a strong quotable line" if p.get("template")
+             else "- at least half are quote titles when the CLIP has a quotable line"),
             f"- the hook (quote or first phrase) comes FIRST and ends within {SHORT_HOOK} characters (YouTube shows ~40 on Shorts)",
         ]
         if quotes:
@@ -949,6 +962,10 @@ def title_task(p: dict, *, fmt: str, gid: str | None, game_name: str, what_happe
     block = channelstyle.prompt_block(fmt, kind)
     if block:
         parts += ["", block]
+    if p.get("template"):
+        from . import mytemplate
+
+        parts += ["", *mytemplate.title_rules_text(p["template"], fmt)]
     if problems:
         parts += ["", "Problems with your earlier titles, fix them:"] + [f"- {x}" for x in problems[:10]]
     return "\n".join(parts)
@@ -1133,8 +1150,15 @@ def game_tags(gid: str | None, game_name: str) -> dict:
 
 def build_hashtags(p: dict, *, fmt: str, gid: str | None, game_name: str, facts: dict, moment: str | None,
                    clip_text: str, llm: list[str] | None, lang: str, forbidden=None) -> list[str]:
-    """10-12 in the creator's order: game, game TR, names, event / mood, format, channel, #GamingTR."""
+    """10-12 in the creator's order: game, game TR, names, event / mood, format, channel, #GamingTR.
+    My style template (1.2.63): 9-13 in the template's order (mytemplate.build_hashtags)."""
     from . import banks
+
+    if p.get("template"):
+        from . import mytemplate
+
+        return mytemplate.build_hashtags(p["template"], fmt=fmt, facts=facts, clip_text=clip_text, moment=moment,
+                                         lang=lang, mood=llm, forbidden=forbidden)
 
     g = game_tags(gid, game_name)
     seen: set[str] = set()
@@ -1266,9 +1290,15 @@ def write_titles(model, p: dict, *, system: str, context: str, lang: str, lang_l
     write again with the problems (up to 3 rounds; 4 when the PC is idle / Turbo)."""
     from .. import channelstyle
 
+    from . import mytemplate
+
     n = 10 if strong else 8
     rounds = 3
     rules = channelstyle.title_rules(fmt, kind)
+    tpl = p.get("template")
+    if tpl:  # 1.2.63 My style template: ALL CAPS, 1-2 emojis, 3 options
+        rules = {**rules, "case": "upper", "emoji_lo": 1, "emoji_hi": 2, "punct": True}
+        n_out = mytemplate.TITLE_OPTIONS
     example_titles = [e["title"] for e in p["examples"]]
     checks: dict = {"rejected": [], "fixed": [], "rounds": 0, "style": "my_style", "strong": strong}
     pool: list[dict] = []
@@ -1304,13 +1334,21 @@ def write_titles(model, p: dict, *, system: str, context: str, lang: str, lang_l
             if quote_of(t["text"]) and not quote_of(new):
                 new = t["text"]  # the proofreader dropped the quote marks
             text = glossary.canonicalize(new) if glossary is not None else new
-            final = fix_title(text, lang, moment, names=name_words, rules=rules)
-            if final != t["text"]:
-                checks["fixed"].append([t["text"], final])
-            errs = check_title(final, lang=lang, fmt=fmt, clip_text=clip_text, forbidden=forbidden,
+            core = fix_title(text, lang, moment, names=name_words, rules=rules)
+            errs = check_title(core, lang=lang, fmt=fmt, clip_text=clip_text, forbidden=forbidden,
                                example_titles=example_titles, used=used_titles + avoid, too_similar=too_similar,
                                rules=rules)
-            plain = re.sub(r"\S*\*\S*", " ", lower_title(strip_emojis(final), lang))  # censored words
+            final = core
+            if tpl:
+                protected = {lexicon.lower(w, lang) for x in terms for w in re.findall(r"[^\W\d_]+", x)}
+                final = mytemplate.finish_title(core, fmt, tpl, lang, moment,
+                                                protected=protected | set(glossary.allowed if glossary is not None else ()),
+                                                names=protected)
+                errs = [e for e in errs if "emojis" not in e] + mytemplate.check_title(final, fmt, tpl, lang,
+                                                                                      clip_text=clip_text)
+            if final != t["text"]:
+                checks["fixed"].append([t["text"], final])
+            plain = re.sub(r"\S*\*\S*", " ", lower_title(strip_emojis(core), lang))  # censored words
             unknown = lexicon.unknown_words(plain, lang,
                                             (glossary.allowed if glossary is not None else set())
                                             | {lexicon.lower(w, lang) for k in keep_terms() for w in k.split()}
@@ -1376,6 +1414,10 @@ def write_description(model, p: dict, *, system: str, context: str, lang: str, l
                       gid: str | None, game_name: str, what_happens: str, facts: str, clip_text: str, title: str,
                       glossary, forbidden, strong: bool = False) -> dict:
     """{text (body, no hashtags), mood_hashtags, search_tags, problems}."""
+    if p.get("template"):
+        return write_template_description(model, p, system=system, context=context, lang=lang, lang_label=lang_label,
+                                          fmt=fmt, game_name=game_name, what_happens=what_happens, facts=facts,
+                                          clip_text=clip_text, title=title, glossary=glossary, forbidden=forbidden)
     terms = list(glossary.terms) if glossary is not None else []
     schema = SHORT_DESC_SCHEMA if fmt == "short" else LONG_DESC_SCHEMA
     problems: list[str] = []
@@ -1417,6 +1459,61 @@ def write_description(model, p: dict, *, system: str, context: str, lang: str, l
     return best
 
 
+HARD_DESC = ("swear", "never mention", "names that are not")
+
+
+def _desc_rank(errs: list[str]) -> tuple[int, int]:
+    """A text that breaks a hard rule (invented names, swears) is always worse than one with a
+    layout problem only."""
+    return (sum(1 for e in errs if any(h in e for h in HARD_DESC)), len(errs))
+
+
+def write_template_description(model, p: dict, *, system: str, context: str, lang: str, lang_label: str, fmt: str,
+                               game_name: str, what_happens: str, facts: str, clip_text: str, title: str, glossary,
+                               forbidden, facts_dict: dict | None = None) -> dict:
+    """1.2.63 My style template: "Selamlar! Bu bölümde ..." + 3-5 sentences (Shorts 1-2) "... iyi
+    seyirler!" + the CTA line. Names must come from the clip, the facts or the project name; a
+    text that still breaks a hard rule after 3 tries becomes the general fallback text."""
+    from . import mytemplate
+
+    tpl = p["template"]
+    terms = list(glossary.terms) if glossary is not None else []
+    allowed = mytemplate.widen_allowed(
+        " ".join([clip_text or "", facts or "", tpl.get("project_title") or "", game_name or "",
+                  (tpl.get("game") or {}).get("name") or "", " ".join(terms), title or ""]),
+        list(tpl.get("game_terms") or []))
+    keep = {w.lower() for w in re.findall(r"[^\W_]+", " ".join([game_name or "", *terms]))}
+    keep |= mytemplate.proper_names(clip_text or "")  # "Peter ve Miles": a name said in the clip stays a name
+    problems: list[str] = []
+    best: dict | None = None
+    for _r in range(3):
+        prompt = context + "\n\n" + mytemplate.description_task(
+            tpl, fmt=fmt, game_name=game_name, what_happens=what_happens, facts=facts, clip_text=clip_text,
+            title=title, lang_label=lang_label, terms=terms, problems=problems)
+        d = model.json(system, prompt, mytemplate.desc_schema(fmt), temperature=0.6 + 0.1 * _r,
+                       num_predict=1200 if fmt == "long" else 700)
+        d.pop("_soft_errors", None)
+        text = mytemplate.assemble(list(d.get("sentences") or []), tpl, lang,
+                                   polish=lambda x: _polish_text(x, lang, glossary), keep=keep)
+        errs = (mytemplate.check_description(text, fmt, tpl, lang, allowed, forbidden) if text
+                else ["write the sentences"])
+        cand = {"text": text, "mood_hashtags": list(d.get("mood_hashtags") or []),
+                "search_tags": list(d.get("search_tags") or []), "problems": errs}
+        if best is None or _desc_rank(errs) < _desc_rank(best["problems"]):
+            best = cand
+        if not errs:
+            break
+        problems = errs
+    assert best is not None
+    if not best["text"] or any(h in e for e in best["problems"] for h in HARD_DESC):
+        import logging
+
+        logging.getLogger("sharkyclips").info("template description fallback: %s", best["problems"])
+        best = {**best, "text": mytemplate.fallback_description(tpl, fmt, lang, game_name, facts_dict or {}),
+                "fallback": True}
+    return best
+
+
 def _shares(example: dict, copied: list[str], p: dict) -> bool:
     """Did these copied sentences come from this example?"""
     return bool(copied_sentences(" ".join(copied), {**p, "examples": [example]}))
@@ -1450,10 +1547,15 @@ def compose(body: str, hashtags: list[str]) -> str:
 
 def layout(lang: str | None) -> dict | None:
     """The creator's description layout: socials before the labelled hashtags."""
+    from . import mytemplate
+
+    t = mytemplate.layout(lang)
+    if t is not None:
+        return t
     p = active(lang)
     if p is None:
         return None
-    return {"label": p["templates"]["hashtag_label"], "short_socials": p["shorts_socials"]}
+    return {"label": p["templates"]["hashtag_label"], "short_socials": p["shorts_socials"], "block": None}
 
 
 def clone(p: dict) -> dict:

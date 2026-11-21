@@ -236,14 +236,28 @@ def _sig() -> str:
         return "-"
 
 
+def _own_names(gid: str | None) -> set[str]:
+    """Glued names of a game the template knows by name (titles.mytemplate.GAMES), for games
+    without a bank: their own name must never count as another game."""
+    if not gid or gid in ids():
+        return set()
+    from . import mytemplate
+
+    g = mytemplate.GAMES.get(gid) or {}
+    return {"".join(_tokens(a)) for a in [g.get("name") or "", g.get("short") or "", *g.get("aliases", [])] if a}
+
+
 def other_game(text: str, gid: str | None) -> str | None:
     """The other game / franchise `text` names (title, hashtag or tag), else None."""
     toks = _tokens(text)
     if not toks:
         return None
     joined = " " + " ".join(toks) + " "
+    own = _own_names(gid)
     for key, display in _blocked(gid if gid in ids() else GENERIC, _sig()):
         glued = key.replace(" ", "")
+        if glued in own or any(glued in o for o in own):
+            continue  # 1.2.63: the project's own game (Battlefield 6 is no "other game" in its own project)
         if " " in key:
             if f" {key} " in joined or (len(glued) >= 5 and any(glued in t for t in toks)):
                 return display
@@ -339,6 +353,13 @@ def project_game(project) -> dict:
             project.save_meta(meta)
     if gid:
         return {"id": gid, "name": get(gid)["name"], "known": True, "why": why, "source": "detected", "choice": "auto"}
+    from . import mytemplate  # 1.2.63: a game named in the project name (Battlefield 6, Rematch, ...)
+
+    named = mytemplate.detect_game(meta.get("title", ""))
+    if named:
+        g = mytemplate.GAMES[named]
+        return {"id": named, "name": g["name"], "known": True, "why": f"title: {g['name']}", "source": "detected",
+                "choice": "auto"}
     return {"id": GENERIC, "name": "", "known": False, "why": why or "not recognized", "source": "unknown",
             "choice": "auto"}
 

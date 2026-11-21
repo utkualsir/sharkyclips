@@ -421,7 +421,7 @@ def candidate_view(c: dict) -> dict:
     return {k: c.get(k) for k in ("id", "rank", "start", "end", "duration", "peak", "hype_score",
                                   "reasons", "signal_scores", "text")} | {
         "manual": bool(c.get("manual")),
-        "publish": {k: publish.get(k) for k in (*EMPTY_PUBLISH, "title_styles", "cover_text")},
+        "publish": {k: publish.get(k) for k in (*EMPTY_PUBLISH, "title_styles", "cover_text", "style")},
         "llm": {k: llm.get(k) for k in ("what_happens", "self_contained", "moment_type", "game_or_topic",
                                          "refined", "original")} if llm else None,
         "subtitle_languages": sorted((c.get("translations") or {}).keys()),

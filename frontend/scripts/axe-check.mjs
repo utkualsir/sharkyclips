@@ -68,10 +68,12 @@ const SCREENS = [
   // 1.2.59 the waiting mini game: how-to, start screen, skins, a round paused (Pro and Easy)
   ["minigame-howto", "pro", "#/settings", ".mg-setting", async (page) => {
     await page.request.put(`${base}/api/minigame`, { data: { howto_seen: false, today: "2000-01-01" }, headers: H });
+    await page.evaluate(() => document.querySelectorAll("details.advanced").forEach((d) => (d.open = true))); // 1.2.63: in Settings > Advanced
     await page.locator(".mg-setting .link-btn").click();
     await page.waitForSelector('.mg-stage[data-screen="howto"]');
   }],
   ["minigame-skins", "pro", "#/settings", ".mg-setting", async (page) => {
+    await page.evaluate(() => document.querySelectorAll("details.advanced").forEach((d) => (d.open = true))); // 1.2.63: in Settings > Advanced
     await page.locator(".mg-setting .link-btn").click();
     await page.waitForSelector(".mg-panel:not([hidden])");
     if (await page.locator('.mg-stage[data-screen="howto"]').count()) await page.locator(".mg-card .btn-primary").click();
@@ -79,6 +81,7 @@ const SCREENS = [
     await page.waitForSelector(".mg-skins");
   }],
   ["easy-minigame-paused", "easy", "#/settings", ".mg-setting", async (page) => {
+    await page.evaluate(() => document.querySelectorAll("details.advanced").forEach((d) => (d.open = true))); // 1.2.63: in Settings > Advanced
     await page.locator(".mg-setting .link-btn").click();
     await page.waitForSelector(".mg-panel:not([hidden])");
     if (await page.locator('.mg-stage[data-screen="howto"]').count()) await page.locator(".mg-card .btn-primary").click();

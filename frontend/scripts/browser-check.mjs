@@ -132,6 +132,8 @@ for (const name of wanted) {
   await go(`${base}/#/p/${P}`);
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.waitForSelector(".side-tabs", { timeout: 30000 });
+  // 1.2.63: the YouTube button sits in the clip card's folded "More options"
+  await page.evaluate(() => document.querySelectorAll("details.clip-more").forEach((d) => (d.open = true)));
   const pubBtn = page.locator('[data-testid="publish-btn"]').first();
   if ((await pubBtn.count()) && (await pubBtn.isEnabled())) {
     await pubBtn.click();

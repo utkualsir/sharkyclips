@@ -174,7 +174,7 @@ function RowActions({
       {canNow && (
         <button className="btn btn-sm btn-ghost" onClick={() => act(() => api.publishNow(row.project_id, row.clip_id), t("pub.now_queued"))}>
           <Icon name="upload" />
-          {t("pub.publish_now")}
+          {t("pub.youtube_now")}
         </button>
       )}
       <button className="btn btn-sm btn-ghost icon-btn" onClick={onEdit} aria-label={t("pub.edit")} title={t("pub.edit")}>

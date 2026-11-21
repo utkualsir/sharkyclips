@@ -6,7 +6,7 @@ import { useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { useMeta } from "../meta";
 import { Icon } from "./Icons";
-import { ProgressBar } from "./ui";
+import { ProgressBar, revealById } from "./ui";
 
 const MB = 1024 * 1024;
 
@@ -205,7 +205,7 @@ export function SetupCard() {
   useEffect(() => {
     // the banner links to #/settings/downloads
     if (window.location.hash.endsWith("/downloads"))
-      window.setTimeout(() => document.getElementById("downloads")?.scrollIntoView({ block: "start" }), 50);
+      window.setTimeout(() => revealById("downloads"), 50);
   }, []);
   return (
     <section className="card setting" id="downloads">

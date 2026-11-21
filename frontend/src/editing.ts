@@ -114,6 +114,7 @@ export function usePreviewPlayback(
   end: number | null,
   onEnd: () => void,
   loopStart: number | null = null,
+  onLoop?: () => void,
 ) {
   useEffect(() => {
     const v = video.current;
@@ -124,11 +125,13 @@ export function usePreviewPlayback(
       const t = v.currentTime;
       const cut = removed.find((r) => t >= r.a - 0.02 && t < r.b - 0.02);
       if (cut) v.currentTime = cut.b;
-      if (end != null && t >= end) {
+      if (end != null && t >= end - 1 / 60) {
         if (loopStart != null) {
           v.currentTime = loopStart; // the end flows into the start, again and again
+          onLoop?.();
         } else {
           v.pause();
+          v.currentTime = end; // 1.2.63: stop ON the clip's last frame, not a frame or two after it
           onEnd();
           return;
         }
