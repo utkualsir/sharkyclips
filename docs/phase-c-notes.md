@@ -2,7 +2,7 @@
 
 ## Kısa rapor (Türkçe)
 
-**Sürüm 1.2.63**: dört iş bitti. Testler, düzen (layout), erişilebilirlik (axe), önizleme ve üç
+**Sürüm 1.2.63 + 1.2.64**: dört iş bitti, CI tamamen yeşil (1.2.64). Testler, düzen (layout), erişilebilirlik (axe), önizleme ve üç
 tarayıcıda (Chrome, Edge, Firefox) kontroller yerelde geçti; CI sonucu aşağıda.
 
 1. **Benim tarzım (My style) şablonu.** Ayarlar'da yeni "Benim tarzım" kartı: aç/kapa, sosyal medya
@@ -348,3 +348,23 @@ Etiketler:
   failure logs were not downloadable yet (the run was not finished). Locally the full suite passed
   on Windows. **Next session:** `gh run view 44908950799 --log-failed`, fix, release as 1.2.64.
 - The "under construction" flag was removed at the shutdown (work committed and pushed).
+
+### 1.2.64 (CI fix, next session)
+
+- **Cause of the 1.2.63 CI failure:** not the new features. Every backend test passed on all three
+  systems; then pytest's own cache writer tried to `rmtree` a `pytest-cache-files-*` folder in the
+  repo root, and the safe-delete guard added just before 1.2.63 refused it. Locally I had run with
+  the cache off, so I did not see it. Fix: `-p no:cacheprovider` in pytest.ini (pytest never writes
+  or deletes anything in the repo) + a regression test. The guard stays as strict as it was.
+- **Layout job:** axe-check waited for the mini game setting, which is now in the folded Settings >
+  Advanced. Fixed in the check.
+- **A real accessibility bug found on the way:** with the "New" badge, the Updates link was
+  announced as "Updates (New)" but showed "Updates New" (axe: label-content-name-mismatch, every
+  screen, only on the first visit after an update - so CI's fresh test data hit it, a second local
+  run did not). The link now uses its visible text as its name. Regression test added.
+- Local before the release: axe, preview, mini game, browser (Chromium/Firefox/WebKit) and quick
+  layout checks green on a fresh fixture; backend suite green (one job-timing test failed once while
+  the browser checks loaded the machine, passed alone and on CI).
+- **CI on 1.2.64: all green** (Backend ubuntu / windows / macOS, Layout, Frontend, installer,
+  OSV, dependency audit, gitleaks). No SharkyClips server was running on ports 8000-8010, so no
+  restart was needed. The "under construction" flag was removed.
