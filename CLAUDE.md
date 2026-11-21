@@ -51,6 +51,24 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   running, don't interrupt them: tell the user (the UI shows a "restart to finish the update"
   bar). Only then test on the user's app or report the release as done.
 
+### 4. Safe deletes (every command, every session)
+
+- Destructive commands (delete, move, cleanup, `rm`, `rm -rf`, `Remove-Item`, `del`, `rmdir`,
+  `shutil.rmtree`, `git clean`, overwriting moves) may ONLY target throwaway test / temp folders
+  created in the SAME session (e.g. a `mkdtemp` folder, the scratchpad, a pytest `tmp_path`).
+- NEVER run them on `~/.sharkyclips` (or `%USERPROFILE%\.sharkyclips`, `SHARKYCLIPS_HOME` when it
+  points at a real folder), the user's projects / workspace folder, their videos, Downloads, or
+  anything outside the repo and the temp folders. Inside the repo only files this session created.
+  The app's own deletes go through `trash.py`; the user's data is never cleaned up by hand.
+- Before ANY delete: print the resolved absolute path (symlinks / junctions / `..` followed), check
+  it against this rule, and stop if it does not clearly pass. Never delete a path built from an
+  empty or unset variable, a wildcard at a folder root, or the temp root itself.
+- Tests clean up with `backend/tests/safe_delete.py` (`safe_rmtree`, `safe_unlink`,
+  `check_target`): it prints the resolved path and raises `UnsafeDelete` for anything not strictly
+  inside the system temp folder or inside a protected folder (`~/.sharkyclips`, Videos, Downloads,
+  `~/SharkyClips`, the repo). `conftest.py` also routes every `shutil.rmtree` during tests through
+  the same check (`test_safe_delete.py`).
+
 ## Working here
 
 - Tests: `.venv/Scripts/python -m pytest -q` (from the repo root; tests use a throwaway

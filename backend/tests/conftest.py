@@ -44,6 +44,18 @@ os.environ.pop("SHARKYCLIPS_SUPERVISED", None)
 os.environ["SHARKYCLIPS_ALLOWED_HOSTS"] = "testserver"  # TestClient's Host name (web/security.py)
 
 
+def _guard_deletes() -> None:
+    """CLAUDE.md "Safe deletes": during tests shutil.rmtree only removes things inside a temp
+    folder (safe_delete.py); anything else (the real ~/.sharkyclips, projects, videos, the repo)
+    raises UnsafeDelete instead of being deleted."""
+    import safe_delete
+
+    shutil.rmtree = safe_delete.guarded_rmtree
+
+
+_guard_deletes()
+
+
 def _token_by_default() -> None:
     """1.2.52: the UI sends the install's API token with every write request (web/security.py);
     TestClient does the same by default, like the UI. test_security.py drops it on purpose."""
