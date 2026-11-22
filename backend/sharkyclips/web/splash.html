@@ -10,42 +10,42 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>SharkyClips</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Instrument+Serif&family=Noto+Sans+Arabic:wght@400..700&display=swap" />
 <style>
-  :root { --font-ui: "Geist", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --font-display: "Instrument Serif", "Noto Serif", Georgia, "Noto Sans Arabic", serif; --mark-fin: #ffffff; }
-  :root[data-theme="light"] { --mark-fin: #1650c8; }
+  /* Archivo (OFL) is inlined by welcome.write_splash from frontend/dist/fonts: no network. */
+  @font-face { font-family: "Archivo"; font-style: normal; font-weight: 100 900; font-stretch: 62% 125%;
+    src: url(__FONT_ARCHIVO__) format("woff2"); }
+  :root { --font-ui: "Archivo", "Segoe UI", "Noto Sans Arabic", system-ui, -apple-system, sans-serif;
+    --font-display: var(--font-ui); --mark-fin: #0b1d22; }
+  :root[data-theme="light"] { --mark-fin: #ffd23f; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: #0a1020; font-family: var(--font-ui); }
-  :root[data-theme="light"] body { background: #ffffff; }
+  html, body { margin: 0; height: 100%; background: #0b1d22; font-family: var(--font-ui); }
+  :root[data-theme="light"] body { background: #e8efed; }
   @media (prefers-color-scheme: light) {
-    :root[data-theme="auto"] { --mark-fin: #1650c8; }
-    :root[data-theme="auto"] body { background: #ffffff; }
+    :root[data-theme="auto"] { --mark-fin: #ffd23f; }
+    :root[data-theme="auto"] body { background: #e8efed; }
     :root[data-theme="auto"] .launch {
-      --l-bg: #ffffff; --l-text: #0e1a33; --l-muted: #52607d; --l-water: #a9c6f3;
-      --l-fin-a: #1f6fe5; --l-fin-b: #0f3a94; --l-cut: #1f6fe5;
+      --l-bg: #e8efed; --l-text: #0e2a30; --l-muted: #4c6669; --l-water: #2f7f8c;
+      --l-fin-a: #163b42; --l-fin-b: #0e2a30; --l-cut: #f2c200;
     }
   }
-  .status { position: fixed; bottom: 52px; left: 0; right: 0; text-align: center; font-size: 12.5px;
-    color: var(--l-muted, #aeb7ca); opacity: 0; transition: opacity 0.4s; z-index: 101; }
+  .status { position: fixed; bottom: 52px; left: 0; right: 0; text-align: center; font-size: 13px;
+    color: var(--l-muted, #9bb5b2); opacity: 0; transition: opacity 0.4s; z-index: 101; }
   .status.show { opacity: 1; }
 /* splash:begin */
 /* ------------------------------------------------------- 1.2.2: launch sequence
-   Same CSS in backend/sharkyclips/web/splash.html (keep in sync). Theme colors: dark navy with
-   a white fin, light white with the blue fin. */
+   Same CSS in backend/sharkyclips/web/splash.html (keep in sync). Theme colors: deep water with
+   the sign-yellow fin (dark), sea foam with the ink fin (light). */
 
 .launch {
-  --l-bg: #0a1020; --l-text: #ffffff; --l-muted: #aeb7ca; --l-water: #5b9bff;
-  --l-fin-a: #ffffff; --l-fin-b: #9ec2ff; --l-cut: #d9b56a; --l-fin-solid: var(--mark-fin, #ffffff);
+  --l-bg: #0b1d22; --l-text: #ffffff; --l-muted: #9bb5b2; --l-water: #5fb7c4;
+  --l-fin-a: #ffe27a; --l-fin-b: #ffd23f; --l-cut: #ffd23f; --l-fin-solid: var(--mark-fin, #0b1d22);
   position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
   background: var(--l-bg); color: var(--l-text); cursor: default; overflow: hidden;
-  font-family: var(--font-ui, "Geist", system-ui, sans-serif);
+  font-family: var(--font-ui, "Archivo", "Segoe UI", system-ui, sans-serif);
 }
 :root[data-theme="light"] .launch {
-  --l-bg: #ffffff; --l-text: #0e1a33; --l-muted: #52607d; --l-water: #a9c6f3;
-  --l-fin-a: #1f6fe5; --l-fin-b: #0f3a94; --l-cut: #1f6fe5;
+  --l-bg: #e8efed; --l-text: #0e2a30; --l-muted: #4c6669; --l-water: #2f7f8c;
+  --l-fin-a: #163b42; --l-fin-b: #0e2a30; --l-cut: #f2c200;
 }
 .launch-stage { display: grid; justify-items: center; gap: 18px; padding: 24px; text-align: center; }
 .launch-mark-wrap { position: relative; width: 112px; height: 112px; }
@@ -71,17 +71,17 @@
 }
 .launch-word { position: relative; line-height: 1; padding: 0 6px; }
 .launch-word-text {
-  display: inline-block; font-family: var(--font-display, "Instrument Serif", Georgia, serif);
-  font-size: 44px; letter-spacing: -0.01em; color: var(--l-text); transform-origin: center; will-change: transform;
+  display: inline-block; font-family: var(--font-display, "Archivo", "Segoe UI", system-ui, sans-serif);
+  font-weight: 800; font-stretch: 125%; font-size: var(--fs-5xl, 44px); letter-spacing: -0.025em; color: var(--l-text); transform-origin: center; will-change: transform;
   clip-path: inset(0 0 0 0); animation: l-reveal 0.36s 1s cubic-bezier(0.6, 0, 0.2, 1) both;
 }
 .launch-slash {
-  position: absolute; top: -18%; bottom: -18%; left: 0; width: 3px; border-radius: 2px;
+  position: absolute; top: -18%; bottom: -18%; left: 0; width: 3px; border-radius: 4px;
   background: var(--l-cut); box-shadow: 0 0 14px var(--l-cut); transform: skewX(-18deg); opacity: 0;
   animation: l-slash 0.42s 0.98s cubic-bezier(0.6, 0, 0.2, 1) both;
 }
-.launch-slogan { margin: -4px 0 0; font-size: 16px; color: var(--l-muted); animation: l-up 0.45s 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
-.launch-hint { position: fixed; bottom: 24px; inset-inline: 0; text-align: center; font-size: 12px; color: var(--l-muted); opacity: 0.75; }
+.launch-slogan { margin: -4px 0 0; font-size: var(--fs-lg, 16px); color: var(--l-muted); animation: l-up 0.45s 1.3s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.launch-hint { position: fixed; bottom: 24px; inset-inline: 0; text-align: center; font-size: var(--fs-xs, 12px); color: var(--l-muted); opacity: 0.75; }
 
 @keyframes l-rise {
   0% { transform: translate(-18px, 40px); }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, urls, type ProjectDetail, type StoriesView, type Story } from "../api";
 import { Icon } from "../components/Icons";
-import { CopyButton, JobLine, Toggle } from "../components/ui";
+import { CopyButton, JobLine, Toggle, Sep } from "../components/ui";
 import { fmtBytes, fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -119,7 +119,7 @@ function StoryCard({
                       #{String(c?.rank ?? s.rank ?? 0).padStart(2, "0")}
                     </a>
                     <span className="tc">
-                      {fmtTime(s.start)} – {fmtTime(s.end)} · {num(Math.round(s.end - s.start))} s
+                      {fmtTime(s.start)} – {fmtTime(s.end)}<Sep />{num(Math.round(s.end - s.start))} s
                     </span>
                     {s.role && <span className="chip chip-outline">{s.role}</span>}
                   </div>
@@ -179,8 +179,8 @@ function StoryCard({
           <video src={urls.story(projectId, story.id, story.render.rendered_at)} controls playsInline preload="metadata" />
           <div className="story-result-body">
             <div className="muted" style={{ fontSize: 12.5 }}>
-              {t("story.rendered", { when: relTime(story.render.rendered_at) })} · {fmtTime(story.render.info.duration)} ·{" "}
-              {fmtBytes(story.render.size_bytes)} · {num(story.render.info.lufs, 1)} LUFS
+              {t("story.rendered", { when: relTime(story.render.rendered_at) })}<Sep />{fmtTime(story.render.info.duration)}<Sep />
+              {fmtBytes(story.render.size_bytes)}<Sep />{num(story.render.info.lufs, 1)} LUFS
             </div>
             <a className="btn btn-sm" href={urls.story(projectId, story.id, story.render.rendered_at, true)} download>
               <Icon name="download" />
@@ -209,7 +209,7 @@ function StoryCard({
         <details className="story-details" open>
           <summary>
             {t("story.publish")}
-            {pub.source === "clips" && <span className="muted"> · {t("story.publish_from_clips")}</span>}
+            {pub.source === "clips" && <span className="muted"><Sep />{t("story.publish_from_clips")}</span>}
           </summary>
           <div className="story-pub">
             <div className="field-label">{t("publish.titles")}</div>

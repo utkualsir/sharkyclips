@@ -8,7 +8,7 @@ import { href } from "../router";
 import { useToast } from "../toast";
 import { trashApi, type DeleteInfo, type TrashItem, type TrashSummary } from "../trash";
 import { Icon } from "./Icons";
-import { Modal } from "./ui";
+import { Modal, Sep } from "./ui";
 
 const PLATFORM: Record<string, string> = { youtube: "YouTube", tiktok: "TikTok", reels: "Instagram" };
 
@@ -108,7 +108,7 @@ export function DeleteDialog({
       toast({
         kind: "info",
         text: t("trash.posts_by_hand", { n: num(byHand.length + failed.length) }),
-        hint: [...byHand, ...failed].map((p) => `${PLATFORM[p.platform] ?? p.platform}: ${p.url ?? p.id ?? "?"}`).join(" · "),
+        hint: [...byHand, ...failed].map((p) => `${PLATFORM[p.platform] ?? p.platform}: ${p.url ?? p.id ?? "?"}`).join(", "),
       });
     if (item.original?.error) toast({ kind: "err", text: t("trash.original_failed"), hint: item.original.error });
     onDeleted(item);
@@ -149,7 +149,7 @@ export function DeleteDialog({
             ) : (
               <b>{t("trash.n_clips", { n: num(clipIds!.length) })}</b>
             )}{" "}
-            · <span className="mono">{fmtBytes(info.bytes)}</span>
+           <Sep /><span className="mono">{fmtBytes(info.bytes)}</span>
           </p>
           <p className={`field-hint${zero ? " trash-zero" : ""}`}>
             {zero ? t("trash.keep_hint_off") : t("trash.keep_hint", { days: num(info.keep_days) })}
@@ -163,7 +163,7 @@ export function DeleteDialog({
               <ul className="trash-posts">
                 {local.map((p, i) => (
                   <li key={i}>
-                    <b>{PLATFORM[p.platform] ?? p.platform}</b> · <span className="mono">{when(p.publish_at)}</span> ·{" "}
+                    <b>{PLATFORM[p.platform] ?? p.platform}</b><Sep /><span className="mono">{when(p.publish_at)}</span><Sep />
                     <span dir="auto">{p.title}</span>
                   </li>
                 ))}
@@ -237,7 +237,7 @@ export function DeleteDialog({
                       {PLATFORM[p.platform] ?? p.platform}
                       {p.url ? (
                         <>
-                          {" · "}
+                          <Sep />
                           <a href={p.url} target="_blank" rel="noreferrer" dir="ltr">
                             {p.url.replace(/^https:\/\/(www\.)?/, "").slice(0, 48)}
                           </a>

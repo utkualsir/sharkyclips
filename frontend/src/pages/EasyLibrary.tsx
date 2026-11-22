@@ -8,6 +8,7 @@ import { fmtCompact, fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useJobs } from "../jobs";
 import { href } from "../router";
+import { Sep } from "../components/ui";
 
 type Tab = "ready" | "planned" | "live";
 const TABS: Tab[] = ["ready", "planned", "live"];
@@ -88,7 +89,7 @@ export default function EasyLibrary() {
                       <>
                         <Icon name="eye" size={15} />{" "}
                         {r.views != null ? t("easy.views", { n: r.views, v: fmtCompact(r.views, lang) }) : t("easy.views_soon")}
-                        {r.status === "locked" && <span className="muted"> · {t("easy.live_private")}</span>}
+                        {r.status === "locked" && <span className="muted"><Sep />{t("easy.live_private")}</span>}
                       </>
                     ) : tab === "planned" ? (
                       r.status === "failed" ? (

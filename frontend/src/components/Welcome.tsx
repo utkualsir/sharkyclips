@@ -231,9 +231,9 @@ function HardwareSummary({ hw, failed }: { hw: HardwareCheck | null; failed: boo
   if (failed) return null;
   const rows: [string, string][] = hw
     ? [
-        [t("onb.hw.gpu"), hw.gpu ? `${hw.gpu}${hw.vram_gb ? ` · ${num(hw.vram_gb, 0)} GB` : ""}` : t("onb.hw.no_gpu")],
-        [t("onb.hw.cpu"), `${hw.cpu} · ${num(hw.ram_gb)} GB RAM`],
-        [t("onb.hw.speech"), `${hw.whisper.model ?? "—"} · ${hw.whisper.device === "cpu" ? "CPU" : "GPU"}`],
+        [t("onb.hw.gpu"), hw.gpu ? `${hw.gpu}${hw.vram_gb ? `, ${num(hw.vram_gb, 0)} GB` : ""}` : t("onb.hw.no_gpu")],
+        [t("onb.hw.cpu"), `${hw.cpu}, ${num(hw.ram_gb)} GB RAM`],
+        [t("onb.hw.speech"), `${hw.whisper.model ?? "—"}, ${hw.whisper.device === "cpu" ? "CPU" : "GPU"}`],
         [t("onb.hw.video"), hw.encoder ? hw.encoder.label : "CPU"],
         [t("onb.hw.ai"), hw.llm.available ? hw.llm.model : t("onb.hw.ai_missing")],
       ]

@@ -10,6 +10,7 @@ import { LanGate } from "./components/LanAccess";
 import { MetaProvider } from "./meta";
 import { ToastProvider } from "./toast";
 import { UiModeProvider } from "./uimode";
+import "./fonts.css";
 import "./styles.css";
 import "./easy.css";
 

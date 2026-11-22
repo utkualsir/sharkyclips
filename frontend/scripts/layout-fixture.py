@@ -181,7 +181,50 @@ def build(root: Path) -> str:
         "hashtags": ["#DeltaForce", "#democreator"], "tags": ["Delta Force Türkçe", "democreator"], "category": "20",
         "made_for_kids": False, "language": "tr", "publish_at": "2099-01-01T19:00:00Z",
         "thumbnail": str(d / "full_thumb.jpg") if (d / "full_thumb.jpg").is_file() else None}})
+    _stamp_current(home, ws, d)
     return PID
+
+
+def _stamp_current(home: Path, ws: Path, d: Path) -> None:
+    """1.2.65: mark the grid clips as rendered with exactly the options, cut and fingerprints the
+    app wants TODAY (asked from the app itself), so the checks never queue renders. A copied
+    options dict went stale with every new Easy option (the 1.2.64 redesign shots queued GPU renders)."""
+    import os
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
+    old_home = os.environ.get("SHARKYCLIPS_HOME")
+    os.environ["SHARKYCLIPS_HOME"] = str(home)
+    os.environ.setdefault("SHARKYCLIPS_NO_MIGRATE", "1")
+    try:
+        from sharkyclips import easy as E
+        from sharkyclips.clips import ClipOptions
+        from sharkyclips.edit import bleepcheck
+        from sharkyclips.project import Project
+        from sharkyclips.web import easy as WE
+        from sharkyclips.web import state
+
+        project = Project(d.name, d)
+        hl = state.load_highlights(project)
+        review = state.load_review(project, hl)
+        data = E.load(project)
+        by = {c["id"]: c for c in hl["candidates"]}
+        doc = json.loads((d / "clips.json").read_text(encoding="utf-8"))
+        style, music_ok, lang = E.hook_style(), WE._music_ok(), WE._lang(project)
+        for cid, clip in doc["clips"].items():
+            cand = by[cid]
+            opts, hook = WE.wanted(project, cand, data, review, style, music_ok, lang)
+            eff = state.effective_cand(cand, review)
+            clip.update(options={**opts, "hook_text": hook}, start=eff["start"], end=eff["end"],
+                        edit_fp=state.edit_fingerprint(cand, review, opts),
+                        bleep_fp=bleepcheck.inputs_fingerprint(
+                            project, eff, ClipOptions.from_dict({**opts, "hook_text": hook}).to_dict()))
+        _json(d / "clips.json", doc)
+    finally:
+        if old_home is None:
+            os.environ.pop("SHARKYCLIPS_HOME", None)
+        else:
+            os.environ["SHARKYCLIPS_HOME"] = old_home
 
 
 def _channels(home: Path) -> None:

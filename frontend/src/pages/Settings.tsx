@@ -20,6 +20,7 @@ import {
   JobLine,
   Segmented,
   Toggle,
+  Sep,
 } from "../components/ui";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -85,7 +86,7 @@ function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
           <li key={r.key}>
             <div className="bar-top">
               <span>
-                {r.label} <span className="muted mono">· {r.model}</span>
+                {r.label} <span className="muted mono"><Sep />{r.model}</span>
                 {r.on && (
                   <span className="chip chip-outline best-chip">
                     {t("speed.active")}
@@ -787,8 +788,8 @@ export default function Settings() {
                     {llmInfo?.installed.map((m) => (
                       <option key={m.name} value={m.name}>
                         {m.name}
-                        {m.params ? ` · ${m.params}` : ""}
-                        {m.size_gb ? ` · ${m.size_gb} GB` : ""}
+                        {m.params ? `, ${m.params}` : ""}
+                        {m.size_gb ? `, ${m.size_gb} GB` : ""}
                       </option>
                     ))}
                     {settings.llm_model !== "auto" &&
@@ -963,7 +964,7 @@ export default function Settings() {
                     {t("settings.triggers_count", {
                       n: parseWords(drafts[trigLang] ?? "").length,
                     })}{" "}
-                    · {t("settings.triggers_note")}
+                   <Sep />{t("settings.triggers_note")}
                   </span>
                   <button
                     className="btn btn-primary btn-sm"

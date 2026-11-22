@@ -27,7 +27,7 @@ import { useToast } from "../toast";
 import { accountsChanged, ConnectDialog, useAccounts } from "./Accounts";
 import { Icon } from "./Icons";
 import { PlatformIcon } from "./PlatformIcons";
-import { Modal, ProgressBar, Segmented, Toggle } from "./ui";
+import { Modal, ProgressBar, Segmented, Toggle, Sep } from "./ui";
 
 const ORDER: Target[] = ["youtube", "reels", "tiktok"];
 const PRIVACY_KEYS: Record<string, string> = {
@@ -407,7 +407,7 @@ function Editor({
           {p === "reels" && (
             <>
               {" "}
-              <span className="mp-count-sep">·</span> <Counter n={hashtags(cap)} max={view.limits.reels.hashtags} /> #
+              <Sep /> <Counter n={hashtags(cap)} max={view.limits.reels.hashtags} /> #
             </>
           )}
         </span>
@@ -646,7 +646,7 @@ function summary(r: Awaited<ReturnType<typeof publishApi.start>>, t: (k: string,
   const parts = Object.entries(r.results).map(([p, x]) =>
     `${TARGET_NAME[p as Target]}: ${t(x?.error ? "mp.st_failed" : x?.mode === "semi" ? "mp.r_by_hand" : x?.status === "scheduled" ? "mp.r_planned" : x?.skipped ? "mp.r_already" : "mp.r_started")}`,
   );
-  return parts.join(" · ");
+  return parts.join(", ");
 }
 
 /** After Publish: TikTok's API note, and the by-hand platforms go to the "post it yourself" steps. */
@@ -913,7 +913,7 @@ export function PublishBlock({
       <PostBadges posts={posts} pid={pid} cid={cid} onChanged={onChanged} />
       {waiting.length > 0 && (
         <button type="button" className="btn ez-big mp-resume" onClick={() => openHandoff({ pid, cid, title, platforms: waiting })}>
-          <Icon name="copy" /> {t("mp.ho_resume", { names: waiting.map((p) => TARGET_NAME[p]).join(" · ") })}
+          <Icon name="copy" /> {t("mp.ho_resume", { names: waiting.map((p) => TARGET_NAME[p]).join(", ") })}
         </button>
       )}
       {moving.length > 0 && (
@@ -928,7 +928,7 @@ export function PublishBlock({
           <div className="mp-go">
             <button className="btn btn-primary ez-big" disabled={!ready || hold || busy || !pending.length} onClick={go}>
               {busy ? <span className="spinner" /> : <Icon name="upload" />} {t("mp.publish")}
-              {pending.length < 3 && <span className="mp-go-n"> · {num(pending.length)}</span>}
+              {pending.length < 3 && <span className="mp-go-n"><Sep />{num(pending.length)}</span>}
             </button>
             <button type="button" className="btn btn-ghost ez-big mp-preview-btn" onClick={() => setOpen(true)} disabled={!ready}
               aria-label={t("mp.preview")} title={t("mp.preview")}>

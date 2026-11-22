@@ -116,7 +116,7 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
     const prim = brand?.caption_color || "#fff";
     const high = brand?.caption_highlight || GOLD;
     const outline = brand?.caption_outline || "#000";
-    const fontFam = `${brand?.caption_font ? `"${brand.caption_font}", ` : ""}Geist, Arial, "Noto Sans Arabic", "Microsoft YaHei", sans-serif`;
+    const fontFam = `${brand?.caption_font ? `"${brand.caption_font}", ` : ""}Arial, "Noto Sans Arabic", "Microsoft YaHei", sans-serif`;
     let raf = 0;
 
     const draw = () => {

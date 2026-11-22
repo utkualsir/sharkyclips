@@ -95,7 +95,7 @@ export default function VoicesPanel({ projectId, jobs, llm, onDone, toast }: Pro
             <label key={tr.pos} className="voices-track">
               <span className="voices-track-name" title={tr.title}>
                 {t("voices.track_n", { n: tr.pos + 1 })}
-                {tr.title ? ` · ${tr.title}` : ""}
+                {tr.title ? `, ${tr.title}` : ""}
               </span>
               <select className="select select-sm" value={tr.label} onChange={(e) => label(tr.pos, e.target.value as TrackLabel)}>
                 {view.labels.map((l) => (
@@ -112,7 +112,7 @@ export default function VoicesPanel({ projectId, jobs, llm, onDone, toast }: Pro
         <div className="muted small" style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <span className="spinner" style={{ width: 12, height: 12 }} />
           {t(`stage.${job!.stage ?? "voices_separating"}`)}
-          {job!.progress != null && ` · ${Math.round(job!.progress * 100)}%`}
+          {job!.progress != null && `, ${Math.round(job!.progress * 100)}%`}
         </div>
       ) : (
         <>

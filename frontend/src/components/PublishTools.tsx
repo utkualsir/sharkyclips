@@ -23,7 +23,7 @@ import { AiVoiceSwitches } from "./Licenses";
 import { PublishEverywhereButton } from "./PublishAll";
 import { Icon } from "./Icons";
 import { Markdown } from "./Shell";
-import { Modal, Segmented, Toggle } from "./ui";
+import { Modal, Segmented, Toggle, Sep } from "./ui";
 import { ConnectPrompt } from "./YoutubeConnect";
 
 // ------------------------------------------------------------------ helpers
@@ -575,7 +575,7 @@ export function PublishSetupDialog({
                       </span>
                       <span className="cover-name">
                         {t(`pub.cover.${k}`)}
-                        {k === "face" && covers?.face && <span className="muted mono"> · {num(covers.face.score)}</span>}
+                        {k === "face" && covers?.face && <span className="muted mono"><Sep />{num(covers.face.score)}</span>}
                       </span>
                     </label>
                   );
@@ -584,7 +584,7 @@ export function PublishSetupDialog({
               <input ref={thumbInput} type="file" hidden accept="image/jpeg,image/png" onChange={(e) => pickThumb(e.target.files?.[0])} />
               {meta.cover.kind === "face" && covers?.face && (
                 <span className="field-hint">
-                  {t("pub.face_found", { t: fmtTime(covers.face.at ?? 0) })} · {covers.face.reasons.map((r) => t(`pub.face_reason.${r}`)).join(", ")}
+                  {t("pub.face_found", { t: fmtTime(covers.face.at ?? 0) })}<Sep />{covers.face.reasons.map((r) => t(`pub.face_reason.${r}`)).join(", ")}
                 </span>
               )}
               {meta.cover.kind === "ai" && (
@@ -695,7 +695,7 @@ export function PublishSetupDialog({
               </span>
               <span className="field-hint">
                 {t("pub.when_hint", { n: limits.effective_limit, times: limits.best_times.times.join(", ") })}
-                {whenAt && canSchedule && <> · {relTime(new Date(whenAt).toISOString())}</>}
+                {whenAt && canSchedule && <><Sep />{relTime(new Date(whenAt).toISOString())}</>}
               </span>
             </div>
           </div>
@@ -738,8 +738,8 @@ export function ScheduleDialog({ rows, settings, onClose, onDone }: { rows: Libr
               mode: "manual",
             });
       const moved = r.planned.filter((p) => p.moved).length;
-      toast({ kind: "ok", text: t("pub.scheduled_n", { n: r.planned.length }) + (moved ? ` · ${t("pub.moved_n", { n: moved })}` : "") });
-      if (r.skipped.length) toast({ kind: "err", text: r.skipped.map((s) => t(`pub.skip.${s.reason}`)).join(" · ") });
+      toast({ kind: "ok", text: t("pub.scheduled_n", { n: r.planned.length }) + (moved ? `, ${t("pub.moved_n", { n: moved })}` : "") });
+      if (r.skipped.length) toast({ kind: "err", text: r.skipped.map((s) => t(`pub.skip.${s.reason}`)).join(", ") });
       onDone();
       onClose();
     } catch (e: any) {
@@ -789,7 +789,7 @@ export function ScheduleDialog({ rows, settings, onClose, onDone }: { rows: Libr
             <li key={r.key}>
               <span className="plan-title" dir="auto">
                 <b>{r.title}</b>
-                <span className="muted"> · {r.project_title}</span>
+                <span className="muted"><Sep />{r.project_title}</span>
               </span>
               {s ? (
                 <span className="warn-text">{t(`pub.skip.${s.reason}`)}</span>

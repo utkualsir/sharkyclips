@@ -50,6 +50,9 @@ SolidCompression=yes
 LZMAUseSeparateProcess=yes
 LZMANumBlockThreads=4
 WizardStyle=modern
+; 1.2.65 "Shark Sign" art (installer/make_icons.py draws them)
+WizardImageFile={#SourcePath}wizard.bmp,{#SourcePath}wizard-150.bmp,{#SourcePath}wizard-200.bmp
+WizardSmallImageFile={#SourcePath}wizard-small.bmp,{#SourcePath}wizard-small-150.bmp,{#SourcePath}wizard-small-200.bmp
 CloseApplications=no
 RestartApplications=no
 SetupLogging=yes

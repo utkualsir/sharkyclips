@@ -9,6 +9,210 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.65] - 2026-11-22
+SharkyClips has a new look: deep water colours, the yellow of a shark warning sign and clearer text on every screen. Every feature works exactly as before.
+
+### New
+- **A new look everywhere.** Every screen, window and message now uses deep sea colours with one bright yellow for the main button. The main buttons, clip cards and windows have a small cut corner, like a shark fin.
+- **A new logo and app icon.** The shark fin now sits on a yellow sign. The installer, the start animation and the website use the new look too.
+
+### Improved
+- **Easier to read.** One clear font family for the whole app, bigger and bolder headings, and times and numbers in an even-width font, so they line up.
+- **Fonts work offline.** The fonts are now part of the app, so it looks the same without an internet connection and loads nothing from other websites.
+- **Clearer colours.** Yellow now marks only the main action and the best moments. Switches that are on are green, and warnings are orange.
+- **A calmer progress view.** "Finding your best moments" now shows numbered steps on a line, with a bar for the step that is running.
+- **Pro mode is tighter.** The editor screens use less empty space, so more of your clips fit on the screen.
+- **Quieter motion.** Only the page itself moves when it opens; lists no longer slide in one by one.
+
+<!-- lang:tr -->
+**Türkçe**
+
+SharkyClips'in yeni bir görünümü var: derin deniz renkleri, köpekbalığı uyarı tabelasının sarısı ve her ekranda daha net yazılar. Bütün özellikler eskisi gibi çalışıyor.
+
+### Yeni
+- **Her yerde yeni görünüm.** Bütün ekranlar, pencereler ve mesajlar artık derin deniz renklerini kullanıyor; ana buton için tek bir parlak sarı var. Ana butonlar, klip kartları ve pencerelerde köpekbalığı yüzgeci gibi küçük kesik bir köşe var.
+- **Yeni logo ve uygulama simgesi.** Köpekbalığı yüzgeci artık sarı bir tabelanın üstünde. Kurulum programı, açılış animasyonu ve web sitesi de yeni görünümü kullanıyor.
+
+### İyileştirmeler
+- **Okuması daha kolay.** Bütün uygulamada tek ve net bir yazı tipi ailesi, daha büyük ve kalın başlıklar; süreler ve sayılar eşit genişlikte bir yazı tipiyle, böylece alt alta düzgün duruyorlar.
+- **Yazı tipleri internetsiz çalışıyor.** Yazı tipleri artık uygulamanın içinde; internet olmadan da aynı görünüyor ve başka sitelerden hiçbir şey yüklemiyor.
+- **Daha anlaşılır renkler.** Sarı artık sadece ana işlemi ve en iyi anları gösteriyor. Açık olan anahtarlar yeşil, uyarılar turuncu.
+- **Daha sakin ilerleme ekranı.** "En iyi anların bulunuyor" artık bir çizgi üstünde numaralı adımlar ve çalışan adım için bir çubuk gösteriyor.
+- **Pro mod daha derli toplu.** Düzenleyici ekranlarında daha az boşluk var, ekrana daha çok klip sığıyor.
+- **Daha sakin hareketler.** Sayfa açılırken sadece sayfanın kendisi hareket ediyor; listeler artık tek tek kayarak gelmiyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+SharkyClips tiene un aspecto nuevo: colores de mar profundo, el amarillo de una señal de aviso de tiburones y textos más claros en cada pantalla. Todas las funciones siguen igual.
+
+### Nuevo
+- **Un aspecto nuevo en todas partes.** Todas las pantallas, ventanas y mensajes usan colores de mar profundo con un solo amarillo brillante para el botón principal. Los botones principales, las tarjetas de clips y las ventanas tienen una pequeña esquina cortada, como una aleta de tiburón.
+- **Logo e icono nuevos.** La aleta ahora está sobre una señal amarilla. El instalador, la animación de inicio y la web también usan el nuevo aspecto.
+
+### Mejoras
+- **Más fácil de leer.** Una sola familia de letra clara para toda la app, títulos más grandes y gruesos, y tiempos y números con una letra de ancho fijo para que queden alineados.
+- **Las fuentes funcionan sin conexión.** Las fuentes ahora vienen dentro de la app: se ve igual sin internet y no carga nada de otras webs.
+- **Colores más claros.** El amarillo marca solo la acción principal y los mejores momentos. Los interruptores encendidos son verdes y los avisos, naranjas.
+- **Un progreso más tranquilo.** "Buscando tus mejores momentos" muestra ahora pasos numerados sobre una línea, con una barra para el paso en curso.
+- **El modo Pro es más compacto.** Las pantallas del editor dejan menos espacio vacío, así caben más clips.
+- **Movimiento más tranquilo.** Solo la página se mueve al abrirse; las listas ya no entran una a una.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+O SharkyClips ganhou um visual novo: cores de mar profundo, o amarelo de uma placa de aviso de tubarão e textos mais claros em todas as telas. Todos os recursos continuam iguais.
+
+### Novo
+- **Um visual novo em todo lugar.** Todas as telas, janelas e mensagens usam cores de mar profundo com um único amarelo forte para o botão principal. Os botões principais, os cartões de clipes e as janelas têm um pequeno canto cortado, como uma barbatana de tubarão.
+- **Novo logo e ícone.** A barbatana agora fica sobre uma placa amarela. O instalador, a animação de abertura e o site também usam o novo visual.
+
+### Melhorias
+- **Mais fácil de ler.** Uma só família de fonte clara no app todo, títulos maiores e mais fortes, e tempos e números em uma fonte de largura fixa, para ficarem alinhados.
+- **As fontes funcionam offline.** As fontes agora fazem parte do app: ele fica igual sem internet e não carrega nada de outros sites.
+- **Cores mais claras.** O amarelo marca só a ação principal e os melhores momentos. Chaves ligadas ficam verdes e avisos, laranja.
+- **Um progresso mais calmo.** "Encontrando seus melhores momentos" agora mostra etapas numeradas em uma linha, com uma barra para a etapa em andamento.
+- **O modo Pro ficou mais compacto.** As telas do editor têm menos espaço vazio, então cabem mais clipes.
+- **Movimento mais calmo.** Só a própria página se move ao abrir; as listas não deslizam mais uma por uma.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+SharkyClips hat ein neues Aussehen: Farben der Tiefsee, das Gelb eines Hai-Warnschilds und klarere Schrift auf jedem Bildschirm. Alle Funktionen bleiben, wie sie waren.
+
+### Neu
+- **Überall ein neues Aussehen.** Alle Seiten, Fenster und Meldungen nutzen jetzt Tiefseefarben mit einem einzigen kräftigen Gelb für den Hauptknopf. Hauptknöpfe, Clip-Karten und Fenster haben eine kleine abgeschnittene Ecke, wie eine Haiflosse.
+- **Neues Logo und App-Symbol.** Die Haiflosse sitzt jetzt auf einem gelben Schild. Installer, Startanimation und Website nutzen das neue Aussehen ebenfalls.
+
+### Verbessert
+- **Leichter zu lesen.** Eine klare Schriftfamilie für die ganze App, größere und kräftigere Überschriften, und Zeiten und Zahlen in einer Schrift mit gleicher Zeichenbreite, damit sie sauber untereinander stehen.
+- **Schriften funktionieren offline.** Die Schriften gehören jetzt zur App: Sie sieht ohne Internet gleich aus und lädt nichts von anderen Websites.
+- **Klarere Farben.** Gelb zeigt nur noch die Hauptaktion und die besten Momente. Eingeschaltete Schalter sind grün, Warnungen orange.
+- **Ruhigere Fortschrittsanzeige.** "Deine besten Momente werden gesucht" zeigt jetzt nummerierte Schritte auf einer Linie, mit einem Balken für den laufenden Schritt.
+- **Der Pro-Modus ist kompakter.** Die Editor-Seiten haben weniger leeren Raum, so passen mehr Clips auf den Bildschirm.
+- **Ruhigere Bewegung.** Beim Öffnen bewegt sich nur die Seite selbst; Listen gleiten nicht mehr einzeln herein.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+SharkyClips change de look : des couleurs de grand large, le jaune d'un panneau d'alerte requin et des textes plus nets sur chaque écran. Toutes les fonctions marchent comme avant.
+
+### Nouveau
+- **Un nouveau look partout.** Tous les écrans, fenêtres et messages utilisent des couleurs de mer profonde, avec un seul jaune vif pour le bouton principal. Les boutons principaux, les cartes de clips et les fenêtres ont un petit coin coupé, comme un aileron de requin.
+- **Nouveau logo et nouvelle icône.** L'aileron est maintenant posé sur un panneau jaune. L'installateur, l'animation de démarrage et le site utilisent aussi le nouveau look.
+
+### Améliorations
+- **Plus facile à lire.** Une seule famille de police claire pour toute l'app, des titres plus grands et plus gras, et les durées et nombres dans une police à largeur fixe, pour qu'ils s'alignent.
+- **Les polices marchent hors ligne.** Les polices font maintenant partie de l'app : elle a le même aspect sans internet et ne charge rien depuis d'autres sites.
+- **Des couleurs plus claires.** Le jaune ne marque plus que l'action principale et les meilleurs moments. Les interrupteurs activés sont verts et les avertissements orange.
+- **Une progression plus calme.** « Recherche de tes meilleurs moments » affiche maintenant des étapes numérotées sur une ligne, avec une barre pour l'étape en cours.
+- **Le mode Pro est plus compact.** Les écrans de l'éditeur laissent moins de vide, donc plus de clips tiennent à l'écran.
+- **Des mouvements plus calmes.** Seule la page bouge à l'ouverture ; les listes n'arrivent plus une par une.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A SharkyClips új külsőt kapott: mélytengeri színek, a cápára figyelmeztető tábla sárgája és tisztább szövegek minden képernyőn. Minden funkció ugyanúgy működik.
+
+### Új
+- **Új külső mindenhol.** Minden képernyő, ablak és üzenet mélytengeri színeket használ, egyetlen élénk sárgával a fő gombhoz. A fő gombok, a klipkártyák és az ablakok sarka kicsit le van vágva, mint egy cápauszony.
+- **Új logó és alkalmazásikon.** A cápauszony most egy sárga táblán ül. A telepítő, az induló animáció és a weboldal is az új külsőt kapta.
+
+### Fejlesztések
+- **Könnyebb olvasni.** Egyetlen tiszta betűcsalád az egész alkalmazásban, nagyobb és vastagabb címek, az idők és számok pedig egyforma szélességű betűvel, hogy egymás alatt szépen álljanak.
+- **A betűtípusok internet nélkül is működnek.** A betűtípusok most az alkalmazás részei: internet nélkül is ugyanúgy néz ki, és semmit sem tölt le más oldalakról.
+- **Érthetőbb színek.** A sárga már csak a fő műveletet és a legjobb pillanatokat jelöli. A bekapcsolt kapcsolók zöldek, a figyelmeztetések narancssárgák.
+- **Nyugodtabb folyamatjelző.** A "Keressük a legjobb pillanataidat" most számozott lépéseket mutat egy vonalon, és egy sávot a futó lépéshez.
+- **A Pro mód tömörebb.** A szerkesztő képernyőin kevesebb az üres hely, így több klip fér el.
+- **Nyugodtabb mozgás.** Megnyitáskor csak maga az oldal mozdul; a listák már nem csúsznak be egyenként.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+У SharkyClips новый вид: цвета глубокого моря, жёлтый цвет знака «Осторожно, акулы» и более чёткий текст на каждом экране. Все функции работают как раньше.
+
+### Новое
+- **Новый вид везде.** Все экраны, окна и сообщения теперь в цветах глубокого моря, а главная кнопка — одного яркого жёлтого цвета. У главных кнопок, карточек клипов и окон есть небольшой срезанный угол, как акулий плавник.
+- **Новый логотип и значок.** Акулий плавник теперь стоит на жёлтом знаке. Установщик, заставка при запуске и сайт тоже в новом виде.
+
+### Улучшения
+- **Легче читать.** Одно понятное семейство шрифтов во всём приложении, более крупные и жирные заголовки, а время и числа набраны шрифтом одинаковой ширины, чтобы стояли ровно.
+- **Шрифты работают без интернета.** Шрифты теперь внутри приложения: без интернета оно выглядит так же и ничего не загружает с других сайтов.
+- **Понятнее цвета.** Жёлтым теперь отмечены только главное действие и лучшие моменты. Включённые переключатели зелёные, предупреждения оранжевые.
+- **Спокойнее экран прогресса.** «Ищем ваши лучшие моменты» теперь показывает пронумерованные шаги на линии и полоску для текущего шага.
+- **Режим Pro плотнее.** На экранах редактора меньше пустого места, поэтому помещается больше клипов.
+- **Спокойнее движение.** При открытии двигается только сама страница; списки больше не выезжают по одному.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+لـ SharkyClips مظهر جديد: ألوان البحر العميق، وأصفر لافتة التحذير من أسماك القرش، ونصوص أوضح في كل شاشة. كل الميزات تعمل كما كانت.
+
+### جديد
+- **مظهر جديد في كل مكان.** كل الشاشات والنوافذ والرسائل تستخدم الآن ألوان البحر العميق مع لون أصفر واحد لامع للزر الرئيسي. للأزرار الرئيسية وبطاقات المقاطع والنوافذ زاوية صغيرة مقطوعة مثل زعنفة القرش.
+- **شعار وأيقونة جديدان.** زعنفة القرش الآن فوق لافتة صفراء. برنامج التثبيت ورسوم البداية والموقع تستخدم المظهر الجديد أيضًا.
+
+### تحسينات
+- **قراءة أسهل.** عائلة خطوط واحدة واضحة في التطبيق كله، وعناوين أكبر وأعرض، والأوقات والأرقام بخط متساوي العرض لتصطف بشكل مرتب.
+- **الخطوط تعمل دون إنترنت.** الخطوط أصبحت جزءًا من التطبيق، فيبدو كما هو دون إنترنت ولا يحمّل شيئًا من مواقع أخرى.
+- **ألوان أوضح.** الأصفر يدل الآن فقط على الإجراء الرئيسي وأفضل اللحظات. المفاتيح المفعّلة خضراء والتحذيرات برتقالية.
+- **عرض تقدم أهدأ.** "نبحث عن أفضل لحظاتك" يعرض الآن خطوات مرقمة على خط، مع شريط للخطوة الجارية.
+- **وضع المحترفين أكثر إحكامًا.** شاشات المحرر فيها مساحات فارغة أقل، فتتسع لمقاطع أكثر.
+- **حركة أهدأ.** عند الفتح تتحرك الصفحة نفسها فقط؛ القوائم لم تعد تنزلق واحدة تلو الأخرى.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+SharkyClips 换上了新外观：深海的颜色、鲨鱼警示牌的黄色，每个界面的文字都更清楚。所有功能和以前一样。
+
+### 新功能
+- **处处都是新外观。** 所有界面、窗口和提示都改用深海色，主按钮只用一种明亮的黄色。主按钮、片段卡片和窗口都有一个小小的切角，像鲨鱼的鳍。
+- **新的标志和应用图标。** 鲨鱼鳍现在放在一块黄色警示牌上。安装程序、启动动画和网站也都换成了新外观。
+
+### 改进
+- **更容易阅读。** 整个应用只用一套清晰的字体，标题更大更粗，时间和数字使用等宽字体，排列整齐。
+- **字体离线也能用。** 字体现在内置在应用里，没有网络时看起来也一样，不会从其他网站加载任何东西。
+- **颜色更清楚。** 黄色现在只表示主要操作和最佳时刻。开启的开关是绿色，警告是橙色。
+- **更安静的进度界面。** "正在寻找你的最佳时刻"现在在一条线上显示带编号的步骤，正在进行的步骤有一个进度条。
+- **专业模式更紧凑。** 编辑器界面的空白更少，屏幕上能放下更多片段。
+- **更安静的动效。** 打开页面时只有页面本身会动，列表不再一个个滑入。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+SharkyClips が新しい見た目になりました。深海の色、サメ注意の看板の黄色、そしてどの画面でも読みやすい文字です。機能はすべて今までどおりです。
+
+### 新機能
+- **すべてが新しい見た目に。** すべての画面、ウィンドウ、メッセージが深海の色になり、メインのボタンだけが明るい黄色です。メインのボタン、クリップのカード、ウィンドウには、サメのひれのような小さな切り欠きの角があります。
+- **新しいロゴとアプリアイコン。** サメのひれが黄色い看板の上に乗りました。インストーラー、起動アニメーション、ウェブサイトも新しい見た目です。
+
+### 改善
+- **読みやすく。** アプリ全体で一つのはっきりした書体、より大きく太い見出し、時間と数字は等幅の書体で、きれいにそろいます。
+- **フォントはオフラインでも使えます。** フォントがアプリに入ったので、ネットがなくても同じ見た目で、ほかのサイトから何も読み込みません。
+- **わかりやすい色。** 黄色はメインの操作と一番いい場面だけに使います。オンのスイッチは緑、注意はオレンジです。
+- **落ち着いた進行表示。** 「ベストな場面を探しています」は、線の上に番号付きのステップと、実行中のステップのバーを表示します。
+- **Pro モードがすっきり。** エディター画面の余白が減り、より多くのクリップが画面に入ります。
+- **落ち着いた動き。** ページを開くときはページそのものだけが動き、リストが一つずつ滑り込むことはなくなりました。
+
+</details>
+
+
 ## [1.2.64] - 2026-11-21
 A small fix for people who use a screen reader, and safer checks behind the scenes.
 

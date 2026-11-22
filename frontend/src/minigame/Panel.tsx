@@ -9,6 +9,7 @@ import { createGame, H, startRound, stats as roundStats, step, W, type Game, typ
 import { draw, drawPreview, SKINS } from "./render";
 import { playEvents, setSound, suspendSound } from "./sfx";
 import "./minigame.css";
+import { Sep } from "../components/ui";
 
 // 1.2.59: the waiting mini game panel. A compact panel at the bottom left (it never covers the
 // top bar's job progress and shows the job's progress itself). The game runs only while the panel
@@ -479,7 +480,7 @@ export default function Panel({ open, progress, ready, onClose, onReadySeen }: P
                     {t("mg.best")}: <b className="mono">{num(best)}</b>
                     {(stats?.today_best ?? 0) > 0 && (
                       <>
-                        {" · "}
+                        <Sep />
                         {t("mg.today")}: <b className="mono">{num(stats!.today_best)}</b>
                       </>
                     )}
@@ -516,7 +517,7 @@ export default function Panel({ open, progress, ready, onClose, onReadySeen }: P
                   <p className="mg-badge">{result.new_best ? t("mg.new_best") : t("mg.new_today")}</p>
                 )}
                 <p className="mg-sub">
-                  {t("mg.best")}: <b className="mono">{num(best)}</b> · {t("mg.today")}: <b className="mono">{num(stats?.today_best ?? 0)}</b>
+                  {t("mg.best")}: <b className="mono">{num(best)}</b><Sep />{t("mg.today")}: <b className="mono">{num(stats?.today_best ?? 0)}</b>
                 </p>
                 {result?.new_skins.map((s) => (
                   <p key={s} className="mg-badge">

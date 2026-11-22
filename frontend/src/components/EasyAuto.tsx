@@ -5,7 +5,7 @@ import { href } from "../router";
 import { useToast } from "../toast";
 import { useUiMode } from "../uimode";
 import { Icon } from "./Icons";
-import { Modal, Toggle } from "./ui";
+import { Modal, Toggle, Sep } from "./ui";
 import { ConnectPrompt } from "./YoutubeConnect";
 
 /** 1.2.34: the YouTube connection at a glance: green / amber / red, one tap to fix. */
@@ -248,7 +248,7 @@ export function WeeklyDigestCard() {
       {d.elsewhere && d.elsewhere.tiktok + d.elsewhere.reels > 0 && (
         <p className="muted ez-digest-target">
           {t("easy2.dg_elsewhere", { tt: num(d.elsewhere.tiktok), ig: num(d.elsewhere.reels) })}
-          {d.elsewhere.views != null && ` · ${t("easy2.real_views", { n: compact(d.elsewhere.views) })}`}
+          {d.elsewhere.views != null && `, ${t("easy2.real_views", { n: compact(d.elsewhere.views) })}`}
         </p>
       )}
       {d.worked.length > 0 && (
@@ -256,7 +256,7 @@ export function WeeklyDigestCard() {
           <span className="muted">{t("easy2.dg_worked")}</span>
           {d.worked.map((w) => (
             <span key={w.dim} className="ez-chip" dir="auto">
-              {value(w.dim, w.value)} · ×{num(w.ratio, 1)}
+              {value(w.dim, w.value)}<Sep />×{num(w.ratio, 1)}
             </span>
           ))}
         </div>

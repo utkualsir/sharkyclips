@@ -18,7 +18,7 @@ export function gameReasonLabel(t: (k: string) => string, code: string, value?: 
   const base = t(`reason.${code}`);
   if (!value) return base;
   if (code === "df_multikill") return `${base} ×${value}`;
-  if (code.startsWith("lol_")) return `${base} · ${value}`;
+  if (code.startsWith("lol_")) return `${base}, ${value}`;
   return base;
 }
 

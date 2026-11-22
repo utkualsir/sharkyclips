@@ -265,7 +265,7 @@ export default function EasyHome() {
                     <b dir="auto">{p.title}</b>
                     <span className="muted">
                       {p.busy ? t("easy.recent_working") : p.clips ? t("easy.recent_clips", { n: p.clips }) : t("easy.recent_empty")}
-                      {p.duration ? ` · ${fmtTime(p.duration)}` : ""}
+                      {p.duration ? `, ${fmtTime(p.duration)}` : ""}
                     </span>
                     <ChannelSource c={p.channel} />
                   </span>

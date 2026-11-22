@@ -33,7 +33,7 @@ export function IgManualBar() {
           <Icon name={s.due > 0 ? "bell" : "pause"} size={15} />
           <span className="igm-bar-text">
             {s.due > 0 && <b>{t("igm.bar_due", { n: s.due })}</b>}
-            {s.due > 0 && s.paused > 0 && " · "}
+            {s.due > 0 && s.paused > 0 && ", "}
             {s.paused > 0 && <span>{t("igm.bar_paused", { n: s.paused })}</span>}
           </span>
           <button type="button" className="btn btn-sm" onClick={() => setOpen(true)}>
@@ -96,7 +96,7 @@ function IgManualDialog({ onClose }: { onClose: () => void }) {
         <b dir="auto">{r.title}</b>
         <span className="muted" dir="auto">
           {when(r.when, lang)}
-          {r.when ? " · " : ""}
+          {r.when ? ", " : ""}
           {r.project_title}
         </span>
       </span>

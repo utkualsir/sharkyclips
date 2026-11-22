@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redesign comparison</title>
+<style>
+  :root {
+    --bg: #f2f3f5; --surface: #ffffff; --text: #16191d; --muted: #5d636c; --line: #d8dbe0;
+    --on: #16191d; --on-text: #ffffff;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #131416; --surface: #1c1d20; --text: #e7e8ea; --muted: #9a9ea6; --line: #2f3135; --on: #e7e8ea; --on-text: #131416; }
+  }
+  :root[data-theme="dark"] { --bg: #131416; --surface: #1c1d20; --text: #e7e8ea; --muted: #9a9ea6; --line: #2f3135; --on: #e7e8ea; --on-text: #131416; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+  header { padding: 28px 24px 8px; max-width: 1800px; margin: 0 auto; }
+  h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 70ch; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; padding: 16px 24px; max-width: 1800px; margin: 0 auto;
+    position: sticky; top: 0; background: var(--bg); z-index: 2; border-bottom: 1px solid var(--line); }
+  .group { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .group > span { color: var(--muted); font-size: 13px; margin-inline-end: 6px; }
+  button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--text); padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--on); color: var(--on-text); border-color: var(--on); }
+  button:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+  main { max-width: 1800px; margin: 0 auto; padding: 20px 24px 48px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 620px), 1fr)); }
+  figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+  figure.hidden { display: none; }
+  figure a { display: block; line-height: 0; border-bottom: 1px solid var(--line); }
+  figure img { width: 100%; height: auto; aspect-ratio: 1440 / 900; object-fit: cover; object-position: top; background: var(--bg); }
+  figcaption { padding: 14px 16px 16px; }
+  figcaption b { font-size: 16px; }
+  figcaption .rec { font-size: 12px; font-weight: 600; padding: 1px 6px; border-radius: 3px; background: #ffd23f; color: #0b1d22; margin-inline-start: 6px; vertical-align: 2px; }
+  figcaption p { margin: 4px 0 10px; color: var(--muted); font-size: 14px; }
+  .swatches { display: flex; gap: 4px; }
+  .swatches i { width: 22px; height: 22px; border-radius: 3px; border: 1px solid var(--line); }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 10px 0 0; font-size: 13px; }
+  dt { color: var(--muted); }
+  dd { margin: 0; }
+  footer { max-width: 1800px; margin: 0 auto; padding: 0 24px 40px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SharkyClips: three design directions</h1>
+  <p>The same app, the same data, no feature changes. Each direction is a token theme on the real UI
+    (try it live with <code>?design=a</code>, <code>b</code>, <code>c</code> or <code>off</code>).
+    Click a screenshot to open it at full size. Notes and the recommendation: <code>docs/redesign.md</code>.</p>
+</header>
+
+<div class="controls" role="toolbar" aria-label="View">
+  <div class="group" id="screens"><span>Screen</span></div>
+  <div class="group" id="themes"><span>Theme</span></div>
+  <div class="group" id="shows"><span>Show</span></div>
+</div>
+
+<main id="grid"></main>
+
+<footer>Screenshots: 1440 × 900, English UI, motion off, synthetic layout-check project (no real user data).</footer>
+
+<script>
+  const SCREENS = [["home", "Home"], ["easy", "Easy mode"], ["pro-editor", "Pro editor"], ["preview", "Clip preview"], ["publish", "Publish"], ["settings", "Settings"]];
+  const THEMES = [["dark", "Dark"], ["light", "Light"]];
+  const DIRS = [
+    { id: "current", name: "Current", note: "Geist + Instrument Serif from Google Fonts, rounded cards with soft shadows, pills.",
+      sw: ["#0a1020", "#111a2e", "#d9b56a", "#eef2f8"], fonts: "Geist / Instrument Serif", icons: "home-made stroke set", shape: "8-22 px + pills" },
+    { id: "A", name: "A: Savile Row", note: "Navy, gold, grey, white. Didone headlines, sharp corners, hairlines instead of shadows.",
+      sw: ["#0a1428", "#0f1b33", "#c9a75e", "#f4f1ea"], fonts: "Bodoni Moda / Schibsted Grotesk", icons: "Phosphor Light", shape: "2-4 px, no shadows" },
+    { id: "B", name: "B: Cutroom", note: "A pro editing suite: graphite, one playhead orange, mono timecodes, dense panels.",
+      sw: ["#141516", "#1b1c1e", "#ff7a1a", "#e4e4e5"], fonts: "IBM Plex Sans / Plex Mono", icons: "Lucide", shape: "3-6 px, dense 4 px grid" },
+    { id: "C", name: "C: Shark Sign", rec: true, note: "Deep water + the yellow of a shark-warning sign. One family at two widths, a fin-cut corner on key actions.",
+      sw: ["#0b1d22", "#10272d", "#ffd23f", "#e3eeec"], fonts: "Archivo (expanded + normal)", icons: "Phosphor Bold", shape: "6-12 px + fin-cut corner" },
+  ];
+  const state = { screen: "home", theme: "dark", show: "all" };
+  try { Object.assign(state, JSON.parse(localStorage.getItem("cmp-state") || "{}")); } catch (e) {}
+
+  function seg(el, items, key) {
+    for (const [v, label] of items) {
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = label; b.dataset.v = v;
+      b.addEventListener("click", () => { state[key] = v; render(); });
+      el.appendChild(b);
+    }
+  }
+  seg(document.getElementById("screens"), SCREENS, "screen");
+  seg(document.getElementById("themes"), THEMES, "theme");
+  seg(document.getElementById("shows"), [["all", "All four"], ...DIRS.map((d) => [d.id, d.id === "current" ? "Current" : d.id])], "show");
+
+  const grid = document.getElementById("grid");
+  for (const d of DIRS) {
+    const f = document.createElement("figure");
+    f.dataset.dir = d.id;
+    f.innerHTML = `<a target="_blank" rel="noopener"><img alt="" loading="lazy" width="1440" height="900"></a>
+      <figcaption><b></b>${d.rec ? '<span class="rec">Recommended</span>' : ""}<p></p>
+      <div class="swatches" aria-hidden="true">${d.sw.map((c) => `<i style="background:${c}" title="${c}"></i>`).join("")}</div>
+      <dl><dt>Type</dt><dd></dd><dt>Icons</dt><dd></dd><dt>Shape</dt><dd></dd></dl></figcaption>`;
+    f.querySelector("b").textContent = d.name;
+    f.querySelector("p").textContent = d.note;
+    const dd = f.querySelectorAll("dd");
+    dd[0].textContent = d.fonts; dd[1].textContent = d.icons; dd[2].textContent = d.shape;
+    grid.appendChild(f);
+  }
+
+  function render() {
+    for (const g of ["screens", "themes", "shows"]) {
+      const key = g === "screens" ? "screen" : g === "themes" ? "theme" : "show";
+      for (const b of document.querySelectorAll(`#${g} button`)) b.setAttribute("aria-pressed", String(b.dataset.v === state[key]));
+    }
+    const label = SCREENS.find((s) => s[0] === state.screen)?.[1] ?? "";
+    for (const f of grid.children) {
+      const src = `${f.dataset.dir}/${state.screen}-${state.theme}.png`;
+      f.querySelector("a").href = src;
+      const img = f.querySelector("img");
+      img.src = src;
+      img.alt = `${f.querySelector("b").textContent}: ${label}, ${state.theme} theme`;
+      f.classList.toggle("hidden", state.show !== "all" && state.show !== f.dataset.dir);
+    }
+    grid.style.gridTemplateColumns = state.show === "all" ? "" : "1fr";
+    document.documentElement.setAttribute("data-theme", state.theme);
+    try { localStorage.setItem("cmp-state", JSON.stringify(state)); } catch (e) {}
+  }
+  render();
+</script>
+</body>
+</html>

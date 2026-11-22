@@ -3,7 +3,7 @@ import { api, urls, type LibraryRow, type LibraryView, type LibStatus } from "..
 import { Icon } from "../components/Icons";
 import { ChannelSource } from "../components/Channels";
 import { LockBanner, PublishSetupDialog, RescheduleDialog, ScheduleDialog, useWhen } from "../components/PublishTools";
-import { CopyButton, Modal, ProgressBar, Segmented } from "../components/ui";
+import { CopyButton, Modal, ProgressBar, Segmented, Sep } from "../components/ui";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import type { Target } from "../multipost";
@@ -55,14 +55,14 @@ function StepLine({ row }: { row: LibraryRow }) {
       <div className="lib-step">
         {due && (
           <span>
-            <Icon name="clock" size={12} /> {when.full(due)} · <b>{relTime(due)}</b>
+            <Icon name="clock" size={12} /> {when.full(due)}<Sep /><b>{relTime(due)}</b>
           </span>
         )}
         <span className={row.step === "uploaded" ? "ok-text" : "muted"}>
           {row.step === "uploaded" ? <Icon name="check" size={12} /> : null} {t(`pub.step.${row.step ?? "waiting"}`)}
           {row.job?.progress != null && row.step === "uploading" && <> {num(Math.round(row.job.progress * 100))}%</>}
-          {row.job?.paused && <> · {t("pub.paused")}</>}
-          {row.step === "retrying" && row.next_try_at && <> · {t("pub.retry_at", { when: when.time(row.next_try_at) })}</>}
+          {row.job?.paused && <><Sep />{t("pub.paused")}</>}
+          {row.step === "retrying" && row.next_try_at && <><Sep />{t("pub.retry_at", { when: when.time(row.next_try_at) })}</>}
         </span>
         {row.moved_from && <span className="muted">{t("pub.moved_from", { when: when.full(row.moved_from) })}</span>}
         {row.job && row.job.progress != null && <ProgressBar value={row.job.progress} />}
@@ -75,12 +75,12 @@ function StepLine({ row }: { row: LibraryRow }) {
       <div className="lib-step">
         {row.date && (
           <span>
-            {when.full(row.date)} · {relTime(row.date)}
+            {when.full(row.date)}<Sep />{relTime(row.date)}
           </span>
         )}
         {u && (u.views != null || u.likes != null) && (
           <span className="mono">
-            <Icon name="eye" size={12} /> {num(u.views ?? 0)} · <Icon name="thumb-up" size={12} /> {u.likes != null ? num(u.likes) : "–"}
+            <Icon name="eye" size={12} /> {num(u.views ?? 0)}<Sep /><Icon name="thumb-up" size={12} /> {u.likes != null ? num(u.likes) : "–"}
           </span>
         )}
         {u && <span className="muted">{t(`yt.privacy.${u.privacy}`)}</span>}
@@ -437,7 +437,7 @@ function Calendar({
                     setOver(null);
                   }}
                   onClick={() => onOpen(r)}
-                  title={`${r.title} · ${r.project_title}`}
+                  title={`${r.title}, ${r.project_title}`}
                 >
                   <span className="mono">{r.date ? when.time(r.date) : ""}</span>
                   <span className="lib-chip-title" dir="auto">
@@ -527,7 +527,7 @@ export default function ClipLibrary({ view }: { view: "list" | "calendar" }) {
             <div>
               <span className="muted">{t("pub.daily_limit")}</span>
               <b className="mono">{num(data.effective_limit)}</b>
-              <span className="muted">{data.best_times.times.join(" · ")}</span>
+              <span className="muted">{data.best_times.times.join(", ")}</span>
             </div>
             <a className="btn btn-sm btn-ghost icon-btn" href={href.settings} aria-label={t("pub.settings")} title={t("pub.settings")}>
               <Icon name="settings" />

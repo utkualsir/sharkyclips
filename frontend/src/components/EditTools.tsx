@@ -84,7 +84,7 @@ function FunEffects({ options, setOption, plan }: Pick<Props, "options" | "setOp
                 ? [
                     ...freezes.map((f) => `“${f.text}”`),
                     ...(fails ? [t("fx.fails_n", { n: fails })] : []),
-                  ].join(" · ")
+                  ].join(", ")
                 : t("fx.memes_none")}
             </span>
           )}
@@ -105,7 +105,7 @@ function FunEffects({ options, setOption, plan }: Pick<Props, "options" | "setOp
             plan && (
               <span className="edit-note" data-testid="gfx-note">
                 {plan.graphics?.items.length
-                  ? plan.graphics.items.map((g) => g.text).join(" · ")
+                  ? plan.graphics.items.map((g) => g.text).join(", ")
                   : t("gfx.none")}
               </span>
             )
@@ -160,8 +160,8 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
           {hasClip && plan && (
             <span className="edit-note">
               {bleeps ? t("edit.bleeps_n", { n: bleeps }) : t("edit.bleeps_none")}
-              {maybes > 0 && ` · ${t("edit.maybes_n", { n: maybes })}`}
-              {options.profanity === "auto" && ` · ${t("edit.profanity_auto_hint")}`}
+              {maybes > 0 && `, ${t("edit.maybes_n", { n: maybes })}`}
+              {options.profanity === "auto" && `, ${t("edit.profanity_auto_hint")}`}
             </span>
           )}
           {options.profanity !== "off" && (
@@ -306,7 +306,7 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
                 {analyzed.map((x) => (
                   <option key={x.name} value={x.name}>
                     {x.title}
-                    {x.moods.length ? ` · ${x.moods.map((m) => t(`mood.${m}`)).join(", ")}` : ""}
+                    {x.moods.length ? `, ${x.moods.map((m) => t(`mood.${m}`)).join(", ")}` : ""}
                   </option>
                 ))}
                 <option value="__none">{t("edit.music_none")}</option>
@@ -341,11 +341,11 @@ export default function EditTools({ options, setOption, plan, tracks, musicChoic
                 : moved > 0
                   ? t("loop.end_later", { s: num(moved, 1) })
                   : t("loop.end_earlier", { s: num(-moved, 1) })}
-              {seam.last_word && seam.first_word && ` · “${seam.last_word}” → “${seam.first_word}”`}
+              {seam.last_word && seam.first_word && `, “${seam.last_word}” → “${seam.first_word}”`}
               {seam.reasons.filter((r) => r !== "mid_speech").length > 0 &&
-                ` · ${seam.reasons.filter((r) => r !== "mid_speech").map((r) => t(`loop.why.${r}`)).join(", ")}`}
-              {seam.reasons.includes("mid_speech") && ` · ${t("loop.why.mid_speech")}`}
-              {seam.source === "ai" && ` · ${t("loop.ai")}`}
+                `, ${seam.reasons.filter((r) => r !== "mid_speech").map((r) => t(`loop.why.${r}`)).join(", ")}`}
+              {seam.reasons.includes("mid_speech") && `, ${t("loop.why.mid_speech")}`}
+              {seam.source === "ai" && `, ${t("loop.ai")}`}
             </span>
           )}
           {options.loop && (options.hook_flash || (options.brand && (plan?.brand_preset?.intro.enabled || plan?.brand_preset?.outro.enabled))) && (

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { aboutApi, type AiVoiceInfo, type LicensesView, type ModelLicense } from "../extras";
 import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
-import { Toggle } from "./ui";
+import { Toggle, Sep } from "./ui";
 import { href } from "../router";
 
 function Ext({ href, children }: { href?: string; children: React.ReactNode }) {
@@ -42,11 +42,11 @@ export function LicenseList({ items }: { items: ModelLicense[] }) {
       {items.map((l) => (
         <li key={l.name}>
           <span dir="ltr">
-            <b>{l.name}</b> · {l.by} · <Ext href={l.license_url}>{l.license}</Ext>
+            <b>{l.name}</b><Sep />{l.by}<Sep /><Ext href={l.license_url}>{l.license}</Ext>
           </span>
           {l.source_url && (
             <>
-              {" · "}
+              <Sep />
               <Ext href={l.source_url}>{t("lic.original")}</Ext>
             </>
           )}

@@ -13,7 +13,7 @@ export interface Skin {
 }
 
 export const SKINS: Record<string, Skin> = {
-  classic: { body: "#6f8fb8", belly: "#eef3fa", fin: "#5a7aa3", eye: "#0e1a33", pattern: "", accent: "#d9b56a" },
+  classic: { body: "#6f8fb8", belly: "#eef3fa", fin: "#5a7aa3", eye: "#0e1a33", pattern: "", accent: "#ffd23f" },
   reef: { body: "#3fa7a0", belly: "#e9fbf6", fin: "#2f8a84", eye: "#0e1a33", pattern: "spots", accent: "#ffcf5c" },
   tiger: { body: "#c98a3c", belly: "#fff2dc", fin: "#a86e2a", eye: "#1b1206", pattern: "stripes", accent: "#3b2410" },
   neon: { body: "#2a2f7a", belly: "#c9f7ff", fin: "#1f2463", eye: "#ffffff", pattern: "glow", accent: "#3ef0ff" },
@@ -39,9 +39,9 @@ export interface View {
 
 function background(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, "#1b5b8f");
-  grad.addColorStop(0.55, "#0f3a66");
-  grad.addColorStop(1, "#08203f");
+  grad.addColorStop(0, "#1f5a63");
+  grad.addColorStop(0.55, "#0f3a42");
+  grad.addColorStop(1, "#071c21");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
   const t = g.t;
@@ -85,7 +85,7 @@ function background(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
     ctx.fill();
   }
   // the sea floor
-  ctx.fillStyle = "#0a2a4a";
+  ctx.fillStyle = "#0a2a30";
   ctx.beginPath();
   ctx.moveTo(0, H);
   for (let x = 0; x <= W; x += 40) ctx.lineTo(x, H - 14 - Math.sin(x * 0.03) * 5);
@@ -438,7 +438,7 @@ export function draw(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
   ctx.textBaseline = "middle";
   for (const p of g.popups) {
     ctx.globalAlpha = Math.min(1, p.life * 2.5);
-    ctx.font = `700 ${p.tone === 2 ? 15 : 12}px system-ui, sans-serif`;
+    ctx.font = `700 ${p.tone === 2 ? 15 : 12}px Archivo, "Segoe UI", system-ui, sans-serif`;
     ctx.lineWidth = 3;
     ctx.strokeStyle = "rgba(5, 15, 35, 0.8)";
     ctx.strokeText(p.text, p.x, p.y);

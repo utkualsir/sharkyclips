@@ -7,7 +7,7 @@ import { useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
-import { JobLine } from "./ui";
+import { JobLine, Sep } from "./ui";
 
 export function useAiCovers(pid: string, cid: string) {
   const { jobs, finishedTick } = useJobs();
@@ -34,7 +34,7 @@ export function CoverAiNote({ view }: { view: AiCoversView }) {
   return (
     <p className="field-hint">
       <Icon name="sparkles" size={12} /> {t(p.use === "gpu" ? "cover_ai.on_gpu" : "cover_ai.on_cpu", { m: num(p.minutes_per_picture ?? 0) })}
-      {!p.model_ready && <> · {t("cover_ai.first_download", { size: fmtBytes(left) })}</>}
+      {!p.model_ready && <><Sep />{t("cover_ai.first_download", { size: fmtBytes(left) })}</>}
     </p>
   );
 }

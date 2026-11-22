@@ -3,6 +3,7 @@ import { ApiError, easyApi, type CaptionWord, type EasyClip, type EasyHook, type
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { Icon, type IconName } from "./Icons";
+import { Sep } from "./ui";
 
 /** Easy 2.0 (1.2.34): what the smart cut did + one-tap nudges (start earlier, end later,
  *  short / long version, back to the smart cut). */
@@ -39,7 +40,7 @@ export function CutRow({ pid, c, disabled, onView }: { pid: string; c: EasyClip;
       {why.length > 0 && (
         <p className="ez-cut-why">
           <Icon name="scissors" size={14} />
-          <span>{why.map((w) => t(`easy2.why_${w}`)).join(" · ")}</span>
+          <span>{why.map((w) => t(`easy2.why_${w}`)).join(", ")}</span>
         </p>
       )}
       {sh.length && (
@@ -103,7 +104,7 @@ function HookChip({ h }: { h: EasyHook }) {
       <Icon name="zap" size={14} />
       <span>
         <b>{better ? t("easy2.hook_better", { a: num(h.before), b: num(h.score) }) : t("easy2.hook_score", { n: num(h.score) })}</b>
-        {" · "}
+        <Sep />
         {h.choice === "flash" ? t("easy2.hook_flash") : h.choice === "later" ? t("easy2.hook_later", { s: num(h.moved, 1) }) : t(`easy2.hook_${level}`)}
       </span>
     </p>

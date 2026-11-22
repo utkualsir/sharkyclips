@@ -343,6 +343,18 @@ def hardware_check() -> dict:
 # ------------------------------------------------------------------ splash (launcher)
 
 
+def _font_data_uri(name: str) -> str:
+    """1.2.65: a bundled UI font as a data: URI for the local splash file (a file:// page can't
+    load a font file next to it, and fonts never come from the network). "" = system font."""
+    import base64
+
+    try:
+        data = (config.REPO_ROOT / "frontend" / "dist" / "fonts" / name).read_bytes()
+    except OSError:
+        return "''"
+    return "data:font/woff2;base64," + base64.b64encode(data).decode("ascii")
+
+
 def write_splash(url: str, lang: str | None = None) -> Path | None:
     """A local splash page that waits for the server at `url`, then opens the app. Returns
     its path, or None (then the launcher opens the app the old way)."""
@@ -357,6 +369,7 @@ def write_splash(url: str, lang: str | None = None) -> Path | None:
     theme = cfg.get("ui_theme") if cfg.get("ui_theme") in ("dark", "light") else "auto"
     motion = cfg.get("ui_motion") if cfg.get("ui_motion") in ("full", "reduced", "off") else "full"
     html = (html.replace("__APP_URL__", json.dumps(url)).replace("__LANG__", json.dumps(lang))
+            .replace("__FONT_ARCHIVO__", _font_data_uri("archivo-latin-standard-normal.woff2"))
             .replace("__DIR__", "rtl" if languages.is_rtl(lang) else "ltr")
             .replace("__THEME__", theme).replace("__MOTION__", motion))
     out = config.config_dir() / "splash.html"

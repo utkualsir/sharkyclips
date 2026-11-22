@@ -3,7 +3,7 @@ import { api, setHeavyGuard, ApiError, type ChangelogEntry } from "../api";
 import { useAppState } from "../appstate";
 import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
-import { Modal } from "./ui";
+import { Modal, Sep } from "./ui";
 import versionFile from "../../../VERSION?raw";
 
 /** The version these UI files were built from (the one VERSION file). */
@@ -173,8 +173,8 @@ export function DevBanner() {
           <Icon name="settings" size={15} />
           <span className="dev-banner-text">
             <b>{t("dev.banner")}</b>
-            {dev.task && <span className="dev-banner-task"> · {dev.task}</span>}
-            <span className="dev-banner-time"> · {t("dev.since", { time: fmtStart(dev.started_at, lang) })}</span>
+            {dev.task && <span className="dev-banner-task"><Sep />{dev.task}</span>}
+            <span className="dev-banner-time"><Sep />{t("dev.since", { time: fmtStart(dev.started_at, lang) })}</span>
           </span>
         </div>
       )}
@@ -299,11 +299,11 @@ export function Footer({ onWhatsNew }: { onWhatsNew: () => void }) {
       <span>
         SharkyClips <span className="mono">{state.version}</span>
       </span>
-      <span aria-hidden="true">·</span>
+      <Sep />
       <button className="link-btn" onClick={onWhatsNew}>
         {t("whatsnew.link")}
       </button>
-      <span aria-hidden="true">·</span>
+      <Sep />
       <a className="link-btn" href="#/updates">
         {t("updates.open")}
       </a>

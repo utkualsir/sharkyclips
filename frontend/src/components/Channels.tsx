@@ -14,7 +14,7 @@ import { useI18n } from "../i18n";
 import { href } from "../router";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
-import { revealById, Segmented, Toggle } from "./ui";
+import { revealById, Segmented, Toggle, Sep } from "./ui";
 
 /** 1.2.57 channel monitoring: Settings > Channels (Pro + Easy) and the Easy home card. */
 
@@ -468,7 +468,7 @@ export function ConnectChannelCard() {
             <span className="ez-chan-text">
               <b dir="auto">{c.name || c.handle}</b>
               <span className="muted">
-                {PLATFORM_NAME[c.platform]} · {statusLine(c, view, t, lang)}
+                {PLATFORM_NAME[c.platform]}<Sep />{statusLine(c, view, t, lang)}
               </span>
             </span>
             {c.live && (
@@ -495,7 +495,7 @@ export function ChannelSource({ c }: { c: ChannelLine | null | undefined }) {
   return (
     <span className="chan-src" title={t("chan.from_title")}>
       <Icon name="zap" size={11} />
-      <span dir="auto">{[plat, c.name, c.stream_title].filter(Boolean).join(" · ")}</span>
+      <span dir="auto">{[plat, c.name, c.stream_title].filter(Boolean).join(", ")}</span>
     </span>
   );
 }

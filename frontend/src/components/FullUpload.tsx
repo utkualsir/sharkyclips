@@ -206,7 +206,7 @@ export function FullUploadDialog({ projectId, onClose }: { projectId: string; on
             <div style={{ display: "grid", gap: 6 }} role="status">
               <span>
                 {upJob.stage === "retrying" ? t("full.retrying") : t("full.uploading")}
-                {upJob.progress != null && ` · ${Math.round(upJob.progress * 100)}%`}
+                {upJob.progress != null && `, ${Math.round(upJob.progress * 100)}%`}
               </span>
               <ProgressBar value={upJob.progress ?? null} />
               <span className="field-hint">{t("full.resume_hint")}</span>

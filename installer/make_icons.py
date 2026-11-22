@@ -2,15 +2,18 @@
 
     python installer/make_icons.py        (needs Pillow: pip install -r backend/requirements-dev.txt)
 
-Two versions of one mark:
-  light  ocean-to-navy blue fin on white  (the main logo: README, light UI)
-  dark   white fin on navy                (dark UI, tray, app icon, favicon)
-The fin sits above a water line; the play triangle is cut out of the fin, so the mark reads
-as "shark" and as "video clip" at the same time.
+Two versions of one mark ("Shark Sign", 1.2.65):
+  dark   deep-water fin on a sign-yellow tile   (app icon, tray, favicon, dark UI)
+  light  sign-yellow fin on an ink tile          (the main logo: README, light UI)
+The tile has the fin-cut corner (top right chamfer) of the UI. The fin sits above a water line;
+the play triangle is cut out of the fin, so the mark reads as "shark" and as "video clip".
 
 Writes assets/icon/sharkyclips{,-light}.{svg,png}, sharkyclips.ico, sharkyclips.icns,
-sharkyclips-mark.svg (no tile, currentColor) and frontend/public/{favicon.svg,favicon.ico,
-apple-touch-icon.png,logo-light.svg,logo-dark.svg,icon-192/512.png,icon-maskable-512.png}. The shapes live here once, so all formats match.
+sharkyclips-mark.svg (no tile, currentColor), the Windows installer's wizard images
+(installer/windows/wizard*.bmp) and frontend/public/{favicon.svg,favicon.ico,apple-touch-icon.png,
+logo-light.svg,logo-dark.svg,icon-192/512.png,icon-maskable-512.png}. The shapes live here once,
+so all formats match. `--google` also redraws docs/logo-120.png (the Google OAuth consent screen
+logo: changing it there asks Google for a new brand review, so it is never redrawn by default).
 """
 
 from __future__ import annotations
@@ -21,13 +24,13 @@ from PIL import Image, ImageChops, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 
-NAVY = "#0E1A33"
-NAVY_EDGE = "#22345A"
-WHITE = "#FFFFFF"
-OCEAN = "#1F6FE5"      # fin top (light version)
-DEEP = "#0F3A94"       # fin bottom (light version)
-WAVE_DARK = "#5B9BFF"  # water line on navy
-RADIUS = 14            # tile corner radius on the 64 x 64 grid
+WATER = "#0B1D22"      # deep water (the dark UI background)
+INK = "#0E2A30"        # ink (the light UI's text and primary button)
+SIGN = "#FFD23F"       # shark-warning-sign yellow
+TEAL = "#5FB7C4"       # water line in the installer art
+CUT = 16               # fin-cut corner (top right) on the 64 x 64 grid
+TILE = [(0.0, 0.0), (64.0 - CUT, 0.0), (64.0, float(CUT)), (64.0, 64.0), (0.0, 64.0)]
+COLORS = {"dark": (SIGN, WATER), "light": (INK, SIGN)}  # theme: (tile, fin + wave)
 
 # 64 x 64 grid. Fin: convex leading edge up to the tip, concave trailing edge back down.
 FIN = [("M", (13.0, 44.0)), ("C", (17.5, 33.0), (28.0, 18.0), (48.5, 11.5)),
@@ -65,21 +68,15 @@ def _wave_d() -> str:
 
 
 def svg(theme: str = "dark", tile: bool = True, size: int | None = None) -> str:
-    """theme: dark (white on navy) | light (blue on white) | mark (no tile, currentColor)."""
+    """theme: dark (water fin on yellow) | light (yellow fin on ink) | mark (no tile, currentColor)."""
     attrs = f' width="{size}" height="{size}"' if size else ""
     p = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"{attrs}>']
-    if theme == "light":
-        p.append('<defs><linearGradient id="sc-fin" x1="0" y1="0" x2="0.35" y2="1">'
-                 f'<stop offset="0" stop-color="{OCEAN}"/><stop offset="1" stop-color="{DEEP}"/>'
-                 '</linearGradient></defs>')
-        fin, wave = "url(#sc-fin)", OCEAN
+    if theme in COLORS:
+        bg, fin = COLORS[theme]
+        wave = fin
         if tile:
-            p.append(f'<rect x="0.5" y="0.5" width="63" height="63" rx="{RADIUS}" fill="{WHITE}" '
-                     'stroke="#DCE5F5"/>')
-    elif theme == "dark":
-        fin, wave = WHITE, WAVE_DARK
-        if tile:
-            p.append(f'<rect width="64" height="64" rx="{RADIUS}" fill="{NAVY}"/>')
+            pts = " ".join(f"{x:g},{y:g}" for x, y in TILE)
+            p.append(f'<polygon points="{pts}" fill="{bg}"/>')
     else:
         fin, wave = "currentColor", "currentColor"
     # the play triangle is a hole in the fin (evenodd), so it shows whatever is behind the mark
@@ -147,30 +144,16 @@ def render(size: int, theme: str = "dark", margin: float = 0.0, tile: bool = Tru
 
     img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
+    bg, fg = COLORS["light" if theme == "light" else "dark"]
     if tile:
-        if theme == "light":
-            d.rounded_rectangle([inset, inset, big - inset - 1, big - inset - 1], radius=RADIUS * s,
-                                fill=WHITE, outline="#DCE5F5", width=max(1, round(s * 0.8)))
-        else:
-            d.rounded_rectangle([inset, inset, big - inset - 1, big - inset - 1], radius=RADIUS * s,
-                                fill=NAVY, outline=NAVY_EDGE, width=max(1, round(s * 0.6)))
+        d.polygon(tr(TILE), fill=bg)
     # fin mask with the play triangle cut out
     mask = Image.new("L", (big, big), 0)
     md = ImageDraw.Draw(mask)
     md.polygon(tr(_fin_points()), fill=255)
     md.polygon(tr(PLAY), fill=0)
-    if theme == "light":
-        top, bottom = _hex(OCEAN), _hex(DEEP)
-        grad = Image.new("RGBA", (big, big))
-        gd = ImageDraw.Draw(grad)
-        for y in range(big):
-            t = min(1.0, max(0.0, (y - inset - 11 * s) / (33 * s)))
-            gd.line([(0, y), (big, y)], fill=tuple(round(a + (b - a) * t) for a, b in zip(top, bottom)) + (255,))
-        img.paste(grad, (0, 0), mask)
-        wave = _hex(OCEAN) + (255,)
-    else:
-        img.paste(Image.new("RGBA", (big, big), _hex(WHITE) + (255,)), (0, 0), mask)
-        wave = _hex(WAVE_DARK) + (255,)
+    img.paste(Image.new("RGBA", (big, big), _hex(fg) + (255,)), (0, 0), mask)
+    wave = _hex(fg) + (255,)
     wl = Image.new("L", (big, big), 0)
     wd = ImageDraw.Draw(wl)
     pts = tr(_wave_points())
@@ -180,19 +163,18 @@ def render(size: int, theme: str = "dark", margin: float = 0.0, tile: bool = Tru
         for i in range(steps + 1):
             x, y = x0 + (x1 - x0) * i / steps, y0 + (y1 - y0) * i / steps
             wd.ellipse([x - r, y - r, x + r, y + r], fill=255)
-    if tile:  # keep the line inside the rounded tile
+    if tile:  # keep the line inside the tile
         clip = Image.new("L", (big, big), 0)
-        ImageDraw.Draw(clip).rounded_rectangle([inset, inset, big - inset - 1, big - inset - 1], radius=RADIUS * s,
-                                               fill=255)
+        ImageDraw.Draw(clip).polygon(tr(TILE), fill=255)
         wl = ImageChops.multiply(wl, clip)
     img.paste(Image.new("RGBA", (big, big), wave), (0, 0), wl)
     return img.resize((size, size), Image.Resampling.LANCZOS)
 
 
 def google_logo(path: Path) -> None:
-    """Google OAuth consent screen logo: 120 x 120 PNG, square, under 1 MB. On a solid navy square
+    """Google OAuth consent screen logo: 120 x 120 PNG, square, under 1 MB. On a solid square
     (no transparent corners: Google crops it itself)."""
-    img = Image.new("RGB", (120, 120), _hex(NAVY))
+    img = Image.new("RGB", (120, 120), _hex(WATER))
     tile = render(120, "dark")
     img.paste(tile, (0, 0), tile)
     img.save(path, optimize=True)
@@ -202,12 +184,46 @@ def pwa_icons(pub: Path) -> None:
     """The phone approval page's app icons (manifest.json): normal + maskable (safe zone)."""
     render(192, "dark").save(pub / "icon-192.png")
     render(512, "dark").save(pub / "icon-512.png")
-    tile = Image.new("RGBA", (512, 512), (*_hex(NAVY), 255))
+    tile = Image.new("RGBA", (512, 512), (*_hex(WATER), 255))
     tile.alpha_composite(render(512, "dark", margin=0.12))
     tile.save(pub / "icon-maskable-512.png")
 
 
+def wizard_images(dest: Path) -> None:
+    """Inno Setup wizard art (BMP, 100 % / 150 % / 200 % sizes): the big side panel is deep water
+    with the yellow fin above three wave lines; the small one is the app icon on white."""
+    def wave_line(d: ImageDraw.ImageDraw, w: int, y: float, amp: float, period: float, width: int, color) -> None:
+        import math
+        pts = [(x, y + amp * math.sin(x / period * 2 * math.pi)) for x in range(-4, w + 5, 2)]
+        d.line(pts, fill=color, width=width, joint="curve")
+
+    for scale, suffix in ((1.0, ""), (1.5, "-150"), (2.0, "-200")):
+        w, h = round(164 * scale), round(314 * scale)
+        img = Image.new("RGB", (w, h), _hex(WATER))
+        d = ImageDraw.Draw(img)
+        y0 = h * 0.62
+        fin_w = w * 0.62
+        fs = fin_w / 36.0  # the fin spans x 13 .. 48.5 on the 64 grid
+        ox, oy = (w - fin_w) / 2 - 13 * fs, y0 - 44 * fs
+        mask = Image.new("L", (w, h), 0)
+        md = ImageDraw.Draw(mask)
+        md.polygon([(ox + x * fs, oy + y * fs) for x, y in _fin_points()], fill=255)
+        md.polygon([(ox + x * fs, oy + y * fs) for x, y in PLAY], fill=0)
+        img.paste(Image.new("RGB", (w, h), _hex(SIGN)), (0, 0), mask)
+        for k, (amp, alpha) in enumerate(((3.2, 1.0), (2.6, 0.55), (2.0, 0.3))):
+            c = tuple(round(a * alpha + b * (1 - alpha)) for a, b in zip(_hex(TEAL), _hex(WATER)))
+            wave_line(d, w, y0 + 6 * scale + k * 14 * scale, amp * scale, 24 * scale, max(2, round(2.4 * scale)), c)
+        img.save(dest / f"wizard{suffix}.bmp")
+        sw = round(55 * scale), round(58 * scale)
+        small = Image.new("RGB", sw, (255, 255, 255))
+        icon = render(min(sw) - round(6 * scale), "dark")
+        small.paste(icon, ((sw[0] - icon.width) // 2, (sw[1] - icon.height) // 2), icon)
+        small.save(dest / f"wizard-small{suffix}.bmp")
+
+
 def main() -> None:
+    import sys
+
     out = ROOT / "assets" / "icon"
     pub = ROOT / "frontend" / "public"
     out.mkdir(parents=True, exist_ok=True)
@@ -232,7 +248,9 @@ def main() -> None:
     render(48, "dark").save(pub / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)],
                             append_images=[render(16, "dark"), render(32, "dark")])
     render(1024, "dark", margin=0.09).save(out / "sharkyclips.icns")  # macOS: Pillow writes every icns size
-    google_logo(ROOT / "docs" / "logo-120.png")
+    wizard_images(ROOT / "installer" / "windows")
+    if "--google" in sys.argv:
+        google_logo(ROOT / "docs" / "logo-120.png")
     print(f"Icons written to {out} and {pub}")
 
 

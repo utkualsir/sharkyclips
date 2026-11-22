@@ -15,7 +15,7 @@ import { YoutubeSignedOutBanner } from "./components/YoutubeConnect";
 import { SetupBanner } from "./components/SetupDownloads";
 import Launch from "./components/Launch";
 import { Onboarding } from "./components/Welcome";
-import { jobLabel } from "./components/ui";
+import { jobLabel, Sep } from "./components/ui";
 import { useI18n } from "./i18n";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { isActive, useJobs } from "./jobs";
@@ -282,7 +282,7 @@ function ShutdownBanner() {
       <span>
         <b>{t("shutdown.title")}</b> {t("shutdown.in", { s: num(left) })}
         {shutdown.dry_run && (
-          <span className="muted"> · {t("queue.shutdown_dry")}</span>
+          <span className="muted"><Sep />{t("queue.shutdown_dry")}</span>
         )}
       </span>
       <button

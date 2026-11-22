@@ -955,7 +955,19 @@ def api_licenses() -> dict:
 
     return {"app": {"name": "SharkyClips", "version": __version__, "license": "MIT"},
             "groups": [{"id": "voice", "items": dub.LICENSES}, {"id": "covers", "items": imagegen.LICENSES},
-                       {"id": "swears", "items": align.LICENSES}]}
+                       {"id": "swears", "items": align.LICENSES}, {"id": "ui", "items": UI_LICENSES}]}
+
+
+# 1.2.65: the fonts and icons bundled into the UI (no network for fonts)
+UI_LICENSES = [
+    {"name": "Archivo", "by": "Omnibus-Type", "license": "OFL-1.1",
+     "license_url": "https://openfontlicense.org", "source_url": "https://github.com/Omnibus-Type/Archivo"},
+    {"name": "IBM Plex Mono", "by": "IBM", "license": "OFL-1.1",
+     "license_url": "https://openfontlicense.org", "source_url": "https://github.com/IBM/plex"},
+    {"name": "Phosphor Icons", "by": "Phosphor Icons", "license": "MIT",
+     "license_url": "https://github.com/phosphor-icons/core/blob/main/LICENSE",
+     "source_url": "https://phosphoricons.com"},
+]
 
 
 @app.get("/api/changelog/{version}")

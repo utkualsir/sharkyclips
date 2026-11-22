@@ -13,7 +13,7 @@ import {
   type WordLists,
 } from "../api";
 import { Icon } from "../components/Icons";
-import { JobLine, Segmented, Toggle } from "../components/ui";
+import { JobLine, Segmented, Toggle, Sep } from "../components/ui";
 import { fmtBytes, fmtTime } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -562,13 +562,13 @@ function BrandPresets() {
           <div className="brand-grid">
             <label>
               <span className="field-label">
-                {t("brand.size")} · {Math.round(draft.logo_size)}%
+                {t("brand.size")}<Sep />{Math.round(draft.logo_size)}%
               </span>
               <input type="range" min={5} max={45} value={draft.logo_size} onChange={(e) => set({ logo_size: Number(e.target.value) })} />
             </label>
             <label>
               <span className="field-label">
-                {t("brand.opacity")} · {Math.round(draft.logo_opacity * 100)}%
+                {t("brand.opacity")}<Sep />{Math.round(draft.logo_opacity * 100)}%
               </span>
               <input type="range" min={10} max={100} value={Math.round(draft.logo_opacity * 100)} onChange={(e) => set({ logo_opacity: Number(e.target.value) / 100 })} />
             </label>

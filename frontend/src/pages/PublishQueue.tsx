@@ -9,7 +9,7 @@ import { pqApi, QNAME, QPLATFORMS, toInput, wall, type QClip, type QEntry, type 
 import { useToast } from "../toast";
 import { Icon } from "../components/Icons";
 import { ReconcileButton } from "../components/TikTokStudio";
-import { Modal, ProgressBar, Toggle } from "../components/ui";
+import { Modal, ProgressBar, Toggle, Sep } from "../components/ui";
 
 const key = (c: { project_id: string; clip_id: string }) => `${c.project_id}/${c.clip_id}`;
 
@@ -24,7 +24,7 @@ function StatusChip({ p, s }: { p: QPlatform; s: QSlot | undefined }) {
   const { t } = useI18n();
   if (!s) return null;
   const st = s.overdue ? "overdue" : s.status;
-  const text = `${QNAME[p]} · ${t(`pq.st_${st}`)}${s.scheduled_at ? ` · ${wall(s.scheduled_at)}` : ""}`;
+  const text = `${QNAME[p]}, ${t(`pq.st_${st}`)}${s.scheduled_at ? `, ${wall(s.scheduled_at)}` : ""}`;
   const icon =
     st === "scheduled" || st === "published" ? "check" : st === "failed" || st === "overdue" ? "alert" : st === "skipped_duplicate" ? "repeat" : "clock";
   const inner = (
@@ -544,7 +544,7 @@ export default function PublishQueue() {
             <ProgressBar value={job.progress} label={t(job.stage ? `stage.${job.stage}` : "kind.pubqueue")} />
             <span className="field-hint">
               {t(job.stage ? `stage.${job.stage}` : "kind.pubqueue")}
-              {job.progress != null && ` · ${num(Math.round(job.progress * 100))}%`}
+              {job.progress != null && `, ${num(Math.round(job.progress * 100))}%`}
             </span>
           </div>
         )}
@@ -618,8 +618,8 @@ export default function PublishQueue() {
                         {c.draft.title}
                       </b>
                       <span className="pq-row-sub" dir="auto">
-                        #{String(c.rank ?? "?").padStart(2, "0")} · {fmtTime(c.duration)} · {c.project_title}
-                        {!c.rendered && <span className="muted"> · {t("pq.not_rendered")}</span>}
+                        #{String(c.rank ?? "?").padStart(2, "0")}<Sep />{fmtTime(c.duration)}<Sep />{c.project_title}
+                        {!c.rendered && <span className="muted"><Sep />{t("pq.not_rendered")}</span>}
                       </span>
                       <span className="pq-chips">
                         {QPLATFORMS.map((p) => (
@@ -629,7 +629,7 @@ export default function PublishQueue() {
                           plan &&
                           QPLATFORMS.filter((p) => plan[p] && !c.status[p]).map((p) => (
                             <span key={p} className="pq-chip pq-plan">
-                              <Icon name="calendar" size={12} /> {QNAME[p]} · {wall(plan[p]!.scheduled_at)}
+                              <Icon name="calendar" size={12} /> {QNAME[p]}<Sep />{wall(plan[p]!.scheduled_at)}
                             </span>
                           ))}
                       </span>

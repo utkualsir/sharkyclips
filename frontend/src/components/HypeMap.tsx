@@ -4,6 +4,7 @@ import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useTween } from "../motion";
 import { cssVar } from "../theme";
+import { Sep } from "./ui";
 
 interface Props {
   curve: HypeCurve;
@@ -95,7 +96,7 @@ export default function HypeMap({ curve, candidates, selected, currentTime, onSe
     }
 
     // Rank labels over the candidate peaks
-    ctx.font = `500 10px "Geist Mono", ui-monospace, monospace`;
+    ctx.font = `500 10px "IBM Plex Mono", ui-monospace, monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     for (const c of candidates) {
@@ -184,7 +185,7 @@ export default function HypeMap({ curve, candidates, selected, currentTime, onSe
       {hover && (
         <div className="hype-tip" style={{ left: Math.min(Math.max(hover.x, 40), width - 40) }}>
           <span className="tc">{fmtTime(hover.t)}</span>
-          <span className="muted"> · {hover.v}</span>
+          <span className="muted"><Sep />{hover.v}</span>
         </div>
       )}
       <div className="hype-axis tc">

@@ -11,13 +11,7 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="SharkyClips" />
-    <meta name="theme-color" content="#0E1A33" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&family=Instrument+Serif:ital@0;1&family=Noto+Sans+Arabic:wght@400..700&display=swap"
-    />
+    <meta name="theme-color" content="#0B1D22" />
     <script>
       // Theme + language before first paint (no flash). Both are remembered per browser.
       (function () {
@@ -26,6 +20,7 @@
           if (t !== "light" && t !== "dark")
             t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
           document.documentElement.setAttribute("data-theme", t);
+          localStorage.removeItem("sc-design"); // the 1.2.64 redesign preview switch is gone
           var l = localStorage.getItem("cf-lang") || "tr";
           document.documentElement.lang = l;
           document.documentElement.dir = l === "ar" ? "rtl" : "ltr";

@@ -6,7 +6,7 @@ import { useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { useMeta } from "../meta";
 import { Icon } from "./Icons";
-import { ProgressBar, revealById } from "./ui";
+import { ProgressBar, revealById, Sep } from "./ui";
 
 const MB = 1024 * 1024;
 
@@ -155,7 +155,7 @@ export function SetupDownloads({ look = "card", onReady }: { look?: "welcome" | 
           <div className="setup-progress-line">
             <span>
               {d.total_bytes ? `${fmtBytes(d.done_bytes ?? 0)} / ${fmtBytes(d.total_bytes)}` : t("setup.status.waiting")}
-              {d.speed_bps ? ` · ${t("setup.speed", { speed: fmtBytes(d.speed_bps) })}` : ""}
+              {d.speed_bps ? `, ${t("setup.speed", { speed: fmtBytes(d.speed_bps) })}` : ""}
             </span>
             <span>{d.eta_s != null ? t("setup.time_left", { time: fmtEta(d.eta_s, num, t) }) : ""}</span>
           </div>
@@ -183,7 +183,7 @@ export function SetupDownloads({ look = "card", onReady }: { look?: "welcome" | 
           )}
           <p className="setup-total">
             <b>{t("setup.total", { size: fmtBytes(totalMb * MB) })}</b>
-            {plan.free_mb != null && <span className="muted"> · {t("setup.free", { size: fmtBytes(plan.free_mb * MB) })}</span>}
+            {plan.free_mb != null && <span className="muted"><Sep />{t("setup.free", { size: fmtBytes(plan.free_mb * MB) })}</span>}
           </p>
           {noSpace && <p className="notice notice-warn">{t("setup.no_space")}</p>}
           <p className="muted setup-offline">{t("setup.offline")}</p>

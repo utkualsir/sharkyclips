@@ -10,7 +10,7 @@ import {
 import { fmtCompact, fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
-import { Advanced, CopyButton, jobLabel } from "./ui";
+import { Advanced, CopyButton, jobLabel, Sep } from "./ui";
 import { Icon } from "./Icons";
 import { EpisodeBox } from "./MyTemplate";
 
@@ -150,7 +150,7 @@ function ChatSection({
                     className={hot ? "gold" : "muted"}
                     style={{ fontSize: 12 }}
                   >
-                    {" · "}
+                    <Sep />
                     {t("chat.vs_usual", { x: num(chat.ratio, 1) })}
                   </span>
                 )}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, urls, type Candidate, type MontageExport, type ProjectDetail } from "../api";
 import { Icon } from "../components/Icons";
-import { CopyButton, JobLine, Toggle } from "../components/ui";
+import { CopyButton, JobLine, Toggle, Sep } from "../components/ui";
 import { fmtBytes, fmtTime } from "../format";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -43,8 +43,8 @@ function ExportCard({ projectId, ex, onDelete }: { projectId: string; ex: Montag
               {ex.titles[0] ?? ex.name}
             </h3>
             <div className="muted export-meta">
-              <span className="tc">{fmtTime(ex.duration)}</span> · {num(ex.items.length)} {t("bestof.clips_short")} ·{" "}
-              {ex.width}×{ex.height} {ex.fps} fps · {fmtBytes(ex.size_bytes)} · {ex.encoder} · {relTime(ex.created_at)}
+              <span className="tc">{fmtTime(ex.duration)}</span><Sep />{num(ex.items.length)} {t("bestof.clips_short")}<Sep />
+              {ex.width}×{ex.height} {ex.fps} fps<Sep />{fmtBytes(ex.size_bytes)}<Sep />{ex.encoder}<Sep />{relTime(ex.created_at)}
             </div>
           </div>
           <div className="export-actions">
@@ -285,9 +285,9 @@ export default function BestOf({ id }: { id: string }) {
                         {c.publish.titles[0] || c.text}
                       </div>
                       <div className="muted bo-meta">
-                        #{String(c.rank).padStart(2, "0")} · <span className="tc">{fmtTime(c.start)}</span> ·{" "}
+                        #{String(c.rank).padStart(2, "0")}<Sep /><span className="tc">{fmtTime(c.start)}</span><Sep />
                         {num(Math.round(c.duration))} s
-                        {project.review.accepted.includes(c.id) && <> · <span className="ok-text">{t("bestof.accepted")}</span></>}
+                        {project.review.accepted.includes(c.id) && <><Sep /><span className="ok-text">{t("bestof.accepted")}</span></>}
                       </div>
                     </div>
                     <span className="bo-score mono" title={t("publish.viral")}>
@@ -370,7 +370,7 @@ export default function BestOf({ id }: { id: string }) {
               <dt>{t("bestof.length")}</dt>
               <dd className="tc">{chosen.length >= 2 ? fmtTime(total) : "–"}</dd>
               <dt>{t("bestof.format")}</dt>
-              <dd className="mono">1920×1080 · 60 fps</dd>
+              <dd className="mono">1920×1080<Sep />60 fps</dd>
               <dt>{t("bestof.loudness")}</dt>
               <dd className="mono">−14 LUFS</dd>
             </dl>

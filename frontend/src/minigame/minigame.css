@@ -18,27 +18,27 @@
 }
 .mg-panel[hidden] { display: none; }
 .mg-head { display: flex; align-items: center; gap: 8px; }
-.mg-title { flex: 1; min-width: 0; font-size: 14px; color: var(--strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mg-title { flex: 1; min-width: 0; font-size: var(--fs-md); color: var(--strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mg-head-btns { display: flex; gap: 2px; }
 .mg-icon { width: 32px; height: 32px; padding: 0; display: inline-grid; place-items: center; }
-.mg-q { font-weight: 700; font-size: 14px; line-height: 1; }
-.mg-job { display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.mg-q { font-weight: 700; font-size: var(--fs-md); line-height: 1; }
+.mg-job { display: grid; gap: 3px; font-size: var(--fs-xs); color: var(--muted); }
 .mg-job-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mg-job-bar { height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
-.mg-job-bar span { display: block; height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s var(--ease); }
+.mg-job-bar { height: 4px; border-radius: var(--r-xs); background: var(--track); overflow: hidden; }
+.mg-job-bar span { display: block; height: 100%; background: var(--gold); border-radius: var(--r-xs); transition: width 0.4s var(--ease); }
 .mg-job-bar span.indet { animation: mg-indet 1.4s linear infinite; }
 @keyframes mg-indet { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-job-bar span.indet { animation: none; }
-.mg-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 13px; color: var(--muted); min-height: 20px; }
-.mg-hud b { color: var(--strong); font-size: 14px; }
-.mg-lives { display: inline-flex; align-items: center; gap: 2px; font-size: 14px; color: var(--border-strong); }
+.mg-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: var(--fs-sm); color: var(--muted); min-height: 20px; }
+.mg-hud b { color: var(--strong); font-size: var(--fs-md); }
+.mg-lives { display: inline-flex; align-items: center; gap: 2px; font-size: var(--fs-md); color: var(--border-strong); }
 .mg-lives .on { color: var(--danger); }
 .mg-mult { color: var(--gold-text); font-weight: 700; }
 .mg-stage {
   position: relative;
   border-radius: var(--r-md);
   overflow: hidden;
-  background: #0f3a66;
+  background: #0f3a42;
   touch-action: none;
   user-select: none;
   outline: none;
@@ -80,21 +80,21 @@ html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-
   border: 1px solid var(--border);
   color: var(--text);
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
-.mg-card h3 { margin: 0 0 6px; font-size: 15px; color: var(--strong); }
+.mg-card h3 { margin: 0 0 6px; font-size: var(--fs-lg); color: var(--strong); }
 .mg-card ul { margin: 0 0 10px; padding-inline-start: 18px; text-align: start; display: grid; gap: 4px; }
-.mg-sub { margin: 0 0 8px; color: var(--muted); font-size: 12.5px; }
-.mg-big { margin: 0; font-size: 30px; font-weight: 700; color: var(--strong); line-height: 1.2; }
+.mg-sub { margin: 0 0 8px; color: var(--muted); font-size: var(--fs-sm); }
+.mg-big { margin: 0; font-size: var(--fs-3xl); font-weight: 700; color: var(--strong); line-height: 1.2; }
 .mg-badge { margin: 2px 0 8px; color: var(--gold-text); font-weight: 600; }
 .mg-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .mg-skins ul { list-style: none; padding: 0; gap: 6px; }
 .mg-skins li { display: flex; align-items: center; gap: 8px; }
-.mg-skin-pic { width: 56px; height: 35px; flex: none; border-radius: 6px; background: #134a7c; }
+.mg-skin-pic { width: 56px; height: 35px; flex: none; border-radius: var(--r-sm); background: #134a7c; }
 .mg-skin-pic.locked { filter: grayscale(1) brightness(0.6); }
 .mg-skin-txt { flex: 1; min-width: 0; display: grid; text-align: start; }
 .mg-skin-txt .mg-sub { margin: 0; }
-.mg-locked { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 12px; }
+.mg-locked { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: var(--fs-xs); }
 .mg-toast {
   position: absolute;
   inset-inline: 8px;
@@ -107,8 +107,8 @@ html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-
   border: 1px solid var(--gold-line);
   box-shadow: var(--shadow-pop);
   text-align: center;
-  font-size: 13.5px;
+  font-size: var(--fs-md);
   color: var(--strong);
 }
-.mg-keys { margin: 0; font-size: 12px; color: var(--muted); }
+.mg-keys { margin: 0; font-size: var(--fs-xs); color: var(--muted); }
 @media (pointer: coarse) { .mg-keys { display: none; } }

@@ -9,7 +9,7 @@ import { useToast } from "../toast";
 import { Icon } from "./Icons";
 import { PlatformIcon } from "./PlatformIcons";
 import { AutoSwitch, TikTokStudioBox } from "./TikTokStudio";
-import { CopyButton, Modal } from "./ui";
+import { CopyButton, Modal, Sep } from "./ui";
 import { ConnectYoutube, YoutubeAccount } from "./YoutubeConnect";
 
 const LINKS = {
@@ -158,7 +158,7 @@ function TikTokSetup({ a, onDone }: { a: Account; onDone: () => void }) {
           <Step n={2}>
             {t("acc.tt_s2")}
             <span className="acc-hint">
-              {t("acc.tt_s2_urls")} <Ext href={LINKS.site_terms}>{t("acc.terms")}</Ext> · <Ext href={LINKS.site_privacy}>{t("acc.privacy")}</Ext>
+              {t("acc.tt_s2_urls")} <Ext href={LINKS.site_terms}>{t("acc.terms")}</Ext><Sep /><Ext href={LINKS.site_privacy}>{t("acc.privacy")}</Ext>
             </span>
           </Step>
           <Step n={3}>{t("acc.tt_s3")}</Step>
@@ -449,7 +449,7 @@ function YoutubeCard({ a, quota, onChange }: { a: Account; quota: Quota | null |
         <>
           <YoutubeAccount yt={yt} onStatus={status} onDisconnect={() => window.confirm(t("acc.disconnect_yt_q")) && api.youtubeDisconnect().then(status).catch(() => {})} />
           <span className="acc-meta">
-            <Icon name="lock" size={12} /> {t("acc.encrypted")} · <QuotaLine p="youtube" q={quota} />
+            <Icon name="lock" size={12} /> {t("acc.encrypted")}<Sep /><QuotaLine p="youtube" q={quota} />
           </span>
         </>
       ) : (

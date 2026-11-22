@@ -25,7 +25,7 @@ import { AiVoiceSwitches } from "./Licenses";
 import { aboutApi, type AiVoiceInfo } from "../extras";
 import { LockBanner } from "./PublishTools";
 import { Icon } from "./Icons";
-import { Modal, Segmented, Toggle } from "./ui";
+import { Modal, Segmented, Toggle, Sep } from "./ui";
 import { AdvancedWizard, ChannelPicker, ConnectPrompt, ConnectYoutube, NoChannel, VerificationStatus, YoutubeAccount } from "./YoutubeConnect";
 
 let optionsCache: Promise<ExportOptions> | null = null;
@@ -39,7 +39,7 @@ const FORMAT_ORDER: FormatId[] = ["mp4_h264", "mp4_hevc", "mp4_av1", "mov", "web
 function presetLine(p: ExportPreset, t: ReturnType<typeof useI18n>["t"], num: (n: number) => string) {
   const parts = [`${p.width}×${p.height}`, `${num(p.fps)} fps`, `${num(Math.round(p.bitrate_k / 1000))} Mbit/s`];
   if (p.max_seconds) parts.push(t("export.max_len", { t: fmtTime(p.max_seconds) }));
-  return parts.join(" · ");
+  return parts.join(", ");
 }
 
 function langName(code: string | null | undefined) {
@@ -158,7 +158,7 @@ export function ExportDialog({
             {est && format && (
               <span>
                 {t("export.estimate")}: <b className="mono">≈ {fmtBytes(est.bytes)}</b>
-                <span className="muted"> · {t("export.time", { t: fmtTime(est.seconds) })}</span>
+                <span className="muted"><Sep />{t("export.time", { t: fmtTime(est.seconds) })}</span>
               </span>
             )}
           </div>
@@ -311,7 +311,7 @@ export function ExportDialog({
             <div>
               <span className="field-label">{t("export.editors")}</span>
               <div className="check-row">
-                <label title="DaVinci Resolve · Final Cut Pro">
+                <label title="DaVinci Resolve, Final Cut Pro">
                   <input type="checkbox" checked={fcpxml} onChange={(e) => setFcpxml(e.target.checked)} /> FCPXML
                 </label>
                 <label title="Adobe Premiere Pro">
@@ -332,7 +332,7 @@ export function ExportDialog({
 function exportLabel(e: ClipExport, opts: ExportOptions | null, t: ReturnType<typeof useI18n>["t"]) {
   const p = opts?.presets.find((x) => x.id === e.preset)?.label;
   const f = opts?.formats.find((x) => x.id === e.format)?.label;
-  return [p, f ?? (e.format ? e.format : t("export.files_only"))].filter(Boolean).join(" · ");
+  return [p, f ?? (e.format ? e.format : t("export.files_only"))].filter(Boolean).join(", ");
 }
 
 const ROLE_LABEL: Record<string, string> = { srt: "SRT", vtt: "VTT", fcpxml: "FCPXML", premiere: "Premiere XML" };
@@ -455,14 +455,14 @@ export function UploadDialog({
     if (hookTest?.files_ok) {
       for (const label of ["A", "B"] as const) {
         const v = hookTest.variants[label];
-        const tag = hookTest.upload_pick.label === label ? ` · ${t(hookTest.upload_pick.how === "bandit" ? "yt.ab_tested" : "yt.ab_predicted")}` : "";
+        const tag = hookTest.upload_pick.label === label ? `, ${t(hookTest.upload_pick.how === "bandit" ? "yt.ab_tested" : "yt.ab_predicted")}` : "";
         out.push({ value: `ab:${label}`, label: `${t("yt.source_ab", { label, style: t(`ab.style.${v.style}`) })}${tag}`, wide: false });
       }
     }
     if (clip) out.push({ value: "clip", label: t("yt.source_clip"), wide: false });
     for (const e of exports.filter((x) => x.clip_id === cand.id)) {
       const m = e.files.find((f) => f.role === "media" && /\.(mp4|mov|webm)$/i.test(f.name));
-      if (m) out.push({ value: m.name, label: `${m.name} · ${fmtBytes(m.size_bytes)}`, wide: e.frame === "wide" });
+      if (m) out.push({ value: m.name, label: `${m.name}, ${fmtBytes(m.size_bytes)}`, wide: e.frame === "wide" });
     }
     return out;
   }, [clip, exports, cand.id, t, hookTest]);
@@ -715,8 +715,8 @@ export function UploadsLine({ uploads }: { uploads: YoutubeUpload[] }) {
       {uploads.map((u) => (
         <a key={u.video_id} href={u.url} target="_blank" rel="noreferrer" className="chip chip-outline" title={u.title}>
           <Icon name="link" size={12} />
-          YouTube · {t(`yt.privacy.${u.privacy}`)}
-          {u.views != null && <span className="mono"> · {num(u.views)} {t("cal.views")}</span>}
+          YouTube<Sep />{t(`yt.privacy.${u.privacy}`)}
+          {u.views != null && <span className="mono"><Sep />{num(u.views)} {t("cal.views")}</span>}
         </a>
       ))}
     </div>
@@ -854,11 +854,11 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
           <p>{t("yt.legal")}</p>
           <p>
             <a href="https://www.youtube.com/t/terms" target="_blank" rel="noreferrer">{t("yt.legal_tos")}</a>
-            {" · "}
+            <Sep />
             <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">{t("yt.legal_google")}</a>
-            {" · "}
+            <Sep />
             <a href={PRIVACY_URL} target="_blank" rel="noreferrer">{t("yt.legal_privacy")}</a>
-            {" · "}
+            <Sep />
             <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">{t("yt.legal_manage")}</a>
           </p>
         </div>

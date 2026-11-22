@@ -8,6 +8,7 @@ import { useToast } from "../toast";
 import { trashApi, type DiskUsage, type ProjectUsage, type TrashItem, type TrashSummary } from "../trash";
 import { Icon } from "../components/Icons";
 import { EmptyDialog } from "../components/Trash";
+import { Sep } from "../components/ui";
 
 type Clean = "rejected" | "previews" | "caches";
 
@@ -48,12 +49,12 @@ function ItemRow({ it, onChange }: { it: TrashItem; onChange: (s: TrashSummary) 
   return (
     <li className="card trash-row">
       <div className="trash-main">
-        <b dir="auto">{it.kind === "project" ? it.project_title : names.slice(0, 3).join(" · ") || what}</b>
+        <b dir="auto">{it.kind === "project" ? it.project_title : names.slice(0, 3).join(", ") || what}</b>
         <span className="field-hint" dir="auto">
           {what}
-          {it.kind !== "project" && <> · {it.project_title}</>} · <span className="mono">{fmtBytes(it.bytes)}</span> ·{" "}
+          {it.kind !== "project" && <><Sep />{it.project_title}</>}<Sep /><span className="mono">{fmtBytes(it.bytes)}</span><Sep />
           {t("trash.days_left", { n: num(it.days_left) })}
-          {it.original?.moved && <> · {t("trash.has_original")}</>}
+          {it.original?.moved && <><Sep />{t("trash.has_original")}</>}
         </span>
       </div>
       <div className="trash-actions">
@@ -113,7 +114,7 @@ function UsageRow({ u, onCleaned }: { u: ProjectUsage; onCleaned: () => void }) 
           <b>{u.title}</b>
         </a>
         <span className="field-hint">
-          <span className="mono">{fmtBytes(u.total)}</span> · {parts.map(([k, v]) => `${k} ${fmtBytes(v)}`).join(" · ")}
+          <span className="mono">{fmtBytes(u.total)}</span><Sep />{parts.map(([k, v]) => `${k} ${fmtBytes(v)}`).join(", ")}
         </span>
       </div>
       {u.cleanable_bytes > 0 ? (

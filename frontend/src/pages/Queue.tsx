@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, type AcceptedOverview, type Job, type ProjectSummary, type QueueView } from "../api";
 import { Icon } from "../components/Icons";
-import { jobLabel, ProgressBar, Toggle } from "../components/ui";
+import { jobLabel, ProgressBar, Toggle, Sep } from "../components/ui";
 import { fmtEta } from "../format";
 import { useI18n, type T } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -33,14 +33,14 @@ function jobTitle(job: Job, t: T, projects: Map<string, string>): { title: strin
   const p = job.params ?? {};
   const projectTitle = p.project_title ?? (job.project_id ? projects.get(job.project_id) ?? job.project_id : null);
   if (job.kind === "export" || job.kind === "upload") {
-    return { title: `#${String(p.rank ?? "?").padStart(2, "0")} · ${p.title || t(`kind.${job.kind}`)}`, sub: `${t(`kind.${job.kind}`)} · ${projectTitle ?? ""}` };
+    return { title: `#${String(p.rank ?? "?").padStart(2, "0")} ${p.title || t(`kind.${job.kind}`)}`, sub: `${t(`kind.${job.kind}`)}, ${projectTitle ?? ""}` };
   }
   if (job.kind === "render") {
-    return { title: `#${String(p.rank ?? "?").padStart(2, "0")} · ${p.title || t("kind.render")}`, sub: projectTitle };
+    return { title: `#${String(p.rank ?? "?").padStart(2, "0")} ${p.title || t("kind.render")}`, sub: projectTitle };
   }
   if (job.kind === "montage") return { title: t("queue.montage_title", { n: p.count ?? 0 }), sub: projectTitle };
-  if (job.kind === "ab") return { title: `#${String(p.rank ?? "?").padStart(2, "0")} · ${p.title || t("kind.ab")}`, sub: `${t("kind.ab")} · ${projectTitle ?? ""}` };
-  if (job.kind === "story_render") return { title: p.title || t("kind.story_render"), sub: `${t("kind.story_render")} · ${projectTitle ?? ""}` };
+  if (job.kind === "ab") return { title: `#${String(p.rank ?? "?").padStart(2, "0")} ${p.title || t("kind.ab")}`, sub: `${t("kind.ab")}, ${projectTitle ?? ""}` };
+  if (job.kind === "story_render") return { title: p.title || t("kind.story_render"), sub: `${t("kind.story_render")}, ${projectTitle ?? ""}` };
   if (job.kind === "import") return { title: t("kind.import"), sub: p.title ?? null };
   return { title: t(`kind.${job.kind}`), sub: projectTitle };
 }
@@ -131,7 +131,7 @@ function QueueRow({
           job.paused ? (
             <span className="muted">
               {t("queue.paused_eta")}
-              {job.eta_seconds != null && ` · ${t("queue.left", { time: fmtEta(job.eta_seconds, num, t) })}`}
+              {job.eta_seconds != null && `, ${t("queue.left", { time: fmtEta(job.eta_seconds, num, t) })}`}
             </span>
           ) : (
             job.eta_seconds != null && <span>{t("queue.left", { time: fmtEta(job.eta_seconds, num, t) })}</span>
@@ -199,7 +199,7 @@ function HistoryRow({ job, projects }: { job: Job; projects: Map<string, string>
         </div>
         <div className="q-sub" dir="auto">
           <span className={`status-word s-${job.status}`}>{t(`queue.status.${job.status}`)}</span>
-          {sub && <> · {sub}</>}
+          {sub && <><Sep />{sub}</>}
         </div>
         {job.status === "error" && job.error && (
           <div className="q-error">
@@ -358,7 +358,7 @@ function ShutdownCard() {
           <div style={{ fontWeight: 550 }}>{t("queue.shutdown")}</div>
           <div className="muted" style={{ fontSize: 12.5 }}>
             {state.supported ? t("queue.shutdown_desc", { s: state.seconds }) : t("queue.shutdown_unsupported")}
-            {state.dry_run && <> · {t("queue.shutdown_dry")}</>}
+            {state.dry_run && <><Sep />{t("queue.shutdown_dry")}</>}
           </div>
           {state.error && <div className="q-error">{state.error}</div>}
         </div>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api, type CalibrationGroup, type CalibrationStats, type HookStats, type YoutubeStatus } from "../api";
 import { Icon } from "../components/Icons";
-import { ProgressBar } from "../components/ui";
+import { ProgressBar, Sep } from "../components/ui";
 import { fmtCompact, fmtInt } from "../format";
 import { useI18n, type T } from "../i18n";
 import { isActive, useJobs } from "../jobs";
@@ -134,7 +134,7 @@ function Groups({ title, groups, label, note }: { title: string; groups: Calibra
                   {i === 0 && groups.length > 1 && <span className="chip chip-gold best-chip">{t("stats.best")}</span>}
                 </span>
                 <span className="mono">
-                  {fmtCompact(g.median_views, lang)} <span className="muted">· {num(g.count)}</span>
+                  {fmtCompact(g.median_views, lang)} <span className="muted"><Sep />{num(g.count)}</span>
                 </span>
               </div>
               <div className="sig-bar">

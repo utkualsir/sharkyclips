@@ -77,7 +77,7 @@ function ProjectCard({ p, job, size, onDelete }: { p: ProjectSummary; job: Job |
         </h2>
         <div className="pcard-source">
           <Icon name={p.source.type === "file" ? "file" : "link"} size={13} />
-          <span dir="auto">{[src, p.source.uploader].filter(Boolean).join(" · ")}</span>
+          <span dir="auto">{[src, p.source.uploader].filter(Boolean).join(", ")}</span>
         </div>
         <ChannelSource c={p.channel} />
         <div className="pcard-foot">

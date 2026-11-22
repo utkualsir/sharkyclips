@@ -16,6 +16,7 @@ import {
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
+import { Sep } from "./ui";
 
 const KEY = "sc-clip-end";
 const EVT = "sc-clip-end-mode";
@@ -281,7 +282,7 @@ export function ClipBar({
         <span className="tc clipbar-range-text">
           {fmtTime(start, !compact)} – {fmtTime(end, !compact)}
           {!compact && (
-            <span className="muted"> · {num(Math.round(len * 10) / 10)} s</span>
+            <span className="muted"><Sep />{num(Math.round(len * 10) / 10)} s</span>
           )}
         </span>
         <span

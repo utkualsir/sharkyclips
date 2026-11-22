@@ -222,7 +222,7 @@ export function MyStyleCard() {
             {st.glossary.learned
               .slice(-6)
               .map((x) => `${x.from} → ${x.to}`)
-              .join(" · ")}
+              .join(", ")}
           </p>
         )}
         <div className="save-line">

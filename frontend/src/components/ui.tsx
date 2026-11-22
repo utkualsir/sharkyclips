@@ -199,7 +199,7 @@ export function CopyButton({ text, label, small = true }: { text: string; label?
 /** "Transcribing 60%", "Waiting for the GPU", ... */
 export function jobLabel(job: Job, t: ReturnType<typeof useI18n>["t"], num: (n: number) => string): string {
   const base = jobBaseLabel(job, t, num);
-  return job.status === "running" && job.paused ? `${t("job.paused")} · ${base}` : base;
+  return job.status === "running" && job.paused ? `${t("job.paused")}, ${base}` : base;
 }
 
 function jobBaseLabel(job: Job, t: ReturnType<typeof useI18n>["t"], num: (n: number) => string): string {
@@ -209,7 +209,7 @@ function jobBaseLabel(job: Job, t: ReturnType<typeof useI18n>["t"], num: (n: num
   }
   if (job.kind === "render" && (job.params?.batch_count ?? 0) > 1) {
     const base = t("render.progress", { i: job.params.batch_index, n: job.params.batch_count });
-    return job.progress != null ? `${base} · ${num(Math.round(job.progress * 100))}%` : base;
+    return job.progress != null ? `${base}, ${num(Math.round(job.progress * 100))}%` : base;
   }
   const stage = job.stage ? t(`stage.${job.stage}`) : t(`kind.${job.kind}`);
   return job.progress != null && job.progress > 0 ? `${stage} ${num(Math.round(job.progress * 100))}%` : stage;
@@ -232,5 +232,15 @@ export function JobLine({ job, onCancel }: { job: Job; onCancel?: () => void }) 
       </div>
       <ProgressBar value={job.status === "queued" ? null : job.progress} />
     </div>
+  );
+}
+
+/** Separator between short facts on one line ("Kick | Live now"): a thin rule, not a middle dot.
+ *  Screen readers hear a comma. */
+export function Sep() {
+  return (
+    <span className="sep">
+      <span className="visually-hidden">, </span>
+    </span>
   );
 }

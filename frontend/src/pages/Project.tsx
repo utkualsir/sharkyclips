@@ -41,7 +41,7 @@ import FacecamEditor from "../components/FacecamEditor";
 import HypeMap from "../components/HypeMap";
 import { Icon } from "../components/Icons";
 import { fmtRatio, PublishPanel, SignalStats } from "../components/Panels";
-import { Advanced, JobLine, Segmented, Toggle } from "../components/ui";
+import { Advanced, JobLine, Segmented, Toggle, Sep } from "../components/ui";
 import {
   ClipBar,
   ClipVideo,
@@ -203,7 +203,7 @@ function CandidateRow({
         <div className="cand-line">
           <div className="cand-meta">
             <span className="tc">{fmtTime(c.start)}</span>
-            <span aria-hidden="true">·</span>
+            <Sep />
             <span className="tc">{num(Math.round(c.duration))} s</span>
             {edited && (
               <span className="cand-flag" title={t("tx.edited")}>
@@ -346,7 +346,7 @@ function PerformanceForm({
             {t("cal.views")}
             {perf.likes != null && (
               <>
-                {" · "}
+                <Sep />
                 <b className="mono">{fmtCompact(perf.likes, lang)}</b>{" "}
                 {t("cal.likes")}
               </>
@@ -1633,7 +1633,7 @@ export default function ProjectPage({ id }: { id: string }) {
                 </button>
                 {selected && shownRange && (
                   <span className="tc" style={{ marginInlineStart: 4 }}>
-                    #{String(selected.rank).padStart(2, "0")} ·{" "}
+                    #{String(selected.rank).padStart(2, "0")}<Sep />
                     {fmtTime(shownRange.start)} – {fmtTime(shownRange.end)}
                     {options.loop && plan?.loop && (
                       <Icon name="repeat" size={12} />
@@ -2279,13 +2279,13 @@ export default function ProjectPage({ id }: { id: string }) {
                         <div className="foot">
                           <div style={{ display: "grid", minWidth: 0 }}>
                             <span className="tc">
-                              #{String(c.rank).padStart(2, "0")} ·{" "}
+                              #{String(c.rank).padStart(2, "0")}<Sep />
                               {num(Math.round(c.duration))} s
                             </span>
                             <span
                               className="muted"
                               style={{ fontSize: 11 }}
-                              title={`${c.encoder} · ${fmtBytes(c.size_bytes)}`}
+                              title={`${c.encoder}, ${fmtBytes(c.size_bytes)}`}
                             >
                               {t("clips.rendered", {
                                 when: relTime(c.rendered_at),
@@ -2322,7 +2322,7 @@ export default function ProjectPage({ id }: { id: string }) {
                             href={urls.clipDownload(id, c.id)}
                             download
                             aria-label={t("common.download")}
-                            title={`${t("common.download")} · ${fmtBytes(c.size_bytes)}`}
+                            title={`${t("common.download")}, ${fmtBytes(c.size_bytes)}`}
                           >
                             <Icon name="download" />
                           </a>

@@ -144,7 +144,7 @@ export default function HookTestDialog({
             const v = test.variants[label];
             const win = test.winner === label;
             return (
-              <section key={label} className={`ab-card${win ? " ab-win" : ""}`} aria-label={`${label} · ${t(`ab.style.${v.style}`)}`}>
+              <section key={label} className={`ab-card${win ? " ab-win" : ""}`} aria-label={`${label}, ${t(`ab.style.${v.style}`)}`}>
                 <div className="ab-head">
                   <span className="ab-label mono">{label}</span>
                   <span className="ab-style">{t(`ab.style.${v.style}`)}</span>

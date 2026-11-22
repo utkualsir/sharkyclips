@@ -4,7 +4,7 @@ import { useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
-import { CopyButton, ProgressBar, Toggle } from "./ui";
+import { CopyButton, ProgressBar, Toggle, Sep } from "./ui";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 const lines = (s: string) =>
@@ -107,7 +107,7 @@ export function ChannelStyleCard() {
               {v.summary.styles.map((s) => (
                 <div className="cstyle-box" key={s.key}>
                   <h3>
-                    {kindLabel(s.kind)} · {fmtLabel(s.format)} <span className="muted mono">({s.n})</span>
+                    {kindLabel(s.kind)}<Sep />{fmtLabel(s.format)} <span className="muted mono">({s.n})</span>
                   </h3>
                   <span className="field-label">{t("cstyle.titles")}</span>
                   <ul>
@@ -133,7 +133,7 @@ export function ChannelStyleCard() {
                     <>
                       <span className="field-label">{t("cstyle.patterns")}</span>
                       <div className="cstyle-tags" dir="auto">
-                        {s.patterns.join(" · ")}
+                        {s.patterns.join(", ")}
                       </div>
                     </>
                   )}
@@ -228,7 +228,7 @@ export function ChannelStyleCard() {
                           <td dir="auto">
                             {it.real}
                             <div className="muted">
-                              {fmtLabel(it.format)} · {it.views}
+                              {fmtLabel(it.format)}<Sep />{it.views}
                             </div>
                           </td>
                           <td dir="auto">

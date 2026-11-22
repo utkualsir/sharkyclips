@@ -198,8 +198,8 @@ def csp_for(html: bytes | None = None) -> str:
                          for m in _INLINE_SCRIPT.findall(html))
     return ("default-src 'self'; "
             f"script-src 'self'{hashes}; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src 'self' data: https://fonts.gstatic.com; "
+            "style-src 'self' 'unsafe-inline'; "
+            "font-src 'self' data:; "
             "img-src 'self' data: blob: https:; "
             "media-src 'self' blob: data:; "
             "connect-src 'self'; worker-src 'self'; manifest-src 'self'; "

@@ -5,6 +5,7 @@ import { useJobs } from "../jobs";
 import { href } from "../router";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
+import { Sep } from "./ui";
 
 const MODES: PerfMode[] = ["silent", "balanced", "turbo"];
 const WINDOW_S = 300; // charts show the last 5 minutes
@@ -141,7 +142,7 @@ function GovernorPanel({ g, history, onResume }: { g: GovernorView; history: Res
           <div className={`gov-status gov-${tone(g)}`}>
             <span className="gov-dot" aria-hidden />
             {governorLabel(g, t)}
-            {g.detail && g.state === "paused" && <span className="muted mono"> · {g.detail}</span>}
+            {g.detail && g.state === "paused" && <span className="muted mono"><Sep />{g.detail}</span>}
           </div>
         </div>
         {g.paused && working && (
@@ -226,14 +227,14 @@ function GovernorPanel({ g, history, onResume }: { g: GovernorView; history: Res
           <span>{t("gov.ram")}</span>
           <span className="mono">
             {gb(s.ram_used_mb)} / {gb(s.ram_total_mb, 0)} GB
-            <span className="muted"> · SharkyClips {gb(s.ram_ours_mb)} GB</span>
+            <span className="muted"><Sep />SharkyClips {gb(s.ram_ours_mb)} GB</span>
           </span>
         </div>
       )}
       <div className="gov-foot">
         <span className="muted">
           {g.sensors?.gpu_name ?? t("gov.no_gpu")}
-          {g.cores ? ` · ${t("gov.cores", { n: num(g.cores), total: num(g.cpu_count ?? g.cores) })}` : ""}
+          {g.cores ? `, ${t("gov.cores", { n: num(g.cores), total: num(g.cpu_count ?? g.cores) })}` : ""}
         </span>
         <a href={href.settings}>{t("gov.settings")}</a>
       </div>

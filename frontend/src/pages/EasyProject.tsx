@@ -287,7 +287,7 @@ export default function EasyProject({ id }: { id: string }) {
         toast({
           kind: "info",
           text: t("mp.bulk_need_look", { n: need.length }),
-          hint: need.join(" · "),
+          hint: need.join(", "),
         });
       setSelected([]);
       setBusy((b) =>

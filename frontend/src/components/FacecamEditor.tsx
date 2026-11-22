@@ -3,7 +3,7 @@ import { api, urls, type Facecam, type FacecamAnalysis } from "../api";
 import { clamp } from "../format";
 import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
-import { Modal } from "./ui";
+import { Modal, Sep } from "./ui";
 
 type Rect = { x: number; y: number; w: number; h: number };
 type Drag =
@@ -144,7 +144,7 @@ export default function FacecamEditor({
             title={t("facecam.pick_this")}
           >
             <span className="fc-cand-tag">
-              {i + 1} · {num(Math.round(c.confidence * 100))}%
+              {i + 1}<Sep />{num(Math.round(c.confidence * 100))}%
             </span>
           </button>
         ))}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api, type GameChoice, type GameView } from "../api";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
+import { Sep } from "./ui";
 
 /** 1.2.53: one-tap game picker for Easy mode (auto-detected game + a "beta" badge for new profiles). */
 export function GameChip({ pid, disabled, onChanged }: { pid: string; disabled?: boolean; onChanged?: () => void }) {
@@ -60,7 +61,7 @@ export function GameChip({ pid, disabled, onChanged }: { pid: string; disabled?:
       {cur?.beta && (
         <span className="chip chip-beta" title={hint}>
           {t("game.beta")}
-          <span className="sr-only"> · {hint}</span>
+          <span className="sr-only"><Sep />{hint}</span>
         </span>
       )}
     </span>

@@ -4,6 +4,7 @@ import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
+import { Sep } from "./ui";
 
 /** 1.2.31: "7 bleeps ✅" or "2 swears could not be bleeped" on a rendered clip. */
 export function BleepBadge({ s }: { s: BleepSummary | null | undefined }) {
@@ -20,14 +21,14 @@ export function BleepBadge({ s }: { s: BleepSummary | null | undefined }) {
     return (
       <span className="bleep-badge bad" role="status">
         <Icon name="alert" size={13} /> {t("bleep.badge_missing", { n: num(s.audible) })}
-        {s.checked ? ` · ${t("bleep.checked")}` : ""}
+        {s.checked ? `, ${t("bleep.checked")}` : ""}
       </span>
     );
   }
   if (!s.expected) return null;
   return (
     <span className="bleep-badge ok" title={t("bleep.report")}>
-      {t("bleep.badge_ok", { n: num(s.bleeped ?? s.expected) })}
+      <Icon name="check" size={12} /> {t("bleep.badge_ok", { n: num(s.bleeped ?? s.expected) })}
     </span>
   );
 }
@@ -87,7 +88,7 @@ export function BleepList({
   return (
     <details className="bleep-list" open={audible > 0 && !checked}>
       <summary>
-        {t("bleep.report")} · {audible ? t("bleep.badge_missing", { n: num(audible) }) : t("bleep.badge_ok", { n: num(report.bleeped ?? 0) })}
+        {t("bleep.report")}<Sep />{audible ? t("bleep.badge_missing", { n: num(audible) }) : t("bleep.badge_ok", { n: num(report.bleeped ?? 0) })}
       </summary>
       <ul>
         {report.items.map((it, i) => (

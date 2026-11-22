@@ -116,7 +116,7 @@ export default function SwearReview({ projectId, plan, edit, lang, onChange, onP
   const why = (s: SwearItem) => {
     const k = s.why.startsWith("scan") ? "scan" : s.why.split("+")[0];
     const base = t(`swear.why.${k}`);
-    const heard = s.heard && s.heard.length > 1 ? ` · ${s.heard.slice(0, 4).join(", ")}` : "";
+    const heard = s.heard && s.heard.length > 1 ? `, ${s.heard.slice(0, 4).join(", ")}` : "";
     return s.votes ? `${base} (${t("swear.votes", { v: s.votes })})${heard}` : base;
   };
 
@@ -227,7 +227,7 @@ export default function SwearReview({ projectId, plan, edit, lang, onChange, onP
                 e.stopPropagation();
                 setPick(pick === i ? null : i);
               }}
-              title={`${s.word || "…"} · ${fmtTime(a, true)} – ${fmtTime(b, true)}`}
+              title={`${s.word || "…"}, ${fmtTime(a, true)} – ${fmtTime(b, true)}`}
             >
               <em className="swear-label" dir="auto">
                 {s.word || "…"}

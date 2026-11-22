@@ -39,20 +39,26 @@ export function EasyProgress({ steps, eta, compact }: { steps: EasyStep[]; eta: 
         )}
       </div>
       <ol className="ez-steps">
-        {steps.map((s) => (
+        {steps.map((s, i) => (
           <li key={s.key} className={`ez-step ez-step-${s.status}`} aria-current={s.status === "active" ? "step" : undefined}>
+            {/* depth gauge: numbered marks on a rail; the active one is the yellow sign */}
             <span className="ez-step-dot" aria-hidden="true">
               {s.status === "done" ? (
                 <Icon name="check" size={16} />
               ) : s.status === "active" ? (
-                <span className="spinner" />
-              ) : (
                 <Icon name={STEP_ICON[s.key]} size={16} />
+              ) : (
+                <span className="mono">{num(i + 1)}</span>
               )}
             </span>
             <span className="ez-step-text">
               {t(`easy.step.${s.key}`)}
-              <span className="sr-only"> · {t(`easy.step_status.${s.status}`)}</span>
+              <span className="sr-only">, {t(`easy.step_status.${s.status}`)}</span>
+              {s.status === "active" && s.progress != null && (
+                <span className="ez-step-bar" aria-hidden="true">
+                  <span style={{ inlineSize: `${Math.round(s.progress * 100)}%` }} />
+                </span>
+              )}
             </span>
             {s.status === "active" && s.progress != null && (
               <span className="ez-step-pct mono">{num(Math.round(s.progress * 100))}%</span>
