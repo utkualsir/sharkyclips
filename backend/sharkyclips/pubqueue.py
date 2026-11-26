@@ -50,7 +50,8 @@ HARD_CAP = {"youtube": 8, "instagram": 4}  # TikTok: the "tiktok_cap" setting (d
 # 1.2.62 safe pace: Instagram is off until switched on, and its times are at least
 # IG_MIN_GAP_HOURS apart (web/igpace.py keeps the same gap for every other Instagram post)
 IG_MIN_GAP_HOURS = 4
-STATUSES = ("pending", "scheduled", "published", "failed", "skipped_duplicate")
+STATUSES = ("pending", "scheduled", "published", "failed", "skipped_duplicate", "cancelled")
+OPEN = ("pending", "failed")  # not out yet: "Cancel everything pending" (1.2.70) stops these
 LIVE = ("scheduled", "published")  # out there, or planned on the platform itself
 LIMIT_BYTES = 10_000_000  # "under 10 MB": the decimal MB, the stricter of the two
 TARGET_BYTES = 9_500_000
@@ -572,12 +573,14 @@ MD = {
            "platform": "Platform", "head": "Başlık", "status": "Durum", "empty": "Henüz planlanan gönderi yok.",
            "local": "bu bilgisayarın saati",
            "st": {"pending": "bekliyor", "scheduled": "planlandı", "published": "yayında", "failed": "başarısız",
-                  "skipped_duplicate": "zaten planlı (atlandı)", "overdue": "zamanı geçti, rapor yok"}},
+                  "skipped_duplicate": "zaten planlı (atlandı)", "overdue": "zamanı geçti, rapor yok",
+                  "cancelled": "iptal edildi"}},
     "en": {"title": "Publishing calendar", "tz": "Times: {tz}", "date": "Date", "time": "Time",
            "platform": "Platform", "head": "Title", "status": "Status", "empty": "Nothing planned yet.",
            "local": "this computer's time",
            "st": {"pending": "pending", "scheduled": "scheduled", "published": "published", "failed": "failed",
-                  "skipped_duplicate": "already scheduled (skipped)", "overdue": "time passed, no report"}},
+                  "skipped_duplicate": "already scheduled (skipped)", "overdue": "time passed, no report",
+                  "cancelled": "cancelled"}},
 }
 
 
@@ -887,8 +890,9 @@ def _entry(cal: dict, eid: str, platform: str, batch: str | None = None) -> dict
 
 def mark(eid: str, platform: str, status: str, url: str | None = None, note: str | None = None,
          batch: str | None = None) -> dict:
-    """By hand: what really happened to one post (you looked in TikTok Studio / Instagram)."""
-    if status not in ("pending", "scheduled", "published", "failed"):
+    """By hand: what really happened to one post (you looked in TikTok Studio / Instagram).
+    1.2.70: "cancelled" = you don't want it posted any more (it stays in the calendar, greyed)."""
+    if status not in ("pending", "scheduled", "published", "failed", "cancelled"):
         raise SharkyClipsError("Unknown status.")
     with _lock:
         cal = load_calendar()
@@ -925,6 +929,28 @@ def set_result(eid: str, platform: str, status: str, url: str | None = None, not
         save_calendar(cal)
         _sync_queue_files([e])
         return view(e)
+
+
+def cancel_pending(keys: list[dict] | None = None, now: datetime | None = None) -> list[dict]:
+    """1.2.70: "Cancel everything pending" (or only the given [{id, platform, batch?}]): every post
+    that isn't out yet (pending, overdue or failed) turns "cancelled", so nobody posts it any more.
+    Posts already out or planned on the platform itself are never touched."""
+    now = now or now_local()
+    with _lock:
+        cal = load_calendar()
+        if keys:
+            todo = [_entry(cal, str(k.get("id")), str(k.get("platform")), k.get("batch")) for k in keys]
+        else:
+            todo = list(cal["entries"])
+        todo = [e for e in todo if e.get("status") in OPEN]
+        for e in todo:
+            e["cancelled_from"] = e.get("status")
+            e["status"] = "cancelled"
+            e["updated_at"] = iso(now)
+        if todo:
+            save_calendar(cal)
+            _sync_queue_files(todo)
+        return [view(e, now) for e in todo]
 
 
 def replan(keys: list[dict] | None = None, now: datetime | None = None) -> list[dict]:

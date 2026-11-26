@@ -105,6 +105,15 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   run against `backend/tests/fake_tiktok_studio.py` (keep it in step with real TikTok Studio
   changes); env `SHARKYCLIPS_TT_STUDIO`, `SHARKYCLIPS_TT_HEADLESS=1` (tests only), `_TT_PACE`,
   `_TT_TYPE_MS`, `_TT_TIMEOUT_SCALE`.
+- Assisted upload (1.2.70, TikTok's default mode "assist", Instagram optional) = `assist.py` (the
+  user's own browser started plain on a SharkyClips profile, no debugging port: `--remote-debugging-port`
+  alone turns navigator.webdriver on) + the "SharkyClips Helper" extension in `assist_ext/` (written to
+  `<settings>/browser/assist-extension` with its own key; Edge/Opera/Brave load it via `--load-extension`,
+  Chrome needs the one-time Load unpacked guide) + `web/assist_api.py` (tasks, `/api/assist/ext/*` behind
+  that key, the post job). It fills in and STOPS: never add code that clicks Post / Share
+  (`test_assisted_upload.py` checks the extension code). Tests: fake extension reports + real headless Edge
+  against `fake_tiktok_studio.py` / `fake_instagram.py`; `SHARKYCLIPS_ASSIST_DEFAULT=semi` in conftest.
+  Decisions: `docs/assisted-upload.md`.
 - Icons/logo come from `installer/make_icons.py` (one geometry; `frontend/src/components/Brand.tsx`
   and `backend/sharkyclips/web/splash.html` copy the same paths).
 - Settings folder: `~/.sharkyclips` (`config.config_dir()`); `migrate.py` moves an old `~/.clipforge`

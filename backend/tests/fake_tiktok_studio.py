@@ -173,6 +173,11 @@ $('post').addEventListener('click', async () => {
 });
 </script></body></html>"""
 
+# 1.2.70: the person checks the filled-in page and clicks Post (SharkyClips only outlines it)
+USER_POSTS = """<script>(function(){ const iv = setInterval(() => { const h = document.getElementById('sharkyclips-assist');
+ const p = document.getElementById('post'); if (h && p && p.style.outline && !p.disabled) { clearInterval(iv);
+ window.__userClicked = true; setTimeout(() => p.click(), 700); } }, 300); })();</script>"""
+
 DRAFT = """<div data-e2e="local_draft_container"><span>Düzenlemekte olduğunuz bir video kaydedilmedi. Düzenlemeye devam edilsin mi?</span>
  <div class="local-draft-button-group"><button type="button" data-type="ghost">Sil</button><button type="button">Devam</button></div></div>"""
 
@@ -190,6 +195,10 @@ class FakeStudio:
         self.posts: list[dict] = []
         self.seed: list[dict] = []  # {"caption", "scheduled": "14 Kas, 18:00 (GMT+1) Budapest" | None, "id"}
         self.username = "fakeuser"
+        # 1.2.70 assisted upload: a "person" who logs in on /login and clicks Post once the page is
+        # filled in (SharkyClips' outline on the Post button). Off = nobody clicks: nothing is posted.
+        self.user_posts = False
+        self.user_login = False
         self.server = None
         self.thread = None
 
@@ -233,9 +242,11 @@ class FakeStudio:
                     return self._send(302, "", headers={"Location": "/tiktokstudio/content",
                                                         "Set-Cookie": "sessionid=fake123; Path=/; Max-Age=86400"})
                 if path == "/login":
+                    auto = ("<script>setTimeout(() => document.getElementById('go').click(), 2500)</script>"
+                            if studio.user_login else "")
                     return self._send(200, '<!doctype html><html><body><div id="loginContainer" style="width:300px;height:200px">'
                                       '<button id="go" onclick="document.cookie=\'sessionid=fake123; path=/; max-age=86400\';'
-                                      'location.href=\'/tiktokstudio/content\'">Giriş yap</button></div></body></html>')
+                                      'location.href=\'/tiktokstudio/content\'">Giriş yap</button></div>' + auto + '</body></html>')
                 if path.startswith("/passport/web/account/info"):
                     return self._send(200, json.dumps({"data": {"username": studio.username} if self._logged() else {}}),
                                       "application/json")
@@ -250,6 +261,8 @@ class FakeStudio:
                             "__DRAFT__", DRAFT if studio.draft else "").replace(
                             "__FILE_IN__", "" if studio.draft else file_in).replace(
                             "__FILE_OUT__", file_in if studio.draft else "")
+                        if studio.user_posts:
+                            page = page.replace("</body>", USER_POSTS + "</body>")
                         return self._send(200, page)
                     if path == "/tiktokstudio/content":
                         rows = []

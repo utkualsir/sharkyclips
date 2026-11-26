@@ -679,6 +679,36 @@ def on_uploaded(key: str, entry: dict, body: dict) -> dict:
     return {"playlist_error": note} if note else {}
 
 
+# 1.2.70 ("stuck Sharing..."): a clip that waits says why, and a wait nothing will end turns into
+# a clear error with Retry after WATCHDOG_S (it used to stay "Sharing..." forever)
+WATCHDOG_S = 60.0
+WAIT_REASONS = ("bleep_check", "render", "render_missing")
+WAIT_TEXT = {
+    "bleep_check": ("Waiting: a swear in this clip is still heard.",
+                    "Listen to the clip (Bleep report), then press \"I checked it\". It uploads right after."),
+    "render": ("Waiting: the clip is still being made.", None),
+}
+
+
+def note_wait(key: str, item: dict, info: dict, now: datetime) -> str:
+    """Writes why a due clip waits on its plan item (shown on the clip). A render that isn't running
+    (or a wait with no reason) for WATCHDOG_S becomes an error with Retry. Returns the action name."""
+    reason = (info or {}).get("reason") or "render_missing"
+    cur = item.get("waiting") or {}
+    if cur.get("reason") != reason:
+        P.patch(key, waiting={"reason": reason, "since": iso(now)})
+        return f"wait_{reason}"
+    if reason in ("bleep_check", "render"):  # the user / a running job ends these waits
+        return f"wait_{reason}"
+    since = P.parse(cur.get("since"))
+    if since is not None and (now - since).total_seconds() >= WATCHDOG_S:
+        P.patch(key, waiting=None, attention=True, error={
+            "message": "The clip for this upload couldn't be made.",
+            "hint": "Press Retry: SharkyClips makes it again and uploads it.", "fix": "rerender", "at": iso(now)})
+        return "watchdog"
+    return f"wait_{reason}"
+
+
 def on_failed(key: str, exc: BaseException) -> None:
     from .jobs import JobCancelled
 
@@ -847,8 +877,11 @@ class Scheduler:
                 continue
             try:
                 step, info = next_step(project, cand, it)
-                if step == "wait":  # Easy clip still rendering
+                if step == "wait":  # 1.2.70: never silent: the clip says why it waits (watchdog: 60 s)
+                    acts.append(f"{note_wait(key, it, info, now)}:{key}")
                     continue
+                if it.get("waiting") and (it["waiting"] or {}).get("reason") in WAIT_REASONS:
+                    P.patch(key, waiting=None)
                 if step == "export" and not gpu_busy:
                     submit_export_for(key, info)
                     gpu_busy = True
@@ -1179,8 +1212,49 @@ def api_retry(project_id: str, cid: str) -> dict:
             nxt["publish_at"] = iso(P.next_free_slot(P.earliest(), releases(), skip={key}))
             nxt["moved_from"] = item["publish_at"]
     P.put(nxt)
+    started = kick(key)  # 1.2.70: a job right now, or a clear error (never only a silent poke)
     scheduler.poke()
-    return {"ok": True, "publish_at": nxt.get("publish_at")}
+    return {"ok": True, "publish_at": nxt.get("publish_at"), **started}
+
+
+def kick(key: str) -> dict:
+    """1.2.70: Retry starts the clip's next step at once and answers with its job, or raises a
+    clear error (a swear still heard, YouTube not connected, today's uploads used up, no clip)."""
+    from .. import youtube
+
+    A = _app()
+    item = P.get(key)
+    if item is None:
+        raise SharkyClipsError("This clip isn't scheduled.")
+    js = [j for j in _plan_jobs().get(key, []) if j.status in ACTIVE]
+    if js:
+        return {"status": "working", "job": js[0].id}
+    if not youtube.connected():
+        raise SharkyClipsError("YouTube isn't connected.", "Connect YouTube (Settings > Accounts), then press Retry.")
+    project = A.get_project(item["project_id"])
+    cand = A._cand(project, item["clip_id"])
+    step, info = next_step(project, cand, item)
+    if step == "wait":
+        reason = info.get("reason")
+        if reason == "bleep_check":
+            raise SharkyClipsError(*WAIT_TEXT["bleep_check"])
+        if reason == "render":
+            return {"status": "rendering", "job": None}
+        raise SharkyClipsError("The clip for this upload couldn't be made.",
+                               "Open the clip and make it again (Render), then press Retry.")
+    if step == "export":
+        return {"status": "rendering", "job": submit_export_for(key, info).id}
+    if step == "burn":
+        return {"status": "rendering", "job": submit_cover_burn(key, info).id}
+    if youtube.uploads_left() < 1:
+        raise SharkyClipsError(f"Today's YouTube uploads are used up ({youtube.daily_uploads()} a day).",
+                               "Upload it by hand now, or it goes up tomorrow by itself.")
+    if item.get("publish_at"):
+        t = P.parse(item["publish_at"])
+        if t is not None and t < P.earliest():
+            return {"status": "scheduled", "job": None}
+    body = upload_body(project, cand, item, info["source"], info.get("ab"))
+    return {"status": "uploading", "job": A.submit_upload(project.id, cand["id"], body).id}
 
 
 @router.delete("/api/library/{project_id}/{cid}")

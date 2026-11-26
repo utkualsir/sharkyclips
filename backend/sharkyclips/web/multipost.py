@@ -67,6 +67,9 @@ LIMITS = {
 LEAD_S = 120  # a planned TikTok / Instagram time must be at least this far ahead
 POLL_S = 3.0
 PROCESS_WAIT_S = 600  # wait this long inside the job; after that the publish loop checks back
+# 1.2.70: posts the user finishes (semi = by hand, assist = filled in their browser, they click Post)
+HAND_MODES = ("semi", "assist")
+WATCHDOG_S = 60.0  # a by-hand post "preparing" with no job behind it this long: a clear error + Retry
 MAX_TRIES = 1 + PF.AUTO_RETRY_MAX  # 1.2.50: the first try + one automatic retry (was 6)
 STATS_EVERY_S = 6 * 3600
 TIKTOK_PRIVACY = ("PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY")
@@ -330,6 +333,7 @@ def _social_state(project: Project, cid: str, platform: str) -> dict:
             "job": j.id if j is not None else None, "mode": rec.get("mode"), "manual": bool(rec.get("manual")),
             "remind_at": rec.get("remind_at") if status == "ready" else None,
             "remote": bool(rec.get("remote")), "fallback": rec.get("fallback"),
+            "assist": rec.get("assist") if rec.get("mode") == "assist" or rec.get("assist_fallback") else None,
             "shot": (rec.get("fallback") or {}).get("shot") or (rec.get("auto_error") or {}).get("shot")}
 
 
@@ -357,8 +361,14 @@ def _youtube_state(project: Project, cid: str) -> dict:
             status = "scheduled"
     wait = None  # 1.2.68: why a clip that should go now is still waiting (never silent)
     if status == "preparing" and item and not (live or {}).get("video_id"):
-        if (item.get("waiting") or {}).get("reason") == "paused":
+        why = (item.get("waiting") or {}).get("reason")
+        if why == "bleep_check" or state.bleep_hold(project, cid):  # 1.2.70: never a silent "Sharing..."
+            m, h = pub.WAIT_TEXT["bleep_check"]
+            wait = {"code": "bleep_check", "message": m, "hint": h}
+        elif why == "paused":
             wait = {"code": "paused", "message": "Waiting: SharkyClips is paused while you play or the PC is busy."}
+        elif why == "render":
+            wait = {"code": "render", "message": pub.WAIT_TEXT["render"][0]}
         elif item.get("error"):
             wait = {"code": (item["error"] or {}).get("fix") or "retry", "message": item["error"].get("message"),
                     "hint": item["error"].get("hint"), "next_try_at": item.get("next_try_at")}
@@ -474,7 +484,7 @@ def problems(project: Project, cand: dict, want: list[str], d: dict, tt: dict | 
     out: list[dict] = []
     for p in want:
         a = acc[p]
-        semi = (modes or {}).get(p) in ("semi", "browser")  # by hand / TikTok Studio: no API account,
+        semi = (modes or {}).get(p) in ("semi", "browser", "assist")  # by hand / browser: no API account,
         # no API quota, no API post screen (the browser lane keeps its own daily limit)
         if semi:
             pass
@@ -528,6 +538,18 @@ def problems(project: Project, cand: dict, want: list[str], d: dict, tt: dict | 
     if held and want:
         out.insert(0, _problem("all", "bleep_hold", "bleep_check", n=held))
     return out
+
+
+AUTO_FIXES = ("shorten_caption", "trim_hashtags", "vary_caption")
+
+
+def problem_text(x: dict) -> str:
+    """A problem in plain words (for a platform held back on its own, 1.2.70)."""
+    name = NAMES.get(x["platform"], x["platform"])
+    pr = x.get("params") or {}
+    return {"too_long": f"This clip is too long for {name} (at most {pr.get('max')} s).",
+            "too_short": f"This clip is too short for {name} (at least {pr.get('min')} s).",
+            }.get(x["code"], f"{name}: fix the marked problem first.")
 
 
 def apply_fix(project: Project, cid: str, platform: str, code: str) -> dict:
@@ -741,16 +763,34 @@ def start(project: Project, cid: str, body: dict) -> dict:
         todo = [p for p in want if v["states"][p]["status"] in ("idle", "failed", "cancelled")]
         if "tiktok" in todo and v["modes"]["tiktok"] == "api" and not body.get("consent"):
             raise SharkyClipsError("Confirm TikTok's Music Usage Confirmation first.")
-        if v["problems"]:
+        # 1.2.70: a platform you finish by hand (semi / assist) never holds up the automatic ones:
+        # its own problems are fixed where SharkyClips can, else only that platform stays back
+        hand = {p for p in todo if v["modes"].get(p) in HAND_MODES}
+        blocking = [x for x in v["problems"] if x["platform"] not in hand]
+        if blocking:
             e = SharkyClipsError("Fix the marked problems first.", None)
             e.code = "problems"  # type: ignore[attr-defined]
-            e.problems = v["problems"]  # type: ignore[attr-defined]
+            e.problems = blocking  # type: ignore[attr-defined]
             raise e
+        held_back: dict[str, dict] = {}
+        for x in (x for x in v["problems"] if x["platform"] in hand):
+            if x["fix"] in AUTO_FIXES:
+                try:
+                    apply_fix(project, cid, x["platform"], x["fix"])
+                    continue
+                except SharkyClipsError:
+                    pass
+            if x["fix"] == "turn_off":
+                held_back[x["platform"]] = {"status": "failed", "error": {"message": problem_text(x), "hint": None}}
+        if held_back or any(x["platform"] in hand for x in v["problems"]):
+            todo = [p for p in todo if p not in held_back]
+            v = view(project, cid, want)
         if not v["ready"] and any(p in todo for p in SOCIAL):
             pass  # still rendering: the post job waits for the clip (status "preparing")
         cand = state.effective_cand(A._cand(project, cid), state.load_review(project))
         results: dict[str, dict] = {p: {"status": v["states"][p]["status"], "skipped": True}
                                     for p in want if p not in todo}
+        results.update(held_back)
         # YouTube first: a full day moves its time, and TikTok / Instagram follow that time
         if "youtube" in todo:
             try:
@@ -795,11 +835,22 @@ def _social_start(project: Project, cand: dict, platform: str, when: datetime | 
     paced = None
     if platform == "reels":  # 1.2.68: the 4-hour pace is only a warning now (Share shows it), never a delay
         igpace.forget_cache()
+    if v["modes"][platform] == "assist":  # 1.2.70: filled in in your browser, you click Post
+        PF.record(project, cid, platform, mode="assist", caption=caption, ai_voice=ai if ai["dub"] else None,
+                  ai_label=bool(ai["label"]), error=None, attempts=0, next_try_at=None, late=False,
+                  status="scheduled" if when else "preparing", publish_at=_iso(when) if when else None,
+                  remind_at=None, file=None, folder=None, shared_at=None, manual=None, url=None, assist=None,
+                  assist_fallback=None, fallback=None)
+        if when:  # at that time the page opens filled in (the publish loop starts it)
+            return {"status": "scheduled", "publish_at": _iso(when), "mode": "assist"}
+        submit(project.id, cid, platform)
+        return {"status": "preparing", "mode": "assist", "upload_page": PF.UPLOAD_PAGE[platform]}
     if v["modes"][platform] == "semi":  # by hand: make the file now, whatever the planned time
         PF.record(project, cid, platform, mode="semi", caption=caption, ai_voice=ai if ai["dub"] else None,
                   error=None, attempts=0, next_try_at=None, late=False, status="preparing",
                   publish_at=None, remind_at=_iso(when) if when else None, file=None, folder=None,
-                  shared_at=None, manual=None, url=None, notified_at=None if when else time.time())
+                  shared_at=None, manual=None, url=None, notified_at=None if when else time.time(),
+                  assist=None, assist_fallback=None, fallback=None)
         submit(project.id, cid, platform)
         out = {"status": "preparing", "mode": "semi", "upload_page": PF.UPLOAD_PAGE[platform]}
         if paced is not None:
@@ -904,7 +955,7 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
     rec = _rec(project, cid, platform)
     if rec.get("status") == "published":
         return {"status": "published", "url": rec.get("url")}
-    if platform == "reels" and rec.get("mode") != "semi" and not PF.META_AUTOMATION:
+    if platform == "reels" and rec.get("mode") not in HAND_MODES and not PF.META_AUTOMATION:
         return pause_meta(project, cid, rec)  # 1.2.50: an automatic Instagram post never goes out
     try:
         if rec.get("mode") == "browser" and (rec.get("remote") or rec.get("submitted_at")):
@@ -916,6 +967,14 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
             file, _fixed = shortsfmt.ensure(file, platform, project.cache_dir / "shortsfix")
         if rec.get("mode") == "semi":
             return _run_semi(project, cid, platform, file, rec)
+        if rec.get("mode") == "assist":  # 1.2.70: the by-hand file first (instant fallback), then the browser
+            from . import assist_api
+
+            if job is not None:
+                A.jobs.update(job, stage="assist", progress=None)
+            dest, folder = _hand_file(project, cid, platform, file, rec)
+            rec = PF.record(project, cid, platform, file=str(dest), folder=str(folder), error=None)
+            return assist_api.run(project, cid, platform, dest, folder, rec, job)
         if rec.get("mode") == "browser":
             return _run_browser(project, cid, file, rec, job)
         rec = PF.record(project, cid, platform, status="uploading", file=str(file), error=None)
@@ -937,7 +996,7 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
                                  "network", "transient", 60.0)
             _failed(project, cid, platform, e)
             raise e from exc
-        if rec.get("mode") == "semi":  # by hand: say so on the clip (Retry), never stuck "preparing"
+        if rec.get("mode") in HAND_MODES:  # by hand: say so on the clip (Retry), never stuck "preparing"
             _failed(project, cid, platform, SharkyClipsError(f"{type(exc).__name__}: {exc}", None))
         raise
 
@@ -945,6 +1004,14 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
 def _run_semi(project: Project, cid: str, platform: str, file: Path, rec: dict) -> dict:
     """By hand: the file goes to Downloads/SharkyClips/<stream> with the caption next to it
     (.txt); the UI copies the caption, opens the upload page and shows the file."""
+    dest, folder = _hand_file(project, cid, platform, file, rec)
+    PF.record(project, cid, platform, status="ready", file=str(dest), folder=str(folder), error=None,
+              ready_at=time.time())
+    return {"status": "ready", "file": str(dest), "folder": str(folder), "mode": "semi"}
+
+
+def _hand_file(project: Project, cid: str, platform: str, file: Path, rec: dict) -> tuple[Path, Path]:
+    """The by-hand copy: Downloads/SharkyClips/<stream>/<rank> <title> - <Platform>.mp4 + its .txt."""
     import shutil
 
     A = _app()
@@ -973,9 +1040,7 @@ def _run_semi(project: Project, cid: str, platform: str, file: Path, rec: dict) 
                                "Check that the Downloads folder exists and there's free space, then press Retry.") from exc
     caption = rec.get("caption") or ""
     (folder / f"{dest.stem}.txt").write_text(caption + "\n", encoding="utf-8")
-    PF.record(project, cid, platform, status="ready", file=str(dest), folder=str(folder), error=None,
-              ready_at=time.time())
-    return {"status": "ready", "file": str(dest), "folder": str(folder), "mode": "semi"}
+    return dest, folder
 
 
 def shared(project: Project, cid: str, platform: str, url: str | None = None) -> dict:
@@ -983,7 +1048,7 @@ def shared(project: Project, cid: str, platform: str, url: str | None = None) ->
     if platform not in SOCIAL:
         raise SharkyClipsError("Unknown platform.")
     rec = _rec(project, cid, platform)
-    if rec.get("mode") != "semi" or rec.get("status") not in ("ready", "published"):
+    if rec.get("mode") not in HAND_MODES or rec.get("status") not in ("ready", "published"):
         raise SharkyClipsError("This post isn't waiting for you.", "Press Publish first.")
     u = (url or "").strip()
     PF.record(project, cid, platform, status="published", manual=True, posted_at=_iso(_now()),
@@ -1452,13 +1517,25 @@ def retry(project: Project, cid: str, platform: str) -> dict:
         return {"status": "uploading"}
     if not rec:
         raise SharkyClipsError("Nothing to try again here.", "Press Publish.")
-    if platform == "reels" and rec.get("mode") != "semi" and not PF.META_AUTOMATION:
+    if platform == "reels" and rec.get("mode") not in HAND_MODES and not PF.META_AUTOMATION:
         return prepare_manual(project, cid)  # 1.2.50: by hand from the Instagram app
     if rec.get("mode") == "browser":  # your Retry: post again (also after "not found")
         PF.record(project, cid, platform, submitted_at=None, remote=False, verify_tries=0, cleared=True)
-    PF.record(project, cid, platform, status="preparing", error=None, next_try_at=None)
-    submit(project.id, cid, platform)
-    return {"status": "uploading"}
+    if rec.get("assist_fallback") and PF.mode(platform) == "assist":  # 1.2.70: fell back once: assisted again
+        rec = PF.record(project, cid, platform, mode="assist", assist_fallback=None, fallback=None)
+    if rec.get("mode") == "assist":  # 1.2.70: a fresh assisted upload (the old tab / answer is done)
+        PF.record(project, cid, platform, assist=None)
+    PF.record(project, cid, platform, status="preparing", error=None, next_try_at=None, fallback=None)
+    # 1.2.70: your Retry overrides an earlier Cancel of this post (a cancelled job never comes back
+    # by itself), and it always answers with a real job or a clear error
+    _app().jobs.clear_tombstones(project.id, ("post",), clip_id=cid)
+    job = submit(project.id, cid, platform)
+    if job.status == "cancelled" or getattr(job, "blocked", False):
+        PF.record(project, cid, platform, status="failed",
+                  error={"message": "This post couldn't be started again.", "hint": "Press Share once more.",
+                         "kind": "fatal"})
+        raise SharkyClipsError("This post couldn't be started again.", "Press Share once more.")
+    return {"status": "uploading", "job": job.id}
 
 
 def unplan(project: Project, cid: str, platform: str) -> dict:
@@ -1643,7 +1720,14 @@ def tick(now: datetime | None = None) -> list[str]:
             for p in SOCIAL:
                 r = (plats or {}).get(p) or {}
                 st = r.get("status")
-                if p == "reels" and st and not PF.META_AUTOMATION:  # 1.2.50: Meta is hands-off
+                if st in ("preparing", "uploading") and r.get("mode") in HAND_MODES                         and active_job(project.id, cid, p) is None and t - float(r.get("at") or t) >= WATCHDOG_S:
+                    # 1.2.70 watchdog: making the file stopped without a word (crash, a lost job):
+                    # a clear error with Retry instead of "Sharing..." forever
+                    _failed(project, cid, p, SharkyClipsError("Preparing this post stopped.",
+                                                              "Press Retry to make it again."))
+                    acts.append(f"watchdog:{p}:{project.id}:{cid}")
+                    continue
+                if p == "reels" and st and not PF.META_AUTOMATION and r.get("mode") != "assist":  # 1.2.50
                     if r.get("mode") == "semi":
                         if manual_tick(project, cid, r, now):
                             acts.append(f"remind:reels:{project.id}:{cid}")
@@ -1651,7 +1735,17 @@ def tick(now: datetime | None = None) -> list[str]:
                         pause_meta(project, cid, r)
                         acts.append(f"paused:reels:{project.id}:{cid}")
                     continue
-                if not st or r.get("mode") == "semi" or active_job(project.id, cid, p) is not None:
+                if r.get("mode") == "assist" and st == "scheduled" and active_job(project.id, cid, p) is None:
+                    at = P.parse(r.get("publish_at"))
+                    if at is not None and at <= now:  # 1.2.70: the page opens filled in at the planned time
+                        PF.record(project, cid, p, status="preparing", late=(now - at).total_seconds() > 600)
+                        try:
+                            submit(project.id, cid, p)
+                            acts.append(f"assist:{p}:{project.id}:{cid}")
+                        except Exception:  # noqa: BLE001
+                            pass
+                    continue
+                if not st or r.get("mode") in HAND_MODES or active_job(project.id, cid, p) is not None:
                     continue
                 go = None
                 if r.get("mode") == "browser":
@@ -1859,8 +1953,8 @@ def api_retry(project_id: str, cid: str, platform: str) -> dict:
     if platform not in PLATFORMS:
         raise SharkyClipsError("Unknown platform.")
     project = _project(project_id)
-    retry(project, cid, platform)
-    return view(project, cid)
+    started = retry(project, cid, platform)  # 1.2.70: a real job (its id) or a clear error
+    return {**view(project, cid), "retry": started, "job": started.get("job")}
 
 
 @router.get("/api/publish/{project_id}/{cid}/handoff")

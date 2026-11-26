@@ -16,7 +16,7 @@ interface Notice {
   at: number;
 }
 
-const KINDS = ["shared", "private", "manual_ready", "share_failed"];
+const KINDS = ["shared", "private", "manual_ready", "share_failed", "assist_ready", "assist_action", "assist_confirm"];
 
 export function ShareNotices() {
   const { t } = useI18n();
@@ -40,7 +40,7 @@ export function ShareNotices() {
             changed = true;
             const url = n.url;
             toast({
-              kind: n.kind === "share_failed" ? "err" : n.kind === "private" ? "info" : "ok",
+              kind: n.kind === "share_failed" ? "err" : n.kind === "private" || n.kind.startsWith("assist_") ? "info" : "ok",
               text: n.title,
               hint: n.body,
               ms: n.kind === "share_failed" || n.kind === "private" ? 15000 : 7000,

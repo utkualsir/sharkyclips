@@ -62,6 +62,7 @@ def _video(path: Path, size: str, seconds: float, vp9: bool = False) -> None:
 
 
 def _json(path: Path, data: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
@@ -190,7 +191,16 @@ def build(root: Path) -> str:
         "c09": {"tiktok": {"mode": "semi", "status": "failed", "error": {
             "message": "Couldn't save the TikTok file: the disk is full.", "hint": "Free some space, then press Try again.",
             "kind": "fatal"}}},
+        # 1.2.70 assisted upload: "did you post it?" on a card
+        "c10": {"tiktok": {"mode": "assist", "status": "ready", "assist": {
+            "id": "fixtask0000000002", "state": "confirm", "reason": "closed", "browser_name": "Google Chrome"}}},
     })
+    # 1.2.70: the assisted-upload bar on every screen (one post filled in and waiting for the click)
+    _json(home / "browser" / "assist_tasks.json", {"tasks": [
+        {"id": "fixtask0000000001", "project_id": PID, "clip_id": "c02", "platform": "tiktok",
+         "title": TITLES[1], "text": "x", "state": "ready", "notes": [], "browser": "chrome",
+         "browser_name": "Google Chrome", "created_at": 4102444800, "updated_at": 4102444800, "ready_at": 4102444800,
+         "file": "", "file_name": "clip.mp4"}]})
     _stamp_current(home, ws, d)
     return PID
 

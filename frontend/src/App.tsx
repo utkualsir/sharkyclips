@@ -46,6 +46,7 @@ const ShareClips = lazy(() => import("./pages/ShareClips"));
 const UploadHistory = lazy(() => import("./pages/UploadHistory"));
 import { UploadsLeft } from "./components/UploadsLeft";
 import { ShareNotices } from "./components/ShareNotices";
+import { AssistBar } from "./components/AssistBar";
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
 
@@ -357,6 +358,7 @@ export default function App() {
       <YoutubeSignedOutBanner />
       <SetupBanner />
       <IgManualBar />
+      <AssistBar />
       <ShutdownBanner />
       <div
         className="page-fx"

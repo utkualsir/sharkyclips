@@ -185,7 +185,7 @@ export function ShareFlow({
                     <PlatformIcon p={p} size={28} />
                     <span className="share-plat-name">{TARGET_NAME[p]}</span>
                     <span className="muted share-plat-mode">
-                      {pl.manual ? t("share.mode_manual") : pl.by_hand ? t("share.mode_by_hand") : t("share.mode_auto")}
+                      {pl.manual ? t("share.mode_manual") : pl.assist ? t("share.mode_assist") : pl.by_hand ? t("share.mode_by_hand") : t("share.mode_auto")}
                     </span>
                     <span className="share-plat-check" aria-hidden="true">
                       {on && <Icon name="check" size={16} />}
@@ -532,8 +532,9 @@ function SumRow({ r, gap, onEdit }: { r: PlanRow; gap: number; onEdit: () => voi
         </div>
       )}
       {(r.warnings ?? []).map((w) => (
-        <div key={`w-${w.code}`} className="share-sum-already muted">
-          <Icon name="alert" size={12} /> {t("share.ig_warn_title")}
+        <div key={`w-${w.code}-${"platform" in w ? w.platform : ""}`} className="share-sum-already muted">
+          <Icon name="alert" size={12} />{" "}
+          {w.code === "hand_fix" ? t("share.hand_fix", { name: TARGET_NAME[w.platform] }) : t("share.ig_warn_title")}
         </div>
       ))}
       {(r.dropped ?? []).map((x) => (

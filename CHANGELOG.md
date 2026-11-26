@@ -9,6 +9,308 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.70] - 2026-11-26
+SharkyClips now fills in your TikTok upload in your own browser (video, caption and settings), and you check it and click Post yourself. Sharing also never gets stuck on "Sharing…" any more.
+
+### New
+- **Assisted upload for TikTok (the new default):** click Share and SharkyClips opens TikTok Studio in your browser (Chrome, Edge, Opera GX or Brave), adds the video, writes the caption with your hashtags, picks "Everyone" and "Now", and stops. A banner in the page and in the app says: "Everything is ready. Check and click Post." SharkyClips never clicks Post for you.
+- **"Shared to TikTok ✓" with the link** as soon as you post. If SharkyClips can't tell, it asks once: "Did you post it? Yes / No".
+- **Log in only once** in the SharkyClips browser window. SharkyClips never sees your password. If TikTok shows a check, SharkyClips asks you to finish it in the browser and waits.
+- **Several clips in a row:** the next clip opens only after you have posted the one before, with a short pause between posts.
+- **Instagram Reels the same way,** as an option in Settings.
+- **A small helper for your browser** does the filling in. Edge, Opera GX and Brave get it by themselves. Chrome needs a short setup once, and SharkyClips shows you every step.
+- **Publish queue:** "Cancel everything pending" and a new "cancelled" status.
+
+### Improved
+- **If the TikTok page changes** and SharkyClips can't fill it in, you get the by-hand steps at once (copy buttons, upload page, folder) with the reason. Posting fully by hand is still one click away in Settings.
+- **Firefox:** the upload page opens there and you post by hand, because Firefox can't be filled in.
+- **Google's user limit:** when Google stops new sign-ins for the shared app, SharkyClips explains it clearly and takes you to the steps for your own free Google project, including the "Publish app" click.
+
+### Fixed
+- **"Sharing…" could stay forever** while a swear in the clip was still heard. The clip now says why it waits.
+- **A clip that couldn't be made** now shows an error with Retry after one minute, instead of waiting forever.
+- **Retry always starts the upload again,** or tells you clearly why it can't.
+- **A platform you post by hand never holds up the others:** for example, a caption that is too long for TikTok no longer stops YouTube.
+- **A by-hand post that stopped while it was being prepared** now shows an error with Retry.
+
+<!-- lang:tr -->
+**Türkçe**
+
+SharkyClips artık TikTok yüklemeni kendi tarayıcında dolduruyor (video, açıklama ve ayarlar), sen de kontrol edip Paylaş'a kendin tıklıyorsun. Paylaşım da artık "Paylaşılıyor…" durumunda takılı kalmıyor.
+
+### Yeni
+- **TikTok için destekli yükleme (yeni varsayılan):** Paylaş'a tıkla, SharkyClips TikTok Studio'yu tarayıcında (Chrome, Edge, Opera GX ya da Brave) açar, videoyu ekler, açıklamayı hashtag'lerinle yazar, "Herkes" ve "Şimdi"yi seçer ve durur. Sayfada ve uygulamada bir şerit şunu söyler: "Her şey hazır. Kontrol et ve Paylaş'a tıkla." SharkyClips senin yerine asla Paylaş'a tıklamaz.
+- **Paylaşır paylaşmaz bağlantıyla birlikte "TikTok'ta paylaşıldı ✓".** SharkyClips anlayamazsa bir kez sorar: "Paylaştın mı? Evet / Hayır".
+- **SharkyClips tarayıcı penceresinde yalnızca bir kez giriş yap.** SharkyClips şifreni asla görmez. TikTok bir doğrulama gösterirse SharkyClips bunu tarayıcıda bitirmeni ister ve bekler.
+- **Arka arkaya birkaç klip:** bir sonraki klip ancak öncekini paylaştıktan sonra açılır, paylaşımlar arasında kısa bir ara verilir.
+- **Instagram Reels de aynı şekilde,** Ayarlar'da bir seçenek olarak.
+- **Tarayıcın için küçük bir yardımcı** doldurmayı yapar. Edge, Opera GX ve Brave onu kendiliğinden alır. Chrome için bir kez kısa bir kurulum gerekir ve SharkyClips her adımı gösterir.
+- **Yayın kuyruğu:** "Bekleyen her şeyi iptal et" ve yeni bir "iptal edildi" durumu.
+
+### İyileştirmeler
+- **TikTok sayfası değişirse** ve SharkyClips onu dolduramazsa, elle paylaşma adımlarını hemen nedeniyle birlikte alırsın (kopyalama butonları, yükleme sayfası, klasör). Tamamen elle paylaşmak Ayarlar'da hâlâ bir tık uzakta.
+- **Firefox:** yükleme sayfası orada açılır ve elle paylaşırsın, çünkü Firefox doldurulamıyor.
+- **Google'ın kullanıcı sınırı:** Google ortak uygulama için yeni girişleri durdurduğunda SharkyClips bunu açıkça anlatır ve seni "Uygulamayı yayınla" tıklaması dahil kendi ücretsiz Google projenin adımlarına götürür.
+
+### Düzeltmeler
+- **Klipte bir küfür hâlâ duyulurken "Paylaşılıyor…" sonsuza kadar kalabiliyordu.** Klip artık neden beklediğini söylüyor.
+- **Yapılamayan bir klip** artık sonsuza kadar beklemek yerine bir dakika sonra Yeniden dene ile bir hata gösteriyor.
+- **Yeniden dene yüklemeyi her zaman yeniden başlatır** ya da neden başlatamadığını açıkça söyler.
+- **Elle paylaştığın bir platform diğerlerini asla bekletmez:** örneğin TikTok için fazla uzun bir açıklama artık YouTube'u durdurmuyor.
+- **Hazırlanırken duran elle paylaşım** artık Yeniden dene ile bir hata gösteriyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+SharkyClips ahora rellena tu subida a TikTok en tu propio navegador (video, texto y ajustes), y tú lo revisas y haces clic en Publicar. Además, compartir ya nunca se queda atascado en "Compartiendo…".
+
+### Nuevo
+- **Subida asistida para TikTok (la nueva opción predeterminada):** haz clic en Compartir y SharkyClips abre TikTok Studio en tu navegador (Chrome, Edge, Opera GX o Brave), añade el video, escribe el texto con tus hashtags, elige "Todos" y "Ahora", y se detiene. Un aviso en la página y en la app dice: "Todo está listo. Revisa y haz clic en Publicar." SharkyClips nunca hace clic en Publicar por ti.
+- **"Compartido en TikTok ✓" con el enlace** en cuanto publicas. Si SharkyClips no puede saberlo, pregunta una vez: "¿Lo publicaste? Sí / No".
+- **Inicia sesión solo una vez** en la ventana del navegador de SharkyClips. SharkyClips nunca ve tu contraseña. Si TikTok muestra una comprobación, SharkyClips te pide terminarla en el navegador y espera.
+- **Varios clips seguidos:** el siguiente clip se abre solo después de publicar el anterior, con una pausa corta entre publicaciones.
+- **Instagram Reels de la misma forma,** como opción en Ajustes.
+- **Un pequeño ayudante para tu navegador** se encarga de rellenar. Edge, Opera GX y Brave lo reciben solos. Chrome necesita una configuración corta una vez, y SharkyClips te muestra cada paso.
+- **Cola de publicación:** "Cancelar todo lo pendiente" y un nuevo estado "cancelado".
+
+### Mejoras
+- **Si la página de TikTok cambia** y SharkyClips no puede rellenarla, recibes enseguida los pasos para hacerlo a mano (botones de copiar, página de subida, carpeta) con el motivo. Publicar totalmente a mano sigue a un clic en Ajustes.
+- **Firefox:** la página de subida se abre allí y publicas a mano, porque Firefox no se puede rellenar.
+- **Límite de usuarios de Google:** cuando Google detiene los nuevos inicios de sesión en la app compartida, SharkyClips lo explica con claridad y te lleva a los pasos para tu propio proyecto gratuito de Google, incluido el clic en "Publicar app".
+
+### Correcciones
+- **"Compartiendo…" podía quedarse para siempre** mientras aún se oía una palabrota en el clip. Ahora el clip dice por qué espera.
+- **Un clip que no se pudo crear** ahora muestra un error con Reintentar al cabo de un minuto, en vez de esperar para siempre.
+- **Reintentar siempre vuelve a empezar la subida,** o te dice claramente por qué no puede.
+- **Una plataforma que publicas a mano nunca frena a las demás:** por ejemplo, un texto demasiado largo para TikTok ya no detiene YouTube.
+- **Una publicación a mano que se detuvo mientras se preparaba** ahora muestra un error con Reintentar.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Agora o SharkyClips preenche o envio ao TikTok no seu próprio navegador (vídeo, legenda e configurações), e você confere e clica em Publicar. E compartilhar nunca mais fica preso em "Compartilhando…".
+
+### Novo
+- **Envio assistido para o TikTok (o novo padrão):** clique em Compartilhar e o SharkyClips abre o TikTok Studio no seu navegador (Chrome, Edge, Opera GX ou Brave), adiciona o vídeo, escreve a legenda com suas hashtags, escolhe "Todos" e "Agora" e para. Um aviso na página e no app diz: "Tudo pronto. Confira e clique em Publicar." O SharkyClips nunca clica em Publicar por você.
+- **"Compartilhado no TikTok ✓" com o link** assim que você publica. Se o SharkyClips não conseguir saber, ele pergunta uma vez: "Você publicou? Sim / Não".
+- **Entre só uma vez** na janela do navegador do SharkyClips. O SharkyClips nunca vê sua senha. Se o TikTok mostrar uma verificação, o SharkyClips pede para você concluí-la no navegador e espera.
+- **Vários clipes seguidos:** o próximo clipe só abre depois que você publicou o anterior, com uma pausa curta entre as publicações.
+- **Instagram Reels do mesmo jeito,** como opção nas Configurações.
+- **Um pequeno ajudante para o seu navegador** faz o preenchimento. Edge, Opera GX e Brave o recebem sozinhos. O Chrome precisa de uma configuração curta uma vez, e o SharkyClips mostra cada passo.
+- **Fila de publicação:** "Cancelar tudo o que está pendente" e um novo status "cancelado".
+
+### Melhorias
+- **Se a página do TikTok mudar** e o SharkyClips não conseguir preenchê-la, você recebe na hora os passos para fazer à mão (botões de copiar, página de envio, pasta) com o motivo. Publicar totalmente à mão continua a um clique nas Configurações.
+- **Firefox:** a página de envio abre lá e você publica à mão, porque o Firefox não pode ser preenchido.
+- **Limite de usuários do Google:** quando o Google para os novos logins no app compartilhado, o SharkyClips explica com clareza e leva você aos passos do seu próprio projeto gratuito do Google, incluindo o clique em "Publicar app".
+
+### Correções
+- **"Compartilhando…" podia ficar para sempre** enquanto um palavrão ainda era ouvido no clipe. Agora o clipe diz por que está esperando.
+- **Um clipe que não pôde ser feito** agora mostra um erro com Tentar de novo depois de um minuto, em vez de esperar para sempre.
+- **Tentar de novo sempre recomeça o envio,** ou diz claramente por que não consegue.
+- **Uma plataforma que você publica à mão nunca segura as outras:** por exemplo, uma legenda longa demais para o TikTok não para mais o YouTube.
+- **Uma publicação à mão que parou enquanto era preparada** agora mostra um erro com Tentar de novo.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+SharkyClips füllt deinen TikTok-Upload jetzt in deinem eigenen Browser aus (Video, Text und Einstellungen), und du prüfst alles und klickst selbst auf Posten. Außerdem bleibt das Teilen nie mehr bei „Wird geteilt…“ hängen.
+
+### Neu
+- **Unterstützter Upload für TikTok (der neue Standard):** Klick auf Teilen, und SharkyClips öffnet TikTok Studio in deinem Browser (Chrome, Edge, Opera GX oder Brave), fügt das Video ein, schreibt den Text mit deinen Hashtags, wählt „Alle“ und „Jetzt“ und hört dann auf. Ein Hinweis auf der Seite und in der App sagt: „Alles ist bereit. Prüfen und auf Posten klicken.“ SharkyClips klickt nie für dich auf Posten.
+- **„Auf TikTok geteilt ✓“ mit dem Link,** sobald du postest. Wenn SharkyClips es nicht erkennen kann, fragt es einmal: „Hast du es gepostet? Ja / Nein“.
+- **Nur einmal anmelden** im SharkyClips-Browserfenster. SharkyClips sieht dein Passwort nie. Wenn TikTok eine Prüfung zeigt, bittet dich SharkyClips, sie im Browser abzuschließen, und wartet.
+- **Mehrere Clips nacheinander:** Der nächste Clip öffnet sich erst, nachdem du den vorherigen gepostet hast, mit einer kurzen Pause zwischen den Posts.
+- **Instagram Reels genauso,** als Option in den Einstellungen.
+- **Ein kleiner Helfer für deinen Browser** übernimmt das Ausfüllen. Edge, Opera GX und Brave bekommen ihn von selbst. Chrome braucht einmal eine kurze Einrichtung, und SharkyClips zeigt dir jeden Schritt.
+- **Veröffentlichungswarteschlange:** „Alles Ausstehende abbrechen“ und ein neuer Status „abgebrochen“.
+
+### Verbessert
+- **Wenn sich die TikTok-Seite ändert** und SharkyClips sie nicht ausfüllen kann, bekommst du sofort die Schritte von Hand (Kopier-Knöpfe, Upload-Seite, Ordner) mit dem Grund. Ganz von Hand posten bleibt in den Einstellungen einen Klick entfernt.
+- **Firefox:** Die Upload-Seite öffnet sich dort, und du postest von Hand, weil Firefox nicht ausgefüllt werden kann.
+- **Googles Nutzergrenze:** Wenn Google neue Anmeldungen für die gemeinsame App stoppt, erklärt SharkyClips das klar und führt dich zu den Schritten für dein eigenes kostenloses Google-Projekt, einschließlich des Klicks auf „App veröffentlichen“.
+
+### Behoben
+- **„Wird geteilt…“ konnte für immer stehen bleiben,** solange im Clip noch ein Schimpfwort zu hören war. Der Clip sagt jetzt, warum er wartet.
+- **Ein Clip, der nicht erstellt werden konnte,** zeigt jetzt nach einer Minute einen Fehler mit „Erneut versuchen“, statt ewig zu warten.
+- **„Erneut versuchen“ startet den Upload immer neu** oder sagt dir klar, warum es nicht geht.
+- **Eine Plattform, auf der du von Hand postest, hält die anderen nie auf:** Ein zu langer Text für TikTok stoppt zum Beispiel YouTube nicht mehr.
+- **Ein Post von Hand, der während der Vorbereitung stehen blieb,** zeigt jetzt einen Fehler mit „Erneut versuchen“.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+SharkyClips remplit maintenant ton envoi TikTok dans ton propre navigateur (vidéo, texte et réglages), et tu vérifies puis cliques toi-même sur Publier. Et le partage ne reste plus jamais bloqué sur « Partage en cours… ».
+
+### Nouveau
+- **Envoi assisté pour TikTok (le nouveau choix par défaut) :** clique sur Partager et SharkyClips ouvre TikTok Studio dans ton navigateur (Chrome, Edge, Opera GX ou Brave), ajoute la vidéo, écrit le texte avec tes hashtags, choisit « Tout le monde » et « Maintenant », puis s'arrête. Un bandeau dans la page et dans l'application dit : « Tout est prêt. Vérifie et clique sur Publier. » SharkyClips ne clique jamais sur Publier à ta place.
+- **« Partagé sur TikTok ✓ » avec le lien** dès que tu publies. Si SharkyClips ne peut pas le savoir, il demande une fois : « Tu l'as publié ? Oui / Non ».
+- **Connecte-toi une seule fois** dans la fenêtre de navigateur SharkyClips. SharkyClips ne voit jamais ton mot de passe. Si TikTok affiche une vérification, SharkyClips te demande de la terminer dans le navigateur et attend.
+- **Plusieurs clips à la suite :** le clip suivant ne s'ouvre qu'une fois le précédent publié, avec une courte pause entre les publications.
+- **Instagram Reels de la même façon,** en option dans les Réglages.
+- **Un petit assistant pour ton navigateur** s'occupe du remplissage. Edge, Opera GX et Brave le reçoivent tout seuls. Chrome demande un court réglage une seule fois, et SharkyClips te montre chaque étape.
+- **File de publication :** « Annuler tout ce qui est en attente » et un nouveau statut « annulé ».
+
+### Améliorations
+- **Si la page TikTok change** et que SharkyClips ne peut pas la remplir, tu reçois tout de suite les étapes à la main (boutons de copie, page d'envoi, dossier) avec la raison. Publier entièrement à la main reste à un clic dans les Réglages.
+- **Firefox :** la page d'envoi s'y ouvre et tu publies à la main, car Firefox ne peut pas être rempli.
+- **Limite d'utilisateurs de Google :** quand Google bloque les nouvelles connexions à l'application partagée, SharkyClips l'explique clairement et t'emmène aux étapes pour ton propre projet Google gratuit, y compris le clic sur « Publier l'application ».
+
+### Corrections
+- **« Partage en cours… » pouvait rester pour toujours** tant qu'un gros mot s'entendait encore dans le clip. Le clip dit maintenant pourquoi il attend.
+- **Un clip qui n'a pas pu être créé** affiche maintenant une erreur avec Réessayer au bout d'une minute, au lieu d'attendre sans fin.
+- **Réessayer relance toujours l'envoi,** ou te dit clairement pourquoi ce n'est pas possible.
+- **Une plateforme où tu publies à la main ne bloque jamais les autres :** par exemple, un texte trop long pour TikTok n'arrête plus YouTube.
+- **Une publication à la main qui s'est arrêtée pendant sa préparation** affiche maintenant une erreur avec Réessayer.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A SharkyClips mostantól a saját böngésződben kitölti a TikTok-feltöltést (videó, szöveg és beállítások), te pedig ellenőrzöd, és te kattintasz a Közzététel gombra. A megosztás pedig többé nem ragad be a „Megosztás…” állapotban.
+
+### Új
+- **Segített feltöltés a TikTokra (az új alapértelmezés):** kattints a Megosztás gombra, és a SharkyClips megnyitja a TikTok Studiót a böngésződben (Chrome, Edge, Opera GX vagy Brave), hozzáadja a videót, megírja a szöveget a hashtageiddel, kiválasztja a „Mindenki” és a „Most” lehetőséget, majd megáll. Az oldalon és az alkalmazásban egy sáv ezt írja: „Minden kész. Ellenőrizd, és kattints a Közzététel gombra.” A SharkyClips sosem kattint helyetted a Közzététel gombra.
+- **„Megosztva: TikTok ✓” a hivatkozással,** amint közzéteszed. Ha a SharkyClips nem tudja megállapítani, egyszer megkérdezi: „Közzétetted? Igen / Nem”.
+- **Csak egyszer kell bejelentkezned** a SharkyClips böngészőablakában. A SharkyClips sosem látja a jelszavad. Ha a TikTok ellenőrzést kér, a SharkyClips megkér, hogy fejezd be a böngészőben, és vár.
+- **Több klip egymás után:** a következő klip csak azután nyílik meg, hogy az előzőt közzétetted, és a posztok között rövid szünet van.
+- **Instagram Reels ugyanígy,** választható beállításként.
+- **Egy kis segítő a böngésződhöz** végzi a kitöltést. Az Edge, az Opera GX és a Brave magától megkapja. A Chrome-nál egyszer kell egy rövid beállítás, és a SharkyClips minden lépést megmutat.
+- **Közzétételi sor:** „Minden függő törlése” és egy új „törölve” állapot.
+
+### Fejlesztések
+- **Ha a TikTok oldala megváltozik,** és a SharkyClips nem tudja kitölteni, azonnal megkapod a kézi lépéseket (másolás gombok, feltöltési oldal, mappa) az okkal együtt. A teljesen kézi posztolás továbbra is egy kattintásra van a Beállításokban.
+- **Firefox:** a feltöltési oldal ott nyílik meg, és kézzel posztolsz, mert a Firefox nem tölthető ki.
+- **A Google felhasználói korlátja:** amikor a Google leállítja az új belépéseket a közös alkalmazásba, a SharkyClips világosan elmagyarázza, és elvezet a saját ingyenes Google-projekted lépéseihez, az „Alkalmazás közzététele” kattintással együtt.
+
+### Javítások
+- **A „Megosztás…” örökre megmaradhatott,** amíg egy káromkodás még hallatszott a klipben. A klip most megmondja, miért vár.
+- **Egy klip, amelyet nem sikerült elkészíteni,** most egy perc után hibát mutat Újrapróbálás gombbal, ahelyett hogy örökké várna.
+- **Az Újrapróbálás mindig újraindítja a feltöltést,** vagy világosan megmondja, miért nem lehet.
+- **Egy kézzel posztolt platform sosem tartja fel a többit:** például egy TikTokhoz túl hosszú szöveg már nem állítja meg a YouTube-ot.
+- **Egy kézi poszt, amely előkészítés közben megállt,** most hibát mutat Újrapróbálás gombbal.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Теперь SharkyClips сам заполняет загрузку в TikTok в вашем браузере (видео, подпись и настройки), а вы проверяете и сами нажимаете «Опубликовать». А публикация больше никогда не зависает на «Публикуется…».
+
+### Новое
+- **Загрузка с помощью для TikTok (новый вариант по умолчанию):** нажмите «Поделиться», и SharkyClips откроет TikTok Studio в вашем браузере (Chrome, Edge, Opera GX или Brave), добавит видео, напишет подпись с вашими хештегами, выберет «Все» и «Сейчас» и остановится. Плашка на странице и в приложении скажет: «Всё готово. Проверьте и нажмите «Опубликовать».» SharkyClips никогда не нажимает «Опубликовать» за вас.
+- **«Опубликовано в TikTok ✓» со ссылкой** сразу после публикации. Если SharkyClips не может это понять, он один раз спросит: «Вы опубликовали? Да / Нет».
+- **Войдите только один раз** в окне браузера SharkyClips. SharkyClips никогда не видит ваш пароль. Если TikTok покажет проверку, SharkyClips попросит завершить её в браузере и подождёт.
+- **Несколько клипов подряд:** следующий клип открывается только после того, как вы опубликовали предыдущий, с короткой паузой между публикациями.
+- **Instagram Reels так же,** как вариант в настройках.
+- **Небольшой помощник для вашего браузера** занимается заполнением. Edge, Opera GX и Brave получают его сами. Для Chrome один раз нужна короткая настройка, и SharkyClips покажет каждый шаг.
+- **Очередь публикаций:** «Отменить всё ожидающее» и новый статус «отменено».
+
+### Улучшения
+- **Если страница TikTok изменится** и SharkyClips не сможет её заполнить, вы сразу получите шаги для ручной публикации (кнопки копирования, страница загрузки, папка) с причиной. Полностью ручная публикация по-прежнему в одном клике в настройках.
+- **Firefox:** страница загрузки откроется там, и вы опубликуете вручную, потому что Firefox нельзя заполнить.
+- **Лимит пользователей Google:** когда Google останавливает новые входы в общее приложение, SharkyClips понятно это объясняет и ведёт вас к шагам для вашего собственного бесплатного проекта Google, включая нажатие «Опубликовать приложение».
+
+### Исправления
+- **«Публикуется…» могло висеть вечно,** пока в клипе ещё было слышно ругательство. Теперь клип говорит, почему он ждёт.
+- **Клип, который не удалось сделать,** теперь через минуту показывает ошибку с кнопкой «Повторить», а не ждёт вечно.
+- **«Повторить» всегда заново запускает загрузку** или ясно говорит, почему это невозможно.
+- **Платформа, где вы публикуете вручную, никогда не задерживает остальные:** например, слишком длинная для TikTok подпись больше не останавливает YouTube.
+- **Ручная публикация, которая остановилась во время подготовки,** теперь показывает ошибку с кнопкой «Повторить».
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+يملأ SharkyClips الآن رفعك على TikTok في متصفحك (الفيديو والوصف والإعدادات)، وأنت تراجع وتنقر نشر بنفسك. ولم تعد المشاركة تعلق عند "جارٍ المشاركة…" أبدًا.
+
+### جديد
+- **رفع بمساعدة لـ TikTok (الخيار الافتراضي الجديد):** انقر مشاركة فيفتح SharkyClips استوديو TikTok في متصفحك (Chrome أو Edge أو Opera GX أو Brave)، ويضيف الفيديو، ويكتب الوصف مع وسومك، ويختار "الجميع" و"الآن"، ثم يتوقف. شريط في الصفحة وفي التطبيق يقول: "كل شيء جاهز. راجِع ثم انقر نشر." لا ينقر SharkyClips نشر نيابةً عنك أبدًا.
+- **"تمت المشاركة على TikTok ✓" مع الرابط** فور نشرك. إذا لم يستطع SharkyClips التأكد، يسأل مرة واحدة: "هل نشرته؟ نعم / لا".
+- **سجّل الدخول مرة واحدة فقط** في نافذة متصفح SharkyClips. لا يرى SharkyClips كلمة مرورك أبدًا. إذا عرض TikTok تحققًا، يطلب منك SharkyClips إكماله في المتصفح وينتظر.
+- **عدة مقاطع متتالية:** لا يُفتح المقطع التالي إلا بعد أن تنشر السابق، مع استراحة قصيرة بين المنشورات.
+- **Instagram Reels بالطريقة نفسها،** كخيار في الإعدادات.
+- **مساعد صغير لمتصفحك** يتولى الملء. يحصل عليه Edge وOpera GX وBrave تلقائيًا. يحتاج Chrome إلى إعداد قصير مرة واحدة، ويريك SharkyClips كل خطوة.
+- **قائمة النشر:** "إلغاء كل ما هو معلّق" وحالة جديدة "أُلغي".
+
+### تحسينات
+- **إذا تغيّرت صفحة TikTok** ولم يستطع SharkyClips ملأها، تحصل فورًا على خطوات النشر اليدوي (أزرار النسخ، صفحة الرفع، المجلد) مع السبب. يبقى النشر اليدوي الكامل على بُعد نقرة في الإعدادات.
+- **Firefox:** تُفتح صفحة الرفع هناك وتنشر يدويًا، لأن Firefox لا يمكن ملؤه.
+- **حد المستخدمين في Google:** عندما يوقف Google تسجيلات الدخول الجديدة للتطبيق المشترك، يشرح SharkyClips ذلك بوضوح ويأخذك إلى خطوات مشروع Google المجاني الخاص بك، بما في ذلك النقر على "نشر التطبيق".
+
+### إصلاحات
+- **كان "جارٍ المشاركة…" قد يبقى إلى الأبد** بينما لا تزال شتيمة مسموعة في المقطع. يقول المقطع الآن لماذا ينتظر.
+- **المقطع الذي تعذّر إنشاؤه** يعرض الآن خطأً مع "إعادة المحاولة" بعد دقيقة، بدلًا من الانتظار إلى الأبد.
+- **"إعادة المحاولة" تبدأ الرفع من جديد دائمًا،** أو تخبرك بوضوح لماذا لا تستطيع.
+- **المنصة التي تنشر عليها يدويًا لا تؤخر المنصات الأخرى أبدًا:** مثلًا، الوصف الطويل جدًا على TikTok لم يعد يوقف YouTube.
+- **النشر اليدوي الذي توقف أثناء تجهيزه** يعرض الآن خطأً مع "إعادة المحاولة".
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+现在 SharkyClips 会在你自己的浏览器中填写 TikTok 上传（视频、文案和设置），由你检查并亲自点击“发布”。分享也不会再卡在“正在分享…”了。
+
+### 新功能
+- **TikTok 辅助上传（新的默认方式）：** 点击“分享”，SharkyClips 会在你的浏览器（Chrome、Edge、Opera GX 或 Brave）中打开 TikTok Studio，添加视频，写好带话题标签的文案，选择“所有人”和“现在”，然后停下。页面和应用中的横幅会提示：“一切就绪。请检查后点击‘发布’。” SharkyClips 绝不会替你点击“发布”。
+- **发布后立即显示“已分享到 TikTok ✓”和链接。** 如果 SharkyClips 无法确定，会问你一次：“你发布了吗？是 / 否”。
+- **只需在 SharkyClips 浏览器窗口中登录一次。** SharkyClips 永远看不到你的密码。如果 TikTok 要求验证，SharkyClips 会请你在浏览器中完成并等待。
+- **连续多个片段：** 只有在你发布上一个之后，下一个片段才会打开，帖子之间会有短暂停顿。
+- **Instagram Reels 也一样，** 可在设置中选择。
+- **一个小小的浏览器助手** 负责填写。Edge、Opera GX 和 Brave 会自动获得它。Chrome 需要一次简短的设置，SharkyClips 会展示每一步。
+- **发布队列：** “取消所有待处理项”和新的“已取消”状态。
+
+### 改进
+- **如果 TikTok 页面发生变化** 而 SharkyClips 无法填写，你会立即得到手动发布的步骤（复制按钮、上传页面、文件夹）以及原因。完全手动发布在设置中仍然只需一键。
+- **Firefox：** 上传页面会在那里打开，由你手动发布，因为 Firefox 无法被填写。
+- **Google 的用户上限：** 当 Google 停止共享应用的新登录时，SharkyClips 会清楚说明，并带你前往创建自己的免费 Google 项目的步骤，包括点击“发布应用”。
+
+### 修复
+- **当片段中仍能听到脏话时，“正在分享…”可能一直不动。** 现在片段会说明它为什么在等待。
+- **无法制作的片段** 现在会在一分钟后显示带“重试”的错误，而不是一直等待。
+- **“重试”总会重新开始上传，** 或清楚地告诉你为什么不能。
+- **你手动发布的平台绝不会拖住其他平台：** 例如，对 TikTok 来说过长的文案不会再让 YouTube 停下。
+- **准备过程中停止的手动发布** 现在会显示带“重试”的错误。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+SharkyClips が、あなたのブラウザーで TikTok のアップロード（動画・キャプション・設定）を入力し、確認して「投稿」をクリックするのはあなたです。さらに、共有が「共有中…」のまま止まることはなくなりました。
+
+### 新機能
+- **TikTok のアシストアップロード（新しい既定）：** 「共有」をクリックすると、SharkyClips がブラウザー（Chrome、Edge、Opera GX、Brave）で TikTok Studio を開き、動画を追加し、ハッシュタグ付きのキャプションを書き、「全員」と「今すぐ」を選んで止まります。ページとアプリのバナーに「準備ができました。確認して「投稿」をクリックしてください。」と表示されます。SharkyClips が代わりに「投稿」をクリックすることはありません。
+- **投稿するとすぐにリンク付きで「TikTok にシェアしました ✓」。** SharkyClips が判断できない場合は、一度だけ「投稿しましたか？ はい / いいえ」と聞きます。
+- **SharkyClips のブラウザーウィンドウでのログインは一度だけ。** SharkyClips がパスワードを見ることはありません。TikTok が確認を求めたら、SharkyClips はブラウザーで完了するよう頼み、待ちます。
+- **複数のクリップを続けて：** 前のクリップを投稿してから次のクリップが開き、投稿の間には短い休みが入ります。
+- **Instagram リールも同じように、** 設定のオプションとして使えます。
+- **ブラウザー用の小さなヘルパー** が入力を担当します。Edge、Opera GX、Brave には自動で入ります。Chrome は一度だけ短い設定が必要で、SharkyClips がすべての手順を案内します。
+- **公開キュー：** 「保留中をすべてキャンセル」と新しい「キャンセル済み」状態。
+
+### 改善
+- **TikTok のページが変わって** SharkyClips が入力できない場合は、理由とともに手動の手順（コピーボタン、アップロードページ、フォルダー）がすぐに表示されます。完全に手動で投稿する方法も、設定からワンクリックのままです。
+- **Firefox：** アップロードページはそこで開き、手動で投稿します。Firefox は入力できないためです。
+- **Google のユーザー上限：** Google が共有アプリへの新規ログインを止めたとき、SharkyClips がわかりやすく説明し、「アプリを公開」のクリックを含む、自分の無料 Google プロジェクトの手順へ案内します。
+
+### 修正
+- **クリップに禁止語がまだ聞こえると、「共有中…」のまま止まることがありました。** 今はクリップが待っている理由を表示します。
+- **作れなかったクリップ** は、ずっと待つのではなく 1 分後に「再試行」付きのエラーを表示します。
+- **「再試行」は必ずアップロードをやり直すか、** できない理由をはっきり伝えます。
+- **手動で投稿するプラットフォームが他を止めることはありません：** たとえば TikTok には長すぎるキャプションでも、もう YouTube は止まりません。
+- **準備中に止まった手動投稿** は「再試行」付きのエラーを表示します。
+
+</details>
+
 ## [1.2.69] - 2026-11-26
 The navy and gold look is back as the default, with the cleaner text from the last update. A new Personalization page lets you pick light, dark or "follow Windows", four looks, an accent colour and your own colours.
 

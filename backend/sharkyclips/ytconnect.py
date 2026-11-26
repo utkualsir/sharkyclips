@@ -159,8 +159,10 @@ def _handle(flow: dict, q: dict) -> None:
                 "org_internal", "admin_policy_enforced", "disallowed_useragent"):
             # 1.2.68: Google refuses NEW sign-ins (the app's 100-user cap while it isn't verified)
             _finish(flow, "blocked", "Google blocked the sign-in for this app.",
-                    "The app may have reached Google's limit of 100 users while it waits for Google's "
-                    "check. Use your own Google project (Settings > YouTube > Advanced) or try again later.",
+                    "The shared SharkyClips app has reached Google's limit of 100 users while it waits for "
+                    "Google's check. Nothing is wrong with your account. Fix it in about 5 minutes with your own "
+                    "free Google project (Settings > YouTube > Advanced): follow the steps, and on the consent "
+                    "screen click \"Publish app\" so Google doesn't sign you out every 7 days.",
                     "user_cap")
         else:
             _finish(flow, "error", f"Google said: {err}", "Try again.", err)

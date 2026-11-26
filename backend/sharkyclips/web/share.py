@@ -91,6 +91,10 @@ def limit_view(now: datetime | None = None, events=None) -> dict:
 # ===================================================================== the board
 
 
+ASSIST_SHOWN = ("pause", "opening", "claimed", "uploading", "filling", "login", "captcha", "ready", "post_clicked",
+                "confirm", "fallback")
+
+
 def _status(posts: dict) -> dict:
     """One status for a clip from its three platform states."""
     rows = [posts[p] for p in PLATFORMS]
@@ -104,6 +108,9 @@ def _status(posts: dict) -> dict:
     waits = [{"platform": s["platform"], **s["wait"]} for s in rows if s.get("wait")]
     private = [{"platform": s["platform"], "studio_url": (s.get("private_notice") or {}).get("studio_url")}
                for s in rows if s.get("private_notice")]
+    # 1.2.70: the assisted upload of a platform (filled in in your browser; you click Post)
+    assist = [{"platform": s["platform"], **(s.get("assist") or {})} for s in rows
+              if (s.get("assist") or {}).get("state") in ASSIST_SHOWN and s["status"] != "published"]
     if failed:
         kind = "failed"
     elif busy:
@@ -116,7 +123,7 @@ def _status(posts: dict) -> dict:
         kind = "not_shared"
     times = sorted(x["at"] for x in planned if x["at"])
     return {"kind": kind, "shared": shared, "planned": planned, "failed": failed, "busy": busy,
-            "waits": waits, "private": private,
+            "waits": waits, "private": private, "assist": assist,
             "next_at": times[0] if times else None,
             "progress": next((s.get("progress") for s in rows if s.get("progress") is not None), None)}
 
@@ -136,13 +143,14 @@ def _platforms_view() -> dict:
     for p in PLATFORMS:
         a = acc[p]
         by_hand = modes[p] == "semi"
-        usable = by_hand or (a["connected"] and a["health"]["pill"] != "signed_out")
+        assisted = modes[p] == "assist"  # 1.2.70: filled in in your browser, you click Post (no account)
+        usable = by_hand or assisted or (a["connected"] and a["health"]["pill"] != "signed_out")
         out[p] = {"platform": p, "name": M.NAMES[p], "usable": bool(usable), "connected": bool(a["connected"]),
-                  "mode": modes[p], "by_hand": by_hand, "manual": by_hand,
+                  "mode": modes[p], "by_hand": by_hand, "manual": by_hand, "assist": assisted,
                   "handle": a.get("handle"), "pill": a["health"]["pill"],
                   # 1.2.68, said honestly: automatic TikTok drives TikTok Studio and can stop at a
                   # TikTok check (CAPTCHA, login); Instagram has no automatic posting at all
-                  "auto_note": "tiktok_beta" if p == "tiktok" and modes[p] == "browser" else
+                  "auto_note": "assist" if assisted else "tiktok_beta" if p == "tiktok" and modes[p] == "browser" else
                   "tiktok_manual" if p == "tiktok" else "ig_manual" if p == "reels" and not PF.META_AUTOMATION else None}
     return out
 
@@ -271,6 +279,11 @@ def plan(project: Project, body: dict, now: datetime | None = None) -> dict:
             gone = {x["platform"] for x in row["dropped"]}
             todo = [p for p in todo if p not in gone]
             row["problems"] = [x for x in probs if x not in row["dropped"] and (x["platform"] in todo or x["platform"] == "all")]
+            # 1.2.70: a platform you finish by hand never holds up the others: its problems are
+            # fixed when it starts (shorter caption, fewer hashtags) and shown as notes only
+            hand = [x for x in row["problems"] if modes.get(x["platform"]) in M.HAND_MODES]
+            row["problems"] = [x for x in row["problems"] if x not in hand]
+            row["warnings"] += [{"code": "hand_fix", "platform": x["platform"], "problem": x["code"]} for x in hand]
         if not todo:
             row["skipped"] = "already" if already else "cant" if row["dropped"] else "no_platform"
             row["problems"] = []
@@ -278,7 +291,7 @@ def plan(project: Project, body: dict, now: datetime | None = None) -> dict:
             continue
         for p in todo:
             entry = {"platform": p, "when": "now", "moved": None, "mode": modes[p],
-                     "by_hand": modes[p] == "semi", "manual": modes[p] == "semi", "over": None}
+                     "by_hand": modes[p] in M.HAND_MODES, "manual": modes[p] == "semi", "over": None}
             if p == "youtube":
                 if yt_left > 0:
                     yt_left -= 1

@@ -9,7 +9,7 @@ export type PostStatus = "idle" | "scheduled" | "preparing" | "uploading" | "pro
 
 /** 1.2.39: semi (default for TikTok / Instagram) = SharkyClips makes the file + copies the caption,
  *  you paste and share; api = posted by itself (automatic posting on + a working token). */
-export type PostMode = "semi" | "api" | "browser"; // 1.2.42 browser: TikTok Studio in SharkyClips' own browser
+export type PostMode = "semi" | "api" | "browser" | "assist"; // 1.2.42 browser: TikTok Studio in SharkyClips' own browser; 1.2.70 assist: filled in in your browser, you click Post
 
 /** 1.2.42: why an automatic TikTok post stopped (it then went "by hand"). */
 export interface AutoStop {
@@ -72,6 +72,8 @@ export interface PostState {
   remote?: boolean;
   fallback?: AutoStop | null;
   shot?: string | null;
+  /** 1.2.70: the assisted upload of this post */
+  assist?: import("./assist").AssistSnap | null;
 }
 
 export type ClipPosts = Record<Target, PostState> & { total_views: number | null; everywhere: boolean };

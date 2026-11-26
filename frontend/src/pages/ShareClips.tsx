@@ -30,6 +30,7 @@ import { Modal, ProgressBar } from "../components/ui";
 import { ShareFlow } from "../components/ShareFlow";
 import { UploadsLeft } from "../components/UploadsLeft";
 import { ManualUpload } from "../components/ManualUpload";
+import { assistApi, assistKey, type AssistAction } from "../assist";
 import { AlreadyShared } from "../components/SharedBefore";
 import { ConnectDialog, accountsChanged } from "../components/Accounts";
 import { problemText } from "../components/PublishAll";
@@ -323,7 +324,7 @@ export function ShareBoardView({ id, easy = false, onMissing }: { id: string; ea
                 </span>
                 <PlatformIcon p={p} size={18} />
                 <span>{TARGET_NAME[p]}</span>
-                <span className="muted share-chip-mode">{pl.by_hand ? t("share.mode_by_hand") : t("share.mode_auto")}</span>
+                <span className="muted share-chip-mode">{pl.assist ? t("share.mode_assist") : pl.by_hand ? t("share.mode_by_hand") : t("share.mode_auto")}</span>
               </button>
             );
           })}
@@ -808,6 +809,8 @@ function Tile({
       ? urls.clip(pid, c.id, c.video.stamp)
       : `${urls.source(pid)}#t=${c.start.toFixed(2)},${c.end.toFixed(2)}`;
   const titleId = `sh-t-${c.id}`;
+  // 1.2.70: "Did you post it? Yes / No" right on the card
+  const onAssist = (id: string, a: AssistAction) => assistApi.act(id, a).then(() => shareChanged()).catch(() => {});
 
   useEffect(() => {
     const v = vid.current;
@@ -964,6 +967,28 @@ function Tile({
               {w.hint && <span className="muted"> {w.hint}</span>}
             </p>
           ))}
+        {!pending &&
+          (s.assist ?? []).map((a) => (
+            <div key={`a-${a.platform}`} className={`sh-assist${a.state === "ready" ? " is-ready" : ""}`} dir="auto">
+              <Icon name={a.state === "ready" ? "check" : a.state === "confirm" ? "bell" : a.state === "fallback" ? "copy" : "upload"} size={13} />{" "}
+              <span>
+                <b>{TARGET_NAME[a.platform]}:</b>{" "}
+                {a.state === "fallback" && a.message
+                  ? a.message
+                  : t(assistKey(a, a.platform), { p: TARGET_NAME[a.platform], s: 0, pct: 0, browser: a.browser_name ?? "" })}
+              </span>
+              {a.state === "confirm" && (
+                <span className="sh-assist-btns">
+                  <button type="button" className="btn btn-sm btn-primary" onClick={() => onAssist(a.id, "posted")}>
+                    {t("assist.yes")}
+                  </button>
+                  <button type="button" className="btn btn-sm" onClick={() => onAssist(a.id, "not_posted")}>
+                    {t("assist.no")}
+                  </button>
+                </span>
+              )}
+            </div>
+          ))}
         {kind === "failed" &&
           s.failed.map((f) => (
             <p key={`f-${f.platform}`} className="sh-error" dir="auto">
@@ -981,6 +1006,11 @@ function Tile({
           {kind === "scheduled" && (
             <button type="button" className="btn" onClick={onUnschedule}>
               <Icon name="x" /> {t("share.unschedule")}
+            </button>
+          )}
+          {kind === "working" && (
+            <button type="button" className="btn" onClick={onUnschedule} aria-describedby={titleId}>
+              <Icon name="stop" /> {t("share.stop")}
             </button>
           )}
           {kind !== "working" && kind !== "failed" && hasVideo && (

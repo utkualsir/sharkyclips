@@ -340,7 +340,7 @@ const ZONES = [
   "Asia/Shanghai", "America/New_York", "America/Chicago", "America/Los_Angeles", "UTC",
 ];
 
-type Mark = "pending" | "scheduled" | "published" | "failed";
+type Mark = "pending" | "scheduled" | "published" | "failed" | "cancelled";
 
 function CalendarStatus({ e, onChange }: { e: QEntry; onChange: (o: QOverview) => void }) {
   const { t } = useI18n();
@@ -360,7 +360,7 @@ function CalendarStatus({ e, onChange }: { e: QEntry; onChange: (o: QOverview) =
         <select className="select select-sm pq-mark" value="" aria-label={t("pq.mark", { title: e.title ?? "" })}
           onChange={(ev) => ev.target.value && set(ev.target.value as Mark)}>
           <option value="">{t("pq.mark_short")}</option>
-          {(["published", "scheduled", "pending", "failed"] as const).map((st) => (
+          {(["published", "scheduled", "pending", "failed", "cancelled"] as const).map((st) => (
             <option key={st} value={st} disabled={st === e.status && !e.overdue}>
               {t(`pq.st_${st}`)}
             </option>
@@ -650,6 +650,25 @@ export default function PublishQueue() {
         <div className="pq-section-head">
           <h2 id="pq-cal">{t("pq.calendar")}</h2>
           <span className="field-hint">{t("pq.calendar_hint", { tz: zone })}</span>
+          {ov.calendar.some((e) => e.status === "pending" || e.status === "failed") && (
+            <button
+              type="button"
+              className="btn btn-sm btn-ghost btn-danger-text pq-cancel-all"
+              onClick={async () => {
+                const n = ov.calendar.filter((e) => e.status === "pending" || e.status === "failed").length;
+                if (!window.confirm(t("pq.cancel_all_q", { n: num(n) }))) return;
+                try {
+                  const r = await pqApi.cancel();
+                  setOv(r.overview);
+                  toast({ kind: "ok", text: t("pq.cancelled_n", { n: num(r.cancelled) }) });
+                } catch (e: any) {
+                  toast({ kind: "err", text: e.message, hint: e.hint });
+                }
+              }}
+            >
+              <Icon name="x" /> {t("pq.cancel_all")}
+            </button>
+          )}
         </div>
         <OverdueBar ov={ov} onChange={setOv} />
         {ov.calendar.length === 0 ? (

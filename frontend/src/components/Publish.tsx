@@ -733,6 +733,27 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
   const toast = useToast();
   const [yt, setYt] = useState<YoutubeStatus | null>(null);
   const [wizard, setWizard] = useState(false);
+  // 1.2.70: "Use my own Google project" from Google's user-cap message opens the wizard here
+  useEffect(() => {
+    const open = () => {
+      setWizard(true);
+      try {
+        sessionStorage.removeItem("sc-yt-own");
+      } catch {
+        /* fine */
+      }
+      window.setTimeout(() => document.querySelector(".ytc-adv")?.scrollIntoView({ block: "start", behavior: "smooth" }), 80);
+    };
+    let flag = false;
+    try {
+      flag = sessionStorage.getItem("sc-yt-own") === "1";
+    } catch {
+      flag = false;
+    }
+    if (flag) open();
+    window.addEventListener("sc-yt-own", open);
+    return () => window.removeEventListener("sc-yt-own", open);
+  }, []);
   const refresh = () => api.youtube().then(setYt).catch(() => {});
 
   useEffect(() => {

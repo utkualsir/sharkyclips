@@ -321,6 +321,21 @@ function FlowResult({
         {flow.status === "error" && flow.hint && (
           <span className="muted"> {flow.hint}</span>
         )}{" "}
+        {flow.status === "blocked" && (
+          <span className="ytc-cap">
+            <span className="ytc-cap-title">{t("ytc.cap_fix_title")}</span>
+            <ol className="ytc-cap-steps">
+              <li>{t("ytc.cap_s1")}</li>
+              <li>{t("ytc.cap_s2")}</li>
+              <li>
+                <b>{t("ytc.cap_s3")}</b>
+              </li>
+            </ol>
+            <button type="button" className="btn btn-sm btn-primary" onClick={openOwnProject}>
+              <GoogleG size={14} /> {t("ytc.cap_own")}
+            </button>{" "}
+          </span>
+        )}
         {api_off && (
           <a
             href={`${CONSOLE}/apis/library/youtube.googleapis.com${projectId ? `?project=${encodeURIComponent(projectId)}` : ""}`}
@@ -343,6 +358,17 @@ function FlowResult({
       </button>
     </div>
   );
+}
+
+/** 1.2.70: Google's user cap: straight to the own-project wizard (Settings > YouTube > Advanced). */
+export function openOwnProject() {
+  try {
+    sessionStorage.setItem("sc-yt-own", "1");
+  } catch {
+    /* private mode: the event below still works on the settings page */
+  }
+  if (!location.hash.startsWith("#/settings")) location.hash = "#/settings";
+  window.setTimeout(() => window.dispatchEvent(new CustomEvent("sc-yt-own")), 50);
 }
 
 // ---------------------------------------------------------------- the warning-screen tip

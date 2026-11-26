@@ -170,14 +170,37 @@ def connected(name: str) -> bool:
     return bool(tok and tok.get("access_token"))
 
 
+_assist_cache: dict[str, float | bool] = {"at": 0.0, "ok": False}
+
+
+def assist_available() -> bool:
+    """1.2.70: a browser the assisted upload can fill in is installed (cached for a minute)."""
+    import os
+
+    if os.environ.get("SHARKYCLIPS_ASSIST_DEFAULT") == "semi" and not os.environ.get("SHARKYCLIPS_ASSIST_BROWSER"):
+        return False  # tests: no real browser unless a test brings its own
+    now = time.time()
+    if now - float(_assist_cache["at"]) > 60:
+        from . import assist
+
+        p = assist.pick()
+        _assist_cache.update(at=now, ok=bool(p) and assist.can_fill(p[0]))
+    return bool(_assist_cache["ok"])
+
+
 def mode(name: str) -> str:
     """'api' only when automatic posting is on AND the token works (connected, not signed out);
-    else 'semi' (1.2.39: the default for TikTok and Instagram, also for the one Publish button)."""
+    1.2.70 'assist' (the default for TikTok, an option for Instagram): SharkyClips fills in the
+    upload page in your browser and you click Post; else 'semi' (by hand)."""
     if name == "youtube":
         return "api"
+    want = (config.get("platform_modes") or {}).get(name)
+    if want is None and name == "tiktok":  # 1.2.70: nothing picked yet: the assisted upload
+        want = "assist"
+    if want == "assist":
+        return "assist" if assist_available() else "semi"
     if name == "reels" and not META_AUTOMATION:
         return "semi"  # 1.2.50: Manual mode, always
-    want = (config.get("platform_modes") or {}).get(name)
     if name == "tiktok" and want == "browser":  # 1.2.42: TikTok Studio in SharkyClips' own browser
         from . import tiktok_browser
 
@@ -204,8 +227,11 @@ def status(name: str) -> dict:
 
 
 def set_mode(name: str, value: str) -> dict:
-    if name not in ("tiktok", "reels") or value not in ("semi", "api", "browser") or             (value == "browser" and name != "tiktok"):
+    if name not in ("tiktok", "reels") or value not in ("semi", "api", "browser", "assist") or             (value == "browser" and name != "tiktok"):
         raise SharkyClipsError("Unknown platform or mode.")
+    if value == "assist" and not assist_available():
+        raise SharkyClipsError("The assisted upload needs Google Chrome, Microsoft Edge, Opera GX or Brave.",
+                               "Install one of them, or keep posting by hand.")
     if value == "browser":
         from . import tiktok_browser
 

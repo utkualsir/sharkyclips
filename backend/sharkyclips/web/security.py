@@ -162,11 +162,23 @@ def origin_matches(origin: str, host: str) -> bool:
         and host_allowed(m.group(2))
 
 
+# 1.2.70: the SharkyClips Helper extension (assisted upload) calls these from its own origin
+# (chrome-extension://...) with its own key; nothing else under this path is reachable cross-site
+EXT_API = "/api/assist/ext/"
+EXT_HEADER = "x-sharkyclips-assist"
+
+
 def check(method: str, path: str, headers: Headers) -> tuple[int, str, str] | None:
     """None = let it through; else (status, code, message)."""
     host = headers.get("host") or ""
     if not host_allowed(host):
         return 421, "bad_host", "Unknown host name. Open SharkyClips at http://127.0.0.1 or http://localhost."
+    if path.startswith(EXT_API):
+        from .. import assist
+
+        if assist.token_ok(headers.get(EXT_HEADER)):
+            return None
+        return 403, "ext_key", "Missing or wrong SharkyClips Helper key."
     origin = headers.get("origin")
     site = (headers.get("sec-fetch-site") or "").lower()
     mode = (headers.get("sec-fetch-mode") or "").lower()

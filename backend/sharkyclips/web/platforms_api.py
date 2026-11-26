@@ -97,7 +97,7 @@ def submit_export(project_id: str, cid: str, platform: str, flags: dict | None =
     A = _app()
     project = A.get_project(project_id)
     cand = A._cand(project, cid)
-    mode = PF.mode(platform)
+    mode = _export_mode(platform)
     flags = ai_flags(flags)
 
     def run(job):
@@ -195,6 +195,12 @@ def api_choice(body: dict) -> dict:
     return overview()
 
 
+def _export_mode(platform: str) -> str:
+    """1.2.70: this per-platform export is the by-hand tool; the assisted upload is the Publish button."""
+    m = PF.mode(platform)
+    return "semi" if m == "assist" else m
+
+
 @router.put("/api/platforms/{platform}/mode")
 def api_mode(platform: str, body: dict) -> dict:
     return PF.set_mode(_check(platform), str(body.get("mode") or ""))
@@ -262,7 +268,7 @@ def api_clip(platform: str, project_id: str, cid: str, ai_voice_note: bool = Tru
     else:  # not made yet: the file to come follows the clip's dub choice
         ai = ai_voice_for(state.file_dub(project, cid, ""), ai_flags({"ai_voice_note": ai_voice_note, "ai_label": ai_label}))
         text = caption_for(project, cand, platform, ai["line"] if ai["note"] else None)
-    return {"caption": text, "ai_voice": ai, "mode": PF.mode(platform),
+    return {"caption": text, "ai_voice": ai, "mode": _export_mode(platform),
             "upload_page": PF.UPLOAD_PAGE[platform], "record": PF.records(project).get(cid, {}).get(platform),
             "job": j.to_dict() if j is not None else None}
 
@@ -282,7 +288,7 @@ def api_post(platform: str, project_id: str, cid: str, request: Request,
     if config.get("easy_platform") != platform:
         config.update(easy_platform=platform)
     ai = ai_voice_for(state.file_dub(project, cid, ""), flags)
-    return {"job": j.to_dict(), "mode": PF.mode(platform), "ai_voice": ai,
+    return {"job": j.to_dict(), "mode": _export_mode(platform), "ai_voice": ai,
             "caption": caption_for(project, cand, platform, ai["line"] if ai["note"] else None),
             "upload_page": PF.UPLOAD_PAGE[platform], "local": A._is_local(request)}
 

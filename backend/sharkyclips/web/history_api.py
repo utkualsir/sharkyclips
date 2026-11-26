@@ -97,6 +97,22 @@ def migrate_tiktok_manual() -> bool:
     return changed
 
 
+def migrate_tiktok_assist() -> bool:
+    """1.2.70: the assisted upload is TikTok's default (SharkyClips fills in the page in your browser,
+    you click Post). Done once: "by hand" (the 1.2.68 default) becomes "assist" when a browser that
+    can be filled in is installed; automatic modes and later choices stay as they are."""
+    if config.get("tiktok_assist_default_v1"):
+        return False
+    from .. import platforms as PF
+
+    modes = dict(config.get("platform_modes") or {})
+    changed = modes.get("tiktok") in (None, "semi") and PF.assist_available()
+    if changed:
+        modes["tiktok"] = "assist"
+    config.update(platform_modes=modes, tiktok_assist_default_v1=True)
+    return changed
+
+
 def startup() -> None:
     import os
 
@@ -106,6 +122,7 @@ def startup() -> None:
     def run() -> None:
         try:
             migrate_tiktok_manual()
+            migrate_tiktok_assist()
         except Exception:  # noqa: BLE001
             pass
         try:

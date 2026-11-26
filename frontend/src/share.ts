@@ -17,6 +17,8 @@ export interface ShareStatus {
   waits: { platform: Target; code: string; message: string | null; hint?: string | null; next_try_at?: string | null }[];
   /** 1.2.68: YouTube kept it private although public was asked for */
   private: { platform: Target; studio_url: string | null }[];
+  /** 1.2.70: filled in in your browser, waiting for your click on Post (or "did you post it?") */
+  assist?: ({ platform: Target } & import("./assist").AssistSnap)[];
 }
 
 export interface ShareCard {
@@ -119,7 +121,8 @@ export interface SharePlatform {
   manual: boolean;
   handle: string | null;
   pill: string;
-  auto_note: "tiktok_beta" | "tiktok_manual" | "ig_manual" | null;
+  auto_note: "assist" | "tiktok_beta" | "tiktok_manual" | "ig_manual" | null;
+  assist?: boolean;
 }
 
 export interface BatchRow {
@@ -187,7 +190,7 @@ export interface PlanRow {
   problems: PlanProblem[];
   /** platforms this clip can't go to (too long / too short there): left out with the reason */
   dropped?: PlanProblem[];
-  warnings?: { code: "ig_pace"; hours: number; last_at: string | null }[];
+  warnings?: ({ code: "ig_pace"; hours: number; last_at: string | null } | { code: "hand_fix"; platform: Target; problem: string })[];
   day?: string;
   when?: string;
   rolled?: boolean;

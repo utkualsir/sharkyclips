@@ -301,14 +301,15 @@ def clip_step(project: Project, cand: dict) -> tuple[str, dict]:
     """The publish loop's next step for an Easy clip: upload the rendered 9:16 clip itself."""
     j = _render_jobs(project.id).get(cand["id"])
     if j is not None and j.status in ACTIVE:
-        return "wait", {}
+        return "wait", {"reason": "render"}
     clip = state.load_clips(project).get(cand["id"])
     if clip and (project.dir / "clips" / clip["file"]).is_file():
         if state.bleep_hold(project, cand["id"]):  # 1.2.31: a swear is still heard: the user checks first
             return "wait", {"reason": "bleep_check"}
         return "upload", {"source": "clip", "ab": None, "sig": "clip"}
     ensure_renders(project, auto=False, only=cand["id"])
-    return "wait", {}
+    j = _render_jobs(project.id).get(cand["id"])  # 1.2.70: no render started -> the watchdog says so
+    return "wait", {"reason": "render" if j is not None and j.status in ACTIVE else "render_missing"}
 
 
 def _upload_state(project: Project, cid: str, item: dict | None, plan_jobs: dict, lock: str, now) -> dict:

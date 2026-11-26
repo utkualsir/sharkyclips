@@ -4,7 +4,7 @@ import { req, type Job } from "./api";
 export type QPlatform = "youtube" | "tiktok" | "instagram";
 export const QPLATFORMS: QPlatform[] = ["youtube", "tiktok", "instagram"];
 export const QNAME: Record<QPlatform, string> = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram" };
-export type QStatus = "pending" | "scheduled" | "published" | "failed" | "skipped_duplicate";
+export type QStatus = "pending" | "scheduled" | "published" | "failed" | "skipped_duplicate" | "cancelled";
 
 export interface QPlatformSettings {
   on: boolean;
@@ -121,10 +121,13 @@ export const pqApi = {
     req<{ updated: number; unmatched: unknown[]; rows: number; overview: QOverview }>("POST", "/api/pubqueue/import", { text }),
   brief: (batch?: string) =>
     req<{ batch: string; folder: string; text: string }>("GET", `/api/pubqueue/brief${batch ? `?batch=${encodeURIComponent(batch)}` : ""}`),
-  mark: (e: { id: string; platform: QPlatform; batch?: string | null; status: "pending" | "scheduled" | "published" | "failed"; url?: string | null }) =>
+  mark: (e: { id: string; platform: QPlatform; batch?: string | null; status: "pending" | "scheduled" | "published" | "failed" | "cancelled"; url?: string | null }) =>
     req<{ entry: QEntry; overview: QOverview }>("POST", "/api/pubqueue/mark", e),
   replan: (items?: { id: string; platform: QPlatform; batch?: string | null }[]) =>
     req<{ replanned: number; overview: QOverview }>("POST", "/api/pubqueue/replan", { items: items ?? null }),
+  /** 1.2.70: "Cancel everything pending" (or only these): nobody posts them any more */
+  cancel: (items?: { id: string; platform: QPlatform; batch?: string | null }[]) =>
+    req<{ cancelled: number; overview: QOverview }>("POST", "/api/pubqueue/cancel", { items: items ?? null }),
   verify: () => req<{ text: string; count: number }>("GET", "/api/pubqueue/verify"),
   open: (batch?: string) => req<{ opened: boolean; folder: string }>("POST", "/api/pubqueue/open", { batch: batch ?? null }),
 };

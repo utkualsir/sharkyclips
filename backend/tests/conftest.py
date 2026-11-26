@@ -28,6 +28,9 @@ os.environ["OBS_HOME"] = str(_home / "no-obs")  # never read the real OBS settin
 os.environ["SHARKYCLIPS_NO_KEYCHAIN"] = "1"  # macOS: never touch the real login Keychain
 os.environ.pop("SHARKYCLIPS_YT_ENDPOINT", None)
 os.environ["SHARKYCLIPS_NO_BROWSER"] = "1"  # "Connect with Google" must not open a real browser
+os.environ["SHARKYCLIPS_ASSIST_DEFAULT"] = "semi"  # 1.2.70: no assisted upload (a real browser) unless a test asks
+os.environ.pop("SHARKYCLIPS_ASSIST_BROWSER", None)
+os.environ.pop("SHARKYCLIPS_ASSIST_CMD", None)
 os.environ["SHARKYCLIPS_NO_BLEEP_CHECK"] = "1"  # renders never load Whisper to re-listen to bleeps (tested directly)
 # no built-in Google client unless a test sets one (the shipped google_client.json may be filled in)
 os.environ["SHARKYCLIPS_SHARED_CLIENT"] = str(_home / "no-shared-client.json")

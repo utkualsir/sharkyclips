@@ -567,6 +567,13 @@ def api_replan(body: dict | None = Body(default=None)) -> dict:
     return {"replanned": len(rows), "entries": rows, "overview": overview()}
 
 
+@router.post("/api/pubqueue/cancel")
+def api_cancel_pending(body: dict | None = Body(default=None)) -> dict:
+    """1.2.70: "Cancel everything pending" (or only the given items): not posted by anyone any more."""
+    rows = PQ.cancel_pending((body or {}).get("items") or None)
+    return {"cancelled": len(rows), "entries": rows, "overview": overview()}
+
+
 @router.get("/api/pubqueue/verify")
 def api_verify() -> dict:
     """The brief for Claude in Chrome: check the overdue posts on the platforms."""

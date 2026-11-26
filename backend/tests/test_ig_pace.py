@@ -158,8 +158,12 @@ def test_no_identical_instagram_captions_in_a_row(manual):  # noqa: F811
     v = M.view(project, "c02", ["reels"])
     prob = [p for p in v["problems"] if p["code"] == "same_caption"]
     assert prob and prob[0]["fix"] == "vary_caption" and prob[0]["platform"] == "reels"
-    with pytest.raises(SharkyClipsError):
-        M.start(project, "c02", {"platforms": ["reels"], "when": "now"})
+    # 1.2.70: a by-hand platform never blocks Publish: the caption is varied by itself when it starts
+    M.start(project, "c02", {"platforms": ["reels"], "when": "now", "remember": False})
+    _wait(_idle, 30)
+    same = igpace.norm("Same words\n\n#deltaforce #gaming")
+    assert igpace.norm(M.clip_store(project, "c02")["drafts"]["reels"]["caption"]) != same
+    M.save_clip_store(project, "c02", drafts={"reels": {"caption": "Same words\n\n#deltaforce #gaming"}})
     v = M.apply_fix(project, "c02", "reels", "vary_caption")
     assert igpace.norm(v["drafts"]["reels"]["caption"]) != igpace.norm("Same words\n\n#deltaforce #gaming")
     assert "same_caption" not in {p["code"] for p in v["problems"]}

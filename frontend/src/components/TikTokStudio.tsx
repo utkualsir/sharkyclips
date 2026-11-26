@@ -3,7 +3,8 @@
 // plus the "Automatic / Semi-automatic" switch per platform and the publish-queue check.
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "../i18n";
-import { accountsApi, isAuto, TARGET_NAME, type Account, type TikTokBrowser } from "../multipost";
+import { accountsApi, isAuto, TARGET_NAME, type Account, type PostMode, type TikTokBrowser } from "../multipost";
+import { AssistSettings } from "./AssistBar";
 import { useToast } from "../toast";
 import { Icon } from "./Icons";
 
@@ -153,40 +154,52 @@ export function TikTokStudioBox({ a, onChange }: { a: Account; onChange: () => v
   );
 }
 
-/** Automatic / Semi-automatic, per platform. Automatic needs a working account
- *  (Instagram: the API; TikTok: the TikTok Studio login, or the TikTok API). */
+/** How a platform's posts go out (1.2.70): Assisted (SharkyClips fills in the upload page in your
+ *  browser, you click Post: TikTok's default) / By hand / Automatic (Instagram: off, Meta). */
 export function AutoSwitch({ a, onChange }: { a: Account; onChange: () => void }) {
   const { t } = useI18n();
   const toast = useToast();
   const p = a.platform as "tiktok" | "reels";
   const viaBrowser = p === "tiktok" && (a.via === "browser" || !a.connected);
-  const metaOff = p === "reels" && Boolean(a.meta_off); // 1.2.50: Instagram is Manual mode only
+  const metaOff = p === "reels" && Boolean(a.meta_off); // 1.2.50: no automatic Instagram posting
   const canAuto = metaOff ? false : p === "tiktok" ? Boolean(a.browser?.logged_in) || (a.connected && a.via !== "browser") : a.connected;
-  const auto = isAuto(a.mode);
-  const set = async (on: boolean) => {
+  const mode: PostMode = a.mode ?? "semi";
+  const assist = mode === "assist";
+  const auto = isAuto(mode);
+  const set = async (m: PostMode) => {
     try {
-      await accountsApi.setMode(p, on ? (p === "tiktok" && (viaBrowser || a.browser?.logged_in) ? "browser" : "api") : "semi");
+      await accountsApi.setMode(p, m);
     } catch (e: any) {
       toast({ kind: "err", text: e.message, hint: e.hint });
     }
     onChange();
   };
+  const autoMode: PostMode = p === "tiktok" && (viaBrowser || a.browser?.logged_in) ? "browser" : "api";
   return (
     <div className="tts-switch">
       <div className="segmented block" role="radiogroup" aria-label={t("tts.mode_label", { name: TARGET_NAME[p] })}>
-        <button type="button" role="radio" aria-checked={auto} disabled={!canAuto && !auto} onClick={() => set(true)}>
-          <Icon name="zap" size={14} /> {t("tts.auto")}
+        <button type="button" role="radio" aria-checked={assist} onClick={() => set("assist")}>
+          <Icon name="wand" size={14} /> {t("tts.assist")}
         </button>
-        <button type="button" role="radio" aria-checked={!auto} onClick={() => set(false)}>
+        <button type="button" role="radio" aria-checked={!assist && !auto} onClick={() => set("semi")}>
           <Icon name="copy" size={14} /> {t("tts.semi")}
         </button>
+        {!metaOff && (
+          <button type="button" role="radio" aria-checked={auto} disabled={!canAuto && !auto} onClick={() => set(autoMode)}>
+            <Icon name="zap" size={14} /> {t("tts.auto")}
+          </button>
+        )}
       </div>
       <p className="acc-note" role="note">
-        {auto
-          ? t(p === "tiktok" && a.mode === "browser" ? "tts.auto_browser" : "platform.mode_api", { name: TARGET_NAME[p] })
-          : t("platform.mode_semi", { name: TARGET_NAME[p] })}
-        {metaOff ? <> {t("igm.auto_off")}</> : !canAuto && !auto && <> {t(p === "tiktok" ? "tts.auto_needs_login" : "tts.auto_needs_connect")}</>}
+        {assist
+          ? t("assist.mode_note", { name: TARGET_NAME[p] })
+          : auto
+            ? t(p === "tiktok" && a.mode === "browser" ? "tts.auto_browser" : "platform.mode_api", { name: TARGET_NAME[p] })
+            : t("platform.mode_semi", { name: TARGET_NAME[p] })}
+        {!assist && !auto && !metaOff && !canAuto && <> {t(p === "tiktok" ? "tts.auto_needs_login" : "tts.auto_needs_connect")}</>}
+        {metaOff && !assist && <> {t("igm.auto_off")}</>}
       </p>
+      {assist && <AssistSettings platform={p} />}
     </div>
   );
 }

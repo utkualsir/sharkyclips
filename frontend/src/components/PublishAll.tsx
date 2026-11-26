@@ -76,7 +76,7 @@ export function TargetSwitches({
       {ORDER.map((p) => {
         const on = value.includes(p);
         const done = posts?.[p]?.status === "published";
-        const off = acc && acc[p].mode !== "semi" && !acc[p].connected; // by hand needs no account
+        const off = acc && acc[p].mode !== "semi" && acc[p].mode !== "assist" && !acc[p].connected; // by hand / assisted need no account
         return (
           <button
             key={p}
@@ -661,7 +661,7 @@ function afterStart(
   toast: ReturnType<typeof useToast>,
 ) {
   const tt = r.results.tiktok;
-  if (tt && !tt.error && !tt.skipped && tt.mode !== "semi") toast({ kind: "info", text: t("mp.tt_after") });
+  if (tt && !tt.error && !tt.skipped && tt.mode !== "semi" && tt.mode !== "assist") toast({ kind: "info", text: t("mp.tt_after") });
   // 1.2.62 safe pace: an Instagram post asked for too soon after the last one waits (reminder later)
   const ig = r.results.reels;
   if (ig?.paced_to) {

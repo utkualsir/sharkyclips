@@ -97,6 +97,53 @@ def failed(project, cid: str, platform: str, message: str, hint: str | None = No
     return E.push_notice("share_failed", _t("failed", p=p), _t("failed_body", t=_title(project, cid), m=m[:300]), None)
 
 
+# 1.2.70: assisted upload: "ready, click Post", "the page needs you" (login / CAPTCHA), "did you post it?"
+ASSIST_TEXT: dict[str, dict[str, str]] = {
+    "en": {"assist_ready": "{p}: ready, check and click Post", "assist_action": "{p}: the browser needs you",
+           "assist_action_body": "{t} - log in or finish the check in the browser. SharkyClips waits.",
+           "assist_confirm": "{p}: did you post it?", "assist_confirm_body": "{t} - answer Yes or No in SharkyClips."},
+    "tr": {"assist_ready": "{p}: hazır, kontrol et ve Paylaş'a tıkla", "assist_action": "{p}: tarayıcı seni bekliyor",
+           "assist_action_body": "{t} - tarayıcıda giriş yap ya da doğrulamayı bitir. SharkyClips bekliyor.",
+           "assist_confirm": "{p}: paylaştın mı?", "assist_confirm_body": "{t} - SharkyClips'te Evet ya da Hayır de."},
+    "es": {"assist_ready": "{p}: listo, revisa y haz clic en Publicar", "assist_action": "{p}: el navegador te necesita",
+           "assist_action_body": "{t} - inicia sesión o termina la comprobación en el navegador. SharkyClips espera.",
+           "assist_confirm": "{p}: ¿lo publicaste?", "assist_confirm_body": "{t} - responde Sí o No en SharkyClips."},
+    "pt": {"assist_ready": "{p}: pronto, confira e clique em Publicar", "assist_action": "{p}: o navegador precisa de você",
+           "assist_action_body": "{t} - entre ou conclua a verificação no navegador. O SharkyClips espera.",
+           "assist_confirm": "{p}: você publicou?", "assist_confirm_body": "{t} - responda Sim ou Não no SharkyClips."},
+    "de": {"assist_ready": "{p}: bereit, prüfen und auf Posten klicken", "assist_action": "{p}: der Browser braucht dich",
+           "assist_action_body": "{t} - melde dich an oder schließe die Prüfung im Browser ab. SharkyClips wartet.",
+           "assist_confirm": "{p}: hast du es gepostet?", "assist_confirm_body": "{t} - antworte in SharkyClips mit Ja oder Nein."},
+    "fr": {"assist_ready": "{p} : prêt, vérifie et clique sur Publier", "assist_action": "{p} : le navigateur a besoin de toi",
+           "assist_action_body": "{t} - connecte-toi ou termine la vérification dans le navigateur. SharkyClips attend.",
+           "assist_confirm": "{p} : tu l'as publié ?", "assist_confirm_body": "{t} - réponds Oui ou Non dans SharkyClips."},
+    "hu": {"assist_ready": "{p}: kész, ellenőrizd és kattints a Közzététel gombra", "assist_action": "{p}: a böngésző rád vár",
+           "assist_action_body": "{t} - jelentkezz be vagy fejezd be az ellenőrzést a böngészőben. A SharkyClips vár.",
+           "assist_confirm": "{p}: közzétetted?", "assist_confirm_body": "{t} - válaszolj Igennel vagy Nemmel a SharkyClipsben."},
+    "ru": {"assist_ready": "{p}: готово, проверьте и нажмите «Опубликовать»", "assist_action": "{p}: браузер ждёт вас",
+           "assist_action_body": "{t} - войдите или завершите проверку в браузере. SharkyClips ждёт.",
+           "assist_confirm": "{p}: вы опубликовали?", "assist_confirm_body": "{t} - ответьте «Да» или «Нет» в SharkyClips."},
+    "ar": {"assist_ready": "{p}: جاهز، راجِع ثم انقر نشر", "assist_action": "{p}: المتصفح يحتاجك",
+           "assist_action_body": "{t} - سجّل الدخول أو أكمل التحقق في المتصفح. SharkyClips ينتظر.",
+           "assist_confirm": "{p}: هل نشرته؟", "assist_confirm_body": "{t} - أجب بنعم أو لا في SharkyClips."},
+    "zh": {"assist_ready": "{p}：已就绪，请检查后点击“发布”", "assist_action": "{p}：浏览器需要你操作",
+           "assist_action_body": "{t} - 请在浏览器中登录或完成验证。SharkyClips 会等待。",
+           "assist_confirm": "{p}：你发布了吗？", "assist_confirm_body": "{t} - 请在 SharkyClips 中回答“是”或“否”。"},
+    "ja": {"assist_ready": "{p}：準備完了。確認して「投稿」をクリック", "assist_action": "{p}：ブラウザーで操作が必要です",
+           "assist_action_body": "{t} - ブラウザーでログインするか確認を完了してください。SharkyClips は待っています。",
+           "assist_confirm": "{p}：投稿しましたか？", "assist_confirm_body": "{t} - SharkyClips で「はい」か「いいえ」を選んでください。"},
+}
+
+
+def assist(project, cid: str, platform: str, kind: str) -> dict:
+    lang = str(config.get("ui_language") or "en")
+    table = {**ASSIST_TEXT["en"], **ASSIST_TEXT.get(lang, {})}
+    p = NAMES.get(platform, platform)
+    t = _title(project, cid)
+    body = table.get(f"{kind}_body", "{t}").format(t=t)
+    return E.push_notice(kind, table[kind].format(p=p), body, None)
+
+
 def on_record(project, cid: str, platform: str, before: dict, after: dict) -> None:
     """platforms.record hook: a TikTok / Instagram post changed state."""
     old, new = before.get("status"), after.get("status")

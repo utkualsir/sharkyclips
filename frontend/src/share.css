@@ -1159,3 +1159,81 @@
     margin-inline-start: 0;
   }
 }
+
+/* ------------------------------------------------ 1.2.70 assisted upload (bar on every screen) */
+
+.assist-bar {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.assist-row {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.assist-row > svg { color: var(--muted); flex: none; }
+.assist-row.is-ready { border-color: color-mix(in srgb, var(--success) 55%, transparent); background: var(--success-soft); }
+.assist-row.is-ready > svg { color: var(--success); }
+.assist-row.is-act, .assist-row.is-ask { border-color: color-mix(in srgb, var(--warn) 50%, transparent); background: var(--warn-soft); }
+.assist-row.is-act > svg, .assist-row.is-ask > svg { color: var(--warn); }
+.assist-text { flex: 1 1 280px; min-width: 0; overflow-wrap: anywhere; }
+.assist-notes { display: block; }
+.assist-actions { display: flex; flex-wrap: wrap; gap: 6px; flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.assist-more { text-align: center; }
+.assist-steps { margin: 10px 0; padding-inline-start: 22px; display: grid; gap: 12px; }
+.assist-steps p { margin: 2px 0 6px; }
+.assist-path {
+  display: block;
+  margin: 4px 0 6px;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+.assist-path-btns { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.assist-safe { display: flex; gap: 6px; align-items: flex-start; font-size: var(--fs-sm); }
+.assist-ok { background: var(--success-soft); border-color: color-mix(in srgb, var(--success) 40%, transparent); }
+.assist-ok svg { color: var(--success); }
+.assist-settings { display: grid; gap: 8px; margin-top: 8px; }
+.assist-settings-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.assist-settings-row .field { flex: 1 1 200px; min-width: 0; margin: 0; }
+.assist-settings-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* on a Share card: "TikTok: Everything is ready. Check and click Post." (+ Yes / No) */
+.sh-assist {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 6px 0 0;
+  font-size: var(--fs-sm);
+  overflow-wrap: anywhere;
+}
+.sh-assist > svg { color: var(--muted); flex: none; }
+.sh-assist.is-ready > svg { color: var(--success); }
+.sh-assist-btns { display: inline-flex; gap: 6px; }
+
+/* Google's user cap: the own-project steps */
+.ytc-cap { display: block; margin-top: 6px; }
+.ytc-cap-title { display: block; font-weight: 600; }
+.ytc-cap-steps { margin: 4px 0 8px; padding-inline-start: 20px; }
+.pq-cancel-all { margin-inline-start: auto; }
