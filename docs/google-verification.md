@@ -1,201 +1,168 @@
-# Google verification prep (YouTube uploads)
+# Google verification (YouTube uploads)
 
-> **Current, complete versions** of these answers (plus the TikTok review and demo-video shot
-> lists) are in [docs/audits/](audits/README.md). This page stays as the short overview the app
-> shows under Publish → Verification.
+> **Türkçe özet:** Amaç, SharkyClips'in Google OAuth uygulamasını doğrulatıp 100 kullanıcı sınırını
+> kaldırmak. Hazır olanlar: `utkualsir.github.io` alan adı için Search Console doğrulama dosyası
+> yayında (https://utkualsir.github.io/google182e06ea924d62bd.html), site ve gizlilik politikası
+> Google/YouTube kurallarına göre güncellendi, 120x120 logo `docs/logo-120.png`. Senin yapacakların:
+> (1) Search Console'da `https://utkualsir.github.io/` için "HTML dosyası" yöntemiyle **Doğrula**'ya
+> bas, (2) aşağıdaki "Branding" alanlarını Google Cloud Console'a kopyala, (3) iki kapsamı (scope)
+> ekleyip gerekçe metinlerini yapıştır, (4) demo videosunu senaryoya göre kaydedip YouTube'a
+> **liste dışı** yükle ve bağlantısını forma ekle, (5) **Doğrulamaya gönder**. Uygulama iki kapsam
+> istiyor: `youtube` ve `yt-analytics.readonly` (sadece yükleme değil; gizlilik politikası buna göre
+> doğru yazıldı). İkisi de "hassas" kapsam, "kısıtlı" değil, bu yüzden ücretli güvenlik denetimi
+> (CASA) gerekmez.
 
-Draft material for two separate Google reviews. **Nothing here has been submitted.** Fill in the
-`<...>` placeholders, check every answer against the app version you submit, then copy the text
-into the forms.
+Everything below is ready to paste into **Google Cloud Console → Google Auth Platform**. Nothing
+has been submitted yet. Older and longer answers (plus the TikTok review) are in
+[docs/audits/](audits/README.md).
 
-1. **OAuth app verification** (Google Cloud Console → Google Auth Platform → Verification Center).
-   Needed because both scopes are *sensitive*. None is *restricted*, so no paid security
-   assessment (CASA) is required.
-2. **YouTube API Services audit / quota extension**
-   ([form](https://support.google.com/youtube/contact/yt_api_form)). Needed so videos uploaded
-   through the project are not forced to private, and for more than 10,000 units a day.
+## 1. Domain proof (Search Console)
 
-## Read first: the shared client (since 1.2.8)
+- Property: **URL prefix** `https://utkualsir.github.io/` (domain properties need DNS, which
+  GitHub Pages does not give you).
+- Method: **HTML file**. The file is live:
+  https://utkualsir.github.io/google182e06ea924d62bd.html (returns
+  `google-site-verification: google182e06ea924d62bd.html`, HTTP 200).
+- It is served by the public repo
+  [utkualsir/utkualsir.github.io](https://github.com/utkualsir/utkualsir.github.io) (your GitHub
+  Pages user site). Its `index.html` redirects to the SharkyClips site. **Do not delete that file
+  or repo**: Google re-checks it from time to time.
+- `github.io` is on the Public Suffix List, so `utkualsir.github.io` counts as your own domain and
+  can be an authorized domain. The SharkyClips site at `/sharkyclips-site/` is under that domain.
 
-SharkyClips now ships **one built-in Google OAuth client** ("Desktop app" type) that the owner
-creates once: `backend/sharkyclips/google_client.json`. That client is what gets verified and
-audited. Users click **Connect with Google** and are done; nobody else needs a Google Cloud
-project. The user's own client stays available under Settings → YouTube → **Advanced** (heavy
-uploaders keep their own 10,000-unit quota; it also always works if the shared client is full).
+## 2. Branding (OAuth consent screen)
 
-How the sign-in works (what reviewers will ask):
+| Field | Value |
+|---|---|
+| App name | `SharkyClips` (exactly as the app and the site show it) |
+| User support email | Pick your own Google account's address from the dropdown (or a Google Group you own). Google only offers addresses you control. Users see it on the consent screen. |
+| App logo | `docs/logo-120.png` (120x120 PNG, made by `python installer/make_icons.py --google`). Optional: a logo adds a brand check and can make the review slower. |
+| Application home page | `https://utkualsir.github.io/sharkyclips-site/` |
+| Application privacy policy link | `https://utkualsir.github.io/sharkyclips-site/privacy.html` |
+| Application terms of service link | `https://utkualsir.github.io/sharkyclips-site/terms.html` |
+| Authorized domains | `utkualsir.github.io` |
+| Developer contact information | Your own email address (Google uses it to send review messages; it is not shown to users). |
 
-- OAuth 2.0 authorization code + **PKCE (S256)**, `access_type=offline`,
-  `prompt=select_account consent`.
-- Redirect: a one-shot listener on **`http://127.0.0.1:<random port>/`**, started per sign-in
-  and closed right after Google redirects back (or after 10 minutes / Cancel). Google allows any
-  loopback port for Desktop clients, so no redirect URI is registered.
-- The client secret ships in the source. Google documents that an installed app's secret is not
-  confidential; PKCE + the loopback redirect protect the code exchange.
-- The token is stored encrypted on the user's computer only (DPAPI / macOS Keychain).
+What the site already covers (checked 26 Nov 2026):
 
-`google_client.json` fields: `client_id`, `client_secret`, `project_id`, `verification`
-(`testing` | `production` (published, not verified) | `in_review` | `verified`, shown in
-Settings; since 1.2.11 the shipped client is `production`) and `user_cap`
-(100 = Google's limit for unverified apps with sensitive scopes, shown in Settings). Update
-`verification` there when Google's status changes; the app picks it up after the next update.
+- The homepage describes SharkyClips, has a "How SharkyClips uses YouTube" section with both
+  scopes, and links to the privacy policy and the terms (top menu, footer and the YouTube section).
+- The privacy policy explains what Google/YouTube data is used and why (a table for each scope),
+  that it is stored **locally on the user's computer only** (encrypted token, no server), how long
+  it is kept, how to revoke access (Disconnect in the app, plus links to
+  https://myaccount.google.com/permissions and
+  https://security.google.com/settings/security/permissions), and links to the
+  [YouTube Terms of Service](https://www.youtube.com/t/terms), the
+  [Google Privacy Policy](https://policies.google.com/privacy) and the Google API Services User
+  Data Policy (Limited Use).
+- All three pages load without a login (HTTP 200).
 
-### Limits while the shared client is unverified
+## 3. Scopes (Data access)
 
-- **Publishing status "Testing":** only listed test users (max. 100) can sign in, and Google
-  ends their sign-in after **7 days**. Use this only for your own first test.
-- **Publishing status "In production", not verified:** anyone can sign in after Google's
-  "Google hasn't verified this app" screen (the app shows an illustrated tip before opening the
-  browser), up to **100 users in total** for the lifetime of the project until verified.
-- **Quota:** all users share the project's 10,000 units a day (about 6 uploads) until the
-  quota extension is granted. The app counts units locally per user; when Google says the quota
-  is used up, uploads wait for the next reset.
-- **Private lock:** until the YouTube API audit passes, every video uploaded through the
-  project stays private. The app detects this and says so.
+The app requests exactly these two scopes (`SCOPES` in `backend/sharkyclips/youtube.py`, sent
+together in one sign-in). Add exactly these, nothing else:
 
-## Before you submit (checklist)
+| Scope | Type | Shown to the user as |
+|---|---|---|
+| `https://www.googleapis.com/auth/youtube` | Sensitive | Manage your YouTube account |
+| `https://www.googleapis.com/auth/yt-analytics.readonly` | Sensitive | View YouTube Analytics reports for your YouTube content |
 
-- [x] Site published (1.2.10): the public repo
-      [utkualsir/sharkyclips-site](https://github.com/utkualsir/sharkyclips-site) serves
-      `docs/site` with GitHub Pages, so it works while the main repo is private. After changing
-      `docs/site`, run `bash docs/publish-site.sh "message"` (copies the files, no-reply author).
-      Contact links go to that repo's issues and private security reports.
-- [x] Homepage `https://utkualsir.github.io/sharkyclips-site/`, privacy policy
-      `https://utkualsir.github.io/sharkyclips-site/privacy.html`, terms `https://utkualsir.github.io/sharkyclips-site/terms.html` load without login (HTTP 200).
-- [x] The homepage's Download / GitHub / guide links point at the main repo, which is public
-      since 10 Nov 2026.
-- [ ] Verify `utkualsir.github.io` in [Google Search Console](https://search.google.com/search-console)
-      (URL-prefix property for `https://utkualsir.github.io/sharkyclips-site/`, HTML file method: put the file into `docs/site/` and run
-      `docs/publish-site.sh`). `github.io` is on the Public Suffix List, so this subdomain counts as your own
-      domain. If Google still rejects it, a cheap custom domain pointing at Pages fixes it
-      (then update `PRIVACY_URL` in `frontend/src/components/Publish.tsx`).
-- [ ] OAuth consent screen (Branding): app name **SharkyClips** (exactly as in the app), user
-      support email = your Google account's email, homepage `https://utkualsir.github.io/sharkyclips-site/`,
-      privacy `https://utkualsir.github.io/sharkyclips-site/privacy.html`, terms `https://utkualsir.github.io/sharkyclips-site/terms.html`,
-      authorized domain `utkualsir.github.io`, developer contact = your email. Logo: leave it
-      empty for now (a logo triggers brand review and slows publishing). When you want it later:
-      `docs/logo-120.png` (120x120 PNG, square, 6 KB).
-- [ ] `google_client.json` filled in and released (an app update), `verification` set.
-- [ ] Scopes on the consent screen exactly match `youtube.SCOPES`.
-- [ ] Record the demo video (script below), upload it to YouTube as **unlisted**.
-- [ ] App name and logo on the consent screen match the app (Google checks this).
+Neither scope is restricted, so no CASA security assessment is needed.
 
-## OAuth verification form
+### Justification: `https://www.googleapis.com/auth/youtube`
 
-**App name:** SharkyClips
+> SharkyClips is a free, open-source desktop app for streamers. It finds the best moments in a
+> stream recording on the user's own computer and turns them into short vertical clips. The main
+> use of this scope is uploading a clip the user chose to the user's own YouTube channel
+> (videos.insert, resumable). Scheduled clips are uploaded as private with status.publishAt, so
+> YouTube publishes them at the time the user picked. Around those uploads the app also needs to:
+> change the title, description or release time of a clip it uploaded, or publish it early, when
+> the user edits it in the app's calendar (videos.update); delete a scheduled clip that the user
+> cancels before it is public (videos.delete); put the clip into a playlist the user picks or
+> creates (playlists.list, playlists.insert, playlistItems.insert); set a thumbnail
+> (thumbnails.set); show which channel is connected (channels.list, mine=true); and show the
+> views, likes and privacy status of the user's own SharkyClips uploads (videos.list, only the IDs
+> of videos the app uploaded). If the user turns on live chat reading, the app reads the chat of
+> the user's own live stream to find "!clip" markers; it never posts. The narrower youtube.upload
+> scope cannot update, schedule-change or delete a video, and youtube.force-ssl would add comment
+> access the app does not need. The app never changes or deletes videos it did not upload, and
+> never acts without the user starting the action. All data stays on the user's computer; the
+> developers run no server and never receive it.
 
-**What does your app do? (short description)**
+### Justification: `https://www.googleapis.com/auth/yt-analytics.readonly`
 
-> SharkyClips is a free, open-source desktop app (Windows and macOS) for streamers. It finds the
-> best moments in a stream recording on the user's own computer and renders them as vertical
-> short videos with subtitles. Users can optionally upload a finished clip to their own YouTube
-> channel from inside the app. The app runs entirely locally; it has no server and no account.
+> Used only for the optional "hook test". SharkyClips makes two versions of the first seconds of
+> a clip, uploads one, and 48 hours after it was published reads the averageViewPercentage and
+> averageViewDuration of that one video (YouTube Analytics reports.query, ids=channel==MINE,
+> filtered to that video ID). The result tells the user which opening style keeps their own
+> viewers watching. Retention numbers are not available through the YouTube Data API, so there is
+> no narrower scope. The numbers are stored only on the user's computer, are deleted when the user
+> disconnects, and are never shared.
 
-**Scope justifications**
+### How the sign-in works (if the reviewer asks)
 
-`https://www.googleapis.com/auth/youtube`
+- OAuth 2.0 authorization code flow with **PKCE (S256)**, `access_type=offline`,
+  `prompt=select_account consent`, client type **Desktop app**.
+- Redirect: a one-time loopback listener on `http://127.0.0.1:<random port>/`, closed right after
+  Google redirects back (or after 10 minutes / Cancel).
+- The token is stored encrypted on the user's computer only (Windows DPAPI / macOS Keychain).
+  **Disconnect** revokes it at `https://oauth2.googleapis.com/revoke` and deletes it, together with
+  every number the app read from YouTube.
 
-> Used only on the user's own channel and only for videos the user publishes with SharkyClips:
-> (1) `videos.insert` (resumable) to upload a clip the user set up in the publish screen (title,
-> description, tags, category, language, made-for-kids, privacy, optional release time and
-> playlist); scheduled clips are uploaded as private with `status.publishAt`, so YouTube itself
-> publishes them at the chosen time; (2) `videos.update` when the user edits the details of such a
-> video or moves its release time in the app's calendar, and to publish a scheduled video now;
-> (3) `videos.delete` when the user cancels a scheduled video before it is public; (4)
-> `playlists.list` / `playlists.insert` / `playlistItems.insert` to put the clip into a playlist
-> the user picks or creates; (5) `thumbnails.set` for 16:9 videos; (6) `channels.list?mine=true`
-> to show the connected channel and `videos.list` for the views, likes and privacy of the user's
-> own SharkyClips uploads (shown next to each clip, used to calibrate the local viral score and to
-> notice when uploads are forced to private). `youtube.upload` cannot change, schedule or delete a
-> video, and `youtube.force-ssl` would add comment access the app doesn't need. Nothing is done
-> without the user setting up and scheduling the clip first.
+## 4. Demo video (2-3 minutes, English UI, English captions)
 
-`https://www.googleapis.com/auth/yt-analytics.readonly`
+Record the screen at 1080p with the app in English. Upload to YouTube as **Unlisted** and paste the
+link into the form. Burn in the captions below (or upload them as an English subtitle track). Use
+a test channel. Before recording, disconnect YouTube in the app and remove SharkyClips from
+https://myaccount.google.com/permissions so the full consent screen appears.
 
-> Used only for the optional "hook test": the app renders two versions of a clip's first
-> seconds, uploads one version, and 48 hours after it was published reads that video's
-> `averageViewPercentage` and `averageViewDuration` (YouTube Analytics `reports.query`,
-> `ids=channel==MINE`, filtered to that video ID). The result tells the user which opening style
-> keeps *their* viewers watching. These retention metrics are not available through the YouTube
-> Data API, so a narrower scope does not exist.
+| Time | What to show | Caption |
+|---|---|---|
+| 0:00-0:15 | SharkyClips home screen, then a project with finished clips. | "This is SharkyClips, a free desktop app that turns stream recordings into short clips. It runs on the user's own computer." |
+| 0:15-0:30 | Settings → YouTube. Point at the notice "SharkyClips uses YouTube API Services..." and its links (YouTube Terms of Service, Google Privacy Policy). | "YouTube is optional. The user connects their own channel here. The YouTube Terms and the Google Privacy Policy are linked next to the button." |
+| 0:30-0:40 | Click **Connect YouTube** (in the dialog, **Connect with Google**). The system browser opens. | "The user clicks Connect YouTube. Google's sign-in opens in the browser." |
+| 0:40-0:55 | **Zoom into the browser URL bar** and hold for 3 seconds so `client_id=...apps.googleusercontent.com` can be read. | "The URL shows the OAuth client ID of the project under review." |
+| 0:55-1:20 | Pick the account. Show the consent screen: the app name **SharkyClips** at the top and both permissions ("Manage your YouTube account", "View YouTube Analytics reports for your YouTube content"). Scroll slowly so both are visible, then click **Continue / Allow**. | "The consent screen shows the app name SharkyClips and the two permissions it asks for: managing the user's YouTube uploads, and reading YouTube Analytics for its own uploads." |
+| 1:20-1:30 | The browser tab says it is connected. Back in the app, the channel name and picture appear. | "Connected. The app shows which channel it will upload to." |
+| 1:30-2:05 | Open a project's clip → **Upload**. Show the dialog: title, description, tags, **Privacy = Private**. Press Upload, show the progress bar and the finished link. Open the link in YouTube Studio and show the video is **Private**. | "The user picks a clip, sets the details and uploads it as private. This uses the youtube scope to insert the video on the user's own channel." |
+| 2:05-2:20 | Library calendar: drag a scheduled clip to another day, then cancel one. | "Scheduled clips can be moved or cancelled. The app only changes or deletes videos it uploaded itself." |
+| 2:20-2:35 | The hook test screen (A/B openings). | "For the optional hook test, 48 hours after publishing, the app reads the average view percentage of that one video. This uses yt-analytics.readonly." |
+| 2:35-2:55 | Settings → YouTube → **Disconnect** → confirm. Then open https://myaccount.google.com/permissions and show SharkyClips is gone. | "To stop access, the user clicks Disconnect. The app revokes the token and deletes the YouTube data it stored. Access can also be removed on the Google account permissions page." |
+| 2:55-3:00 | Homepage with the privacy policy link. | "All data stays on the user's computer. Privacy policy: utkualsir.github.io/sharkyclips-site/privacy.html" |
 
-**How is the data stored and shared?**
+## 5. After approval
 
-> All data stays on the user's computer, in the app's settings folder: the OAuth token
-> (`~/.sharkyclips/youtube/token.enc`, encrypted with Windows DPAPI or a key in the macOS
-> Keychain), the per-project upload list with the latest statistics
-> (`uploads.json`) and derived learning data (`calibration.json`, `hook_tests.json`). The app
-> calls Google APIs directly from the user's machine. The developers run no server and never
-> receive, store or share any Google user data. Nothing is used for advertising or sold.
-> Disconnecting in Settings revokes the token (`oauth2.googleapis.com/revoke`) and deletes it.
+- Set `verification` to `verified` in the shipped `google_client.json` (kept out of the repo, see
+  `docs/SECURITY_AUDIT.md`) and release an app update, so Settings stops showing the 100-user note.
+- OAuth verification removes the 100-user cap and the "Google hasn't verified this app" screen. It
+  does **not** lift the YouTube rule that uploads from unaudited API projects stay private, and it
+  does not raise the 10,000 units a day quota. Those need the separate
+  [YouTube API Services audit / quota form](https://support.google.com/youtube/contact/yt_api_form);
+  the answers are in [docs/audits/](audits/README.md).
 
-**Demo video script** (2-3 minutes, English UI, screen recording, show the browser URL bar
-during the Google sign-in so the client ID is visible):
+## Decision log (26 Nov 2026, unattended session)
 
-1. Open SharkyClips, Settings → YouTube. Show the notice "SharkyClips uses YouTube API
-   Services..." with the links to the YouTube Terms, the Google Privacy Policy and the
-   SharkyClips privacy policy.
-2. Click **Connect with Google**. The system browser opens Google's sign-in: zoom into the URL
-   bar so the `client_id` of the project under review is visible. Pick the account, show the
-   consent screen with the app name and both scopes (read them out), then **Allow**.
-3. The browser tab shows "Connected!"; back in the app the channel name and avatar appear at
-   once (`youtube`: `channels.list mine=true`).
-4. Library → select clips → **Schedule** (auto-plan), show the calendar and drag one clip to
-   another day (`videos.update`), cancel one (`videos.delete`). Then a project's clip → **Upload**. Show the dialog (title, description, tags,
-   privacy = Private, schedule, thumbnail), press Upload, show the progress and the finished
-   link; open the video on YouTube Studio (`youtube`).
-5. Stats → **Fetch views from YouTube**: the clip's views and status appear (`youtube`).
-6. Show the hook test screen and explain that 48 hours after publishing the app reads the
-   average view percentage of that one video (`yt-analytics.readonly`).
-7. Settings → YouTube → **Disconnect**, then show the app gone from
-   myaccount.google.com/permissions.
-
-## YouTube API Services audit / quota extension form
-
-Answers for the usual questions. Google changes the form now and then; map them to the current
-fields.
-
-- **Organization / developer:** `<your name>` (individual developer), open-source project.
-- **API client name:** SharkyClips · **Google Cloud project number:** `<number>`
-- **Website:** https://utkualsir.github.io/sharkyclips-site/ · **Source:** https://github.com/utkualsir/sharkyclips
-- **Privacy policy:** https://utkualsir.github.io/sharkyclips-site/privacy.html
-- **Terms of use:** https://utkualsir.github.io/sharkyclips-site/terms.html
-- **Platform:** desktop app (Windows, macOS), local web UI on 127.0.0.1.
-- **Who uses it:** streamers and video creators uploading their own clips to their own channel.
-- **APIs and methods used:**
-  - YouTube Data API v3: `videos.insert` (resumable, private + `publishAt` for scheduled clips),
-    `videos.update` (details / release time of own videos), `videos.delete` (cancel a scheduled
-    upload), `thumbnails.set`, `playlists.list` / `playlists.insert` (`mine=true`),
-    `playlistItems.insert`, `channels.list` (`mine=true`, `part=snippet`), `videos.list`
-    (`part=statistics,status,snippet`, own video IDs only, up to 50 per call).
-  - YouTube Analytics API v2: `reports.query` (`ids=channel==MINE`, `dimensions=video`,
-    `metrics=views,averageViewDuration,averageViewPercentage`, filtered to own video IDs).
-- **How do users authenticate?** OAuth 2.0 authorization code flow with PKCE and a loopback
-  redirect (`http://127.0.0.1:<port>/`), `access_type=offline`.
-- **Is API data shown to anyone other than the authenticated user?** No. It is shown only in the
-  local app of the user who connected the channel.
-- **Is API data stored? How long?** Only on the user's computer: video IDs of their own uploads,
-  plus the latest view/like counts and retention for those videos, refreshed when the app syncs
-  (about twice a day while it runs). Kept until the user deletes the project, clears calibration
-  or disconnects/uninstalls. The developers store nothing.
-- **Do you aggregate or combine data across users?** No. There is no central server; each
-  installation only sees its own user's data.
-- **Do you use the data for advertising?** No.
-- **Quota requested:** `<number>` units/day. Reasoning: one upload = 1,600 units (insert) + 50
-  (thumbnail) + 50 (playlist); changing or cancelling a scheduled video 50; statistics cost 1 unit
-  per 50 videos. The app's scheduler never plans more uploads a day than the quota allows. With a shared client and N active users
-  uploading ~2 clips a day: N × 3,300 units. Start with a modest request (e.g. 100,000/day ≈ 30
-  uploads/day) and increase with real usage. The app already counts units locally, stops before
-  the limit and shows the remaining uploads to the user.
-- **Branding:** the app does not use YouTube logos except as plain text ("YouTube"); no
-  YouTube player is embedded. Links to YouTube Terms of Service and Google Privacy Policy are shown
-  next to the Connect button.
-
-## Fixed for the audit (1.2.38)
-
-- **Stored statistics after disconnect / old statistics.** Disconnect now deletes every number
-  the app read from YouTube; numbers not refreshed for 30 days are deleted daily; if Google ends
-  the sign-in and the user doesn't reconnect, the numbers go after 7 days
-  (`backend/sharkyclips/ytdata.py`). The privacy policy says so.
-- **Shared quota.** Still one 10,000-unit pool for every user of the built-in client until the
-  quota extension is granted (see "Quota requested").
+- **Created the public repo `utkualsir/utkualsir.github.io`** as asked (GitHub Pages user site,
+  branch `main`, root). It holds only the Search Console file, a redirect `index.html` and
+  `.nojekyll`. Commits use the GitHub no-reply address. The main `sharkyclips` repo's visibility
+  was not touched.
+- **Privacy policy says what the code really does, not "upload only".** The app requests
+  `youtube` and `yt-analytics.readonly`, and also schedules, edits, cancels, reads stats of its
+  own uploads and (opt-in) reads the user's own live chat. Writing "upload only" would not match
+  the scopes, and Google rejects policies that don't match. So the new summary box says uploading
+  is the main use and lists the rest. Existing policy text was kept.
+- **Privacy policy additions:** an "In short" box (data used, stored locally, how to revoke, YouTube
+  Terms and Google Privacy Policy links), the Google security settings link
+  (security.google.com/settings/security/permissions, named by the YouTube API Developer
+  Policies) next to the account permissions link, and a "Last updated" date.
+- **Fixed one wrong sentence:** the policy said the site's fonts come from Google Fonts; since
+  1.2.65 they are served from the site itself.
+- **Homepage:** the YouTube section now also links to the YouTube Terms of Service, the Google
+  Privacy Policy and the terms of use.
+- **Logo:** regenerated with `installer/make_icons.py --google`; only `docs/logo-120.png`
+  changed.
+- **Support email:** not written into this file because the repo is public. Pick it from the
+  dropdown in the console.
+- **Another session's work was left alone:** a 1.2.66 session had uncommitted app changes and its
+  own "under construction" flag in this working tree. This session committed only its own docs
+  files and did not touch that flag. No app code changed, so no version bump.
