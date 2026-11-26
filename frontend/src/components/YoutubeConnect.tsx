@@ -294,6 +294,7 @@ function Waiting({
           <li>{t("ytc.stuck_account")}</li>
           <li>{t("ytc.stuck_warning")}</li>
           <li>{own ? t("ytc.stuck_own_blocked") : t("ytc.stuck_blocked")}</li>
+          {!own && <li>{t("ytc.cap_help")}</li>}
         </ul>
       </details>
     </div>
@@ -324,8 +325,10 @@ function FlowResult({
   const text =
     flow.status === "cancelled"
       ? t("ytc.cancelled")
+      : flow.status === "blocked"
+        ? t("ytc.user_cap")
       : flow.status === "expired"
-        ? t("ytc.expired")
+        ? `${t("ytc.expired")} ${t("ytc.cap_help")}`
         : api_off
           ? t("ytc.api_disabled")
           : flow.message;

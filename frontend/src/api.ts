@@ -1112,7 +1112,7 @@ export interface YoutubeSignedOut {
 
 export interface ConnectFlow {
   id: string;
-  status: "waiting" | "ok" | "no_channel" | "choose_channel" | "cancelled" | "error" | "expired" | "api_disabled";
+  status: "waiting" | "ok" | "no_channel" | "choose_channel" | "cancelled" | "error" | "expired" | "api_disabled" | "blocked";
   message: string | null;
   hint: string | null;
   reason: string | null;

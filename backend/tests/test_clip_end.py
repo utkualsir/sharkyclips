@@ -89,8 +89,9 @@ def test_every_clip_player_shows_the_end_point():
     project = (SRC / "pages" / "Project.tsx").read_text(encoding="utf-8")
     assert "<ClipBar" in project and project.count("<EndBadge") >= 2 and "<ClipVideo" in project
     assert 'controlsList="nofullscreen"' in project  # big preview = our box, so the markers stay visible
+    # 1.2.68: Easy mode shows the Share board (its cards play the rendered clip, which ends itself)
     easy = (SRC / "pages" / "EasyProject.tsx").read_text(encoding="utf-8")
-    assert easy.count("<ClipBar") >= 2 and easy.count("<EndBadge") >= 2 and "useClipEnforcer" in easy
+    assert "<ShareBoardView" in easy
     assert "<ClipVideo" in (SRC / "components" / "PreviewExtras.tsx").read_text(encoding="utf-8")
     editing = (SRC / "editing.ts").read_text(encoding="utf-8")
     assert re.search(r"v\.pause\(\);\s*v\.currentTime = end;", editing)  # stops ON the last frame

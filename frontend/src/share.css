@@ -853,3 +853,308 @@
     flex: 1 1 auto;
   }
 }
+
+/* ------------------------------------------------ 1.2.68 share now: where + one Share button */
+
+.share-head-side {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.share-lang {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.share-lang .select {
+  min-height: 40px;
+  max-width: 220px;
+}
+.share-where {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  margin: 0 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  position: sticky;
+  top: 8px;
+  z-index: 5;
+}
+.share-where-label {
+  font-weight: 700;
+  color: var(--strong);
+}
+.share-where-plats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.share-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--r-md, 10px);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.share-chip:hover {
+  border-color: var(--border-strong);
+}
+.share-chip.is-on {
+  border-color: var(--select);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--select);
+}
+.share-chip.is-off {
+  border-style: dashed;
+}
+.share-chip.is-off .pf-icon {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+.share-chip-mode {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+}
+.share-chip-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid var(--border-strong);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.share-chip.is-on .share-chip-box {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-sign);
+}
+.share-where .share-go {
+  margin-inline-start: auto;
+}
+.share-where-note {
+  flex-basis: 100%;
+  margin: 0;
+}
+.share-before {
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+/* the choice before sharing */
+.share-over {
+  border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
+  background: var(--warn-soft);
+  border-radius: var(--r-lg);
+  padding: 12px 16px 16px;
+  margin: 0 0 16px;
+  display: grid;
+  gap: 10px;
+}
+.share-over legend {
+  font-weight: 700;
+  color: var(--strong);
+  padding: 0 6px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.share-radio {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+.share-radio > span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.share-radio input[type="radio"] {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.share-date {
+  max-width: 200px;
+}
+.share-radio-inline {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  margin-inline-start: 10px;
+  cursor: pointer;
+}
+
+/* card notes */
+.sh-private,
+.sh-wait {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+}
+.sh-private {
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  background: var(--warn-soft);
+  color: var(--text);
+}
+.sh-wait {
+  color: var(--muted);
+}
+.sh-nofile {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  color: var(--muted);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+  text-align: center;
+  padding: 12px;
+}
+
+/* free up space */
+.share-space {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 24px 0 8px;
+  padding: 16px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+}
+.share-space.is-ready {
+  border-style: solid;
+  border-color: var(--gold-line);
+  background: var(--gold-soft);
+}
+.share-space-title {
+  margin: 0 0 4px;
+  font-size: var(--fs-lg);
+}
+.share-freed {
+  margin: 24px 0 8px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.space-list {
+  margin: 0 0 12px;
+  padding-inline-start: 20px;
+}
+
+/* manual upload */
+.mu-tabs {
+  margin-bottom: 12px;
+}
+.mu-wait {
+  display: grid;
+  gap: 10px;
+  padding: 16px 0;
+}
+.mu-steps {
+  margin: 0 0 12px;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 8px;
+}
+.mu-steps li > span:first-child {
+  display: block;
+  margin-bottom: 6px;
+}
+.mu-step-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mu-field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.mu-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mu-text {
+  width: 100%;
+}
+
+/* upload history */
+.history-tools {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 8px 0 12px;
+}
+.history-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.history-table th,
+.history-table td {
+  text-align: start;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.history-table th {
+  color: var(--muted);
+  font-weight: 600;
+  background: var(--surface-2);
+}
+.history-table td:first-child {
+  white-space: nowrap;
+}
+.history-clip {
+  font-weight: 600;
+  color: var(--strong);
+  overflow-wrap: anywhere;
+}
+.history-stream {
+  font-size: var(--fs-xs, 12px);
+}
+.history-plat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+@media (max-width: 640px) {
+  .share-where {
+    position: static;
+  }
+  .share-where .share-go {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+}

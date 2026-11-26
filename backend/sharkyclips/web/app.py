@@ -553,14 +553,17 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
     plan_key = body.get("plan_key")  # a clip of the publishing plan (Library / scheduler)
 
     def run(job: Job):
-        if not plan_key:
-            return _run(job)
-        from . import publishing
+        from . import shareevents
 
         try:
             return _run(job)
         except BaseException as exc:
-            publishing.on_failed(plan_key, exc)
+            if plan_key:
+                from . import publishing
+
+                publishing.on_failed(plan_key, exc)
+            if isinstance(exc, SharkyClipsError):  # 1.2.68: never a silent failure
+                shareevents.failed(get_project(project_id), cid, "youtube", exc.message, exc.hint)
             raise
 
     def _run(job: Job):
@@ -571,15 +574,24 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
         if live:  # e.g. the other A/B variant was uploaded meanwhile
             raise SharkyClipsError("This clip is already on YouTube: SharkyClips uploads each clip once.",
                                    f"It is here: {live.get('url')}")
+        from .. import shortsfmt
+
+        send = path
+        fixed: list[str] = []
+        if is_short_source(project, source):  # 1.2.68: 9:16, <= 3 min, H.264 + AAC before it goes out
+            jobs.update(job, stage="checking_format", progress=None)
+            send, fixed = shortsfmt.ensure(path, "youtube", project.cache_dir / "shortsfix")
         jobs.update(job, stage="uploading", progress=0.0)
-        key = f"{project_id}:{cid}:{path.name}:{path.stat().st_size}"
-        video = youtube.upload(path, yt, key, on_progress=lambda f: jobs.update(job, progress=f),
+        key = f"{project_id}:{cid}:{send.name}:{send.stat().st_size}"
+        video = youtube.upload(send, yt, key, on_progress=lambda f: jobs.update(job, progress=f),
                                checkpoint=governor.checkpoint)
         vid = video.get("id")
         if not vid:
             raise SharkyClipsError("YouTube didn't return a video ID.")
         thumb_note = None
-        if thumb != "none":
+        if thumb != "none" and not youtube.thumbnail_fits():
+            thumb_note = "No custom thumbnail today: Google's API quota for thumbnails is used up."
+        elif thumb != "none":
             jobs.update(job, stage="thumbnail", progress=None)
             try:
                 img = _thumbnail_file(project, cid, cand, thumb)
@@ -597,7 +609,8 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
         entry = {"video_id": vid, "url": f"https://youtu.be/{vid}", "title": yt["snippet"]["title"],
                  "privacy": got, "requested_privacy": requested,
                  "publish_at": yt["status"].get("publishAt"), "file": path.name, "uploaded_at": state.now_iso(),
-                 "made_for_kids": yt["status"]["selfDeclaredMadeForKids"], "thumbnail_error": thumb_note, **hook}
+                 "made_for_kids": yt["status"]["selfDeclaredMadeForKids"], "thumbnail_error": thumb_note,
+                 "format_fixed": fixed or None, **hook}
         if ai_voice["dub"]:  # kept when the description is edited later (Library)
             entry["ai_voice"] = ai_voice
         state.save_upload(project, cid, entry)
@@ -608,6 +621,14 @@ def submit_upload(project_id: str, cid: str, body: dict, job_id: str | None = No
             if extra:
                 state.patch_upload(project, cid, vid, extra)
                 entry.update(extra)
+        try:  # 1.2.68: "Shared to YouTube ✓" (or "uploaded as private") + the upload history
+            from . import shareevents
+
+            forced_private = got == "private" and requested in ("public", "unlisted") and not yt["status"].get("publishAt")
+            shareevents.shared(project, cid, "youtube", entry["url"], video_id=vid, private=forced_private,
+                               title=entry["title"])
+        except Exception:  # noqa: BLE001 - the upload is done; a notice never undoes it
+            pass
         return {**entry, "clip_id": cid}
 
     params = {"clip_id": cid, "rank": cand["rank"], "body": body, "duration": cand["duration"],
@@ -2386,7 +2407,7 @@ def api_upload_clip(project_id: str, cid: str, body: dict) -> dict:
     if not youtube.connected():
         raise SharkyClipsError("Connect YouTube first (Settings > YouTube).")
     _cand(project, cid)
-    if youtube.upload_room() < youtube.COST["upload"]:
+    if youtube.uploads_left() < 1:
         # 1.2.52: today's quota is (nearly) used up: queue it for after Google's reset
         item = youtube.defer_upload(project.id, cid, body)
         return {"deferred": True, "after": item["after"], "status": "queued", "kind": "upload",
@@ -2644,6 +2665,9 @@ from .fullvideo_api import router as _fullvideo_router  # noqa: E402 - full vide
 from .setup_api import router as _setup_router  # noqa: E402 - first-run downloads + diagnostics (1.2.56)
 from .mystyle_api import router as _mystyle_router  # noqa: E402 - My style template (1.2.63)
 from .share import router as _share_router  # noqa: E402 - Share clips board, daily limit, batches (1.2.66)
+from .manual import router as _manual_router  # noqa: E402 - Upload manually (1.2.68)
+from .space import router as _space_router  # noqa: E402 - Free up space (1.2.68)
+from .history_api import router as _history_router  # noqa: E402 - Upload history (1.2.68)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2664,6 +2688,9 @@ app.include_router(_dub_router)
 app.include_router(_fullvideo_router)
 app.include_router(_mystyle_router)
 app.include_router(_share_router)
+app.include_router(_manual_router)
+app.include_router(_space_router)
+app.include_router(_history_router)
 
 
 @app.get("/api/{rest:path}")
@@ -2727,6 +2754,9 @@ def _restore_queue() -> None:
         g.on_change.append(_jobs_follow)
     n = jobs.restore(rebuild_job)
     _start_publishing()
+    from .history_api import startup as _history_startup
+
+    _history_startup()  # 1.2.68: upload history of older projects, TikTok by hand by default
     if n:
         from ..ui import console
 

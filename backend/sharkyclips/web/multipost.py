@@ -61,7 +61,8 @@ NAMES = {"youtube": "YouTube", "tiktok": "TikTok", "reels": "Instagram"}
 LIMITS = {
     "youtube": {"title": 100, "description": 5000, "max_seconds": 180, "min_seconds": 1},
     "tiktok": {"caption": PF.CAPTION_MAX["tiktok"], "max_seconds": 600, "min_seconds": 3},
-    "reels": {"caption": PF.CAPTION_MAX["reels"], "hashtags": 30, "max_seconds": 900, "min_seconds": 3},
+    # 1.2.68: at most 5 hashtags on Instagram (its own advice; more look like spam)
+    "reels": {"caption": PF.CAPTION_MAX["reels"], "hashtags": igpace.HASHTAGS, "max_seconds": 900, "min_seconds": 3},
 }
 LEAD_S = 120  # a planned TikTok / Instagram time must be at least this far ahead
 POLL_S = 3.0
@@ -227,9 +228,17 @@ def drafts(project: Project, cand: dict) -> dict:
     meta = _youtube_meta(project, cand)
     saved = clip_store(project, cand["id"])["drafts"]
     yt = saved.get("youtube") or {}
-    title = yt.get("title") if yt.get("title") is not None else meta.get("title") or ""
     desc = yt.get("description") if yt.get("description") is not None else meta.get("description") or ""
     lang = _lang(project, cand, meta)
+    # 1.2.68: generated titles are made for views (ALL CAPS, emojis, #Shorts); typed ones stay as typed
+    from ..titles import shortform
+
+    moment = (cand.get("llm") or {}).get("moment_type")
+    if yt.get("title") is not None:
+        title = social_title = yt["title"]
+    else:
+        title = shortform.views_title(meta.get("title") or "", lang, "youtube", moment)
+        social_title = shortform.views_title(meta.get("title") or "", lang, "social", moment)
     # 1.2.66: the hashtags can be edited per clip too ("Edit per clip" of Share clips)
     tags = [str(h).lstrip("#") for h in yt["hashtags"] if str(h).strip("# ")] if isinstance(yt.get("hashtags"), list)         else meta.get("hashtags") or []
     full = P.compose_description(desc, tags, None, lang=lang, short=True)
@@ -240,7 +249,7 @@ def drafts(project: Project, cand: dict) -> dict:
     for p in SOCIAL:
         mine = (saved.get(p) or {}).get("caption")
         out[p] = {"caption": youtube.censor_text(mine, lang) if mine is not None
-                  else social_caption(project, cand, p, {**meta, "title": title, "description": desc, "hashtags": tags}),
+                  else social_caption(project, cand, p, {**meta, "title": social_title, "description": desc, "hashtags": tags}),
                   "edited": mine is not None}
     return out
 
@@ -340,14 +349,28 @@ def _youtube_state(project: Project, cid: str) -> dict:
         step = st.get("step") or ""
         if "uploading" in step:
             status = "uploading"
+        elif item and item.get("now") and item.get("after") and not js and                 (P.parse(item.get("next_try_at")) or _now()) > _now():
+            status = "scheduled"  # 1.2.68: "tomorrow" / a picked day: uploads when that time comes
         elif item and item.get("now"):
             status = "preparing"
         elif step == "uploaded":
             status = "scheduled"
-    return {"platform": "youtube", "status": status,
+    wait = None  # 1.2.68: why a clip that should go now is still waiting (never silent)
+    if status == "preparing" and item and not (live or {}).get("video_id"):
+        if (item.get("waiting") or {}).get("reason") == "paused":
+            wait = {"code": "paused", "message": "Waiting: SharkyClips is paused while you play or the PC is busy."}
+        elif item.get("error"):
+            wait = {"code": (item["error"] or {}).get("fix") or "retry", "message": item["error"].get("message"),
+                    "hint": item["error"].get("hint"), "next_try_at": item.get("next_try_at")}
+    vid = (live or {}).get("video_id")
+    private = bool(live) and (live or {}).get("privacy") == "private" and         (live or {}).get("requested_privacy") in ("public", "unlisted") and not (live or {}).get("publish_at")
+    return {"platform": "youtube", "status": status, "wait": wait,
+            "private_notice": {"studio_url": youtube.STUDIO_URL.format(id=vid)} if private or st["status"] == "locked" else None,
+            "studio_url": youtube.STUDIO_URL.format(id=vid) if vid else None,
             "progress": up.progress if up is not None and up.status == "running" else None,
             "url": (live or {}).get("url"), "privacy": "private" if st["status"] == "locked" else (live or {}).get("privacy"),
-            "publish_at": (item or {}).get("publish_at") or (live or {}).get("publish_at"),
+            "publish_at": (item or {}).get("publish_at") or (live or {}).get("publish_at")
+            or ((item or {}).get("after") if status == "scheduled" else None),
             "posted_at": (live or {}).get("uploaded_at"), "late": False,
             "error": (item or {}).get("error") if status == "failed" else None,
             "views": (live or {}).get("views"), "likes": (live or {}).get("likes"),
@@ -360,6 +383,9 @@ def clip_states(project: Project, cid: str) -> dict:
     out = {"youtube": _youtube_state(project, cid)}
     for p in SOCIAL:
         out[p] = _social_state(project, cid, p)
+    from . import manual  # 1.2.68: prepared / posted by hand ("Upload manually")
+
+    out = manual.overlay(project, cid, out)
     views = [s.get("views") for s in (out[p] for p in PLATFORMS) if isinstance(s.get("views"), int)]
     want = targets()
     return {**out, "total_views": sum(views) if views else None,
@@ -640,8 +666,11 @@ def modes_now() -> dict:
 # ===================================================================== start
 
 
-def _youtube_start(project: Project, cand: dict, when: datetime | None, d: dict) -> dict:
-    """Through the 1.2.7 publish plan: publishAt for a planned time, now = upload right away."""
+def _youtube_start(project: Project, cand: dict, when: datetime | None, d: dict,
+                   after: datetime | None = None) -> dict:
+    """Through the 1.2.7 publish plan: publishAt for a planned time, now = upload right away.
+    1.2.68 `after`: upload (public at once) when that time has come: "put the rest on tomorrow"
+    (today's YouTube uploads are used up, so the upload itself has to wait for Google's reset)."""
     from .. import youtube
     from . import easy as WE, publishing as pub
 
@@ -659,6 +688,11 @@ def _youtube_start(project: Project, cand: dict, when: datetime | None, d: dict)
     meta = {**item["meta"], "title": youtube.clean_text(d["youtube"]["title"], 100),
             "description": d["youtube"]["description"], "hashtags": d["youtube"]["hashtags"]}
     pub._restart_clip(project.id, cand["id"])
+    if after is not None:
+        P.put({**P.unschedule(item), "meta": meta, "prep": item.get("prep") or {}, "now": True,
+               "next_try_at": _iso(after), "after": _iso(after)})
+        pub.scheduler.poke()
+        return {"status": "scheduled", "publish_at": _iso(after), "after": True}
     if when is None:
         P.put({**P.unschedule(item), "meta": meta, "prep": item.get("prep") or {}, "now": True})
         it = P.get(key)
@@ -695,10 +729,8 @@ def start(project: Project, cid: str, body: dict) -> dict:
         save_clip_store(project, cid, drafts=body.get("drafts") if isinstance(body.get("drafts"), dict) else None,
                         tiktok=body.get("tiktok") if isinstance(body.get("tiktok"), dict) else None)
     when_raw = body.get("when") or "now"
-    if when_raw == "auto":  # Easy's "Auto": the next free slot of the plan (daily limit, best times)
-        from . import publishing as pub
-
-        when_raw = _iso(P.next_free_slot(P.earliest(), pub.releases(), skip={P.key_of(project.id, cid)}))
+    if when_raw == "auto":  # 1.2.68: no automatic spreading over the next days: "auto" is "now"
+        when_raw = "now"
     when = None if when_raw == "now" else P.parse(when_raw)
     if when_raw != "now" and when is None:
         raise SharkyClipsError("Pick a date and time for the plan.")
@@ -722,8 +754,9 @@ def start(project: Project, cid: str, body: dict) -> dict:
         # YouTube first: a full day moves its time, and TikTok / Instagram follow that time
         if "youtube" in todo:
             try:
-                results["youtube"] = _youtube_start(project, cand, when, v["drafts"])
-                if results["youtube"].get("publish_at"):
+                after = P.parse(body.get("youtube_after")) if body.get("youtube_after") else None
+                results["youtube"] = _youtube_start(project, cand, when, v["drafts"], after)
+                if results["youtube"].get("publish_at") and after is None:  # TikTok / Instagram follow a planned time
                     when = P.parse(results["youtube"]["publish_at"]) or when
             except SharkyClipsError as exc:
                 results["youtube"] = {"status": "failed", "error": {"message": exc.message, "hint": exc.hint}}
@@ -760,11 +793,7 @@ def _social_start(project: Project, cand: dict, platform: str, when: datetime | 
     ai = v["ai_voice"]
     caption = v["drafts"][platform]["caption"]
     paced = None
-    if platform == "reels":  # 1.2.62 safe pace: MIN_GAP_HOURS between Instagram posts
-        wanted = when or _now()
-        safe = igpace.next_safe(wanted, igpace.events(_app(), fresh=True), (project.id, cid))
-        if safe > wanted + timedelta(seconds=30):
-            when = paced = safe
+    if platform == "reels":  # 1.2.68: the 4-hour pace is only a warning now (Share shows it), never a delay
         igpace.forget_cache()
     if v["modes"][platform] == "semi":  # by hand: make the file now, whatever the planned time
         PF.record(project, cid, platform, mode="semi", caption=caption, ai_voice=ai if ai["dub"] else None,
@@ -881,6 +910,10 @@ def run_post(project_id: str, cid: str, platform: str, job: Job | None = None) -
         if rec.get("mode") == "browser" and (rec.get("remote") or rec.get("submitted_at")):
             return _browser_verify(project, cid, rec)  # sent before: look it up, never post twice
         file = _file_for(project, cid, platform, rec, job)
+        if not (rec.get("publish_id") or rec.get("container_id") or rec.get("submitted_at")):
+            from .. import shortsfmt  # 1.2.68: 9:16, length, H.264 + AAC, size - fixed before it goes out
+
+            file, _fixed = shortsfmt.ensure(file, platform, project.cache_dir / "shortsfix")
         if rec.get("mode") == "semi":
             return _run_semi(project, cid, platform, file, rec)
         if rec.get("mode") == "browser":
@@ -1198,18 +1231,15 @@ def _tiktok_day_count(day_of: datetime, skip: tuple[str, str] | None = None) -> 
 
 
 def browser_slot(when: datetime | None, skip: tuple[str, str] | None = None) -> datetime | None:
-    """The daily limit: None (post now) / the planned time if that day has room, else the same
-    time on the next day with room."""
+    """1.2.68: the post goes at the time asked for (None = now), never moved to another day. A day
+    that already has TikTok's safe number of automatic posts says so: upload that one by hand."""
     from .. import tiktok_browser as TB
 
     cap = TB.daily_cap()
-    base = when or _now()
-    for i in range(60):
-        at = base + timedelta(days=i)
-        if _tiktok_day_count(at, skip) < cap:
-            return when if i == 0 else at
-    raise SharkyClipsError("Every day of the next two months is full on TikTok.",
-                           f"At most {cap} TikTok posts a day: pick fewer clips or post some by hand.")
+    if _tiktok_day_count(when or _now(), skip) >= cap:
+        raise SharkyClipsError(f"Already {cap} automatic TikTok posts that day (the safe limit).",
+                               "Use \"Upload manually\" for this clip: it takes a minute in TikTok.")
+    return when
 
 
 def _clip_title(project: Project, cid: str, rec: dict | None = None) -> str:

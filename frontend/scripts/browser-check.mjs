@@ -64,13 +64,18 @@ for (const name of wanted) {
   const go = tracked(page);
   const errors = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  await setMode(page.request, "easy");
+  await setMode(page.request, "pro");
 
   // 1. edit the title: select all, Backspace, Delete, type - also after the page polled again
-  await go(`${base}/#/p/${P}`);
-  await page.waitForSelector('[data-testid="ez-edit"]', { timeout: 30000 });
-  await page.locator('[data-testid="ez-edit"]').first().click();
-  const input = page.locator('[data-testid="ez-title-input"]');
+  // (1.2.68: the title field of Share > Review and edit > Edit per clip; the board polls under it)
+  await go(`${base}/#/p/${P}/share`);
+  await page.waitForSelector(".share-grid", { timeout: 30000 });
+  await page.locator(".share-selbtns .btn").first().click();
+  await page.locator('[data-testid="share-review"]').click();
+  await page.waitForSelector(".share-plats");
+  await page.locator(".modal-foot .btn:not(.btn-primary):not(.btn-ghost)").click(); // Edit per clip
+  await page.locator(".share-edit-row .btn-sm").first().click(); // Texts
+  const input = page.locator('[data-testid="share-title-input"], [data-testid="share-text-input"]').first();
   await input.waitFor();
   await input.click();
   await input.press(process.platform === "darwin" ? "Meta+A" : "Control+A");
@@ -83,7 +88,7 @@ for (const name of wanted) {
   if ((await input.inputValue()) !== "ello worl") fail(name, `Backspace/Delete in the title field: got "${await input.inputValue()}"`);
   await page.waitForTimeout(4500); // the Easy page polls every few seconds: focus and text must stay
   const focused = await page.evaluate(() => document.activeElement?.getAttribute("data-testid"));
-  if (focused !== "ez-title-input") fail(name, `focus moved away from the title field while typing (now: ${focused})`);
+  if (focused !== "share-title-input" && focused !== "share-text-input") fail(name, `focus moved away from the title field while typing (now: ${focused})`);
   await input.press("End");
   await input.type("!");
   if ((await input.inputValue()) !== "ello worl!") fail(name, `typing after a poll went elsewhere ("${await input.inputValue()}")`);

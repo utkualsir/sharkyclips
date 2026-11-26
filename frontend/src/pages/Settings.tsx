@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { DailyLimitField } from "../components/UploadsLeft";
 import { MiniGameSetting } from "../components/MiniGameSetting";
 import { MyTemplateCard } from "../components/MyTemplate";
 import { useAppState } from "../appstate";
@@ -896,13 +895,6 @@ export default function Settings() {
             </section>
 
             <TrashCard />
-            <section className="card setting" id="daily-uploads">
-              <div>
-                <h2>{t("share.limit_title")}</h2>
-                <p>{t("share.limit_desc")}</p>
-              </div>
-              <DailyLimitField withLabel={false} />
-            </section>
             <section className="card setting" id="full-video">
               <div>
                 <h2>{t("full.settings_title")}</h2>

@@ -816,7 +816,7 @@ export function ScheduleDialog({ rows, settings, onClose, onDone }: { rows: Libr
 // ------------------------------------------------------------------ Settings: publishing
 
 export function PublishingCard() {
-  const { t, num } = useI18n();
+  const { t } = useI18n();
   const toast = useToast();
   const [s, setS] = useState<PublishSettings | null>(null);
   const [times, setTimes] = useState("");
@@ -855,24 +855,6 @@ export function PublishingCard() {
             </span>
           </span>
         </div>
-        <label className="inline-field">
-          <span>{t("pub.daily_limit")}</span>
-          <input
-            className="input"
-            type="number"
-            min={1}
-            max={3}
-            defaultValue={s.daily_limit}
-            key={s.daily_limit}
-            onBlur={(e) => {
-              const n = Math.max(1, Math.min(3, Number(e.target.value) || 3));
-              if (n !== s.daily_limit) save({ daily_limit: n });
-            }}
-          />
-        </label>
-        {s.daily_limit > s.quota_capacity && (
-          <span className="field-hint warn-text">{t("pub.limit_capped", { n: num(s.quota_capacity) })}</span>
-        )}
         <label className="field">
           <span className="field-label">{t("pub.times")}</span>
           <input

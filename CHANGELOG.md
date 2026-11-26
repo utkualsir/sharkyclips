@@ -9,6 +9,341 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.68] - 2026-11-26
+Sharing works again and is now simple: drop a video in, tick YouTube, Instagram or TikTok, press Share, and your clips go out right away. Every clip tells you clearly if it is out, with a link, or what went wrong.
+
+### New
+- **Share now.** All clips you pick go out right away. There is no daily limit setting and no planning for the next days any more. The only limit is what YouTube allows today, and you always see "X YouTube uploads left today".
+- **More than YouTube allows today?** You choose: upload the rest by hand now, put them on tomorrow, or pick a day yourself.
+- **Easy mode in three steps.** Drop a video, see all your Shorts in one big grid, tick the platforms and press Share. Nothing else on the screen.
+- **A message for every clip.** "Shared to YouTube ✓" with a link, in the app and as a Windows notification, or a clear message about what went wrong.
+- **Upload manually,** for every clip and every platform. SharkyClips saves the right video, shows the title, the description and the hashtags with a copy button each, and opens the upload page and the folder.
+- **Upload history.** A new page with every clip you shared: date, game, clip, platform and link. You can search it, and it stays after you delete a project.
+- **"Did I already upload this?"** SharkyClips knows every video you used, even with another name. If you import one again, it tells you when and where its clips were shared.
+- **Free up space.** When the clips are shared, one button deletes the stream video and the made files. It shows first how many GB you get back. Your posts and the history stay.
+- **Titles in the language you want** for each video.
+
+### Improved
+- **Titles made for views:** ALL CAPS with the right letters of your language, fitting emojis, and #Shorts on YouTube. At most 5 hashtags on Instagram.
+- **Every video is checked before it goes out** (9:16, length, format, size) and fixed by itself when needed.
+- **TikTok goes by hand by default now,** because automatic posting can stop at a TikTok check. You can still switch automatic posting on.
+- **Instagram's 4-hour gap is only a warning now.** You can post anyway.
+- **Pro mode shares the same way** as Easy mode.
+
+### Fixed
+- **No more clips that wait without a word.** If YouTube is not connected, today's uploads are used up, or SharkyClips is paused while you play, the clip says so.
+- **A video that YouTube keeps private** is now always shown as private, with a button to open it in YouTube Studio.
+- **SharkyClips counted YouTube uploads with old numbers** and stopped after a few a day. It now uses YouTube's current limit of 100 uploads a day.
+- **If Google blocks new sign-ins** for the app (its limit of 100 users), SharkyClips now says so and what you can do.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Paylaşım yeniden çalışıyor ve artık çok basit: videoyu bırak, YouTube, Instagram ya da TikTok'u işaretle, Paylaş'a bas, klipler hemen yayına çıksın. Her klip yayında olduğunu bağlantısıyla ya da neyin yanlış gittiğini açıkça söyler.
+
+### Yeni
+- **Hemen paylaş.** Seçtiğin bütün klipler hemen yayına çıkar. Artık günlük sınır ayarı ve sonraki günlere planlama yok. Tek sınır YouTube'un bugün izin verdiği sayı ve her zaman "Bugün X YouTube yüklemesi kaldı" yazısını görürsün.
+- **YouTube'un bugünkü izninden fazla mı?** Sen seçersin: kalanları şimdi elle yükle, yarına koy ya da günü kendin seç.
+- **Üç adımda Kolay mod.** Videoyu bırak, bütün Shorts'larını tek büyük ızgarada gör, platformları işaretle ve Paylaş'a bas. Ekranda başka bir şey yok.
+- **Her klip için bir mesaj.** Uygulamada ve Windows bildirimi olarak bağlantısıyla "YouTube'da paylaşıldı ✓" ya da neyin yanlış gittiğini anlatan açık bir mesaj.
+- **Elle yükle,** her klip ve her platform için. SharkyClips doğru videoyu kaydeder, başlığı, açıklamayı ve etiketleri her biri için bir kopyala butonuyla gösterir, yükleme sayfasını ve klasörü açar.
+- **Yükleme geçmişi.** Paylaştığın her klibin olduğu yeni bir sayfa: tarih, oyun, klip, platform ve bağlantı. İçinde arama yapabilirsin ve bir projeyi silsen bile kalır.
+- **"Bunu zaten yükledim mi?"** SharkyClips kullandığın her videoyu, adı değişse bile tanır. Birini yeniden içe aktarırsan kliplerinin ne zaman ve nerede paylaşıldığını söyler.
+- **Yer aç.** Klipler paylaşılınca tek bir buton yayın videosunu ve hazırlanan dosyaları siler. Önce kaç GB geri kazanacağını gösterir. Gönderilerin ve geçmiş kalır.
+- **Her video için istediğin dilde başlıklar.**
+
+### İyileştirmeler
+- **İzlenmek için yazılmış başlıklar:** dilinin doğru harfleriyle TAMAMI BÜYÜK HARF, uygun emojiler ve YouTube'da #Shorts. Instagram'da en fazla 5 etiket.
+- **Her video yayına çıkmadan önce kontrol edilir** (9:16, süre, biçim, boyut) ve gerekirse kendiliğinden düzeltilir.
+- **TikTok artık varsayılan olarak elle gider,** çünkü otomatik paylaşım bir TikTok kontrolünde durabilir. Otomatik paylaşımı yine açabilirsin.
+- **Instagram'ın 4 saat arası artık sadece bir uyarı.** Yine de paylaşabilirsin.
+- **Pro mod da aynı şekilde paylaşır,** tıpkı Kolay mod gibi.
+
+### Düzeltmeler
+- **Artık sessizce bekleyen klip yok.** YouTube bağlı değilse, bugünkü yüklemeler bittiyse ya da sen oynarken SharkyClips duraklatıldıysa klip bunu söyler.
+- **YouTube'un gizli tuttuğu bir video** artık her zaman gizli olarak gösterilir, YouTube Studio'da açmak için bir butonla.
+- **SharkyClips YouTube yüklemelerini eski sayılarla hesaplıyordu** ve günde birkaç tanesinden sonra duruyordu. Artık YouTube'un güncel sınırını kullanıyor: günde 100 yükleme.
+- **Google uygulamaya yeni girişleri engellerse** (100 kullanıcı sınırı), SharkyClips artık bunu ve ne yapabileceğini söylüyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Compartir vuelve a funcionar y ahora es sencillo: suelta un video, marca YouTube, Instagram o TikTok, pulsa Compartir y tus clips salen enseguida. Cada clip te dice claramente si ya está publicado, con un enlace, o qué salió mal.
+
+### Nuevo
+- **Compartir ahora.** Todos los clips que eliges salen enseguida. Ya no hay ajuste de límite diario ni planificación para los días siguientes. El único límite es lo que YouTube permite hoy, y siempre ves "Te quedan X subidas de YouTube hoy".
+- **¿Más de lo que YouTube permite hoy?** Tú eliges: subir el resto a mano ahora, dejarlo para mañana o elegir tú el día.
+- **Modo Fácil en tres pasos.** Suelta un video, mira todos tus Shorts en una gran cuadrícula, marca las plataformas y pulsa Compartir. Nada más en la pantalla.
+- **Un mensaje por cada clip.** "Compartido en YouTube ✓" con un enlace, en la app y como notificación de Windows, o un mensaje claro sobre lo que salió mal.
+- **Subir a mano,** para cada clip y cada plataforma. SharkyClips guarda el video adecuado, muestra el título, la descripción y los hashtags con un botón de copiar para cada uno, y abre la página de subida y la carpeta.
+- **Historial de subidas.** Una página nueva con cada clip que compartiste: fecha, juego, clip, plataforma y enlace. Puedes buscar en ella y se queda aunque borres un proyecto.
+- **"¿Ya subí esto?"** SharkyClips reconoce cada video que usaste, aunque tenga otro nombre. Si importas uno otra vez, te dice cuándo y dónde se compartieron sus clips.
+- **Liberar espacio.** Cuando los clips están compartidos, un botón borra el video del stream y los archivos creados. Antes te muestra cuántos GB recuperas. Tus publicaciones y el historial se quedan.
+- **Títulos en el idioma que quieras** para cada video.
+
+### Mejoras
+- **Títulos hechos para tener vistas:** TODO EN MAYÚSCULAS con las letras correctas de tu idioma, emojis que encajan y #Shorts en YouTube. Como máximo 5 hashtags en Instagram.
+- **Cada video se revisa antes de salir** (9:16, duración, formato, tamaño) y se arregla solo si hace falta.
+- **TikTok ahora va a mano por defecto,** porque la publicación automática puede pararse en un control de TikTok. Puedes volver a activar la publicación automática.
+- **El intervalo de 4 horas de Instagram ahora es solo un aviso.** Puedes publicar igualmente.
+- **El modo Pro comparte de la misma forma** que el modo Fácil.
+
+### Correcciones
+- **Ya no hay clips que esperan sin decir nada.** Si YouTube no está conectado, las subidas de hoy se acabaron o SharkyClips está en pausa mientras juegas, el clip lo dice.
+- **Un video que YouTube deja privado** ahora siempre aparece como privado, con un botón para abrirlo en YouTube Studio.
+- **SharkyClips contaba las subidas de YouTube con números viejos** y se paraba tras unas pocas al día. Ahora usa el límite actual de YouTube: 100 subidas al día.
+- **Si Google bloquea los nuevos inicios de sesión** de la app (su límite de 100 usuarios), SharkyClips ahora lo dice y explica qué puedes hacer.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Compartilhar voltou a funcionar e agora é simples: solte um vídeo, marque YouTube, Instagram ou TikTok, toque em Compartilhar e seus clipes saem na hora. Cada clipe diz claramente se já saiu, com um link, ou o que deu errado.
+
+### Novo
+- **Compartilhar agora.** Todos os clipes que você escolhe saem na hora. Não existe mais ajuste de limite diário nem planejamento para os próximos dias. O único limite é o que o YouTube permite hoje, e você sempre vê "Restam X envios do YouTube hoje".
+- **Mais do que o YouTube permite hoje?** Você escolhe: enviar o resto à mão agora, deixar para amanhã ou escolher o dia.
+- **Modo Fácil em três passos.** Solte um vídeo, veja todos os seus Shorts numa grade grande, marque as plataformas e toque em Compartilhar. Nada mais na tela.
+- **Uma mensagem para cada clipe.** "Compartilhado no YouTube ✓" com um link, no app e como notificação do Windows, ou uma mensagem clara sobre o que deu errado.
+- **Enviar à mão,** para cada clipe e cada plataforma. O SharkyClips salva o vídeo certo, mostra o título, a descrição e as hashtags com um botão de copiar para cada um, e abre a página de envio e a pasta.
+- **Histórico de envios.** Uma página nova com cada clipe que você compartilhou: data, jogo, clipe, plataforma e link. Dá para buscar nela, e ela fica mesmo se você apagar um projeto.
+- **"Eu já enviei isso?"** O SharkyClips reconhece cada vídeo que você usou, mesmo com outro nome. Se você importar um de novo, ele diz quando e onde os clipes foram compartilhados.
+- **Liberar espaço.** Quando os clipes estão compartilhados, um botão apaga o vídeo da live e os arquivos gerados. Antes ele mostra quantos GB você recupera. Seus posts e o histórico ficam.
+- **Títulos no idioma que você quiser** para cada vídeo.
+
+### Melhorias
+- **Títulos feitos para ter visualizações:** TUDO EM MAIÚSCULAS com as letras certas do seu idioma, emojis que combinam e #Shorts no YouTube. No máximo 5 hashtags no Instagram.
+- **Cada vídeo é conferido antes de sair** (9:16, duração, formato, tamanho) e ajustado sozinho quando precisa.
+- **O TikTok agora vai à mão por padrão,** porque a postagem automática pode parar numa verificação do TikTok. Você ainda pode ligar a postagem automática.
+- **O intervalo de 4 horas do Instagram agora é só um aviso.** Você pode postar mesmo assim.
+- **O modo Pro compartilha do mesmo jeito** que o modo Fácil.
+
+### Correções
+- **Chega de clipes esperando sem avisar.** Se o YouTube não estiver conectado, os envios de hoje acabaram ou o SharkyClips está pausado enquanto você joga, o clipe diz isso.
+- **Um vídeo que o YouTube deixa privado** agora sempre aparece como privado, com um botão para abrir no YouTube Studio.
+- **O SharkyClips contava os envios do YouTube com números antigos** e parava depois de poucos por dia. Agora ele usa o limite atual do YouTube: 100 envios por dia.
+- **Se o Google bloquear novos logins** no app (o limite de 100 usuários), o SharkyClips agora avisa e diz o que você pode fazer.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Teilen funktioniert wieder und ist jetzt einfach: Video ablegen, YouTube, Instagram oder TikTok anhaken, Teilen drücken, und deine Clips gehen sofort raus. Jeder Clip sagt dir klar, ob er online ist, mit Link, oder was schiefging.
+
+### Neu
+- **Sofort teilen.** Alle Clips, die du wählst, gehen sofort raus. Es gibt keine Einstellung für ein Tageslimit und keine Planung für die nächsten Tage mehr. Die einzige Grenze ist, was YouTube heute erlaubt, und du siehst immer "Heute noch X YouTube-Uploads".
+- **Mehr, als YouTube heute erlaubt?** Du entscheidest: den Rest jetzt von Hand hochladen, auf morgen legen oder selbst einen Tag wählen.
+- **Einfacher Modus in drei Schritten.** Video ablegen, alle Shorts in einem großen Raster sehen, Plattformen anhaken und Teilen drücken. Sonst nichts auf dem Bildschirm.
+- **Eine Nachricht für jeden Clip.** "Auf YouTube geteilt ✓" mit Link, in der App und als Windows-Benachrichtigung, oder eine klare Nachricht, was schiefging.
+- **Von Hand hochladen,** für jeden Clip und jede Plattform. SharkyClips speichert das passende Video, zeigt Titel, Beschreibung und Hashtags mit je einem Kopieren-Knopf und öffnet die Upload-Seite und den Ordner.
+- **Upload-Verlauf.** Eine neue Seite mit jedem Clip, den du geteilt hast: Datum, Spiel, Clip, Plattform und Link. Du kannst darin suchen, und er bleibt, auch wenn du ein Projekt löschst.
+- **"Habe ich das schon hochgeladen?"** SharkyClips erkennt jedes Video, das du benutzt hast, auch unter anderem Namen. Importierst du eins noch einmal, sagt es dir, wann und wo seine Clips geteilt wurden.
+- **Platz freigeben.** Wenn die Clips geteilt sind, löscht ein Knopf das Stream-Video und die erstellten Dateien. Vorher zeigt er, wie viele GB du zurückbekommst. Deine Beiträge und der Verlauf bleiben.
+- **Titel in der Sprache, die du willst,** für jedes Video.
+
+### Verbessert
+- **Titel für mehr Aufrufe:** ALLES IN GROSSBUCHSTABEN mit den richtigen Buchstaben deiner Sprache, passende Emojis und #Shorts auf YouTube. Höchstens 5 Hashtags auf Instagram.
+- **Jedes Video wird geprüft, bevor es rausgeht** (9:16, Länge, Format, Größe), und bei Bedarf von selbst korrigiert.
+- **TikTok geht jetzt standardmäßig von Hand,** weil automatisches Posten bei einer TikTok-Prüfung anhalten kann. Automatisches Posten kannst du weiter einschalten.
+- **Der 4-Stunden-Abstand bei Instagram ist jetzt nur noch eine Warnung.** Du kannst trotzdem posten.
+- **Der Pro-Modus teilt genauso** wie der einfache Modus.
+
+### Behoben
+- **Keine Clips mehr, die ohne ein Wort warten.** Wenn YouTube nicht verbunden ist, die heutigen Uploads aufgebraucht sind oder SharkyClips pausiert, während du spielst, sagt der Clip das.
+- **Ein Video, das YouTube privat lässt,** wird jetzt immer als privat gezeigt, mit einem Knopf, um es in YouTube Studio zu öffnen.
+- **SharkyClips hat YouTube-Uploads mit alten Zahlen gezählt** und nach wenigen am Tag aufgehört. Jetzt nutzt es YouTubes aktuelles Limit von 100 Uploads am Tag.
+- **Wenn Google neue Anmeldungen** für die App sperrt (seine Grenze von 100 Nutzern), sagt SharkyClips das jetzt und was du tun kannst.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Le partage remarche et il est maintenant simple : dépose une vidéo, coche YouTube, Instagram ou TikTok, appuie sur Partager, et tes clips partent tout de suite. Chaque clip te dit clairement s'il est en ligne, avec un lien, ou ce qui n'a pas marché.
+
+### Nouveau
+- **Partager maintenant.** Tous les clips que tu choisis partent tout de suite. Il n'y a plus de réglage de limite par jour ni de planification sur les jours suivants. La seule limite est ce que YouTube autorise aujourd'hui, et tu vois toujours "Encore X envois YouTube aujourd'hui".
+- **Plus que ce que YouTube autorise aujourd'hui ?** Tu choisis : envoyer le reste à la main maintenant, le mettre à demain ou choisir toi-même le jour.
+- **Le mode Facile en trois étapes.** Dépose une vidéo, vois tous tes Shorts dans une grande grille, coche les plateformes et appuie sur Partager. Rien d'autre à l'écran.
+- **Un message pour chaque clip.** "Partagé sur YouTube ✓" avec un lien, dans l'appli et en notification Windows, ou un message clair sur ce qui n'a pas marché.
+- **Envoyer à la main,** pour chaque clip et chaque plateforme. SharkyClips enregistre la bonne vidéo, montre le titre, la description et les hashtags avec un bouton Copier pour chacun, et ouvre la page d'envoi et le dossier.
+- **Historique des envois.** Une nouvelle page avec chaque clip que tu as partagé : date, jeu, clip, plateforme et lien. Tu peux y chercher, et il reste même si tu supprimes un projet.
+- **« Est-ce que j'ai déjà envoyé ça ? »** SharkyClips reconnaît chaque vidéo que tu as utilisée, même sous un autre nom. Si tu en importes une à nouveau, il te dit quand et où ses clips ont été partagés.
+- **Libérer de l'espace.** Quand les clips sont partagés, un bouton supprime la vidéo du stream et les fichiers créés. Il montre d'abord combien de Go tu récupères. Tes publications et l'historique restent.
+- **Des titres dans la langue que tu veux** pour chaque vidéo.
+
+### Améliorations
+- **Des titres faits pour les vues :** TOUT EN MAJUSCULES avec les bonnes lettres de ta langue, des emojis qui collent et #Shorts sur YouTube. Au plus 5 hashtags sur Instagram.
+- **Chaque vidéo est vérifiée avant de partir** (9:16, durée, format, taille) et corrigée toute seule si besoin.
+- **TikTok passe maintenant à la main par défaut,** car la publication automatique peut s'arrêter à une vérification de TikTok. Tu peux toujours activer la publication automatique.
+- **L'écart de 4 heures d'Instagram n'est plus qu'un avertissement.** Tu peux publier quand même.
+- **Le mode Pro partage de la même façon** que le mode Facile.
+
+### Corrections
+- **Fini les clips qui attendent sans rien dire.** Si YouTube n'est pas connecté, si les envois du jour sont épuisés ou si SharkyClips est en pause pendant que tu joues, le clip le dit.
+- **Une vidéo que YouTube garde privée** s'affiche maintenant toujours comme privée, avec un bouton pour l'ouvrir dans YouTube Studio.
+- **SharkyClips comptait les envois YouTube avec d'anciens chiffres** et s'arrêtait après quelques-uns par jour. Il utilise maintenant la limite actuelle de YouTube : 100 envois par jour.
+- **Si Google bloque les nouvelles connexions** à l'appli (sa limite de 100 utilisateurs), SharkyClips le dit maintenant et explique ce que tu peux faire.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A megosztás újra működik, és most egyszerű: húzz be egy videót, jelöld be a YouTube-ot, az Instagramot vagy a TikTokot, nyomd meg a Megosztás gombot, és a klipjeid azonnal kimennek. Minden klip világosan megmondja, hogy kint van-e, linkkel, vagy hogy mi ment félre.
+
+### Új
+- **Azonnali megosztás.** Minden klip, amit kiválasztasz, azonnal kimegy. Nincs többé napi korlát beállítás, és nincs tervezés a következő napokra. Az egyetlen korlát az, amit a YouTube ma enged, és mindig látod: "Ma még X YouTube-feltöltés maradt".
+- **Több, mint amit a YouTube ma enged?** Te döntesz: a többit most kézzel töltöd fel, holnapra teszed, vagy magad választasz napot.
+- **Könnyű mód három lépésben.** Húzz be egy videót, nézd meg az összes Shortsodat egy nagy rácsban, jelöld be a platformokat, és nyomd meg a Megosztás gombot. Semmi más nincs a képernyőn.
+- **Üzenet minden klipről.** "Megosztva: YouTube ✓" linkkel, az appban és Windows-értesítésként, vagy világos üzenet arról, mi ment félre.
+- **Feltöltés kézzel,** minden klipnél és minden platformon. A SharkyClips elmenti a megfelelő videót, megmutatja a címet, a leírást és a hashtageket, mindegyiket saját másolás gombbal, és megnyitja a feltöltési oldalt és a mappát.
+- **Feltöltési előzmények.** Új oldal minden megosztott kliped adataival: dátum, játék, klip, platform és link. Kereshetsz benne, és megmarad akkor is, ha törölsz egy projektet.
+- **"Ezt már feltöltöttem?"** A SharkyClips felismer minden videót, amit használtál, más néven is. Ha újra beimportálsz egyet, megmondja, mikor és hol osztottad meg a klipjeit.
+- **Hely felszabadítása.** Ha a klipek meg vannak osztva, egy gomb törli a streamvideót és az elkészült fájlokat. Előbb megmutatja, hány GB-ot kapsz vissza. A bejegyzéseid és az előzmények megmaradnak.
+- **Címek a kívánt nyelven** minden videóhoz.
+
+### Fejlesztések
+- **Nézettségre írt címek:** CSUPA NAGYBETŰ a nyelved helyes betűivel, illő emojik és #Shorts a YouTube-on. Az Instagramon legfeljebb 5 hashtag.
+- **Minden videót ellenőriz, mielőtt kimegy** (9:16, hossz, formátum, méret), és ha kell, magától kijavítja.
+- **A TikTok most alapból kézzel megy,** mert az automatikus közzététel megállhat egy TikTok-ellenőrzésnél. Az automatikus közzétételt továbbra is bekapcsolhatod.
+- **Az Instagram 4 órás szünete most már csak figyelmeztetés.** Így is közzéteheted.
+- **A Pro mód ugyanúgy oszt meg,** mint a Könnyű mód.
+
+### Javítások
+- **Nincs több szó nélkül váró klip.** Ha a YouTube nincs csatlakoztatva, elfogytak a mai feltöltések, vagy a SharkyClips szünetel, amíg játszol, a klip megmondja.
+- **Az a videó, amit a YouTube privátként hagy,** most mindig privátként látszik, egy gombbal, ami megnyitja a YouTube Studióban.
+- **A SharkyClips régi számokkal számolta a YouTube-feltöltéseket,** és napi néhány után leállt. Most a YouTube jelenlegi korlátját használja: napi 100 feltöltést.
+- **Ha a Google letiltja az új bejelentkezéseket** az appnál (a 100 felhasználós korlát), a SharkyClips most megmondja, és azt is, mit tehetsz.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Публикация снова работает и стала простой: перетащите видео, отметьте YouTube, Instagram или TikTok, нажмите «Поделиться», и клипы выйдут сразу. Каждый клип ясно говорит, вышел ли он (со ссылкой) или что пошло не так.
+
+### Новое
+- **Публикация сразу.** Все выбранные клипы выходят сразу. Больше нет настройки дневного лимита и планирования на следующие дни. Единственный лимит — то, что YouTube разрешает сегодня, и вы всегда видите, сколько загрузок на YouTube осталось сегодня.
+- **Больше, чем YouTube разрешает сегодня?** Вы выбираете: загрузить остальные вручную сейчас, перенести на завтра или выбрать день самому.
+- **Простой режим в три шага.** Перетащите видео, посмотрите все Shorts в одной большой сетке, отметьте платформы и нажмите «Поделиться». На экране больше ничего нет.
+- **Сообщение о каждом клипе.** «Опубликовано в YouTube ✓» со ссылкой — в приложении и как уведомление Windows, или понятное сообщение о том, что пошло не так.
+- **Загрузить вручную** — для каждого клипа и каждой платформы. SharkyClips сохраняет нужное видео, показывает название, описание и хештеги с отдельной кнопкой копирования и открывает страницу загрузки и папку.
+- **История загрузок.** Новая страница со всеми клипами, которыми вы поделились: дата, игра, клип, платформа и ссылка. По ней можно искать, и она остаётся даже после удаления проекта.
+- **«Я это уже загружал?»** SharkyClips узнаёт каждое видео, которое вы использовали, даже под другим именем. Если вы снова импортируете его, приложение скажет, когда и где публиковались его клипы.
+- **Освободить место.** Когда клипы опубликованы, одна кнопка удаляет видео стрима и готовые файлы. Сначала она показывает, сколько ГБ вы освободите. Ваши публикации и история остаются.
+- **Названия на нужном языке** для каждого видео.
+
+### Улучшения
+- **Названия для просмотров:** ВСЁ ЗАГЛАВНЫМИ с правильными буквами вашего языка, подходящие эмодзи и #Shorts на YouTube. Не больше 5 хештегов в Instagram.
+- **Каждое видео проверяется перед выходом** (9:16, длина, формат, размер) и при необходимости исправляется само.
+- **TikTok теперь по умолчанию вручную,** потому что автопубликация может остановиться на проверке TikTok. Автопубликацию можно включить снова.
+- **Интервал 4 часа в Instagram теперь только предупреждение.** Публиковать всё равно можно.
+- **Режим Pro публикует так же,** как Простой режим.
+
+### Исправления
+- **Больше нет клипов, которые молча ждут.** Если YouTube не подключён, сегодняшние загрузки закончились или SharkyClips на паузе, пока вы играете, клип об этом говорит.
+- **Видео, которое YouTube оставил приватным,** теперь всегда показано как приватное, с кнопкой, чтобы открыть его в YouTube Studio.
+- **SharkyClips считал загрузки на YouTube по старым цифрам** и останавливался после нескольких в день. Теперь он использует текущий лимит YouTube — 100 загрузок в день.
+- **Если Google блокирует новые входы** в приложение (его лимит в 100 пользователей), SharkyClips теперь говорит об этом и о том, что можно сделать.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+عادت المشاركة للعمل وأصبحت بسيطة: أسقط فيديو، وحدد YouTube أو Instagram أو TikTok، واضغط مشاركة، فتُنشر مقاطعك فورًا. كل مقطع يخبرك بوضوح إن كان منشورًا مع رابط، أو ما الذي حدث خطأ.
+
+### جديد
+- **المشاركة الآن.** كل المقاطع التي تختارها تُنشر فورًا. لم يعد هناك إعداد لحد يومي ولا تخطيط للأيام التالية. الحد الوحيد هو ما يسمح به YouTube اليوم، وترى دائمًا عدد عمليات رفع YouTube المتبقية اليوم.
+- **أكثر مما يسمح به YouTube اليوم؟** أنت تختار: ارفع الباقي يدويًا الآن، أو أجّله إلى الغد، أو اختر اليوم بنفسك.
+- **الوضع السهل في ثلاث خطوات.** أسقط فيديو، وشاهد كل مقاطع Shorts في شبكة كبيرة واحدة، وحدد المنصات واضغط مشاركة. لا شيء آخر على الشاشة.
+- **رسالة لكل مقطع.** "تمت المشاركة على YouTube ✓" مع رابط، في التطبيق وكإشعار Windows، أو رسالة واضحة عما حدث خطأ.
+- **الرفع يدويًا** لكل مقطع وكل منصة. يحفظ SharkyClips الفيديو المناسب، ويعرض العنوان والوصف والوسوم مع زر نسخ لكل منها، ويفتح صفحة الرفع والمجلد.
+- **سجل الرفع.** صفحة جديدة بكل مقطع شاركته: التاريخ واللعبة والمقطع والمنصة والرابط. يمكنك البحث فيها، وتبقى بعد حذف المشروع.
+- **"هل رفعت هذا من قبل؟"** يتعرف SharkyClips على كل فيديو استخدمته، حتى باسم آخر. إذا استوردته مرة أخرى، يخبرك متى وأين نُشرت مقاطعه.
+- **تحرير المساحة.** عندما تُنشر المقاطع، يحذف زر واحد فيديو البث والملفات المُنتجة. ويعرض أولًا كم غيغابايت ستستعيد. تبقى منشوراتك والسجل.
+- **عناوين باللغة التي تريدها** لكل فيديو.
+
+### تحسينات
+- **عناوين مكتوبة لجذب المشاهدات:** كلها بأحرف كبيرة مع الأحرف الصحيحة للغتك، ورموز تعبيرية مناسبة، و#Shorts على YouTube. 5 وسوم كحد أقصى على Instagram.
+- **يُفحص كل فيديو قبل نشره** (9:16، المدة، الصيغة، الحجم) ويُصلَح وحده عند الحاجة.
+- **أصبح TikTok يدويًا افتراضيًا،** لأن النشر التلقائي قد يتوقف عند فحص من TikTok. ما زال يمكنك تشغيل النشر التلقائي.
+- **فاصل الساعات الأربع في Instagram أصبح مجرد تحذير.** يمكنك النشر على أي حال.
+- **وضع Pro يشارك بالطريقة نفسها** مثل الوضع السهل.
+
+### إصلاحات
+- **لا مزيد من المقاطع التي تنتظر دون كلمة.** إذا لم يكن YouTube متصلًا، أو نفدت عمليات رفع اليوم، أو كان SharkyClips متوقفًا مؤقتًا أثناء لعبك، يقول المقطع ذلك.
+- **الفيديو الذي يبقيه YouTube خاصًا** يظهر الآن دائمًا كخاص، مع زر لفتحه في YouTube Studio.
+- **كان SharkyClips يحسب عمليات رفع YouTube بأرقام قديمة** ويتوقف بعد بضع عمليات في اليوم. أصبح يستخدم الآن حد YouTube الحالي: 100 عملية رفع في اليوم.
+- **إذا حظرت Google عمليات تسجيل الدخول الجديدة** للتطبيق (حدها البالغ 100 مستخدم)، يقول SharkyClips ذلك الآن ويشرح ما يمكنك فعله.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+分享又能正常使用了，而且现在很简单：拖入视频，勾选 YouTube、Instagram 或 TikTok，点“分享”，剪辑就会立即发布。每个剪辑都会清楚地告诉你它已发布（附链接），或者哪里出了问题。
+
+### 新功能
+- **立即分享。** 你选择的所有剪辑都会立即发布。不再有每日上限设置，也不再安排到之后几天。唯一的限制是 YouTube 今天允许的数量，你随时能看到“今天还剩 X 次 YouTube 上传”。
+- **超过 YouTube 今天允许的数量？** 由你选择：现在手动上传剩下的、放到明天，或者自己选一天。
+- **三步完成的简单模式。** 拖入视频，在一个大网格中看到所有 Shorts，勾选平台，点“分享”。屏幕上没有别的东西。
+- **每个剪辑都有消息。** “已分享到 YouTube ✓”并附链接，在应用中和 Windows 通知中显示，或者清楚说明哪里出了问题。
+- **手动上传**，适用于每个剪辑和每个平台。SharkyClips 会保存合适的视频，显示标题、描述和话题标签，每项都有复制按钮，并打开上传页面和文件夹。
+- **上传历史。** 新页面列出你分享过的每个剪辑：日期、游戏、剪辑、平台和链接。可以搜索，删除项目后也会保留。
+- **“我已经上传过这个了吗？”** SharkyClips 认得你用过的每个视频，即使换了名字。如果你再次导入，它会告诉你这些剪辑何时、在哪里分享过。
+- **释放空间。** 剪辑分享完后，一个按钮就能删除直播视频和生成的文件，并先显示能腾出多少 GB。你的帖子和历史会保留。
+- **每个视频都可以选择标题语言。**
+
+### 改进
+- **为播放量而写的标题：** 全部大写并使用你语言的正确字母，配上合适的表情，YouTube 上加 #Shorts。Instagram 最多 5 个话题标签。
+- **每个视频发布前都会检查**（9:16、时长、格式、大小），需要时自动修正。
+- **TikTok 现在默认手动发布，** 因为自动发布可能在 TikTok 的验证处停下。你仍然可以开启自动发布。
+- **Instagram 的 4 小时间隔现在只是提醒。** 你仍然可以发布。
+- **Pro 模式与简单模式的分享方式相同。**
+
+### 修复
+- **不再有默默等待的剪辑。** 如果 YouTube 未连接、今天的上传次数已用完，或者你玩游戏时 SharkyClips 暂停了，剪辑会说明原因。
+- **被 YouTube 保留为私享的视频** 现在总会显示为私享，并有按钮可在 YouTube Studio 中打开。
+- **SharkyClips 以前用旧数字计算 YouTube 上传次数，** 每天上传几次后就停了。现在使用 YouTube 当前的限制：每天 100 次上传。
+- **如果 Google 阻止应用的新登录**（其 100 位用户上限），SharkyClips 现在会说明情况以及你可以怎么做。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+共有がまた動くようになり、とても簡単になりました。動画をドロップし、YouTube・Instagram・TikTok にチェックを入れて「共有」を押すと、クリップはすぐに公開されます。各クリップは、公開されたか（リンク付き）、何がうまくいかなかったかをはっきり伝えます。
+
+### 新機能
+- **すぐに共有。** 選んだクリップはすべてすぐに公開されます。1 日の上限の設定や、翌日以降への予約はなくなりました。上限は YouTube が今日許可する数だけで、「今日の YouTube アップロード残り X 件」がいつでも見えます。
+- **YouTube の今日の上限を超える？** 残りを今すぐ手動でアップロードするか、明日に回すか、自分で日を選ぶかを選べます。
+- **3 ステップのかんたんモード。** 動画をドロップし、すべての Shorts を大きなグリッドで見て、プラットフォームにチェックを入れて「共有」を押すだけ。画面にはほかに何もありません。
+- **クリップごとにメッセージ。** 「YouTube に共有しました ✓」とリンクがアプリと Windows の通知に表示されます。うまくいかなかったときは、その理由がはっきり表示されます。
+- **手動でアップロード**（すべてのクリップ、すべてのプラットフォーム）。SharkyClips が適切な動画を保存し、タイトル、説明、ハッシュタグをそれぞれコピーボタン付きで表示し、アップロードページとフォルダーを開きます。
+- **アップロード履歴。** 共有したすべてのクリップ（日付、ゲーム、クリップ、プラットフォーム、リンク）を表示する新しいページです。検索でき、プロジェクトを削除しても残ります。
+- **「これはもうアップロードした？」** SharkyClips は使った動画を、名前が変わっていても見分けます。もう一度取り込むと、そのクリップをいつどこで共有したかを教えます。
+- **容量を空ける。** クリップを共有し終えたら、ボタン 1 つで配信動画と作成したファイルを削除できます。先に何 GB 空くかを表示します。投稿と履歴は残ります。
+- **動画ごとに好きな言語のタイトル。**
+
+### 改善
+- **再生数のためのタイトル：** 言語に合った正しい文字ですべて大文字、合う絵文字、YouTube では #Shorts。Instagram のハッシュタグは最大 5 個。
+- **公開前にすべての動画をチェック**（9:16、長さ、形式、サイズ）し、必要なら自動で直します。
+- **TikTok は標準で手動になりました。** 自動投稿は TikTok の確認で止まることがあるためです。自動投稿はオンにもできます。
+- **Instagram の 4 時間の間隔は警告だけになりました。** そのまま投稿できます。
+- **Pro モードもかんたんモードと同じ方法で共有します。**
+
+### 修正
+- **何も言わずに待つクリップはもうありません。** YouTube が未接続、今日のアップロードを使い切った、ゲーム中で SharkyClips が一時停止している、といった場合はクリップがそう伝えます。
+- **YouTube が非公開のままにした動画** は常に非公開として表示され、YouTube Studio で開くボタンが付きます。
+- **SharkyClips は YouTube のアップロード数を古い数値で数えていて、** 1 日に数件で止まっていました。今は YouTube の現在の上限（1 日 100 件）を使います。
+- **Google がアプリへの新しいログインをブロックしたとき**（100 ユーザーの上限）、SharkyClips がそのことと、できることを伝えます。
+
+</details>
+
 ## [1.2.67] - 2026-11-26
 A small fix for Windows: when YouTube stops accepting your sign-in, SharkyClips now always asks you to connect again, even if Windows is busy with the sign-in file for a moment.
 

@@ -1,11 +1,11 @@
-// 1.2.66: the one dialog after "Share": 1 where (platform switches for all picked clips),
-// optional "Edit per clip" (texts + platforms of each clip), 2 the summary (what goes where and
-// when, how many of today's uploads it uses) -> Publish. The server makes the plan.
+// 1.2.66 / 1.2.68 Pro "Review & edit": 1 where (platform switches for all picked clips),
+// optional "Edit per clip" (texts + platforms of each clip), 2 the summary (what goes where, now;
+// a choice for what doesn't fit in today's YouTube uploads) -> Publish. The server makes the plan.
 import { useEffect, useMemo, useState } from "react";
 import { ApiError } from "../api";
 import { useI18n } from "../i18n";
 import { publishApi, TARGET_NAME, type PublishView, type Target } from "../multipost";
-import { shareApi, whenText, type PlanRow, type ShareBoard, type SharePlan } from "../share";
+import { shareApi, whenText, type Overflow, type PlanRow, type ShareBoard, type SharePlan } from "../share";
 import { useToast } from "../toast";
 import { ConnectDialog, accountsChanged } from "./Accounts";
 import { Icon } from "./Icons";
@@ -44,6 +44,7 @@ export function ShareFlow({
   const [planErr, setPlanErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [overflow, setOverflow] = useState<Overflow>("manual");
   const [connect, setConnect] = useState<Target | null>(null);
   const cards = useMemo(() => board.clips.filter((c) => clips.includes(c.id)), [board.clips, clips]);
   const dupes = cards.filter((c) => c.status.kind !== "not_shared" && c.status.kind !== "failed");
@@ -53,6 +54,7 @@ export function ShareFlow({
     platforms: targets,
     per_clip: Object.fromEntries(Object.entries(per).filter(([c]) => clips.includes(c)).map(([c, p]) => [c, { platforms: p }])),
     consent,
+    ...(plan && plan.over > 0 ? { overflow } : {}),
   });
 
   useEffect(() => {
@@ -70,12 +72,7 @@ export function ShareFlow({
     shareApi
       .publish(pid, body())
       .then((r) => {
-        const later = r.plan.count - r.plan.uses_today;
-        toast({
-          kind: "ok",
-          text: t("share.started", { n: r.plan.count }),
-          hint: later > 0 ? t("share.started_later", { n: num(later) }) : undefined,
-        });
+        toast({ kind: "ok", text: t("share.started_now", { n: num(r.plan.count) }), hint: t("share.started_hint") });
         onStarted();
       })
       .catch((e) => {
@@ -221,7 +218,15 @@ export function ShareFlow({
         )}
 
         {step === "summary" && (
-          <Summary plan={plan} err={planErr} consent={consent} onConsent={setConsent} onEdit={() => setStep("edit")} />
+          <Summary
+            plan={plan}
+            err={planErr}
+            consent={consent}
+            onConsent={setConsent}
+            onEdit={() => setStep("edit")}
+            overflow={overflow}
+            onOverflow={setOverflow}
+          />
         )}
       </Modal>
       {connect && (
@@ -331,7 +336,14 @@ function EditRow({
                   </legend>
                   <label className="field">
                     <span className="field-label">{t("share.f_title")}</span>
-                    <input className="input" dir="auto" value={yt.title} maxLength={view.limits.youtube.title} onChange={(e) => setYt({ ...yt, title: e.target.value })} />
+                    <input
+                      className="input"
+                      dir="auto"
+                      data-testid="share-title-input"
+                      value={yt.title}
+                      maxLength={view.limits.youtube.title}
+                      onChange={(e) => setYt({ ...yt, title: e.target.value })}
+                    />
                   </label>
                   <label className="field">
                     <span className="field-label">{t("share.f_description")}</span>
@@ -354,6 +366,7 @@ function EditRow({
                       className="input"
                       dir="auto"
                       rows={4}
+                      data-testid="share-text-input"
                       value={cap[p]}
                       maxLength={view.limits[p].caption}
                       onChange={(e) => setCap({ ...cap, [p]: e.target.value })}
@@ -390,14 +403,18 @@ function Summary({
   consent,
   onConsent,
   onEdit,
+  overflow,
+  onOverflow,
 }: {
   plan: SharePlan | null;
   err: string | null;
   consent: boolean;
   onConsent: (v: boolean) => void;
   onEdit: () => void;
+  overflow: Overflow;
+  onOverflow: (v: Overflow) => void;
 }) {
-  const { t, lang, num } = useI18n();
+  const { t, num } = useI18n();
   if (err)
     return (
       <div className="notice notice-danger" role="alert">
@@ -413,9 +430,6 @@ function Summary({
     );
   const going = plan.rows.filter((r) => r.platforms.length);
   const skipped = plan.rows.filter((r) => !r.platforms.length);
-  const later = plan.count - plan.uses_today;
-  const dayName = (d: string) =>
-    new Date(`${d}T12:00:00`).toLocaleDateString(`${lang}-u-nu-latn`, { weekday: "long", day: "numeric", month: "short" });
   return (
     <div className="share-summary">
       <div className="share-sum-stats">
@@ -430,18 +444,22 @@ function Summary({
           <span>{t("share.sum_today")}</span>
         </div>
         <div>
-          <b className="mono">{num(later)}</b>
-          <span>{t("share.sum_later")}</span>
+          <b className="mono">{num(plan.over)}</b>
+          <span>{t("share.sum_over")}</span>
         </div>
       </div>
-      {later > 0 && (
-        <p className="share-sum-note">
-          <Icon name="calendar" size={15} /> {t("share.sum_rollover", { limit: num(plan.limit.limit) })}{" "}
-          {plan.days
-            .filter((d) => d.day !== plan.rows.find((r) => !r.rolled && r.day)?.day)
-            .map((d) => t("share.sum_day", { day: dayName(d.day), n: num(d.count) }))
-            .join(" · ")}
-        </p>
+      {plan.over > 0 && (
+        <div className="share-sum-note" role="group" aria-label={t("share.over_title", { fit: num(plan.uses_today), over: num(plan.over) })}>
+          <Icon name="alert" size={15} /> {t("share.over_title", { fit: num(plan.uses_today), over: num(plan.over) })}{" "}
+          <label className="share-radio-inline">
+            <input type="radio" name="sf-over" checked={overflow === "manual"} onChange={() => onOverflow("manual")} />{" "}
+            {t("share.over_manual")}
+          </label>
+          <label className="share-radio-inline">
+            <input type="radio" name="sf-over" checked={overflow === "tomorrow"} onChange={() => onOverflow("tomorrow")} />{" "}
+            {t("share.over_tomorrow")}
+          </label>
+        </div>
       )}
       <ol className="share-sum-rows">
         {going.map((r) => (
@@ -513,6 +531,11 @@ function SumRow({ r, gap, onEdit }: { r: PlanRow; gap: number; onEdit: () => voi
           <Icon name="check" size={12} /> {t("share.already_on", { where: r.already.map((a) => TARGET_NAME[a.platform]).join(", ") })}
         </div>
       )}
+      {(r.warnings ?? []).map((w) => (
+        <div key={`w-${w.code}`} className="share-sum-already muted">
+          <Icon name="alert" size={12} /> {t("share.ig_warn_title")}
+        </div>
+      ))}
       {(r.dropped ?? []).map((x) => (
         <div key={`d-${x.platform}-${x.code}`} className="share-sum-already muted">
           <Icon name="x" size={12} /> {t("share.left_out_on", { name: x.platform === "all" ? "" : TARGET_NAME[x.platform] })}{" "}

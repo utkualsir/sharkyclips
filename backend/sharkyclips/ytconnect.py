@@ -6,13 +6,15 @@ Google sends the browser back to http://127.0.0.1:<port>/?code=..&state=..; the 
 finishes the sign-in, shows a SharkyClips-styled result page in the UI language and stops.
 The UI polls get(flow_id) (once a second), so the channel shows up the moment Google is done.
 
-States: waiting -> ok | no_channel | choose_channel | cancelled | error | expired.
+States: waiting -> ok | no_channel | choose_channel | cancelled | error | expired | blocked (1.2.68:
+Google refuses new sign-ins, e.g. the 100-user cap of an app Google has not verified yet).
 Only one sign-in runs at a time; a new start() cancels the old one.
 """
 
 from __future__ import annotations
 
 import os
+import re
 import threading
 import time
 import urllib.parse
@@ -150,8 +152,16 @@ def _handle(flow: dict, q: dict) -> None:
     """Google came back: finish the sign-in and decide what the user sees."""
     err = q.get("error")
     if err:
-        if err == "access_denied":  # Cancel on Google's screen
-            _finish(flow, "cancelled", reason="google")
+        desc = str(q.get("error_description") or "")
+        if err == "access_denied" and not re.search(r"cap|limit|disabled|blocked", desc, re.I):
+            _finish(flow, "cancelled", reason="google")  # Cancel on Google's screen
+        elif re.search(r"user.?cap|cap|disabled|unverified|blocked", f"{err} {desc}", re.I) or err in (
+                "org_internal", "admin_policy_enforced", "disallowed_useragent"):
+            # 1.2.68: Google refuses NEW sign-ins (the app's 100-user cap while it isn't verified)
+            _finish(flow, "blocked", "Google blocked the sign-in for this app.",
+                    "The app may have reached Google's limit of 100 users while it waits for Google's "
+                    "check. Use your own Google project (Settings > YouTube > Advanced) or try again later.",
+                    "user_cap")
         else:
             _finish(flow, "error", f"Google said: {err}", "Try again.", err)
         return

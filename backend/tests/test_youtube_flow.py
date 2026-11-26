@@ -124,6 +124,10 @@ def test_api_errors_get_hints_and_quota_exceeded_empties_the_counter(http):
     with pytest.raises(SharkyClipsError) as e:
         youtube.channel()
     assert "midnight Pacific" in (e.value.hint or "")
+    # 1.2.68: a full units bucket shows 0 units left; uploads have their own bucket and stay
+    assert youtube.quota_used() == youtube.daily_quota() and youtube.quota_view()["uploads_left"] == 100
+    # Google says the uploads are used up: 0 uploads left until the reset
+    youtube._api_error(Res(403, {"error": {"message": "Quota", "errors": [{"reason": "quotaExceeded"}]}}), "upload")
     assert youtube.quota_view()["uploads_left"] == 0
 
 
@@ -145,7 +149,7 @@ def test_resumable_upload_in_chunks(http, tmp_path):
     ranges = [c[2]["headers"]["Content-Range"] for c in fake.calls[1:]]
     assert ranges == [f"bytes 0-{youtube.CHUNK - 1}/{size}", f"bytes {youtube.CHUNK}-{size - 1}/{size}"]
     assert "p:c01" not in youtube._sessions()  # finished: the session is forgotten
-    assert youtube.quota_used() >= youtube.COST["upload"]
+    assert youtube.uploads_used() == 1
 
 
 def test_upload_continues_after_a_restart(http, tmp_path):
@@ -178,7 +182,7 @@ def test_upload_survives_network_errors_and_gives_up_on_rejections(http, tmp_pat
 def test_upload_refuses_without_quota(http, tmp_path):
     _connect(http)
     path, _ = _video(tmp_path, 100)
-    youtube.spend(youtube.daily_quota())
+    youtube._bump(full_uploads=True)
     fake = http()
     with pytest.raises(SharkyClipsError):
         youtube.upload(path, {}, key="p:c05")

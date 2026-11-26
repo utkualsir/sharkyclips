@@ -144,14 +144,14 @@ def test_the_chrome_briefs_never_send_anyone_to_meta(tmp_path, monkeypatch):
 
 
 def test_daily_cap_and_one_automatic_retry():
-    # 1.2.66: the daily upload limit tops out at 6 (YouTube's free quota), 5 by default
+    # 1.2.68: automatic TikTok has its own safe number (3 by default, at most 6), not YouTube's quota
     assert PF.DAILY_POST_MAX == 6 and PF.AUTO_RETRY_MAX == 1
     assert M.MAX_TRIES == 2 and len(P.BACKOFF_S) == 1
-    config.update(publish_daily_limit=10, tiktok_auto_daily=10)
+    config.update(tiktok_auto_daily=None)
     try:
-        assert P.daily_limit() == 6 and TB.daily_cap() == 6 and TB.set_daily_cap(15) == 6
+        assert TB.daily_cap() == 3 and TB.set_daily_cap(15) == 6 and TB.set_daily_cap(2) == 2
     finally:
-        config.update(publish_daily_limit=None, tiktok_auto_daily=3, tiktok_auto_daily_v=None)
+        config.update(tiktok_auto_daily=3, tiktok_auto_daily_v=None)
     # one automatic retry, then it waits for you
     item = {"attempts": 0}
     item = P.after_failure(item, RuntimeError("boom"))

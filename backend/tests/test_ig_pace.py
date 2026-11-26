@@ -124,24 +124,22 @@ def test_hashtags_are_few_and_rotate_away_from_the_last_post():
     assert igpace.pick_hashtags(["a", "b"], 0, {"a", "b"}) == ["a", "b"]  # nothing else to offer: kept
 
 
-def test_instagram_now_right_after_another_waits_and_reminds_later(manual):  # noqa: F811
+def test_instagram_now_right_after_another_is_never_delayed(manual):  # noqa: F811
+    # 1.2.68: the 4-hour pace is a warning in Share (you can post anyway), never an automatic delay
     project = _project("pub-igpace-now")
     _rendered(project, "c01")
     _rendered(project, "c02")
     c = _client()
     r = c.post(f"/api/publish/{project.id}/c01", json={"platforms": ["reels"], "when": "now"})
     assert r.status_code == 200, r.text
-    assert "paced_to" not in r.json()["results"]["reels"]
     _wait(_idle)
     r = c.post(f"/api/publish/{project.id}/c02", json={"platforms": ["reels"], "when": "now"})
     assert r.status_code == 200, r.text
     res = r.json()["results"]["reels"]
-    assert res["mode"] == "semi" and res["pace_hours"] == igpace.MIN_GAP_HOURS
-    gap = datetime.fromisoformat(res["paced_to"]) - datetime.now(timezone.utc)
-    assert timedelta(hours=3, minutes=55) < gap <= timedelta(hours=4, minutes=1)
+    assert res["mode"] == "semi" and "paced_to" not in res
     _wait(_idle)
     rec = _rec(project, "c02", "reels")
-    assert rec["remind_at"] and not rec.get("notified_at")  # no "post it now": a reminder at that time
+    assert not rec.get("remind_at") and rec["status"] == "ready"  # ready to post by hand now
 
 
 def test_no_identical_instagram_captions_in_a_row(manual):  # noqa: F811

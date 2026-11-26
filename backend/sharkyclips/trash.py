@@ -1072,6 +1072,100 @@ def cleanup(project_id: str, what: list[str]) -> dict:
     return {"freed_now": freed_now, "trashed": trashed, "usage": usage(project)}
 
 
+# ===================================================================== 1.2.68 "Free up space"
+
+FREE_FILES = ("audio.wav",)
+FREE_DIRS = ("clips", "exports", "cache")
+VIDEO_EXT = (".mp4", ".mkv", ".mov", ".webm", ".flv", ".ts", ".m4v", ".avi")
+
+
+def free_parts(project: Project) -> dict:
+    """What "Free up space" deletes: {"files": [Path], "source_bytes", "render_bytes", "original"}.
+    Only files inside the project folder, plus (optional) the original recording it was made from."""
+    src = project.source_path
+    files: list[Path] = []
+    source_bytes = 0
+    if src is not None and src.is_file() and _inside(src, project.dir):
+        files.append(src)
+        source_bytes = size_of(src)
+    render = 0
+    for name in FREE_FILES:
+        p = project.dir / name
+        if p.is_file():
+            files.append(p)
+            render += size_of(p)
+    for name in FREE_DIRS:
+        p = project.dir / name
+        if p.is_dir():
+            files.append(p)
+            render += size_of(p)
+    original = None
+    orig = _original(project)
+    settings_file = orig is not None and _inside(orig, config.config_dir()) and not _inside(orig, config.workspace_dir())
+    if orig is not None and not _inside(orig, project.dir) and orig.suffix.lower() in VIDEO_EXT and not settings_file:
+        same = False
+        try:
+            same = src is not None and src.is_file() and os.path.samefile(src, orig)  # a hard link: one file
+        except OSError:
+            pass
+        if not same:
+            original = {"path": str(orig), "bytes": size_of(orig)}
+    return {"files": files, "source_bytes": source_bytes, "render_bytes": render, "original": original}
+
+
+def free_space(project_id: str, with_original: bool = False) -> dict:
+    """Deletes the stream video and every rendered file of a project FOR GOOD (the user confirmed
+    the number of GB first): they move into a trash item that is purged right away. The project's
+    JSON (clips, titles, what was shared) stays, so the board and the upload history keep working;
+    the posts on the platforms are never touched."""
+    project = get_project(project_id)
+    with _lock:
+        _cancel_jobs(project.id)
+        parts = free_parts(project)
+        tid = _new_id()
+        home = root() / tid
+        done = []
+        for f in parts["files"]:
+            rel = f.relative_to(project.dir)
+            if f.is_dir():
+                _move_dir(f, home / "files" / rel)
+            else:
+                _move(f, home / "files" / rel)
+            done.append({"from": str(rel), "to": str(Path("files") / rel)})
+        orig_freed = 0
+        o = parts["original"]
+        if with_original and o:
+            op = Path(o["path"])
+            if op.is_file() and op.suffix.lower() in VIDEO_EXT:
+                try:
+                    same_disk = os.stat(op).st_dev == os.stat(config.workspace_dir()).st_dev
+                except OSError:
+                    same_disk = False
+                if same_disk:
+                    _move(op, home / "original" / op.name)
+                    done.append({"from": str(op), "to": str(Path("original") / op.name), "original": True})
+                else:  # another disk: moving it here would copy GBs; deleted where it is
+                    orig_freed = size_of(op)
+                    op.unlink()
+        rec = {"id": tid, "kind": "cleanup", "project_id": project.id,
+               "project_title": project.load_meta().get("title") or project.id, "clip_ids": [], "titles": ["free_space"],
+               "deleted_at": _iso(_now()), "expires_at": _iso(_now()), "bytes": size_of(home) if home.exists() else 0,
+               "files": done, "data": {"clips_json": {}, "candidates": []}, "plans": {}, "posts": None, "original": None}
+        freed = rec["bytes"] + orig_freed
+        if done:
+            _save(rec)
+            try:
+                purge(tid)
+            except SharkyClipsError:
+                pass  # a file in use: the hourly purge deletes it (the item expires now)
+        meta = project.load_meta()
+        if meta:
+            meta["space_freed_at"] = _iso(_now())
+            meta["space_freed_bytes"] = int(meta.get("space_freed_bytes") or 0) + freed
+            project.save_meta(meta)
+    return {"freed": freed, "files": len(done), "project_id": project.id}
+
+
 def trash_source(project_id: str, keep: int | None = None) -> dict | None:
     """1.2.57 channel monitoring: the downloaded VOD of a finished stream -> the trash (restorable
     like any cleanup item; `keep` days at most there, the clips stay). None = nothing to move."""

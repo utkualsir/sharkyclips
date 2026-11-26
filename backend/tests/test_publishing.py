@@ -112,7 +112,7 @@ def test_auto_plan_spreads_at_the_daily_limit_and_best_times(cfg):
     config.update(publish_daily_limit=3, publish_times=["12:00", "18:00", "21:00"], publish_learn_times=False)
     now = _local(1, "08:00").astimezone(timezone.utc)  # tomorrow 08:00: today is out of reach
     keys = [f"p:c{i}" for i in range(7)]
-    plan = P.auto_plan(keys, {}, now)
+    plan = P.auto_plan(keys, {}, now, limit=3)  # the helper itself (the Library no longer spreads, 1.2.68)
     got = [plan[k].astimezone() for k in keys]
     assert [t.strftime("%H:%M") for t in got] == ["12:00", "18:00", "21:00"] * 2 + ["12:00"]
     days = [t.date() for t in got]
@@ -124,26 +124,27 @@ def test_full_day_moves_to_the_next_free_slot_and_strict_refuses(cfg):
     config.update(publish_daily_limit=2, publish_times=["12:00", "18:00"], publish_learn_times=False)
     now = _local(1, "07:00").astimezone(timezone.utc)
     rel = {"p:a": _local(1, "12:00"), "p:b": _local(1, "18:00")}
-    t, moved = P.place("p:c", _local(1, "20:00"), rel, now=now)
+    t, moved = P.place("p:c", _local(1, "20:00"), rel, limit=2, now=now)
     assert moved and t == _local(2, "12:00")
     with pytest.raises(SharkyClipsError, match="full"):
-        P.place("p:c", _local(1, "20:00"), rel, now=now, strict=True)
+        P.place("p:c", _local(1, "20:00"), rel, limit=2, now=now, strict=True)
     with pytest.raises(SharkyClipsError, match="15 minutes"):
-        P.place("p:c", now + timedelta(minutes=5), rel, now=now)
+        P.place("p:c", now + timedelta(minutes=5), rel, limit=2, now=now)
     # its own slot doesn't count against itself (reschedule within the same day)
-    t2, moved2 = P.place("p:a", _local(1, "13:00"), rel, now=now)
+    t2, moved2 = P.place("p:a", _local(1, "13:00"), rel, limit=2, now=now)
     assert not moved2 and t2 == _local(1, "13:00")
     # too close to another release (45 min gap) on a day with room
-    config.update(publish_daily_limit=5)
-    t3, moved3 = P.place("p:c", _local(1, "12:20"), rel, now=now)
+    t3, moved3 = P.place("p:c", _local(1, "12:20"), rel, limit=5, now=now)
     assert moved3 and abs((t3 - _local(1, "12:00")).total_seconds()) >= 45 * 60
 
 
-def test_limit_never_above_what_the_quota_can_upload(cfg, old_limits):
-    config.update(publish_daily_limit=20, youtube_daily_quota=10_000)
-    # 1.2.66: counted by the upload (1,600 units, 300 kept back): the free 10,000 take 6 a day
-    assert P.quota_capacity() == 6 and P.effective_limit() == 6
-    assert len(P.best_times()["times"]) == 6
+def test_the_only_limit_is_youtubes_upload_quota(cfg, old_limits):
+    # 1.2.68: no own daily limit (the old setting is ignored); YouTube's upload bucket decides
+    config.update(publish_daily_limit=2, youtube_daily_quota=10_000, youtube_daily_uploads=None)
+    assert P.quota_capacity() == P.effective_limit() == P.daily_limit() == 100
+    config.update(youtube_daily_uploads=40)
+    assert P.daily_limit() == 40
+    config.update(youtube_daily_uploads=None)
 
 
 def test_releases_count_manual_uploads_but_not_private_ones():
@@ -394,9 +395,10 @@ def test_local_quota_limit_holds_uploads_back(yt):
     from sharkyclips.web.publishing import schedule
 
     schedule([{"project_id": project.id, "clip_id": "c01"}], "auto")
-    youtube.spend(youtube.daily_quota() - 1000)
+    youtube._bump(full_uploads=True)  # today's uploads are used up
     acts = _drive(2)
     assert acts == [f"quota:{key}"] and not yt.videos
+    assert "used up" in P.get(key)["error"]["message"] and not P.get(key)["attention"]  # said, and tomorrow by itself
     assert P.parse(P.get(key)["next_try_at"]) == P.parse(youtube.next_reset().isoformat())
 
 
@@ -467,16 +469,17 @@ def test_full_schedule_flow_never_twice_reschedule_cancel_publish_now(yt):
         assert config.get("publish_defaults")["cover"]["burn"] is True  # remembered for the next clip
 
         clips = [{"project_id": project.id, "clip_id": f"c0{i}"} for i in (1, 2, 3)]
+        # 1.2.68: "auto" means now (no spreading over the next days)
         dry = c.post("/api/library/schedule", json={"clips": clips, "mode": "auto", "dry_run": True}).json()
         assert len(dry["planned"]) == 3 and P.get(keys[1]) is None  # dry run saves nothing
-        days: dict = {}
-        for p in dry["planned"]:
-            t = P.parse(p["publish_at"]).astimezone()
-            assert t.strftime("%H:%M") in ("12:00", "18:00")
-            days[t.date()] = days.get(t.date(), 0) + 1
-        assert max(days.values()) <= 2
-        res = c.post("/api/library/schedule", json={"clips": clips, "mode": "auto"}).json()
+        assert all(p["now"] and p["publish_at"] is None for p in dry["planned"])
+        # times the user picks are kept exactly (even two on one day, close together)
+        day = (datetime.now().astimezone() + timedelta(days=2)).date()
+        picked = [P.at_local(day, hhmm) for hhmm in ("12:00", "12:10", "18:00")]
+        res = c.post("/api/library/schedule", json={"clips": [{**x, "publish_at": t.isoformat()} for x, t in zip(clips, picked)],
+                                                   "mode": "manual"}).json()
         planned = {p["key"]: p["publish_at"] for p in res["planned"]}
+        assert [P.parse(planned[k]) for k in keys] == picked and not any(p["moved"] for p in res["planned"])
 
     acts = _drive(20)
     assert any(a.startswith("export:") for a in acts) and any(a.startswith("burn:") for a in acts)
@@ -500,19 +503,12 @@ def test_full_schedule_flow_never_twice_reschedule_cancel_publish_now(yt):
         rows = {r["key"]: r for r in c.get("/api/library").json()["rows"]}
         assert all(rows[k]["status"] == "scheduled" and rows[k]["step"] == "uploaded" for k in keys)
 
-        # reschedule (calendar drag) changes YouTube's publishAt; a full day is refused
+        # reschedule (calendar drag) changes YouTube's publishAt
         target = P.parse(planned[keys[2]]).astimezone() + timedelta(days=5)
         target = P.at_local(target.date(), "18:00")
         r = c.post(f"/api/library/{project.id}/c01/reschedule", json={"publish_at": target.isoformat()})
         assert r.status_code == 200, r.text
         assert P.parse(yt.videos[vid1]["status"]["publishAt"]) == target
-        busy_day = P.parse(planned[keys[1]]).astimezone().date()
-        config.update(publish_daily_limit=1)  # c02's day is full now
-        r = c.post(f"/api/library/{project.id}/c01/reschedule",
-                   json={"publish_at": P.at_local(busy_day, "21:00").isoformat()})
-        assert r.status_code == 400 and "full" in r.json()["error"]
-        assert P.parse(yt.videos[vid1]["status"]["publishAt"]) == target  # unchanged
-        config.update(publish_daily_limit=2)
 
         # cancel deletes the scheduled upload from YouTube; the clip is a draft again
         vid3 = P.get(keys[2])["video_id"]
@@ -645,8 +641,7 @@ def test_settings_api_and_meta_validation(cfg, old_limits):
 
     with _client() as c:
         s = c.put("/api/library/settings", json={"daily_limit": 4, "times": ["9:00", "21:30", "bad"], "learn_times": False}).json()
-        assert s["daily_limit"] == 4 and s["times"] == ["09:00", "21:30"]
-        assert len(s["best_times"]["times"]) == 4
+        assert s["daily_limit"] == 100 and s["times"] == ["09:00", "21:30"]  # 1.2.68: no daily limit setting
         assert c.put("/api/library/settings", json={"times": []}).status_code == 400
     from sharkyclips.web.publishing import clean_meta
 

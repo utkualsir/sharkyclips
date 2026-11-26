@@ -43,7 +43,9 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Approve = lazy(() => import("./pages/Approve"));
 const Updates = lazy(() => import("./pages/Updates"));
 const ShareClips = lazy(() => import("./pages/ShareClips"));
+const UploadHistory = lazy(() => import("./pages/UploadHistory"));
 import { UploadsLeft } from "./components/UploadsLeft";
+import { ShareNotices } from "./components/ShareNotices";
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
 
@@ -97,6 +99,9 @@ function EasyTopBar() {
           aria-current={route.name === "publish" ? "page" : undefined}
         >
           {t("easy.nav_library")}
+        </a>
+        <a href={href.history} aria-current={route.name === "history" ? "page" : undefined}>
+          {t("nav.history")}
         </a>
         <a
           href={href.pubqueue}
@@ -174,6 +179,9 @@ function TopBar() {
           aria-current={route.name === "publish" ? "page" : undefined}
         >
           {t("nav.publish")}
+        </a>
+        <a href={href.history} aria-current={route.name === "history" ? "page" : undefined}>
+          {t("nav.history")}
         </a>
         <a
           href={href.pubqueue}
@@ -376,10 +384,12 @@ export default function App() {
           {route.name === "pubqueue" && <PublishQueue />}
           {route.name === "trash" && <Trash />}
           {route.name === "updates" && <Updates />}
+          {route.name === "history" && <UploadHistory />}
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />
       <HandoffHost />
+      <ShareNotices />
       <GameDock />
       {(autoWhatsNew || manualWhatsNew) && state && (
         <WhatsNew

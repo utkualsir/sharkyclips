@@ -51,7 +51,9 @@ const P = encodeURIComponent(pid);
 // mode: Easy (the default) or Pro; switched on the server before the screen loads
 const SCREENS = [
   { name: "easy-home", mode: "easy", hash: "#/", ready: ".ez-create" },
-  { name: "easy-project", mode: "easy", hash: `#/p/${P}`, ready: ".ez-grid" },
+  { name: "easy-project", mode: "easy", hash: `#/p/${P}`, ready: ".share-grid" },
+  { name: "history", mode: "pro", hash: "#/history", ready: ".history-page .history-tools" },
+  { name: "easy-history", mode: "easy", hash: "#/history", ready: ".history-page .history-tools" },
   { name: "easy-library", mode: "easy", hash: "#/library", ready: ".ez-tabs", tabs: [null, ".ez-tabs button:nth-child(3)"] },
   { name: "easy-settings", mode: "easy", hash: "#/settings", ready: ".ez-settings" },
   { name: "approve", mode: "easy", hash: "#/approve", ready: ".approve-card, .approve-empty" },

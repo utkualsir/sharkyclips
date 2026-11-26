@@ -350,27 +350,22 @@ def upload(project: Project, cid: str, when: str) -> dict:
         raise e
     prefs = E.clip_prefs(E.load(project), cid)
     item = _plan_meta(project, cand, prefs)
-    if when == "now":
-        step, info = clip_step(project, cand)
-        if step != "upload":
-            raise SharkyClipsError("This clip is still being prepared.", "It uploads as soon as it's ready: try again in a moment.")
-        rel = pub.releases()
-        today = P.day_counts(rel, {key}).get(P.local_day(P.now_utc()), 0)
-        if today < P.effective_limit():
-            P.put({**P.unschedule(item), "meta": item["meta"], "prep": {}, "now": True})
-            body = pub.upload_body(project, cand, P.get(key), "clip", None)
-            body["thumbnail"] = "cover"
-            A.submit_upload(project.id, cid, body)
-            return {"status": "uploading"}
-        when = "auto"  # today is full: the next free slot instead (said in the answer)
-        P.put(item)
-        res = pub.schedule([{"project_id": project.id, "clip_id": cid}], "auto")
-        return {"status": "scheduled", "publish_at": (res["planned"] or [{}])[0].get("publish_at"), "today_full": True}
-    P.put(item)
-    res = pub.schedule([{"project_id": project.id, "clip_id": cid}], "auto")
-    if not res["planned"]:
-        raise SharkyClipsError("Couldn't plan this clip.", (res["skipped"] or [{}])[0].get("reason"))
-    return {"status": "scheduled", "publish_at": res["planned"][0]["publish_at"]}
+    # 1.2.68: always now (no automatic plan over the next days); a full day says so
+    if youtube.uploads_left() < 1:
+        e = SharkyClipsError(f"Today's YouTube uploads are used up ({youtube.daily_uploads()} a day).",
+                             "Upload it by hand now, or put it on tomorrow.")
+        e.code = "over_limit"  # type: ignore[attr-defined]
+        raise e
+    step, info = clip_step(project, cand)
+    if step != "upload":  # still rendering: it goes up by itself as soon as it's ready
+        P.put({**P.unschedule(item), "meta": item["meta"], "prep": {}, "now": True})
+        pub.scheduler.poke()
+        return {"status": "uploading"}
+    P.put({**P.unschedule(item), "meta": item["meta"], "prep": {}, "now": True})
+    body = pub.upload_body(project, cand, P.get(key), "clip", None)
+    body["thumbnail"] = "cover"
+    A.submit_upload(project.id, cid, body)
+    return {"status": "uploading"}
 
 
 # ===================================================================== downloads

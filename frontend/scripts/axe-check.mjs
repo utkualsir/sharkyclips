@@ -58,20 +58,34 @@ const SCREENS = [
   ["pubqueue", "pro", "#/publish-queue", ".pq-actions"],
   ["settings", "pro", "#/settings", "main"],
   ["easy-home", "easy", "#/", ".ez-create"],
-  ["easy-project", "easy", `#/p/${P}`, ".ez-title"],
+  ["easy-project", "easy", `#/p/${P}`, ".share-grid"],
+  // 1.2.68: Upload manually, Free up space, Upload history
+  ["manual-upload", "easy", `#/p/${P}`, ".share-grid", async (page) => {
+    await page.locator(".sh-card .sh-actions .btn-ghost").first().click();
+    await page.waitForSelector(".mu-tabs");
+  }],
+  ["free-space", "pro", `#/p/${P}/share`, ".share-space", async (page) => {
+    await page.locator(".share-space .btn").click();
+    await page.waitForSelector(".space-list");
+  }],
+  ["history", "pro", "#/history", ".history-tools"],
+  ["easy-history", "easy", "#/history", ".history-tools"],
   ["easy-trash", "easy", "#/trash", ".trash-usage"],
   // 1.2.66 Share clips: the board, a selection, the platform step and the summary
   ["share", "pro", `#/p/${P}/share`, ".share-grid"],
   ["share-selected", "easy", `#/p/${P}/share`, ".share-grid", async (page) => {
-    await page.locator(".share-selbtns .btn").nth(1).click(); // Select not shared
-    await page.waitForSelector(".share-bar.is-on");
+    await page.locator(".share-selbtns .btn").first().click(); // Select all
+    await page.waitForSelector(".sh-card.is-selected");
   }],
+  // 1.2.68: a card's Share button shares at once, so the dialogs open through "Review and edit"
   ["share-where", "pro", `#/p/${P}/share`, ".share-grid", async (page) => {
-    await page.locator(".sh-card.kind-not_shared .sh-actions .btn-primary").first().click();
+    await page.locator(".share-selbtns .btn").first().click();
+    await page.locator('[data-testid="share-review"]').click();
     await page.waitForSelector(".share-plats");
   }],
   ["share-summary", "pro", `#/p/${P}/share`, ".share-grid", async (page) => {
-    await page.locator(".sh-card.kind-not_shared .sh-actions .btn-primary").first().click();
+    await page.locator(".share-selbtns .btn").first().click();
+    await page.locator('[data-testid="share-review"]').click();
     await page.waitForSelector(".share-plats");
     await page.locator(".modal-foot .btn-primary").click();
     await page.waitForSelector(".share-summary");

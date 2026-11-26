@@ -374,12 +374,14 @@ def test_publish_plans_in_tiktok_and_counts_the_daily_limit(lane):
     rec = _rec(project, "c01", "tiktok")
     assert rec["status"] == "scheduled" and rec["remote"] and "(GMT" in (rec.get("scheduled_text") or ""), rec
     assert lane.posts[-1]["date"] == when.strftime("%Y-%m-%d")
-    # the day is full (limit 1): the next clip moves to the next day
+    # the day is full (limit 1): 1.2.68 never moves it to another day; it says "upload it by hand"
+    n = len(lane.posts)
     r2 = c.post(f"/api/publish/{project.id}/c02", json={"platforms": ["tiktok"], "when": when.isoformat()}).json()
-    moved = datetime.fromisoformat(r2["results"]["tiktok"]["publish_at"].replace("Z", "+00:00"))
-    assert moved.astimezone().date() == (when + timedelta(days=1)).date() and r2["results"]["tiktok"]["moved"]
+    res = r2["results"]["tiktok"]
+    assert res["status"] == "failed" and "safe limit" in res["error"]["message"]
+    assert "Upload manually" in res["error"]["hint"]
     _wait(_idle, 120)
-    assert lane.posts[-1]["date"] == (when + timedelta(days=1)).strftime("%Y-%m-%d")
+    assert len(lane.posts) == n
     # TikTok holds it: taking it off the plan is done in TikTok Studio
     from sharkyclips.errors import SharkyClipsError
 

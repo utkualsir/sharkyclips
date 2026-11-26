@@ -584,15 +584,18 @@ def test_telegram_buttons_only_from_the_paired_chat():
 # ------------------------------------------------------------------ A3: YouTube quota guard
 
 
-def test_quota_reserve_stops_uploads_before_the_limit(monkeypatch):
+def test_quota_reserve_keeps_room_for_deletes_and_never_blocks_uploads(monkeypatch):
+    # 1.2.68: uploads have their own Google bucket; the reserve keeps units free for deletes / edits
     monkeypatch.setattr(youtube, "daily_quota", lambda: 10_000)
-    monkeypatch.setattr(youtube, "quota_used", lambda now=None: 10_000 - 1_800)  # one upload would fit, barely
+    monkeypatch.setattr(youtube, "quota_used", lambda now=None: 10_000 - 200)
     assert youtube.quota_reserve() == youtube.DEFAULT_RESERVE
-    assert youtube.upload_room() < youtube.COST["upload"]
+    assert youtube.upload_room() < youtube.COST["thumbnail"] and not youtube.thumbnail_fits()
+    youtube.check_quota(youtube.COST["delete"])  # a delete may still use the reserve
     with pytest.raises(youtube.SharkyClipsError):
-        youtube.check_quota(youtube.COST["upload"])
-    youtube.check_quota(youtube.COST["thumbnail"])  # small calls may still use the reserve
-    assert youtube.quota_view()["uploads_left"] == 0
+        youtube.check_quota(250)
+    monkeypatch.setattr(youtube, "uploads_used", lambda now=None: 0)
+    youtube.check_upload_quota()  # the upload bucket is untouched
+    assert youtube.quota_view()["uploads_left"] == youtube.daily_uploads()
 
 
 def test_upload_over_quota_is_queued_for_tomorrow(monkeypatch):

@@ -26,8 +26,17 @@ Files in ~/.sharkyclips/youtube/:
 OAuth: authorization code + PKCE with a loopback redirect to a one-shot listener on a random
 port (http://127.0.0.1:<port>/, see ytconnect.py), which Google allows for Desktop app clients.
 
-Quota (default 10,000 units a day per Google Cloud project): an upload costs 1,600 units,
-a thumbnail 50, changing / deleting a video or a playlist 50, reading statistics 1 per 50 videos.
+Quota (1.2.68, Google's current rules: developers.google.com/youtube/v3/determine_quota_cost):
+uploads (videos.insert) have their OWN bucket since 1 June 2026: 100 uploads a day per Google
+Cloud project, 1 unit each (config youtube_daily_uploads if Google gave the project more or less).
+Everything else shares 10,000 units a day: a thumbnail 50, changing / deleting a video or a
+playlist 50, reading statistics 1 per 50 videos. A thumbnail that no longer fits never blocks an
+upload (the video goes up without it). Both reset at midnight Pacific Time.
+
+Private uploads: since 2 Nov 2026 Google no longer keeps uploads of unaudited API projects
+private. A video that still comes back private although public was asked for (a channel
+setting, a YouTube check) is marked locked and the app says so on the clip, with a button to open
+it in YouTube Studio.
 
 Tests (and the end-to-end check) can point every Google address at a local fake server with
 SHARKYCLIPS_YT_ENDPOINT=http://127.0.0.1:<port> (loopback only, so a token can't leak).
@@ -64,8 +73,11 @@ UPLOAD_API = "https://www.googleapis.com/upload/youtube/v3"
 SCOPE_MANAGE = "https://www.googleapis.com/auth/youtube"
 SCOPES = (SCOPE_MANAGE, "https://www.googleapis.com/auth/yt-analytics.readonly")
 ANALYTICS_API = "https://youtubeanalytics.googleapis.com/v2/reports"
-COST = {"upload": 1600, "thumbnail": 50, "list": 1, "update": 50, "delete": 50, "playlist": 50}
+# "upload" is counted in the separate Video Uploads bucket (1 per upload), the rest in the units bucket
+COST = {"upload": 1, "thumbnail": 50, "list": 1, "update": 50, "delete": 50, "playlist": 50}
 DEFAULT_DAILY_QUOTA = 10_000
+DEFAULT_DAILY_UPLOADS = 100
+STUDIO_URL = "https://studio.youtube.com/video/{id}/edit"
 CHUNK = 8 * 1024 * 1024  # resumable upload chunk (multiple of 256 KiB)
 PRIVACY = ("private", "unlisted", "public")
 CATEGORY = {"gaming": "20", "study": "27", "music": "10"}  # Gaming, Education, Music
@@ -165,17 +177,49 @@ def daily_quota() -> int:
         return DEFAULT_DAILY_QUOTA
 
 
-def quota_used(now: datetime | None = None) -> int:
+def daily_uploads() -> int:
+    """Uploads Google allows this project a day (its own bucket; 100 by default)."""
+    try:
+        return max(1, int(config.get("youtube_daily_uploads") or DEFAULT_DAILY_UPLOADS))
+    except (TypeError, ValueError):
+        return DEFAULT_DAILY_UPLOADS
+
+
+def _quota_today(now: datetime | None = None) -> dict:
     q = _read("quota.json") or {}
-    return int(q.get("used") or 0) if q.get("day") == pacific_now(now).date().isoformat() else 0
+    return q if q.get("day") == pacific_now(now).date().isoformat() else {}
 
 
-def spend(units: int) -> None:
+def quota_used(now: datetime | None = None) -> int:
+    return int(_quota_today(now).get("used") or 0)
+
+
+def uploads_used(now: datetime | None = None) -> int:
+    return int(_quota_today(now).get("uploads") or 0)
+
+
+def uploads_left(now: datetime | None = None) -> int:
+    return max(0, daily_uploads() - uploads_used(now))
+
+
+def _bump(units: int = 0, uploads: int = 0, *, full_units: bool = False, full_uploads: bool = False) -> None:
     with _lock:
         day = pacific_now().date().isoformat()
         q = _read("quota.json") or {}
-        used = int(q.get("used") or 0) if q.get("day") == day else 0
-        _write("quota.json", {"day": day, "used": used + units})
+        same = q.get("day") == day
+        used = int(q.get("used") or 0) if same else 0
+        ups = int(q.get("uploads") or 0) if same else 0
+        used = daily_quota() if full_units else used + units
+        ups = daily_uploads() if full_uploads else ups + uploads
+        _write("quota.json", {"day": day, "used": used, "uploads": ups})
+
+
+def spend(units: int) -> None:
+    _bump(units=units)
+
+
+def spend_upload() -> None:
+    _bump(uploads=1)
 
 
 DEFAULT_RESERVE = 300  # 1.2.52: units kept free for thumbnails, edits and deletes after the last upload
@@ -190,29 +234,42 @@ def quota_reserve() -> int:
 
 
 def upload_room(now: datetime | None = None) -> int:
-    """Units new uploads may still use today (the reserve stays free)."""
+    """Units of the shared bucket still free today (thumbnails, edits, playlists; the reserve
+    stays free for deletes). Uploads have their own bucket: uploads_left()."""
     return daily_quota() - quota_used(now) - quota_reserve()
+
+
+def thumbnail_fits(now: datetime | None = None) -> bool:
+    return upload_room(now) >= COST["thumbnail"]
 
 
 def quota_view(now: datetime | None = None) -> dict:
     used = quota_used(now)
     limit = daily_quota()
-    room = max(0, upload_room(now))
-    per = COST["upload"] + COST["thumbnail"]
+    left = uploads_left(now)
     return {"used": used, "limit": limit, "reserve": quota_reserve(),
-            "uploads_left": room // COST["upload"], "uploads_left_with_thumbnail": room // per,
+            "uploads_left": left, "uploads_used": uploads_used(now), "uploads_limit": daily_uploads(),
+            "uploads_left_with_thumbnail": min(left, max(0, upload_room(now)) // COST["thumbnail"]),
             "resets_at": next_reset(now).isoformat(timespec="seconds"),
             "deferred": len(deferred_list())}
 
 
+def _reset_text() -> str:
+    return next_reset().astimezone().strftime("%H:%M")
+
+
+def check_upload_quota() -> None:
+    if uploads_left() < 1:
+        raise _err(f"Today's YouTube uploads are used up ({daily_uploads()} a day).",
+                   f"Google resets them at midnight Pacific Time ({_reset_text()} here). Upload the rest by hand "
+                   "now, or put them on tomorrow.", reason="quotaExceeded")
+
+
 def check_quota(units: int) -> None:
-    left = daily_quota() - quota_used()
-    if units >= COST["upload"]:  # a new upload stops before the limit (the reserve stays free)
-        left -= quota_reserve()
-    if units > left:
-        reset = next_reset().astimezone().strftime("%H:%M")
-        raise _err("Today's YouTube upload limit is used up.",
-                   f"Google's free API quota resets at midnight Pacific Time ({reset} here).", reason="quotaExceeded")
+    if units > daily_quota() - quota_used():
+        raise _err("Today's YouTube API quota is used up.",
+                   f"Google's free API quota resets at midnight Pacific Time ({_reset_text()} here).",
+                   reason="quotaExceeded")
 
 
 # ------------------------------------------------------------------ deferred uploads (1.2.52)
@@ -240,15 +297,15 @@ def take_due_deferred(now: datetime | None = None) -> list[dict]:
     now = now or datetime.now(timezone.utc)
     with _lock:
         items, due, keep = deferred_list(), [], []
-        room = upload_room(now)
+        room = uploads_left(now)
         for i in items:
             try:
                 after = datetime.fromisoformat(str(i.get("after")))
             except ValueError:
                 after = now
-            if after <= now and room >= COST["upload"]:
+            if after <= now and room >= 1:
                 due.append(i)
-                room -= COST["upload"] + COST["thumbnail"]
+                room -= 1
             else:
                 keep.append(i)
         if due:
@@ -731,7 +788,8 @@ def _api_error(res: Any, what: str) -> SharkyClipsError:
         msg = str(err)
     hints = {
         "quotaExceeded": "Google's daily API quota is used up; it resets at midnight Pacific Time.",
-        "uploadLimitExceeded": "YouTube's own daily upload limit for this channel is reached.",
+        "uploadLimitExceeded": "YouTube's own daily upload limit for this channel is reached. Upload the rest by "
+                               "hand in YouTube Studio, or put them on tomorrow.",
         "youtubeSignupRequired": "This Google account has no YouTube channel yet: create one on youtube.com.",
         "forbidden": "Is the YouTube Data API v3 enabled in your Google Cloud project (Advanced, step 2)?",
         "accessNotConfigured": "Enable the YouTube Data API v3 in your Google Cloud project (Advanced, step 2).",
@@ -742,8 +800,10 @@ def _api_error(res: Any, what: str) -> SharkyClipsError:
         "ACCESS_TOKEN_SCOPE_INSUFFICIENT": "Reconnect YouTube in Settings so SharkyClips may manage your scheduled videos.",
         "videoNotFound": "The video isn't on YouTube any more.",
     }
-    if reason == "quotaExceeded":
-        spend(daily_quota())  # Google says it's gone: show 0 left until the reset
+    if reason in ("quotaExceeded", "uploadLimitExceeded") and what == "upload":
+        _bump(full_uploads=True)  # Google says today's uploads are gone: show 0 left until the reset
+    elif reason == "quotaExceeded":
+        _bump(full_units=True)
     return _err(f"YouTube {what} failed: {msg}"[:400], hints.get(reason), reason=reason or None,
                 status=getattr(res, "status_code", None))
 
@@ -920,7 +980,7 @@ def upload(path: Path, body: dict, key: str, on_progress: Callable[[float], None
         else:
             uri = None
     if not uri:
-        check_quota(COST["upload"])
+        check_upload_quota()
         for attempt in (1, 2):
             res = requests.post(f"{url(UPLOAD_API)}/videos", params={"uploadType": "resumable", "part": "snippet,status"},
                                 headers={"Authorization": f"Bearer {access_token()}",
@@ -932,7 +992,7 @@ def upload(path: Path, body: dict, key: str, on_progress: Callable[[float], None
             _expire_access()  # the access token ran out early: refresh it and ask again
         if res.status_code != 200 or not res.headers.get("Location"):
             raise _api_error(res, "upload")
-        spend(COST["upload"])
+        spend_upload()
         uri = res.headers["Location"]
         _save_session(key, uri)
     errors = 0

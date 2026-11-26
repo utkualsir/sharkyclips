@@ -1,6 +1,7 @@
-"""1.2.66 "Share clips": the daily upload limit ("3 of 5 left today"), the plan that rolls the rest
-over to the next days, duplicate warnings, the status badge of every clip, batch + single sharing,
-Instagram's 4-hour pace in the summary, unschedule and retry."""
+"""1.2.66 "Share clips" + 1.2.68 "share now": no own daily limit, everything goes now up to what
+YouTube really allows today, a choice (by hand now / tomorrow / a picked day) for the rest, duplicate
+warnings, the status badge of every clip, batch + single sharing, Instagram's 4-hour pace as a
+warning only, unschedule and retry."""
 
 from __future__ import annotations
 
@@ -18,14 +19,18 @@ from test_publishing import _clean_projects, _idle, _project, _wait, cfg  # noqa
 def share(cfg):  # noqa: F811
     """By hand for TikTok / Instagram (the default: no account needed), YouTube not connected,
     fixed release times, a clean plan and no other projects."""
+    from sharkyclips import youtube
+
     P.plan_path().unlink(missing_ok=True)
+    (youtube.folder() / "quota.json").unlink(missing_ok=True)
     _clean_projects()
-    config.update(platform_modes={}, publish_targets=None, publish_daily_limit=5,
+    config.update(platform_modes={}, publish_targets=None, youtube_daily_uploads=None,
                   publish_times=["12:00", "18:00", "21:00"], publish_learn_times=False, youtube_daily_quota=10_000)
     yield
     _wait(_idle, 60)
-    config.update(platform_modes={}, publish_targets=None)
+    config.update(platform_modes={}, publish_targets=None, youtube_daily_uploads=None)
     P.plan_path().unlink(missing_ok=True)
+    (youtube.folder() / "quota.json").unlink(missing_ok=True)
     _clean_projects()
 
 
@@ -34,64 +39,86 @@ def _today_post(project, cid: str, platform: str = "tiktok") -> None:
               url="https://www.tiktok.com/@demo/video/1")
 
 
-# ===================================================================== the daily limit
+# ===================================================================== what YouTube allows today
 
 
-def test_daily_limit_default_five_top_six_and_editable(share):
-    from sharkyclips import tiktok_browser as TB
+def test_no_own_daily_limit_only_youtubes_real_upload_quota(share):
+    from sharkyclips import youtube
     from sharkyclips.web import share as S
 
-    config.update(publish_daily_limit=None)
-    assert P.DEFAULT_LIMIT == 5 and P.DAILY_MAX == 6 and S.daily_limit() == 5
-    assert P.quota_capacity() == 6  # the free 10,000 units take 6 uploads (1,600 each, 300 kept back)
-    c = _client()
-    assert c.put("/api/share/limit", json={"limit": 9}).json()["limit"] == 6
-    assert c.put("/api/share/limit", json={"limit": 0}).json()["limit"] == 1
-    v = c.put("/api/share/limit", json={"limit": 4}).json()
-    assert v == {**v, "limit": 4, "used": 0, "left": 4, "max": 6}
-    # the old Library setting is the same number
-    assert c.get("/api/library/settings").json()["daily_limit"] == 4
-    # TikTok's automatic cap follows the limit (an old saved 3 was the forced top: it follows too)
-    config.update(tiktok_auto_daily=3, tiktok_auto_daily_v=None)
-    assert TB.daily_cap() == 4
-    assert TB.set_daily_cap(2) == 2 and TB.daily_cap() == 2  # a lower TikTok number you chose stays
-    config.update(tiktok_auto_daily=3, tiktok_auto_daily_v=None)
-
-
-def test_one_clip_on_two_platforms_uses_one_upload_of_the_day(share):
-    from sharkyclips.web import share as S
-
-    project = _project("pub-sh-count", 3)
-    _today_post(project, "c01", "tiktok")
-    _today_post(project, "c01", "reels")
-    _today_post(project, "c02", "tiktok")
-    PF.record(project, "c03", "tiktok", mode="semi", status="failed", error={"message": "x"})  # doesn't count
+    config.update(youtube_daily_uploads=None)
+    assert youtube.daily_uploads() == 100 and youtube.COST["upload"] == 1  # Google's bucket since June 2026
+    assert P.daily_limit() == P.quota_capacity() == 100  # the old setting is ignored
     lv = S.limit_view()
-    assert (lv["used"], lv["left"], lv["limit"]) == (2, 3, 5)
-    assert _client().get(f"/api/share/{project.id}").json()["limit"]["left"] == 3
-
-
-# ===================================================================== the plan
-
-
-def test_more_than_today_left_rolls_over_to_the_next_days(share):
-    config.update(publish_daily_limit=2)
-    project = _project("pub-sh-roll", 6)
-    _today_post(project, "c06")  # one of today's two is used
+    assert (lv["limit"], lv["left"]) == (100, 100) and lv["used"] == 0
+    youtube.spend_upload()
+    youtube.spend_upload()
+    assert S.limit_view()["left"] == 98 and youtube.quota_view()["uploads_left"] == 98
+    youtube.spend(9_700)  # the units bucket (thumbnails, edits) never blocks an upload
+    assert youtube.uploads_left() == 98 and not youtube.thumbnail_fits()
     c = _client()
-    p = c.post(f"/api/share/{project.id}/plan", json={"clips": ["c01", "c02", "c03", "c04"],
-                                                      "platforms": ["tiktok"]}).json()
-    rows = {r["clip_id"]: r for r in p["rows"]}
-    today = datetime.now().astimezone().date()
-    assert rows["c01"]["when"] == "now" and not rows["c01"]["rolled"]
-    t2, t3 = (datetime.fromisoformat(rows[k]["when"]).astimezone() for k in ("c02", "c03"))
-    assert t2.date() == today + timedelta(days=1) and t3.date() == today + timedelta(days=1)
-    assert (t2.strftime("%H:%M"), t3.strftime("%H:%M")) == ("12:00", "18:00")
-    assert datetime.fromisoformat(rows["c04"]["when"]).astimezone().date() == today + timedelta(days=2)
-    assert rows["c02"]["rolled"] and rows["c02"]["platforms"][0]["by_hand"]
-    assert p["uses_today"] == 1 and p["left_after"] == 0 and p["limit"]["left"] == 1
-    assert [d["count"] for d in p["days"]] == [1, 2, 1]
-    assert p["count"] == 4 and p["skipped"] == 0 and not p["needs_consent"]
+    assert c.put("/api/share/limit", json={"limit": 4}).status_code in (404, 405)  # the setting is gone
+    (youtube.folder() / "quota.json").unlink(missing_ok=True)
+
+
+def _yt_usable(monkeypatch):
+    from sharkyclips.web import share as S
+
+    real = S._platforms_view
+
+    def view():
+        v = real()
+        v["youtube"] = {**v["youtube"], "usable": True, "connected": True}
+        return v
+
+    monkeypatch.setattr(S, "_platforms_view", view)
+
+
+def test_more_than_youtube_allows_today_needs_a_choice(share, monkeypatch):
+    from sharkyclips import youtube
+
+    _yt_usable(monkeypatch)
+    config.update(youtube_daily_uploads=2)
+    youtube.spend_upload()  # one of today's two is used
+    project = _project("pub-sh-over", 4)
+    c = _client()
+    body = {"clips": ["c01", "c02", "c03"], "platforms": ["youtube", "tiktok"]}
+    p = c.post(f"/api/share/{project.id}/plan", json=body).json()
+    yt = {r["clip_id"]: next(x for x in r["platforms"] if x["platform"] == "youtube") for r in p["rows"]}
+    assert yt["c01"]["when"] == "now" and yt["c01"]["over"] is None
+    assert yt["c02"]["over"] == yt["c03"]["over"] == "ask" and p["over"] == 2 and p["uses_today"] == 1
+    # TikTok is never held back by YouTube's quota: every clip goes now there
+    assert all(next(x for x in r["platforms"] if x["platform"] == "tiktok")["when"] == "now" for r in p["rows"])
+    # Publish without a choice is refused with a clear code
+    r = c.post(f"/api/share/{project.id}/publish", json=body)
+    assert r.status_code == 400 and r.json().get("code") == "over_limit", r.text
+    # "tomorrow": after Google's reset, never later
+    p = c.post(f"/api/share/{project.id}/plan", json={**body, "overflow": "tomorrow"}).json()
+    when = datetime.fromisoformat(p["overflow_at"])
+    assert timedelta(0) < when - youtube.next_reset() < timedelta(minutes=10)
+    assert all(next(x for x in r["platforms"] if x["platform"] == "youtube")["when"] == p["overflow_at"]
+               for r in p["rows"] if r["clip_id"] != "c01")
+    # a day the user picked
+    day = (datetime.now().astimezone().date() + timedelta(days=3)).isoformat()
+    p = c.post(f"/api/share/{project.id}/plan", json={**body, "overflow": "date", "overflow_date": day}).json()
+    assert datetime.fromisoformat(p["overflow_at"]).astimezone().date().isoformat() == day
+    r = c.post(f"/api/share/{project.id}/plan", json={**body, "overflow": "date", "overflow_date": "2001-01-01"})
+    assert r.status_code == 400
+    # "by hand now": those clips are prepared for a manual upload
+    p = c.post(f"/api/share/{project.id}/plan", json={**body, "overflow": "manual"}).json()
+    x = next(x for x in p["rows"][1]["platforms"] if x["platform"] == "youtube")
+    assert x["force_manual"] and x["when"] == "now"
+    (youtube.folder() / "quota.json").unlink(missing_ok=True)
+    config.update(youtube_daily_uploads=None)
+
+
+def test_everything_picked_goes_now(share):
+    project = _project("pub-sh-now", 6)
+    p = _client().post(f"/api/share/{project.id}/plan", json={"clips": ["c01", "c02", "c03", "c04", "c05"],
+                                                             "platforms": ["tiktok"]}).json()
+    assert all(r["when"] == "now" and not r["rolled"] for r in p["rows"])
+    assert all(x["when"] == "now" for r in p["rows"] for x in r["platforms"])
+    assert p["count"] == 5 and p["over"] == 0 and not p["needs_consent"]
 
 
 def test_already_shared_platforms_are_skipped_and_reported(share):
@@ -121,17 +148,15 @@ def test_not_connected_platforms_are_left_out(share):
     assert p["platforms"]["youtube"]["usable"] is False and p["platforms"]["tiktok"]["by_hand"]
 
 
-def test_instagram_keeps_four_hours_apart_in_the_summary(share):
+def test_instagram_pace_is_only_a_warning(share):
     project = _project("pub-sh-ig", 3)
     p = _client().post(f"/api/share/{project.id}/plan", json={"clips": ["c01", "c02", "c03"],
                                                               "platforms": ["reels"]}).json()
     ig = [r["platforms"][0] for r in p["rows"]]
-    assert ig[0]["when"] == "now" and ig[0]["moved"] is None
-    assert ig[1]["moved"] == ig[2]["moved"] == "ig_pace" and p["ig_gap_hours"] == 4.0
-    t1, t2 = (datetime.fromisoformat(x["when"]) for x in ig[1:])
-    assert timedelta(hours=3.9) < t2 - t1 < timedelta(hours=4.1)
-    assert t1 - P.now_utc() > timedelta(hours=3.9)
-    assert p["uses_today"] == 3  # all three are today's uploads (only Instagram's time moves)
+    assert all(x["when"] == "now" and x["moved"] is None for x in ig)  # never delayed
+    warns = [r["warnings"] for r in p["rows"]]
+    assert warns[0] == [] and warns[1][0]["code"] == warns[2][0]["code"] == "ig_pace"
+    assert p["warnings"] == 2 and p["ig_gap_hours"] == 4.0
 
 
 def test_per_clip_platforms_override_the_batch_choice(share):
@@ -165,7 +190,7 @@ def test_status_badge_of_every_clip(share):
     assert card["title"] == "Huge play 1" and card["viral_score"] == 80 and card["duration"] == 5.0
     assert card["video"] == {"kind": "source"}
     assert [c["id"] for c in b["clips"]] == ["c01", "c02", "c03", "c04", "c05"]  # best first, all of them
-    assert set(b["platforms"]) == {"youtube", "tiktok", "reels"} and b["limit"]["limit"] == 5
+    assert set(b["platforms"]) == {"youtube", "tiktok", "reels"} and b["limit"]["limit"] == 100
 
 
 def test_status_kinds_from_platform_states():
@@ -188,8 +213,7 @@ def test_status_kinds_from_platform_states():
 # ===================================================================== batch + single
 
 
-def test_batch_shares_now_and_plans_the_rest_then_remembers_the_platforms(share):
-    config.update(publish_daily_limit=2)
+def test_batch_shares_everything_now_then_remembers_the_platforms(share):
     project = _project("pub-sh-batch", 4)
     for cid in ("c01", "c02", "c03"):
         _rendered(project, cid)
@@ -206,23 +230,10 @@ def test_batch_shares_now_and_plans_the_rest_then_remembers_the_platforms(share)
     assert board["batch"]["state"] == "done"
     assert [x["state"] for x in board["batch"]["rows"]] == ["done"] * 3, board["batch"]
     rec = {cid: (PF.records(project).get(cid) or {}).get("tiktok") or {} for cid in ("c01", "c02", "c03")}
-    assert rec["c01"]["status"] == rec["c02"]["status"] == "ready" and not rec["c01"].get("remind_at")
-    tomorrow = datetime.now().astimezone().date() + timedelta(days=1)
-    assert datetime.fromisoformat(rec["c03"]["remind_at"]).astimezone().date() == tomorrow
-    assert board["limit"]["left"] == 0
+    assert all(r["status"] == "ready" and not r.get("remind_at") for r in rec.values())  # all now, by hand
     assert board["targets"] == ["tiktok"]  # the last platform choice is remembered
     st = {x["id"]: x["status"]["kind"] for x in board["clips"]}
     assert st == {"c01": "scheduled", "c02": "scheduled", "c03": "scheduled", "c04": "not_shared"}
-    # a single clip (the card's own Share button) is a batch of one: today is full, so tomorrow
-    _rendered(project, "c04")
-    r = c.post(f"/api/share/{project.id}/publish", json={"clips": ["c04"], "platforms": ["tiktok"]}).json()
-    assert r["plan"]["rows"][0]["rolled"] and r["plan"]["uses_today"] == 0
-    S.wait_batch(project.id)
-    _wait(_idle, 60)
-    rec = (PF.records(project).get("c04") or {}).get("tiktok") or {}
-    assert datetime.fromisoformat(rec["remind_at"]).astimezone().date() == tomorrow
-    # the plan never puts two of tomorrow's at the same time
-    assert rec["remind_at"] != ((PF.records(project).get("c03") or {}).get("tiktok") or {})["remind_at"]
 
 
 def test_unschedule_and_retry(share):

@@ -151,18 +151,17 @@ def test_full_easy_flow_render_download_edit_upload(yt, downloads, ui_cfg):  # n
         again = c.post(f"/api/easy/clips/{project.id}/c02/upload", json={"when": "now"}).json()
         assert again["status"] == "published" and len(yt.videos) == 1  # never twice
 
-        # automatic plan: a private upload with publishAt, done by the publish loop
+        # 1.2.68: no automatic plan over the next days any more: "auto" uploads now, public at once
         r = c.post("/api/easy/upload", json={"when": "auto", "clips": [
             {"project_id": project.id, "clip_id": "c01"}, {"project_id": project.id, "clip_id": "c03"}]}).json()
-        assert [x["status"] for x in r["results"]] == ["scheduled", "scheduled"]
-        acts = _drive(10)
-        assert sum(a.startswith("upload:") for a in acts) == 2 and not any(a.startswith("export:") for a in acts)
+        assert [x["status"] for x in r["results"]] == ["uploading", "uploading"]
+        _drive(10)
         assert len(yt.videos) == 3
-        planned = [v for v in yt.videos.values() if v["status"].get("publishAt")]
-        assert len(planned) == 2 and all(v["status"]["privacyStatus"] == "private" for v in planned)
+        assert not [v for v in yt.videos.values() if v["status"].get("publishAt")]
+        assert all(v["status"]["privacyStatus"] == "public" for v in yt.videos.values())
         lib = c.get("/api/easy/library").json()["tabs"]
         mine = lambda rows: sorted(r["clip_id"] for r in rows if r["project_id"] == project.id)  # noqa: E731
-        assert mine(lib["planned"]) == ["c01", "c03"] and mine(lib["live"]) == ["c02"] and mine(lib["ready"]) == []
+        assert mine(lib["live"]) == ["c01", "c02", "c03"] and mine(lib["planned"]) == []
 
         # discard: the clip leaves the grid
         v = c.post(f"/api/easy/clips/{project.id}/c03/discard").json()

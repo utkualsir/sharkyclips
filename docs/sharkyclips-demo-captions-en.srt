@@ -1,0 +1,43 @@
+1
+00:00:00,000 --> 00:00:15,000
+This is SharkyClips, a free desktop app that turns stream recordings into short clips. It runs on the user's own computer.
+
+2
+00:00:15,000 --> 00:00:30,000
+YouTube is optional. The user connects their own channel here. The YouTube Terms and the Google Privacy Policy are linked next to the button.
+
+3
+00:00:30,000 --> 00:00:40,000
+The user clicks Connect YouTube. Google's sign-in opens in the browser.
+
+4
+00:00:40,000 --> 00:00:55,000
+The URL shows the OAuth client ID of the project under review.
+
+5
+00:00:55,000 --> 00:01:20,000
+The consent screen shows the app name SharkyClips and the two permissions it asks for: managing the user's YouTube uploads, and reading YouTube Analytics for its own uploads.
+
+6
+00:01:20,000 --> 00:01:30,000
+Connected. The app shows which channel it will upload to.
+
+7
+00:01:30,000 --> 00:02:05,000
+The user picks a clip, sets the details and uploads it as private. This uses the youtube scope to insert the video on the user's own channel.
+
+8
+00:02:05,000 --> 00:02:20,000
+Scheduled clips can be moved or cancelled. The app only changes or deletes videos it uploaded itself.
+
+9
+00:02:20,000 --> 00:02:35,000
+For the optional hook test, 48 hours after publishing, the app reads the average view percentage of that one video. This uses yt-analytics.readonly.
+
+10
+00:02:35,000 --> 00:02:55,000
+To stop access, the user clicks Disconnect. The app revokes the token and deletes the YouTube data it stored. Access can also be removed on the Google account permissions page.
+
+11
+00:02:55,000 --> 00:03:00,000
+All data stays on the user's computer. Privacy policy: utkualsir.github.io/sharkyclips-site/privacy.html

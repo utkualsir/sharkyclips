@@ -269,7 +269,7 @@ def row_status(item: dict | None, live: dict | None, jobs_: list[Job], lock: str
         if privacy == "private" and wanted:
             # after the release time, only fresh numbers from YouTube say it really stayed private
             checked = pa is None or (stats_at is not None and stats_at > pa + timedelta(minutes=5))
-            if checked and lock != "unlocked":
+            if checked:  # 1.2.68: said every time (it used to hide once one upload had gone public)
                 return {"status": "locked", "step": None, "date": iso(pa) or live.get("uploaded_at")}
             return {"status": "published", "step": "checking", "date": iso(pa) or live.get("uploaded_at")}
         return {"status": "published", "step": None, "date": live.get("uploaded_at")}
@@ -378,11 +378,11 @@ def _item_for(project: Project, cid: str) -> dict:
 
 
 def schedule(clips: list[dict], mode: str, dry_run: bool = False, now: datetime | None = None) -> dict:
-    """Schedule clips: mode "auto" spreads them over free slots (daily limit, best times),
-    "manual" uses each clip's publish_at (a full day moves it to the next free slot)."""
+    """Schedule clips. 1.2.68: mode "auto" = upload NOW (no automatic spreading over release
+    times or the next days any more; YouTube's own upload quota is the only limit), "manual" =
+    each clip's publish_at exactly as the user picked it (never moved to another slot)."""
     A = _app()
     now = now or P.now_utc()
-    rel = releases(now)
     planned, skipped = [], []
     todo: list[tuple[str, dict, datetime | None]] = []
     for c in clips:
@@ -405,21 +405,20 @@ def schedule(clips: list[dict], mode: str, dry_run: bool = False, now: datetime 
             skipped.append({"key": key, "reason": "no_time"})
             continue
         todo.append((key, _item_for(project, cid), wanted))
-    if mode == "auto":
-        times = P.auto_plan([k for k, _i, _w in todo], rel, now)
-        result = [(k, i, times[k], False) for k, i, _w in todo]
-    else:
-        result = []
-        rel = {k: v for k, v in rel.items() if k not in {k2 for k2, _i, _w in todo}}
-        for k, i, wanted in todo:
-            t, moved = P.place(k, wanted, rel, now=now)
-            rel[k] = t
-            result.append((k, i, t, moved))
+    result = []
+    for k, i, wanted in todo:
+        if mode == "auto":
+            result.append((k, i, None, False))
+            continue
+        if wanted < P.earliest(now):
+            raise SharkyClipsError("Pick a time at least 15 minutes from now.",
+                                   "YouTube needs time to take the upload before it goes public.")
+        result.append((k, i, wanted, False))
     for k, item, t, moved in result:
-        planned.append({"key": k, "publish_at": iso(t), "moved": moved})
+        planned.append({"key": k, "publish_at": iso(t) if t else None, "now": t is None, "moved": moved})
         if not dry_run:
-            P.put({**P.unschedule(item), "meta": item["meta"], "prep": item.get("prep") or {}, "publish_at": iso(t),
-                   "moved_from": None})
+            P.put({**P.unschedule(item), "meta": item["meta"], "prep": item.get("prep") or {},
+                   "publish_at": iso(t) if t else None, "now": t is None, "moved_from": None})
     if not dry_run and planned:
         scheduler.poke()
     return {"planned": planned, "skipped": skipped}
@@ -824,6 +823,12 @@ class Scheduler:
                 it["publish_at"] = iso(nt)
                 acts.append(f"moved:{key}")
         if config.get("publish_auto") is False or not youtube.connected():
+            # 1.2.68: never silent: a clip that should go now says why it can't
+            why = ("YouTube isn't connected.", "Connect YouTube, then press Retry.", "reconnect")                 if not youtube.connected() else                 ("Automatic YouTube uploads are switched off.", "Switch them on in Settings > Publishing.", "retry")
+            for key, it in items.items():
+                if "_cand" in it and it.get("now") and not it.get("video_id") and not it.get("attention"):
+                    P.patch(key, attention=True, error={"message": why[0], "hint": why[1], "fix": why[2], "at": iso(now)})
+                    acts.append(f"blocked:{key}")
             return acts
         # 3. the next steps, earliest release first
         gpu_busy = any(j.lane == "gpu" for js in pj.values() for j in js)
@@ -854,13 +859,19 @@ class Scheduler:
                     acts.append(f"burn:{key}")
                 elif step == "upload" and not up_busy:
                     if not may_upload:
+                        # 1.2.68: shown on the clip ("waiting: SharkyClips is paused while you play")
+                        P.patch(key, waiting={"reason": "paused", "since": it.get("waiting", {}).get("since") or iso(now)})
                         acts.append(f"governor:{key}")
                         continue
-                    need = youtube.COST["upload"] + (youtube.COST["thumbnail"] if _wide(it["meta"]) else 0)
-                    if youtube.upload_room() < need:  # 1.2.52: stop before the limit (reserve)
-                        P.patch(key, next_try_at=iso(youtube.next_reset()))
+                    if youtube.uploads_left() < 1:  # 1.2.68: said on the clip, with the two choices
+                        P.patch(key, next_try_at=iso(youtube.next_reset()),
+                                error={"message": f"Today's YouTube uploads are used up ({youtube.daily_uploads()} a day).",
+                                       "hint": "Upload it by hand now, or it goes up tomorrow by itself.",
+                                       "fix": "manual", "at": iso(now)})
                         acts.append(f"quota:{key}")
                         continue
+                    if it.get("waiting"):
+                        P.patch(key, waiting=None)
                     if it.get("publish_at"):  # the item's time must still be ahead
                         t = P.parse(it["publish_at"])
                         if t is not None and t < P.earliest(now):
@@ -957,8 +968,7 @@ def api_library_settings() -> dict:
 @router.put("/api/library/settings")
 def api_library_settings_put(body: dict) -> dict:
     changes: dict = {}
-    if "daily_limit" in body:
-        changes["publish_daily_limit"] = max(1, min(P.DAILY_MAX, int(body["daily_limit"])))
+    # 1.2.68: no daily limit setting any more (YouTube's own upload quota decides)
     if "times" in body:
         times = sorted({t for t in (P._hhmm(x) for x in body.get("times") or []) if t})
         if not times:

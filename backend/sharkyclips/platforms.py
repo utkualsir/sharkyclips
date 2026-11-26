@@ -855,10 +855,18 @@ def record(project, cid: str, platform: str, **data) -> dict:
 
     with _rlock:
         all_ = records(project)
-        cur = {**(all_.get(cid) or {}).get(platform, {}), **data, "at": time.time()}
+        before = dict((all_.get(cid) or {}).get(platform, {}))
+        cur = {**before, **data, "at": time.time()}
         all_.setdefault(cid, {})[platform] = cur
         write_json_atomic(record_path(project), all_)
-        return cur
+    if "status" in data:  # 1.2.68: a notice per finished / failed post + the upload history
+        try:
+            from .web import shareevents
+
+            shareevents.on_record(project, cid, platform, before, cur)
+        except Exception:  # noqa: BLE001
+            pass
+    return cur
 
 
 # ===================================================================== 1.2.36: errors, health, avatars

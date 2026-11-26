@@ -163,20 +163,17 @@ def _save(**changes) -> dict:
 
 
 def daily_cap() -> int:
-    """Automatic TikTok posts a day. 1.2.66: follows the daily upload limit (Settings) unless you
-    set a lower TikTok number; a 3 saved before 1.2.66 was the old forced top, so it follows too."""
-    from . import publishing as P
+    """Automatic TikTok posts a day (TikTok Studio driven by SharkyClips). 1.2.68: its own safe
+    number again (default DEFAULT_DAILY, at most platforms.DAILY_POST_MAX), no longer tied to
+    YouTube's upload quota. Over it, a clip goes by hand (never to another day)."""
     from .platforms import DAILY_POST_MAX
 
-    top = P.daily_limit()
     raw = config.get("tiktok_auto_daily")
-    if raw == DEFAULT_DAILY and config.get("tiktok_auto_daily_v") != 2:
-        raw = None
     try:
-        n = int(raw) if raw else top
+        n = int(raw) if raw else DEFAULT_DAILY
     except (TypeError, ValueError):
-        n = top
-    return max(1, min(DAILY_POST_MAX, top, n))
+        n = DEFAULT_DAILY
+    return max(1, min(DAILY_POST_MAX, n))
 
 
 def set_daily_cap(n: int) -> int:

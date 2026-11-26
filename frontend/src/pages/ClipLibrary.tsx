@@ -524,11 +524,6 @@ export default function ClipLibrary({ view }: { view: "list" | "calendar" }) {
               <b className="mono">{data.youtube.connected ? num(data.quota.uploads_left) : "–"}</b>
               <span className="muted">{data.youtube.connected ? t("pub.resets", { when: relTime(data.quota.resets_at) }) : t("pub.not_connected_short")}</span>
             </div>
-            <div>
-              <span className="muted">{t("pub.daily_limit")}</span>
-              <b className="mono">{num(data.effective_limit)}</b>
-              <span className="muted">{data.best_times.times.join(", ")}</span>
-            </div>
             <a className="btn btn-sm btn-ghost icon-btn" href={href.settings} aria-label={t("pub.settings")} title={t("pub.settings")}>
               <Icon name="settings" />
             </a>

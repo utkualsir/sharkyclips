@@ -167,13 +167,20 @@ def test_pacific_quota_day():
 
 
 def test_quota_counting(monkeypatch):
+    # 1.2.68: uploads have their own bucket (100 a day, 1 unit each); the rest share 10,000 units
     (youtube.folder() / "quota.json").unlink(missing_ok=True)
-    assert youtube.quota_view()["uploads_left"] == 6  # 10,000 / 1,600
-    youtube.spend(1600 * 5)
+    assert youtube.quota_view()["uploads_left"] == 100 and youtube.quota_view()["limit"] == 10_000
+    youtube.spend(9_700)  # thumbnails / edits never use up uploads
+    assert youtube.quota_view()["uploads_left"] == 100 and not youtube.thumbnail_fits()
+    config.update(youtube_daily_uploads=2)
+    youtube.spend_upload()
     assert youtube.quota_view()["uploads_left"] == 1
-    youtube.spend(1600)
+    youtube.spend_upload()
+    with pytest.raises(SharkyClipsError, match="used up"):
+        youtube.check_upload_quota()
     with pytest.raises(SharkyClipsError):
-        youtube.check_quota(youtube.COST["upload"])
+        youtube.check_quota(2_000)  # the units bucket has its own limit
+    config.update(youtube_daily_uploads=None)
     (youtube.folder() / "quota.json").unlink()
 
 
@@ -249,7 +256,7 @@ def test_resumable_upload_survives_a_failed_chunk(tmp_path, monkeypatch):
     res = youtube.upload(video, {"snippet": {}, "status": {}}, "k1", on_progress=progress.append)
     assert res["id"] == "VID123" and bytes(got) == video.read_bytes()
     assert progress[-1] == 1.0
-    assert youtube.quota_used() == youtube.COST["upload"]
+    assert youtube.uploads_used() == 1 and youtube.quota_used() == 0  # its own bucket
     assert "k1" not in youtube._sessions()
     youtube._forget_token()
 

@@ -113,10 +113,11 @@ def _caption_checks(MP):
     _rendered(project, "c01")
     v = MP.view(project, "c01", ["youtube", "tiktok", "reels"])
     cap = v["drafts"]["reels"]["caption"]
-    assert cap.startswith("Huge play 1\n\nWhat a moment 1.")
+    assert cap.startswith("HUGE PLAY 1 ") and "\n\nWhat a moment 1." in cap  # 1.2.68: made for views
     tags = [w for w in cap.split() if w.startswith("#")]
     assert tags[0] == "#democreator" and "#deltaforce" in tags
-    assert v["drafts"]["youtube"]["title"] == "Huge play 1" and v["limits"]["reels"]["hashtags"] == 30
+    assert v["drafts"]["youtube"]["title"].startswith("HUGE PLAY 1") and v["drafts"]["youtube"]["title"].endswith("#Shorts")
+    assert v["limits"]["reels"]["hashtags"] == 5
     assert {p["code"] for p in v["problems"]} == {"not_connected"}  # YouTube isn't connected here
     # too long / too many hashtags / long title: inline problems with one-tap fixes
     many = "Big one\n\n" + " ".join(f"#t{i}" for i in range(40))
@@ -124,13 +125,13 @@ def _caption_checks(MP):
                                                "youtube": {"title": "word " * 30}})
     v = MP.view(project, "c01", ["youtube", "tiktok", "reels"])
     codes = {(p["platform"], p["code"]): p for p in v["problems"]}
-    assert codes[("reels", "too_many_hashtags")]["params"] == {"n": 40, "max": 30}
+    assert codes[("reels", "too_many_hashtags")]["params"] == {"n": 40, "max": 5}
     assert codes[("tiktok", "caption_too_long")]["fix"] == "shorten_caption"
     assert codes[("youtube", "title_too_long")]["fix"] == "shorten_title"
     for (plat, _code), p in codes.items():
         if p["fix"] in ("shorten_caption", "trim_hashtags", "shorten_title"):
             v = MP.apply_fix(project, "c01", plat, p["fix"])
-    assert MP.hashtag_count(v["drafts"]["reels"]["caption"]) == 30
+    assert MP.hashtag_count(v["drafts"]["reels"]["caption"]) == 5
     assert len(v["drafts"]["tiktok"]["caption"]) <= 2200
     assert len(v["drafts"]["youtube"]["title"]) <= 100 and v["drafts"]["youtube"]["title"].endswith("…")
     assert not [p for p in v["problems"] if p["code"] != "not_connected"]

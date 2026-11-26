@@ -46,8 +46,8 @@ LEAD_MIN = 15  # a release needs this much time ahead (upload + YouTube processi
 LEARN_MIN_VIDEOS = 10  # calibration entries with a publish time before the times are learned
 LEARN_MIN_PER_HOUR = 2
 BACKOFF_S = [300]  # 1.2.50: one automatic retry (platforms.AUTO_RETRY_MAX), then: needs attention
-DAILY_MAX = 6  # 1.2.66: at most 6 uploads a day (what YouTube's free API quota can take; 1.2.50 had 3)
-PER_UPLOAD_UNITS = 1600 + 50 + 50
+DAILY_MAX = 100  # 1.2.68: no own daily limit any more; YouTube's upload bucket (100 a day) is the cap
+PER_UPLOAD_UNITS = 1 + 50 + 50
 FIXES = ("retry", "reconnect", "edit", "rerender", "reschedule", "wait")
 
 _lock = threading.RLock()
@@ -142,30 +142,27 @@ def new_item(project_id: str, clip_id: str, meta: dict) -> dict:
 def unschedule(item: dict) -> dict:
     """Back to a draft (keeps the metadata)."""
     return {**item, "publish_at": None, "now": False, "video_id": None, "uploaded_at": None, "attempts": 0,
-            "next_try_at": None, "error": None, "attention": False, "moved_from": None}
+            "next_try_at": None, "error": None, "attention": False, "moved_from": None, "after": None,
+            "waiting": None}
 
 
 # ------------------------------------------------------------------ settings
 
 
 def daily_limit() -> int:
-    try:
-        return max(1, min(DAILY_MAX, int(config.get("publish_daily_limit") or DEFAULT_LIMIT)))
-    except (TypeError, ValueError):
-        return DEFAULT_LIMIT
+    """1.2.68: the daily limit setting is gone; what a day can take is YouTube's real upload quota."""
+    return quota_capacity()
 
 
 def quota_capacity() -> int:
-    """Uploads Google's daily API quota allows. 1.2.66: counted by the upload itself (1,600 units,
-    after the reserve youtube.quota_reserve keeps for thumbnails and edits), so the free 10,000
-    units take 6 a day; a thumbnail / playlist step that no longer fits waits for the next day."""
+    """Uploads Google allows this project a day (the Video Uploads bucket: 100 by default)."""
     from . import youtube
 
-    return max(1, (youtube.daily_quota() - youtube.quota_reserve()) // youtube.COST["upload"])
+    return youtube.daily_uploads()
 
 
 def effective_limit() -> int:
-    return max(1, min(daily_limit(), quota_capacity()))
+    return quota_capacity()
 
 
 def _hhmm(v: str) -> str | None:
