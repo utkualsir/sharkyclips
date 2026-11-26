@@ -447,9 +447,22 @@ def _write_token(tok: dict) -> None:
     (folder() / "token.json").unlink(missing_ok=True)
 
 
+def _unlink_retry(path: Path, tries: int = 20) -> None:
+    """Windows: a file another process has open for a moment (a reader thread, antivirus, the
+    indexer) can't be deleted (WinError 32); wait a little and try again."""
+    for i in range(tries):
+        try:
+            path.unlink(missing_ok=True)
+            return
+        except PermissionError:
+            if i == tries - 1:
+                raise
+            time.sleep(0.1)
+
+
 def _forget_token() -> None:
-    (folder() / TOKEN_FILE).unlink(missing_ok=True)
-    (folder() / "token.json").unlink(missing_ok=True)
+    _unlink_retry(folder() / TOKEN_FILE)
+    _unlink_retry(folder() / "token.json")
     secretstore.forget_key(folder())
 
 
@@ -675,7 +688,10 @@ def access_token() -> str:
 
 def _signed_out(tok: dict, reason: str) -> None:
     """Forget a dead token but remember whose it was, for the one-click reconnect banner."""
-    _forget_token()
+    try:
+        _forget_token()
+    except OSError:  # still locked after the retries: the sign-out is noted anyway (the
+        pass  # caller raises the "connect again" error; the dead token is useless without access)
     _write("signed_out.json", {"at": _now(), "channel": tok.get("channel"), "reason": reason})
 
 

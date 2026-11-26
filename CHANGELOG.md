@@ -9,6 +9,110 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.67] - 2026-11-26
+A small fix for Windows: when YouTube stops accepting your sign-in, SharkyClips now always asks you to connect again, even if Windows is busy with the sign-in file for a moment.
+
+### Fixed
+- **"Connect again" always shows.** On Windows, another program could hold the YouTube sign-in file for a moment. The upload then failed without asking you to connect again. Now SharkyClips waits a little, tries again, and always shows the "connect again" message.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Windows için küçük bir düzeltme: YouTube girişini artık kabul etmediğinde SharkyClips, Windows giriş dosyasını bir anlığına meşgul tutsa bile her zaman yeniden bağlanmanı ister.
+
+### Düzeltmeler
+- **"Yeniden bağlan" her zaman görünür.** Windows'ta başka bir program YouTube giriş dosyasını bir anlığına tutabiliyordu. Bu durumda yükleme, yeniden bağlanmanı istemeden başarısız oluyordu. Artık SharkyClips biraz bekleyip yeniden deniyor ve "yeniden bağlan" mesajını her zaman gösteriyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Un pequeño arreglo para Windows: cuando YouTube deja de aceptar tu inicio de sesión, SharkyClips ahora siempre te pide volver a conectar, aunque Windows esté usando el archivo de inicio de sesión un momento.
+
+### Correcciones
+- **"Volver a conectar" siempre aparece.** En Windows, otro programa podía tener abierto un momento el archivo de inicio de sesión de YouTube. Entonces la subida fallaba sin pedirte volver a conectar. Ahora SharkyClips espera un poco, lo intenta de nuevo y siempre muestra el aviso.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Uma pequena correção para Windows: quando o YouTube deixa de aceitar seu login, o SharkyClips agora sempre pede para você conectar de novo, mesmo se o Windows estiver usando o arquivo de login por um momento.
+
+### Correções
+- **"Conectar de novo" sempre aparece.** No Windows, outro programa podia segurar o arquivo de login do YouTube por um momento. Aí o envio falhava sem pedir para você conectar de novo. Agora o SharkyClips espera um pouco, tenta de novo e sempre mostra o aviso.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Eine kleine Korrektur für Windows: Wenn YouTube deine Anmeldung nicht mehr annimmt, bittet SharkyClips dich jetzt immer, dich neu zu verbinden, auch wenn Windows die Anmeldedatei kurz belegt.
+
+### Behoben
+- **„Neu verbinden“ erscheint immer.** Unter Windows konnte ein anderes Programm die YouTube-Anmeldedatei kurz festhalten. Dann schlug der Upload fehl, ohne nach einer neuen Verbindung zu fragen. Jetzt wartet SharkyClips kurz, versucht es erneut und zeigt die Meldung immer.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Une petite correction pour Windows : quand YouTube n'accepte plus ta connexion, SharkyClips te demande maintenant toujours de te reconnecter, même si Windows occupe le fichier de connexion un instant.
+
+### Corrections
+- **« Se reconnecter » s'affiche toujours.** Sous Windows, un autre programme pouvait garder le fichier de connexion YouTube un instant. L'envoi échouait alors sans te demander de te reconnecter. Maintenant SharkyClips attend un peu, réessaie et affiche toujours le message.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Kis javítás Windowsra: ha a YouTube már nem fogadja el a bejelentkezésedet, a SharkyClips mostantól mindig kéri, hogy kapcsolódj újra, akkor is, ha a Windows egy pillanatra foglalja a bejelentkezési fájlt.
+
+### Javítások
+- **Az „Újrakapcsolódás” mindig megjelenik.** Windowson egy másik program egy pillanatra lefoglalhatta a YouTube bejelentkezési fájlját. Ilyenkor a feltöltés anélkül hiúsult meg, hogy újrakapcsolódást kért volna. Most a SharkyClips vár egy kicsit, újrapróbálja, és mindig megmutatja az üzenetet.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшое исправление для Windows: когда YouTube перестаёт принимать ваш вход, SharkyClips теперь всегда просит подключиться заново, даже если Windows на мгновение занят файлом входа.
+
+### Исправления
+- **«Подключиться заново» показывается всегда.** В Windows другая программа могла на мгновение держать файл входа YouTube. Тогда загрузка не удавалась, а просьбы подключиться заново не было. Теперь SharkyClips немного ждёт, пробует снова и всегда показывает сообщение.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+إصلاح صغير لنظام Windows: عندما يتوقف YouTube عن قبول تسجيل دخولك، يطلب منك SharkyClips الآن دائمًا الاتصال من جديد، حتى لو كان Windows يستخدم ملف تسجيل الدخول لحظة.
+
+### إصلاحات
+- **«الاتصال من جديد» تظهر دائمًا.** في Windows كان برنامج آخر قد يمسك ملف تسجيل دخول YouTube لحظة، فيفشل الرفع دون أن يطلب منك الاتصال من جديد. الآن ينتظر SharkyClips قليلًا ويعيد المحاولة ويعرض الرسالة دائمًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+针对 Windows 的小修复：当 YouTube 不再接受你的登录时，即使 Windows 暂时占用登录文件，SharkyClips 现在也总会提示你重新连接。
+
+### 修复
+- **“重新连接”总会显示。** 在 Windows 上，其他程序可能会短暂占用 YouTube 登录文件，导致上传失败却没有提示你重新连接。现在 SharkyClips 会稍等片刻再试，并总是显示提示。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+Windows 向けの小さな修正：YouTube がログインを受け付けなくなったとき、Windows がログインファイルを一瞬使っていても、SharkyClips は必ず再接続を求めるようになりました。
+
+### 修正
+- **「再接続」が必ず表示されます。** Windows では、ほかのプログラムが YouTube のログインファイルを一瞬つかんでいることがあり、再接続を求めずにアップロードが失敗していました。今は少し待ってから再試行し、必ずメッセージを表示します。
+
+</details>
+
 ## [1.2.66] - 2026-11-22
 Sharing many clips is now simple: open "Share clips", see every clip of a video at once with a clear status, tick the ones you want and share them in one go. A daily limit keeps it safe, and the rest is planned for the next days by itself.
 
