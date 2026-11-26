@@ -60,6 +60,22 @@ const SCREENS = [
   ["easy-home", "easy", "#/", ".ez-create"],
   ["easy-project", "easy", `#/p/${P}`, ".ez-title"],
   ["easy-trash", "easy", "#/trash", ".trash-usage"],
+  // 1.2.66 Share clips: the board, a selection, the platform step and the summary
+  ["share", "pro", `#/p/${P}/share`, ".share-grid"],
+  ["share-selected", "easy", `#/p/${P}/share`, ".share-grid", async (page) => {
+    await page.locator(".share-selbtns .btn").nth(1).click(); // Select not shared
+    await page.waitForSelector(".share-bar.is-on");
+  }],
+  ["share-where", "pro", `#/p/${P}/share`, ".share-grid", async (page) => {
+    await page.locator(".sh-card.kind-not_shared .sh-actions .btn-primary").first().click();
+    await page.waitForSelector(".share-plats");
+  }],
+  ["share-summary", "pro", `#/p/${P}/share`, ".share-grid", async (page) => {
+    await page.locator(".sh-card.kind-not_shared .sh-actions .btn-primary").first().click();
+    await page.waitForSelector(".share-plats");
+    await page.locator(".modal-foot .btn-primary").click();
+    await page.waitForSelector(".share-summary");
+  }],
   // 1.2.58 Updates page: the list, a search with no match, an older version opened
   ["updates", "pro", "#/updates", ".updates-item", async (page) => {
     await page.locator(".updates-item summary").nth(2).click();

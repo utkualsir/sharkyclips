@@ -62,6 +62,9 @@ const SCREENS = [
   { name: "queue", mode: "pro", hash: "#/queue", ready: "main" },
   { name: "stories", mode: "pro", hash: `#/p/${P}/stories`, ready: "main" },
   { name: "bestof", mode: "pro", hash: `#/p/${P}/bestof`, ready: "main" },
+  // 1.2.66 Share clips: the board (Shared tab too) in both modes
+  { name: "share", mode: "pro", hash: `#/p/${P}/share`, ready: ".share-grid", tabs: [null, ".share-tabs button:nth-child(3)"] },
+  { name: "easy-share", mode: "easy", hash: `#/p/${P}/share`, ready: ".share-grid" },
   { name: "studio-music", mode: "pro", hash: "#/studio/music", ready: "main" },
   { name: "studio-brand", mode: "pro", hash: "#/studio/brand", ready: "main" },
   { name: "studio-words", mode: "pro", hash: "#/studio/words", ready: "main" },

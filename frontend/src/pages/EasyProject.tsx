@@ -430,6 +430,11 @@ export default function EasyProject({ id }: { id: string }) {
             <ConnectionPill />
           </div>
         </div>
+        {view.clips.length > 0 && (
+          <a className="btn btn-primary btn-lg share-open" href={href.share(id)}>
+            <Icon name="upload" /> {t("share.open")}
+          </a>
+        )}
         {ready.length > 1 && (
           <button
             className="btn btn-lg"

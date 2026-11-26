@@ -109,7 +109,7 @@ DEFAULTS: dict[str, Any] = {
     "phone_send_top": 3,
     "phone_lan": False,
     # 1.2.42: automatic TikTok through TikTok Studio in SharkyClips' own browser profile
-    "tiktok_auto_daily": 3,  # at most this many automatic TikTok posts a day
+    "tiktok_auto_daily": 3,  # at most this many automatic TikTok posts a day (1.2.66: never above the daily limit)
     # 1.2.47: days a deleted project / clip stays in the trash (0 = deleted for good at once)
     "trash_keep_days": 30,
     "tiktok_browser": "auto",  # auto (Chrome, then Edge, then Playwright's Chromium) | chrome | msedge | chromium  # the phone approval page on the Wi-Fi (needs an access PIN)

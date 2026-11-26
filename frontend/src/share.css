@@ -1,0 +1,855 @@
+/* 1.2.66 "Share clips" board + share dialog. Shark Sign tokens only (styles.css). */
+
+.share-page {
+  padding-bottom: 120px; /* room for the selection bar */
+}
+
+.share-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 6px 0 18px;
+}
+.share-head .display {
+  margin: 0;
+}
+.share-lede {
+  margin: 4px 0 0;
+  max-width: 62ch;
+}
+
+/* ------------------------------------------------ uploads left today (pill) */
+
+.uploads-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--gold-line);
+  background: var(--gold-soft);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.uploads-left:hover {
+  border-color: var(--gold);
+}
+.uploads-left.is-full {
+  border-color: color-mix(in srgb, var(--warn) 50%, transparent);
+  background: var(--warn-soft);
+}
+.uploads-left.is-big {
+  height: 40px;
+  padding: 0 14px;
+  font-size: var(--fs-md);
+}
+.uploads-left .ul-short {
+  display: none;
+}
+@media (max-width: 1360px) {
+  .topbar .uploads-left:not(.is-big) .ul-long {
+    display: none;
+  }
+  .topbar .uploads-left:not(.is-big) .ul-short {
+    display: inline;
+  }
+}
+
+/* ------------------------------------------------ toolbar */
+
+.share-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.share-tabs {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  max-width: 100%;
+  overflow-x: auto;
+}
+.share-tabs button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--fs-md);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.share-tabs button:hover {
+  color: var(--text);
+}
+.share-tabs button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--strong);
+  box-shadow: inset 0 -2px 0 var(--gold);
+}
+.share-count {
+  font-size: var(--fs-xs);
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  background: var(--chip-bg);
+  color: var(--chip-text);
+}
+.share-selbtns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------ the grid */
+
+.share-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr));
+  gap: 20px;
+}
+.share-empty {
+  margin-top: 12px;
+}
+
+.sh-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  clip-path: polygon(0 0, calc(100% - var(--cut-card)) 0, 100% var(--cut-card), 100% 100%, 0 100%);
+  transition: border-color 0.15s var(--ease), opacity 0.2s var(--ease);
+}
+[dir="rtl"] .sh-card {
+  clip-path: polygon(var(--cut-card) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-card));
+}
+.sh-card.is-selected {
+  border-color: var(--select);
+  box-shadow: inset 0 0 0 2px var(--select);
+}
+/* shared: dimmed so it is never posted twice by mistake */
+.sh-card.is-shared .sh-media img,
+.sh-card.is-shared .sh-media video {
+  opacity: 0.45;
+  filter: saturate(0.4);
+}
+.sh-card.is-shared .sh-title {
+  color: var(--muted);
+}
+
+.sh-media {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  max-height: 380px;
+  background: var(--media-bg);
+  overflow: hidden;
+}
+.sh-thumb,
+.sh-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--media-bg);
+}
+
+.sh-check {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2;
+}
+.sh-check input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.sh-check span {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-sm);
+  border: 2px solid var(--on-media);
+  background: rgba(5, 15, 18, 0.55);
+  display: grid;
+  place-items: center;
+}
+.sh-check input:checked + span {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.sh-check input:checked + span::after {
+  content: "";
+  width: 7px;
+  height: 13px;
+  border: solid var(--on-sign);
+  border-width: 0 3px 3px 0;
+  transform: translateY(-2px) rotate(45deg);
+}
+.sh-check input:focus-visible + span {
+  box-shadow: var(--focus);
+}
+
+.sh-score {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-end: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--r-xs);
+  background: var(--gold);
+  color: var(--on-sign);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+.sh-play {
+  position: absolute;
+  inset-block-end: 12px;
+  inset-inline-start: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 15, 18, 0.7);
+  color: var(--on-media);
+  cursor: pointer;
+}
+.sh-play svg {
+  width: 22px;
+  height: 22px;
+}
+.sh-play:hover {
+  background: rgba(5, 15, 18, 0.9);
+}
+.sh-dur {
+  position: absolute;
+  inset-block-end: 14px;
+  inset-inline-end: 12px;
+  padding: 2px 7px;
+  border-radius: var(--r-xs);
+  background: var(--tip-bg);
+  color: var(--on-media);
+  font-size: var(--fs-sm);
+}
+
+.sh-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  flex: 1;
+}
+.sh-title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--strong);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.sh-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  max-width: 100%;
+}
+.sh-badge span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sh-badge.badge-shared {
+  background: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 45%, transparent);
+  color: var(--success);
+}
+.sh-badge.badge-scheduled {
+  background: var(--gold-soft);
+  border-color: var(--gold-line);
+  color: var(--gold-text);
+}
+.sh-badge.badge-failed {
+  background: var(--danger-soft);
+  border-color: color-mix(in srgb, var(--danger) 45%, transparent);
+  color: var(--danger);
+}
+.sh-badge.badge-working {
+  color: var(--text);
+}
+.sh-badge.badge-working svg {
+  animation: sh-spin 1.2s linear infinite;
+}
+@keyframes sh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-badge.badge-working svg {
+    animation: none;
+  }
+}
+
+.sh-plats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  font-size: var(--fs-sm);
+}
+.sh-plats li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.sh-plats li > :last-child {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+.sh-plats a {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--text);
+  font-weight: 600;
+}
+.sh-plats .is-bad .muted {
+  color: var(--danger);
+}
+.sh-plats .is-out .muted {
+  color: var(--success);
+}
+.sh-error {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--danger);
+}
+.sh-actions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.sh-actions .btn {
+  flex: 1 1 auto;
+  height: 40px;
+}
+
+/* ------------------------------------------------ the selection bar */
+
+.share-bar {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 30;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 12px max(16px, calc((100vw - 1400px) / 2));
+  background: var(--surface);
+  border-top: 2px solid var(--gold);
+  box-shadow: var(--shadow-pop);
+}
+.share-bar.is-on {
+  display: flex;
+}
+.share-bar-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.share-bar-text b {
+  font-size: var(--fs-lg);
+  color: var(--strong);
+}
+.share-bar-text .muted {
+  font-size: var(--fs-sm);
+}
+.share-go {
+  height: 52px;
+  padding: 0 26px;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+@media (max-width: 640px) {
+  .share-bar {
+    flex-wrap: wrap;
+  }
+  .share-bar .btn-ghost {
+    display: none;
+  }
+  .share-go {
+    flex: 1 1 100%;
+  }
+}
+
+/* ------------------------------------------------ the batch progress panel */
+
+.share-batch {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  display: grid;
+  gap: 10px;
+  border-inline-start: 4px solid var(--success);
+}
+.share-batch.is-running {
+  border-inline-start-color: var(--gold);
+}
+.share-batch-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.share-batch-title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  color: var(--strong);
+}
+.share-batch-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.share-batch-rows li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+.br-state {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+}
+.br-done .br-state {
+  color: var(--success);
+}
+.br-failed .br-state,
+.br-error {
+  color: var(--danger);
+}
+.br-title {
+  flex: 1 1 180px;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.br-plats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.br-plat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+}
+.br-plat.st-published {
+  color: var(--success);
+}
+.br-plat.st-failed {
+  color: var(--danger);
+}
+.br-error {
+  flex-basis: 100%;
+}
+
+/* ------------------------------------------------ the dialog */
+
+.share-steps {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  display: flex;
+  gap: 16px;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.share-steps li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.share-steps li span {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+}
+.share-steps li[aria-current="step"] {
+  color: var(--strong);
+  font-weight: 700;
+}
+.share-steps li[aria-current="step"] span {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-sign);
+}
+
+.share-dupes {
+  margin-bottom: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.share-plats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: 12px;
+}
+.share-plat {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding: 16px;
+  min-height: 120px;
+  text-align: start;
+  border: 2px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+.share-plat:hover:not(.is-off) {
+  border-color: var(--border-strong);
+}
+.share-plat.is-on {
+  border-color: var(--select);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--select);
+}
+.share-plat.is-off {
+  cursor: default;
+  border-style: dashed;
+}
+.share-plat.is-off .pf-icon {
+  filter: grayscale(1);
+  opacity: 0.5;
+}
+.share-plat-name {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--strong);
+}
+.share-plat-mode {
+  font-size: var(--fs-sm);
+}
+.share-plat-check {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  display: grid;
+  place-items: center;
+}
+.share-plat.is-on .share-plat-check {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--on-sign);
+}
+
+.share-edit {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.share-edit-row {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.share-edit-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  flex-wrap: wrap;
+}
+.share-edit-title {
+  flex: 1 1 160px;
+  min-width: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.share-edit-plats {
+  display: flex;
+  gap: 4px;
+}
+.pf-toggle {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+}
+.pf-toggle:not(.is-on) .pf-icon {
+  filter: grayscale(1);
+  opacity: 0.4;
+}
+.pf-toggle.is-on {
+  border-color: var(--select);
+  box-shadow: inset 0 0 0 1px var(--select);
+}
+.share-edit-body {
+  display: grid;
+  gap: 10px;
+  padding: 4px 12px 12px;
+}
+.share-fields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.share-fields legend,
+.share-edit-body .field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.share-edit-save {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.share-summary {
+  display: grid;
+  gap: 14px;
+}
+.share-sum-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.share-sum-stats > div {
+  display: grid;
+  gap: 2px;
+  padding: 12px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.share-sum-stats b {
+  font-size: var(--fs-3xl);
+  line-height: 1.1;
+  color: var(--strong);
+}
+.share-sum-stats span {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+}
+.share-sum-note {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+}
+.share-sum-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  max-height: min(46vh, 420px);
+  overflow-y: auto;
+}
+.share-sum-row {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  border-inline-start: 4px solid var(--success);
+}
+.share-sum-row.is-later {
+  border-inline-start-color: var(--gold);
+}
+.share-sum-title {
+  font-weight: 700;
+  color: var(--strong);
+  overflow-wrap: anywhere;
+}
+.share-sum-plats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 6px 16px;
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
+}
+.share-sum-plats li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.share-sum-plats b.is-now {
+  color: var(--success);
+}
+.share-moved {
+  font-size: var(--fs-xs);
+}
+.share-sum-already {
+  font-size: var(--fs-xs);
+}
+.share-sum-fix {
+  justify-self: start;
+}
+.share-sum-skipped {
+  margin: 4px 0 0;
+  padding-inline-start: 18px;
+  font-size: var(--fs-sm);
+}
+.share-consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: var(--fs-sm);
+}
+.share-consent input {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+}
+
+/* ------------------------------------------------ Settings: the daily limit */
+
+.daily-limit-field {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.stepper-value {
+  min-width: 2ch;
+  text-align: center;
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  color: var(--strong);
+}
+
+/* the project pages' "Share clips" button */
+.share-open {
+  white-space: nowrap;
+}
+
+.share-sum-probs ul {
+  margin: 2px 0 6px;
+  padding-inline-start: 18px;
+  font-size: var(--fs-sm);
+  color: var(--danger);
+}
+
+/* phones: the top bar has no room for the pill (the Share board shows the big one) */
+@media (max-width: 860px) {
+  .topbar .uploads-left:not(.is-big) {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .share-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    overflow: visible;
+  }
+  .share-tabs button {
+    flex: 1 1 auto;
+    padding: 0 8px;
+    font-size: var(--fs-sm);
+    justify-content: center;
+  }
+  .share-selbtns {
+    width: 100%;
+  }
+  .share-selbtns .btn {
+    flex: 1 1 auto;
+  }
+}

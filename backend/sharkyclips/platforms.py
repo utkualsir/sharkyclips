@@ -53,7 +53,7 @@ ProgressFn = Callable[[float], None]
 META_AUTOMATION = False
 # 1.2.50: the same care everywhere else: at most this many automatic posts a day per platform,
 # and a failed automatic post is tried again by itself at most this many times.
-DAILY_POST_MAX = 3
+DAILY_POST_MAX = 6  # 1.2.66: the top of the daily upload limit (publishing.DAILY_MAX; 1.2.50 had 3)
 AUTO_RETRY_MAX = 1
 
 

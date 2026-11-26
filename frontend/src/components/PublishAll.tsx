@@ -163,8 +163,9 @@ export function PostBadge({ s, pid, cid, onChanged }: { s: PostState; pid: strin
   return (
     <span className={`mp-badge mp-st-${s.status} pf-accent-${p}`} title={s.error ? `${s.error.message}${s.error.hint ? ` — ${s.error.hint}` : ""}` : label}>
       {s.url && s.status === "published" ? (
-        <a href={s.url} target="_blank" rel="noreferrer" aria-label={t("mp.open_on", { name })}>
+        <a href={s.url} target="_blank" rel="noreferrer">
           {inner}
+          <span className="visually-hidden"> ({t("mp.open_on", { name })})</span>
         </a>
       ) : (
         <span role="status" aria-label={label}>
@@ -238,7 +239,7 @@ export function PostBadges({ posts, pid, cid, onChanged, all }: { posts: ClipPos
 
 // ------------------------------------------------------------------ problems
 
-function problemText(p: Problem, t: (k: string, v?: Record<string, string | number>) => string): string {
+export function problemText(p: Problem, t: (k: string, v?: Record<string, string | number>) => string): string {
   const name = p.platform === "all" ? "" : TARGET_NAME[p.platform];
   return t(`mp.p_${p.code}`, { ...p.params, name, max: p.params.max ?? "", n: p.params.n ?? "" });
 }

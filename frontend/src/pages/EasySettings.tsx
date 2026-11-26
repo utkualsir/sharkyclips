@@ -1,4 +1,5 @@
 import { MiniGameSetting } from "../components/MiniGameSetting";
+import { DailyLimitField } from "../components/UploadsLeft";
 import { useCallback, useEffect, useState } from "react";
 import { ApiError, liveApi, phoneApi, type PhoneStatus } from "../api";
 import { PhoneConnect } from "../components/Phone";
@@ -92,6 +93,7 @@ export default function EasySettings() {
             <Toggle checked={settings?.open_folder !== false} onChange={(v) => update({ open_folder: v })} label={t("easy.set_open_folder")} />
           </div>
         )}
+        <DailyLimitField />
       </section>
 
       <AutopilotCard />

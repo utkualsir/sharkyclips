@@ -20,7 +20,7 @@ Store: ~/.sharkyclips/publish/plan.json  {"version": 1, "items": {"<project>:<cl
 
 The daily limit counts releases per local calendar day: scheduled clips, clips published now
 and clips that went public through a manual upload. It never goes above what Google's daily API
-quota can upload (1 upload + thumbnail + playlist = 1,700 units).
+quota can upload (1.2.66: 1,600 units an upload, so 6 a day with the free 10,000 units).
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ from . import config
 from .errors import SharkyClipsError
 from .project import read_json, write_json_atomic
 
-DEFAULT_LIMIT = 3
+DEFAULT_LIMIT = 5  # 1.2.66: 5 a day by default (was 3)
 DEFAULT_TIMES = ["12:00", "18:00", "21:00"]
 # More times, in the order they are used when the daily limit is above the listed times.
 EXTRA_TIMES = ["15:00", "19:30", "10:00", "22:30", "13:30", "16:30", "09:00", "20:15", "11:00", "17:15"]
@@ -46,7 +46,7 @@ LEAD_MIN = 15  # a release needs this much time ahead (upload + YouTube processi
 LEARN_MIN_VIDEOS = 10  # calibration entries with a publish time before the times are learned
 LEARN_MIN_PER_HOUR = 2
 BACKOFF_S = [300]  # 1.2.50: one automatic retry (platforms.AUTO_RETRY_MAX), then: needs attention
-DAILY_MAX = 3  # 1.2.50: platforms.DAILY_POST_MAX - never more uploads a day, whatever the setting
+DAILY_MAX = 6  # 1.2.66: at most 6 uploads a day (what YouTube's free API quota can take; 1.2.50 had 3)
 PER_UPLOAD_UNITS = 1600 + 50 + 50
 FIXES = ("retry", "reconnect", "edit", "rerender", "reschedule", "wait")
 
@@ -156,10 +156,12 @@ def daily_limit() -> int:
 
 
 def quota_capacity() -> int:
-    """Uploads Google's daily API quota allows (upload + thumbnail + playlist each)."""
+    """Uploads Google's daily API quota allows. 1.2.66: counted by the upload itself (1,600 units,
+    after the reserve youtube.quota_reserve keeps for thumbnails and edits), so the free 10,000
+    units take 6 a day; a thumbnail / playlist step that no longer fits waits for the next day."""
     from . import youtube
 
-    return max(1, youtube.daily_quota() // PER_UPLOAD_UNITS)
+    return max(1, (youtube.daily_quota() - youtube.quota_reserve()) // youtube.COST["upload"])
 
 
 def effective_limit() -> int:

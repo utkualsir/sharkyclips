@@ -230,15 +230,17 @@ def drafts(project: Project, cand: dict) -> dict:
     title = yt.get("title") if yt.get("title") is not None else meta.get("title") or ""
     desc = yt.get("description") if yt.get("description") is not None else meta.get("description") or ""
     lang = _lang(project, cand, meta)
-    full = P.compose_description(desc, meta.get("hashtags") or [], None, lang=lang, short=True)
+    # 1.2.66: the hashtags can be edited per clip too ("Edit per clip" of Share clips)
+    tags = [str(h).lstrip("#") for h in yt["hashtags"] if str(h).strip("# ")] if isinstance(yt.get("hashtags"), list)         else meta.get("hashtags") or []
+    full = P.compose_description(desc, tags, None, lang=lang, short=True)
     out = {"youtube": {"title": youtube.censor_text(title, lang), "description": desc,
                        "full_description": youtube.censor_text(full, lang),
-                       "hashtags": meta.get("hashtags") or [], "tags": meta.get("tags") or [],
+                       "hashtags": tags, "tags": meta.get("tags") or [],
                        "edited": bool(yt)}}
     for p in SOCIAL:
         mine = (saved.get(p) or {}).get("caption")
         out[p] = {"caption": youtube.censor_text(mine, lang) if mine is not None
-                  else social_caption(project, cand, p, {**meta, "title": title, "description": desc}),
+                  else social_caption(project, cand, p, {**meta, "title": title, "description": desc, "hashtags": tags}),
                   "edited": mine is not None}
     return out
 
@@ -655,7 +657,7 @@ def _youtube_start(project: Project, cand: dict, when: datetime | None, d: dict)
         item = WE._plan_meta(project, cand, E.clip_prefs(E.load(project), cand["id"])) if easy \
             else pub._item_for(project, cand["id"])
     meta = {**item["meta"], "title": youtube.clean_text(d["youtube"]["title"], 100),
-            "description": d["youtube"]["description"]}
+            "description": d["youtube"]["description"], "hashtags": d["youtube"]["hashtags"]}
     pub._restart_clip(project.id, cand["id"])
     if when is None:
         P.put({**P.unschedule(item), "meta": meta, "prep": item.get("prep") or {}, "now": True})

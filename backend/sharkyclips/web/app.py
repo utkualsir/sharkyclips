@@ -2643,6 +2643,7 @@ from .trash_api import router as _trash_router  # noqa: E402 - delete + trash + 
 from .fullvideo_api import router as _fullvideo_router  # noqa: E402 - full video + Channel style (1.2.51)
 from .setup_api import router as _setup_router  # noqa: E402 - first-run downloads + diagnostics (1.2.56)
 from .mystyle_api import router as _mystyle_router  # noqa: E402 - My style template (1.2.63)
+from .share import router as _share_router  # noqa: E402 - Share clips board, daily limit, batches (1.2.66)
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2662,6 +2663,7 @@ app.include_router(_platforms_router)
 app.include_router(_dub_router)
 app.include_router(_fullvideo_router)
 app.include_router(_mystyle_router)
+app.include_router(_share_router)
 
 
 @app.get("/api/{rest:path}")

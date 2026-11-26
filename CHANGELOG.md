@@ -9,6 +9,231 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.66] - 2026-11-22
+Sharing many clips is now simple: open "Share clips", see every clip of a video at once with a clear status, tick the ones you want and share them in one go. A daily limit keeps it safe, and the rest is planned for the next days by itself.
+
+### New
+- **Share clips.** One big screen with all clips of a video: large pictures, play on hover or tap, length, viral score and title. Every clip says clearly if it is not shared, scheduled (with the day and time), shared (with the platform icons and a link to the live post) or failed (with a Try again button).
+- **Never post the same clip twice.** Shared clips are greyed out. The tabs All, Not shared and Shared help you find what is left. If you pick a clip that is already out, SharkyClips tells you and only sends it where it is not yet.
+- **Pick many, share once.** A box on every card, "Select all" and "Select not shared", and one big "Share selected" button. Each card also has its own Share button.
+- **A daily upload limit.** 5 clips a day by default, and you can choose 1 to 6 in Settings (6 is what YouTube's free limit allows). You always see how many are left, for example "3 of 5 left today". If you pick more, the rest are planned for the next days by themselves.
+- **One simple flow.** After Share, pick the platforms once for all clips (only the connected ones; the others have a Connect button). "Edit per clip" lets you change the title, description, hashtags and platforms of each clip. Then a summary shows what goes where and when, and how many of today's uploads it uses. Then Publish.
+- **See it happen.** A progress panel shows every clip of the batch and where it is on each platform.
+
+### Improved
+- **Instagram stays safe.** Instagram posts still keep at least 4 hours apart; the summary shows the moved times. Instagram's Manual mode and your other platform settings stay as they were.
+- **Undo.** Taking a clip off the plan waits a few seconds with an Undo button.
+- **Your choice is remembered.** The platforms you picked last time are already on next time.
+- **Works the same in Easy and Pro mode,** with big buttons and the keyboard: Esc clears the selection, Ctrl+A picks all clips shown.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Çok sayıda klip paylaşmak artık çok kolay: "Klipleri paylaş"ı aç, bir videonun bütün kliplerini net bir durumla aynı anda gör, istediklerini işaretle ve tek seferde paylaş. Günlük sınır hesabını güvende tutar, kalanlar kendiliğinden sonraki günlere planlanır.
+
+### Yeni
+- **Klipleri paylaş.** Bir videonun bütün kliplerinin olduğu tek büyük ekran: büyük resimler, üstüne gelince ya da dokununca oynatma, süre, viral puanı ve başlık. Her klip açıkça söyler: paylaşılmadı, planlandı (gün ve saatle), paylaşıldı (platform simgeleri ve yayındaki gönderinin bağlantısıyla) ya da başarısız (Yeniden dene butonuyla).
+- **Aynı klip asla iki kez paylaşılmaz.** Paylaşılan klipler soluk görünür. Tümü, Paylaşılmadı ve Paylaşıldı sekmeleri neyin kaldığını bulmanı kolaylaştırır. Zaten paylaşılmış bir klip seçersen SharkyClips bunu söyler ve klibi sadece henüz olmadığı yerlere gönderir.
+- **Çok seç, bir kez paylaş.** Her kartta bir kutu, "Tümünü seç" ve "Paylaşılmayanları seç", ve tek büyük "Seçilenleri paylaş" butonu. Her kartın kendi Paylaş butonu da var.
+- **Günlük yükleme sınırı.** Varsayılan olarak günde 5 klip; Ayarlar'dan 1 ile 6 arasında seçebilirsin (6, YouTube'un ücretsiz sınırının izin verdiği sayı). Kaç tane kaldığını her zaman görürsün, örneğin "Bugün 5 hakkın, 3 kaldı". Daha fazlasını seçersen kalanlar kendiliğinden sonraki günlere planlanır.
+- **Tek ve basit bir akış.** Paylaş'tan sonra platformları bütün klipler için bir kez seç (sadece bağlı olanlar; diğerlerinde Bağla butonu var). "Klip klip düzenle" ile her klibin başlığını, açıklamasını, etiketlerini ve platformlarını değiştirebilirsin. Sonra bir özet neyin nereye ve ne zaman gideceğini, bugünkü yüklemelerden kaçını kullandığını gösterir. Ardından Yayınla.
+- **Olanları gör.** Bir ilerleme paneli paylaşımdaki her klibi ve her platformda ne durumda olduğunu gösterir.
+
+### İyileştirmeler
+- **Instagram güvende kalır.** Instagram gönderileri arasında yine en az 4 saat olur; özet kaydırılan saatleri gösterir. Instagram'ın Elle modu ve diğer platform ayarların olduğu gibi kalır.
+- **Geri al.** Bir klibi plandan çıkarmak birkaç saniye bekler ve Geri al butonu gösterir.
+- **Seçimin hatırlanır.** Geçen sefer seçtiğin platformlar bir dahaki sefere zaten seçili olur.
+- **Kolay ve Pro modda aynı çalışır,** büyük butonlar ve klavyeyle: Esc seçimi temizler, Ctrl+A görünen bütün klipleri seçer.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Compartir muchos clips ahora es sencillo: abre "Compartir clips", mira todos los clips de un vídeo a la vez con un estado claro, marca los que quieras y compártelos de una vez. Un límite diario protege tu cuenta y el resto se planifica solo para los días siguientes.
+
+### Nuevo
+- **Compartir clips.** Una pantalla grande con todos los clips de un vídeo: imágenes grandes, reproducción al pasar el ratón o tocar, duración, puntuación viral y título. Cada clip dice claramente si no está compartido, está programado (con día y hora), compartido (con los iconos de las plataformas y un enlace a la publicación) o falló (con un botón Reintentar).
+- **Nunca publiques el mismo clip dos veces.** Los clips compartidos se ven en gris. Las pestañas Todos, Sin compartir y Compartidos te ayudan a ver lo que queda. Si eliges un clip que ya salió, SharkyClips te avisa y solo lo envía donde aún no está.
+- **Elige muchos, comparte una vez.** Una casilla en cada tarjeta, "Seleccionar todo" y "Seleccionar sin compartir", y un gran botón "Compartir selección". Cada tarjeta tiene también su propio botón Compartir.
+- **Un límite diario de subidas.** 5 clips al día por defecto; en Ajustes puedes elegir de 1 a 6 (6 es lo que permite el límite gratis de YouTube). Siempre ves cuántos quedan, por ejemplo "Quedan 3 de 5 hoy". Si eliges más, el resto se planifica solo para los días siguientes.
+- **Un solo paso a paso.** Tras Compartir, elige las plataformas una vez para todos los clips (solo las conectadas; las demás tienen un botón Conectar). "Editar por clip" te deja cambiar el título, la descripción, los hashtags y las plataformas de cada clip. Luego un resumen muestra qué va dónde y cuándo, y cuántas subidas de hoy usa. Después, Publicar.
+- **Míralo en marcha.** Un panel de progreso muestra cada clip del lote y en qué punto está en cada plataforma.
+
+### Mejoras
+- **Instagram sigue seguro.** Las publicaciones de Instagram siguen separadas al menos 4 horas; el resumen muestra las horas movidas. El modo Manual de Instagram y tus otros ajustes siguen igual.
+- **Deshacer.** Quitar un clip del plan espera unos segundos con un botón Deshacer.
+- **Se recuerda tu elección.** Las plataformas que elegiste la última vez ya vienen marcadas.
+- **Funciona igual en modo Fácil y Pro,** con botones grandes y con el teclado: Esc quita la selección, Ctrl+A elige todos los clips visibles.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Compartilhar muitos clipes agora é simples: abra "Compartilhar clipes", veja todos os clipes de um vídeo de uma vez com um status claro, marque os que você quer e compartilhe tudo de uma vez. Um limite diário protege sua conta, e o resto é agendado sozinho para os próximos dias.
+
+### Novo
+- **Compartilhar clipes.** Uma tela grande com todos os clipes de um vídeo: imagens grandes, reprodução ao passar o mouse ou tocar, duração, pontuação viral e título. Cada clipe mostra claramente se não foi compartilhado, está agendado (com dia e hora), foi compartilhado (com os ícones das plataformas e um link para o post) ou falhou (com um botão Tentar de novo).
+- **Nunca poste o mesmo clipe duas vezes.** Clipes compartilhados ficam cinza. As abas Todos, Não compartilhados e Compartilhados ajudam a ver o que falta. Se você escolher um clipe que já saiu, o SharkyClips avisa e só envia para onde ele ainda não está.
+- **Escolha vários, compartilhe uma vez.** Uma caixa em cada cartão, "Selecionar todos" e "Selecionar não compartilhados", e um botão grande "Compartilhar seleção". Cada cartão também tem seu próprio botão Compartilhar.
+- **Um limite diário de envios.** 5 clipes por dia por padrão; em Configurações você escolhe de 1 a 6 (6 é o que o limite grátis do YouTube permite). Você sempre vê quantos restam, por exemplo "Restam 3 de 5 hoje". Se escolher mais, o resto é agendado sozinho para os próximos dias.
+- **Um passo a passo simples.** Depois de Compartilhar, escolha as plataformas uma vez para todos os clipes (só as conectadas; as outras têm um botão Conectar). "Editar por clipe" permite mudar o título, a descrição, as hashtags e as plataformas de cada clipe. Depois um resumo mostra o que vai para onde e quando, e quantos envios de hoje isso usa. Aí é só Publicar.
+- **Acompanhe tudo.** Um painel de progresso mostra cada clipe do lote e como ele está em cada plataforma.
+
+### Melhorias
+- **O Instagram continua seguro.** Os posts no Instagram continuam com pelo menos 4 horas de distância; o resumo mostra os horários movidos. O modo Manual do Instagram e suas outras configurações continuam iguais.
+- **Desfazer.** Tirar um clipe do plano espera alguns segundos com um botão Desfazer.
+- **Sua escolha fica salva.** As plataformas que você escolheu da última vez já vêm marcadas.
+- **Funciona igual no modo Fácil e no Pro,** com botões grandes e pelo teclado: Esc limpa a seleção, Ctrl+A escolhe todos os clipes visíveis.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Viele Clips zu teilen ist jetzt einfach: Öffne „Clips teilen“, sieh alle Clips eines Videos auf einmal mit einem klaren Status, hake die gewünschten an und teile sie in einem Rutsch. Ein Tageslimit schützt dein Konto, der Rest wird von selbst für die nächsten Tage geplant.
+
+### Neu
+- **Clips teilen.** Eine große Seite mit allen Clips eines Videos: große Bilder, Abspielen beim Darüberfahren oder Antippen, Länge, Viral-Wert und Titel. Jeder Clip zeigt klar, ob er nicht geteilt, geplant (mit Tag und Uhrzeit), geteilt (mit den Plattform-Symbolen und einem Link zum Beitrag) oder fehlgeschlagen ist (mit einem Knopf „Erneut versuchen“).
+- **Nie denselben Clip zweimal posten.** Geteilte Clips sind ausgegraut. Die Reiter Alle, Nicht geteilt und Geteilt zeigen dir, was noch übrig ist. Wählst du einen Clip, der schon draußen ist, sagt SharkyClips dir das und schickt ihn nur dorthin, wo er noch fehlt.
+- **Viele wählen, einmal teilen.** Ein Kästchen auf jeder Karte, „Alle auswählen“ und „Nicht geteilte auswählen“ und ein großer Knopf „Auswahl teilen“. Jede Karte hat auch ihren eigenen Teilen-Knopf.
+- **Ein Tageslimit für Uploads.** Standardmäßig 5 Clips am Tag, in den Einstellungen wählst du 1 bis 6 (6 erlaubt YouTubes kostenloses Limit). Du siehst immer, wie viele übrig sind, zum Beispiel „Heute noch 3 von 5“. Wählst du mehr, wird der Rest von selbst für die nächsten Tage geplant.
+- **Ein einfacher Ablauf.** Nach „Teilen“ wählst du die Plattformen einmal für alle Clips (nur verbundene; die anderen haben einen Knopf „Verbinden“). „Pro Clip bearbeiten“ ändert Titel, Beschreibung, Hashtags und Plattformen jedes Clips. Dann zeigt eine Übersicht, was wohin und wann geht und wie viele der heutigen Uploads es braucht. Dann „Veröffentlichen“.
+- **Zusehen, wie es läuft.** Eine Fortschrittsanzeige zeigt jeden Clip der Auswahl und wo er auf jeder Plattform steht.
+
+### Verbessert
+- **Instagram bleibt sicher.** Instagram-Beiträge liegen weiter mindestens 4 Stunden auseinander; die Übersicht zeigt die verschobenen Zeiten. Der manuelle Modus von Instagram und deine anderen Einstellungen bleiben, wie sie waren.
+- **Rückgängig.** Einen Clip aus dem Plan zu nehmen wartet ein paar Sekunden mit einem Knopf „Rückgängig“.
+- **Deine Wahl bleibt gespeichert.** Die Plattformen vom letzten Mal sind beim nächsten Mal schon an.
+- **Funktioniert gleich im Einfach- und im Pro-Modus,** mit großen Knöpfen und mit der Tastatur: Esc leert die Auswahl, Strg+A wählt alle angezeigten Clips.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Partager beaucoup de clips devient simple : ouvre « Partager les clips », vois tous les clips d'une vidéo d'un coup avec un statut clair, coche ceux que tu veux et partage-les en une fois. Une limite par jour protège ton compte, et le reste est prévu tout seul pour les jours suivants.
+
+### Nouveau
+- **Partager les clips.** Un grand écran avec tous les clips d'une vidéo : grandes images, lecture au survol ou d'un toucher, durée, score viral et titre. Chaque clip indique clairement s'il n'est pas partagé, prévu (avec le jour et l'heure), partagé (avec les icônes des plateformes et un lien vers la publication) ou en échec (avec un bouton Réessayer).
+- **Ne publie jamais deux fois le même clip.** Les clips partagés sont grisés. Les onglets Tous, Non partagés et Partagés t'aident à voir ce qui reste. Si tu choisis un clip déjà en ligne, SharkyClips te le dit et l'envoie seulement là où il n'est pas encore.
+- **Choisis-en plusieurs, partage une fois.** Une case sur chaque carte, « Tout sélectionner » et « Sélectionner les non partagés », et un grand bouton « Partager la sélection ». Chaque carte a aussi son propre bouton Partager.
+- **Une limite d'envois par jour.** 5 clips par jour par défaut ; dans Réglages tu choisis de 1 à 6 (6, c'est ce que permet la limite gratuite de YouTube). Tu vois toujours combien il en reste, par exemple « Encore 3 sur 5 aujourd'hui ». Si tu en choisis plus, le reste est prévu tout seul pour les jours suivants.
+- **Un parcours simple.** Après Partager, choisis les plateformes une fois pour tous les clips (seulement celles connectées ; les autres ont un bouton Connecter). « Modifier clip par clip » permet de changer le titre, la description, les hashtags et les plateformes de chaque clip. Ensuite un résumé montre ce qui part où et quand, et combien d'envois du jour cela utilise. Puis Publier.
+- **Suis l'avancement.** Un panneau de progression montre chaque clip du lot et où il en est sur chaque plateforme.
+
+### Améliorations
+- **Instagram reste prudent.** Les publications Instagram restent espacées d'au moins 4 heures ; le résumé montre les heures déplacées. Le mode Manuel d'Instagram et tes autres réglages restent comme avant.
+- **Annuler.** Retirer un clip du plan attend quelques secondes avec un bouton Annuler.
+- **Ton choix est retenu.** Les plateformes choisies la dernière fois sont déjà activées la fois suivante.
+- **Marche pareil en mode Facile et Pro,** avec de grands boutons et au clavier : Échap vide la sélection, Ctrl+A choisit tous les clips affichés.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Sok klip megosztása most egyszerű: nyisd meg a „Klipek megosztása” részt, lásd egy videó összes klipjét egyszerre, világos állapottal, jelöld ki, amiket szeretnél, és oszd meg őket egyszerre. A napi korlát védi a fiókodat, a többi magától a következő napokra kerül.
+
+### Új
+- **Klipek megosztása.** Egy nagy képernyő egy videó összes klipjével: nagy képek, lejátszás rámutatásra vagy koppintásra, hossz, virális pontszám és cím. Minden klip világosan mutatja, hogy nincs megosztva, ütemezve van (nappal és időponttal), meg van osztva (a platformok ikonjaival és a bejegyzés linkjével) vagy sikertelen (Újra gombbal).
+- **Soha ne tedd ki kétszer ugyanazt a klipet.** A megosztott klipek szürkék. A Mind, Nincs megosztva és Megosztva fülek segítenek látni, mi maradt. Ha olyan klipet választasz, ami már kint van, a SharkyClips szól, és csak oda küldi, ahol még nincs.
+- **Válassz sokat, oszd meg egyszer.** Minden kártyán egy jelölőnégyzet, „Mind kijelölése” és „Nem megosztottak kijelölése”, és egy nagy „Kijelöltek megosztása” gomb. Minden kártyának saját Megosztás gombja is van.
+- **Napi feltöltési korlát.** Alapból napi 5 klip; a Beállításokban 1 és 6 között választhatsz (6-ot enged a YouTube ingyenes kerete). Mindig látod, mennyi maradt, például „Ma még 3 / 5”. Ha többet választasz, a többi magától a következő napokra kerül.
+- **Egyetlen egyszerű menet.** A Megosztás után egyszer válaszd ki a platformokat az összes kliphez (csak az összekapcsoltakat; a többinél Összekapcsolás gomb van). A „Klipenkénti szerkesztés” résznél minden klip címe, leírása, hashtagjei és platformjai módosíthatók. Utána egy összegzés mutatja, mi hova és mikor megy, és hány mai feltöltést használ. Aztán Közzététel.
+- **Lásd, ahogy történik.** Egy haladásjelző panel mutatja a csomag minden klipjét és azt, hol tart az egyes platformokon.
+
+### Fejlesztések
+- **Az Instagram biztonságban marad.** Az Instagram-bejegyzések között továbbra is legalább 4 óra telik el; az összegzés mutatja az áthelyezett időpontokat. Az Instagram kézi módja és a többi beállításod nem változik.
+- **Visszavonás.** Ha kiveszel egy klipet a tervből, pár másodpercig vár egy Visszavonás gombbal.
+- **Megjegyzi a választásodat.** A legutóbb választott platformok legközelebb már be vannak kapcsolva.
+- **Ugyanúgy működik Egyszerű és Pro módban,** nagy gombokkal és billentyűzettel: az Esc törli a kijelölést, a Ctrl+A kijelöli az összes látható klipet.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Делиться многими клипами теперь просто: откройте «Поделиться клипами», увидьте все клипы видео сразу с понятным статусом, отметьте нужные и опубликуйте их за один раз. Дневной лимит бережёт аккаунт, а остальное само планируется на следующие дни.
+
+### Новое
+- **Поделиться клипами.** Один большой экран со всеми клипами видео: крупные картинки, воспроизведение при наведении или касании, длина, вирусный балл и название. Каждый клип ясно показывает: не опубликован, запланирован (с днём и временем), опубликован (со значками платформ и ссылкой на пост) или ошибка (с кнопкой «Повторить»).
+- **Один клип никогда не уйдёт дважды.** Опубликованные клипы показаны серым. Вкладки «Все», «Не опубликованы» и «Опубликованы» помогают увидеть, что осталось. Если выбрать клип, который уже вышел, SharkyClips предупредит и отправит его только туда, где его ещё нет.
+- **Выберите много, опубликуйте один раз.** Галочка на каждой карточке, «Выбрать все» и «Выбрать неопубликованные» и одна большая кнопка «Поделиться выбранными». У каждой карточки есть и своя кнопка «Поделиться».
+- **Дневной лимит загрузок.** По умолчанию 5 клипов в день, в Настройках можно выбрать от 1 до 6 (6 позволяет бесплатный лимит YouTube). Всегда видно, сколько осталось, например «Сегодня осталось 3 из 5». Если выбрать больше, остальные сами запланируются на следующие дни.
+- **Один простой путь.** После «Поделиться» выберите платформы один раз для всех клипов (только подключённые; у остальных есть кнопка «Подключить»). «Изменить по клипам» позволяет поменять название, описание, хештеги и платформы каждого клипа. Затем сводка показывает, что, куда и когда уйдёт и сколько сегодняшних загрузок это займёт. Затем «Опубликовать».
+- **Видно, как идёт работа.** Панель хода публикации показывает каждый клип и его состояние на каждой платформе.
+
+### Улучшения
+- **Instagram в безопасности.** Между постами в Instagram по-прежнему минимум 4 часа; сводка показывает сдвинутое время. Ручной режим Instagram и другие ваши настройки не меняются.
+- **Отмена.** Снятие клипа с плана ждёт несколько секунд с кнопкой «Отменить».
+- **Ваш выбор запоминается.** Платформы, выбранные в прошлый раз, уже включены в следующий.
+- **Работает одинаково в простом режиме и в режиме Pro,** с крупными кнопками и с клавиатуры: Esc сбрасывает выбор, Ctrl+A выбирает все показанные клипы.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+أصبحت مشاركة مقاطع كثيرة سهلة: افتح «مشاركة المقاطع»، وشاهد كل مقاطع الفيديو دفعة واحدة مع حالة واضحة، وحدد ما تريد وشاركه مرة واحدة. حد يومي يحمي حسابك، ويُخطط الباقي تلقائيًا للأيام التالية.
+
+### جديد
+- **مشاركة المقاطع.** شاشة كبيرة واحدة فيها كل مقاطع الفيديو: صور كبيرة، وتشغيل عند المرور أو اللمس، والمدة، ودرجة الانتشار، والعنوان. كل مقطع يقول بوضوح إن كان غير مُشارك، أو مُجدولًا (مع اليوم والوقت)، أو مُشاركًا (مع أيقونات المنصات ورابط المنشور)، أو فشل (مع زر إعادة المحاولة).
+- **لا تنشر المقطع نفسه مرتين أبدًا.** المقاطع المُشاركة تظهر باهتة. تساعدك علامات التبويب الكل وغير مُشارك ومُشارك على معرفة ما تبقى. إذا اخترت مقطعًا منشورًا بالفعل، يخبرك SharkyClips ويرسله فقط إلى حيث لم يُنشر بعد.
+- **اختر الكثير وشارك مرة واحدة.** مربع في كل بطاقة، و«تحديد الكل» و«تحديد غير المُشارك»، وزر كبير واحد «مشاركة المحدد». لكل بطاقة أيضًا زر مشاركة خاص بها.
+- **حد يومي للرفع.** 5 مقاطع في اليوم افتراضيًا، ويمكنك اختيار من 1 إلى 6 في الإعدادات (6 هو ما يسمح به حد YouTube المجاني). ترى دائمًا كم بقي، مثلًا «بقي 3 من 5 اليوم». إذا اخترت أكثر، يُخطط الباقي تلقائيًا للأيام التالية.
+- **خطوات بسيطة.** بعد المشاركة، اختر المنصات مرة واحدة لكل المقاطع (المتصلة فقط؛ وللباقي زر اتصال). يتيح «تعديل لكل مقطع» تغيير العنوان والوصف والوسوم والمنصات لكل مقطع. ثم يعرض ملخص ما يذهب إلى أين ومتى، وكم يستخدم من رفع اليوم. ثم انشر.
+- **تابع ما يحدث.** لوحة تقدم تعرض كل مقطع في الدفعة وحالته على كل منصة.
+
+### تحسينات
+- **يبقى Instagram آمنًا.** تبقى منشورات Instagram متباعدة 4 ساعات على الأقل؛ ويعرض الملخص الأوقات المنقولة. الوضع اليدوي في Instagram وإعداداتك الأخرى تبقى كما هي.
+- **تراجع.** إزالة مقطع من الخطة تنتظر بضع ثوانٍ مع زر تراجع.
+- **يُحفظ اختيارك.** المنصات التي اخترتها آخر مرة تكون مفعّلة في المرة التالية.
+- **يعمل بالطريقة نفسها في الوضع السهل ووضع Pro،** مع أزرار كبيرة ولوحة المفاتيح: Esc يمسح التحديد، وCtrl+A يحدد كل المقاطع المعروضة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+现在分享大量片段很简单：打开“分享片段”，一次看到一个视频的所有片段和清楚的状态，勾选想要的，一次分享。每日上限保护你的账号，其余的会自动安排到之后几天。
+
+### 新功能
+- **分享片段。** 一个大屏幕显示视频的所有片段：大图、悬停或点按即可播放、时长、爆款分和标题。每个片段都清楚显示：未分享、已排期（带日期和时间）、已分享（带平台图标和帖子链接）或失败（带“重试”按钮）。
+- **同一片段绝不发两次。** 已分享的片段会变灰。“全部”“未分享”“已分享”标签帮你看到还剩什么。如果你选了已经发出的片段，SharkyClips 会提醒你，并只发到还没发过的地方。
+- **多选，一次分享。** 每张卡片上有勾选框，还有“全选”和“选择未分享的”，以及一个大大的“分享所选”按钮。每张卡片也有自己的“分享”按钮。
+- **每日上传上限。** 默认每天 5 个片段，可在设置中选择 1 到 6 个（6 个是 YouTube 免费额度允许的数量）。你总能看到还剩多少，例如“今天还剩 3/5”。选得更多时，其余的会自动安排到之后几天。
+- **一个简单的流程。** 点“分享”后，为所有片段一次选择平台（只显示已连接的；其他的有“连接”按钮）。“逐个编辑”可修改每个片段的标题、描述、话题标签和平台。然后摘要会显示什么发到哪里、什么时候发，以及占用今天多少次上传。最后点“发布”。
+- **看着它完成。** 进度面板显示这一批的每个片段，以及它在每个平台上的状态。
+
+### 改进
+- **Instagram 依然安全。** Instagram 帖子之间仍至少间隔 4 小时；摘要会显示顺延后的时间。Instagram 的手动模式和你的其他平台设置保持不变。
+- **撤销。** 把片段移出计划会等几秒，并显示“撤销”按钮。
+- **记住你的选择。** 上次选的平台下次会自动选中。
+- **简单模式和专业模式一样好用，** 按钮大，也能用键盘：Esc 清除选择，Ctrl+A 选中所有显示的片段。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+たくさんのクリップの共有がかんたんになりました。「クリップを共有」を開くと、動画のすべてのクリップがはっきりした状態つきで一度に見られます。好きなものにチェックを入れて、まとめて共有できます。1日の上限でアカウントを守り、残りは自動で次の日以降に予定されます。
+
+### 新機能
+- **クリップを共有。** 動画のすべてのクリップが並ぶ大きな画面です。大きな画像、ポインターを乗せるかタップで再生、長さ、バズスコア、タイトル。どのクリップも、未共有、予定済み（日時つき）、共有済み（プラットフォームのアイコンと投稿へのリンクつき）、失敗（「再試行」ボタンつき）がはっきり分かります。
+- **同じクリップを二度投稿しません。** 共有済みのクリップはグレーになります。「すべて」「未共有」「共有済み」のタブで残りがすぐ分かります。すでに出したクリップを選ぶと SharkyClips が知らせ、まだ出していない場所にだけ送ります。
+- **たくさん選んで、一度に共有。** どのカードにもチェックボックスがあり、「すべて選択」「未共有を選択」と大きな「選択を共有」ボタンがあります。カードごとの「共有」ボタンもあります。
+- **1日のアップロード上限。** 初期設定は1日5本で、設定で1〜6本を選べます（6本は YouTube の無料枠で可能な数です）。残りの数はいつも見えます（例：「今日の残り 3/5」）。多く選んだときは、残りが自動で次の日以降に予定されます。
+- **シンプルな流れ。** 「共有」のあと、すべてのクリップの共有先を一度に選びます（接続済みのものだけ。ほかは「接続」ボタンつき）。「クリップごとに編集」で各クリップのタイトル、説明、ハッシュタグ、共有先を変えられます。次の概要で、どこにいつ出るか、今日のアップロードを何回使うかが分かります。あとは「公開」です。
+- **進み具合が見える。** 進捗パネルに、まとめて送ったクリップごとの各プラットフォームでの状態が表示されます。
+
+### 改善
+- **Instagram も安全なまま。** Instagram の投稿は引き続き少なくとも4時間あけます。概要には移動した時刻が表示されます。Instagram の手動モードやほかの設定はそのままです。
+- **元に戻す。** クリップを予定から外すときは、数秒間「元に戻す」ボタンが出ます。
+- **選んだものを覚えます。** 前回選んだ共有先が次回は最初から選ばれています。
+- **かんたんモードでも Pro モードでも同じように使えます。** ボタンは大きく、キーボードでも操作できます。Esc で選択を解除、Ctrl+A で表示中のクリップをすべて選択します。
+
+</details>
+
 ## [1.2.65] - 2026-11-22
 SharkyClips has a new look: deep water colours, the yellow of a shark warning sign and clearer text on every screen. Every feature works exactly as before.
 

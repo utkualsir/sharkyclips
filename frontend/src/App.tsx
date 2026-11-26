@@ -42,6 +42,8 @@ const Trash = lazy(() => import("./pages/Trash"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Approve = lazy(() => import("./pages/Approve"));
 const Updates = lazy(() => import("./pages/Updates"));
+const ShareClips = lazy(() => import("./pages/ShareClips"));
+import { UploadsLeft } from "./components/UploadsLeft";
 import { href, useRoute } from "./router";
 import { useTheme } from "./theme";
 
@@ -83,7 +85,7 @@ function EasyTopBar() {
         <a
           href={href.library}
           aria-current={
-            route.name === "library" || route.name === "project"
+            route.name === "library" || route.name === "project" || route.name === "share"
               ? "page"
               : undefined
           }
@@ -122,6 +124,7 @@ function EasyTopBar() {
             offline
           </span>
         )}
+        <UploadsLeft />
         <ProSwitch />
         <LanguageSwitcher />
         <button
@@ -219,6 +222,7 @@ function TopBar() {
             offline
           </span>
         )}
+        <UploadsLeft />
         <ProSwitch />
         <GovernorWidget />
         {running && (
@@ -364,6 +368,7 @@ export default function App() {
           {route.name === "bestof" && <BestOf key={route.id} id={route.id} />}
           {route.name === "game" && <GameDebug key={route.id} id={route.id} />}
           {route.name === "stories" && <Stories key={route.id} id={route.id} />}
+          {route.name === "share" && <ShareClips key={route.id} id={route.id} />}
           {route.name === "queue" && <Queue />}
           {route.name === "stats" && <Stats />}
           {route.name === "publish" &&

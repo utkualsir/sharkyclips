@@ -1297,6 +1297,12 @@ export default function ProjectPage({ id }: { id: string }) {
         </div>
         {project.language && (
           <div className="proj-actions">
+            {project.highlights && (
+              <a className="btn btn-primary share-open" href={href.share(id)}>
+                <Icon name="upload" />
+                {t("share.open")}
+              </a>
+            )}
             <button
               className="btn btn-sm"
               onClick={reanalyze}

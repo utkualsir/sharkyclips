@@ -141,8 +141,9 @@ def test_full_day_moves_to_the_next_free_slot_and_strict_refuses(cfg):
 
 def test_limit_never_above_what_the_quota_can_upload(cfg, old_limits):
     config.update(publish_daily_limit=20, youtube_daily_quota=10_000)
-    assert P.quota_capacity() == 5 and P.effective_limit() == 5
-    assert len(P.best_times()["times"]) == 5
+    # 1.2.66: counted by the upload (1,600 units, 300 kept back): the free 10,000 take 6 a day
+    assert P.quota_capacity() == 6 and P.effective_limit() == 6
+    assert len(P.best_times()["times"]) == 6
 
 
 def test_releases_count_manual_uploads_but_not_private_ones():

@@ -181,6 +181,16 @@ def build(root: Path) -> str:
         "hashtags": ["#DeltaForce", "#democreator"], "tags": ["Delta Force Türkçe", "democreator"], "category": "20",
         "made_for_kids": False, "language": "tr", "publish_at": "2099-01-01T19:00:00Z",
         "thumbnail": str(d / "full_thumb.jpg") if (d / "full_thumb.jpg").is_file() else None}})
+    # 1.2.66 Share clips: every status badge on the board (shared with a link, scheduled, failed,
+    # waiting for you to post); fixed dates far from today so the daily count stays the same
+    _json(d / "platform_uploads.json", {
+        "c03": {"tiktok": {"mode": "semi", "status": "published", "manual": True, "posted_at": "2026-10-02T12:00:00+00:00",
+                           "url": "https://www.tiktok.com/@democreator/video/7000000000000000001"}},
+        "c08": {"tiktok": {"mode": "api", "status": "scheduled", "publish_at": "2099-01-05T18:00:00+00:00"}},
+        "c09": {"tiktok": {"mode": "semi", "status": "failed", "error": {
+            "message": "Couldn't save the TikTok file: the disk is full.", "hint": "Free some space, then press Try again.",
+            "kind": "fatal"}}},
+    })
     _stamp_current(home, ws, d)
     return PID
 
