@@ -31,13 +31,13 @@ import { PhoneCard } from "../components/Phone";
 import { YoutubeCard } from "../components/Publish";
 import { PublishingCard } from "../components/PublishTools";
 import { applyMotion, type MotionSetting } from "../motion";
-import { useTheme } from "../theme";
 import { useToast } from "../toast";
 import { CoverAiCard, MyVoiceCard } from "../components/ExtrasSettings";
 import { AccountsSection } from "../components/Accounts";
 import { AboutCard } from "../components/Licenses";
 import { DeviceSettings } from "../components/SpeedSettings";
 import { TrashCard } from "../components/Trash";
+import { Personalization } from "../components/Personalization";
 
 function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
   const { t, num } = useI18n();
@@ -554,7 +554,6 @@ export default function Settings() {
   const { t, lang, setLang } = useI18n();
   const meta = useMeta();
   const toast = useToast();
-  const [theme, setTheme] = useTheme();
   const [settings, setSettings] = useState<SettingsT | null>(null);
   const [trigLang, setTrigLang] = useState(lang);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -661,22 +660,6 @@ export default function Settings() {
               </select>
               <div>
                 <div className="field-label" style={{ marginBottom: 6 }}>
-                  {t("settings.theme")}
-                </div>
-                <Segmented
-                  value={theme}
-                  options={[
-                    { value: "dark", label: t("theme.dark") },
-                    { value: "light", label: t("theme.light") },
-                  ]}
-                  onChange={setTheme}
-                />
-                <div className="field-hint" style={{ marginTop: 6 }}>
-                  {t("settings.theme_desc")}
-                </div>
-              </div>
-              <div>
-                <div className="field-label" style={{ marginBottom: 6 }}>
                   {t("settings.motion")}
                 </div>
                 <Segmented<MotionSetting>
@@ -695,6 +678,8 @@ export default function Settings() {
               </div>
             </div>
           </section>
+
+          <Personalization />
 
           <section className="card setting" id="content-language">
             <div>

@@ -9,6 +9,242 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.69] - 2026-11-26
+The navy and gold look is back as the default, with the cleaner text from the last update. A new Personalization page lets you pick light, dark or "follow Windows", four looks, an accent colour and your own colours.
+
+### New
+- **Personalization** in Settings, in Easy and Pro mode: choose Light, Dark or Follow Windows.
+- **Four looks:** Classic (navy and gold, the default), Ocean (deep sea blue with sea-glass teal), Shark Sign (the yellow look of the last update) and High contrast.
+- **Accent colour:** pick one from the palette or any colour you like. It colours the buttons, the open tab, the progress bars and the highlights. You can also show it on the window title bar.
+- **Your own colours:** background, panels, text, secondary text, borders, buttons, links, success, warning, error, bleeped words and the caption highlight, for light and dark mode.
+- **Easy to read, always:** if a colour makes text hard to read, SharkyClips tells you and fixes it by itself (you can switch this off).
+- **Live preview,** "Reset to default", and theme files you can save and open again or share.
+- **"You already used this video"** now shows as soon as you drop or pick a video, before any clip is made.
+
+### Improved
+- **Every screen follows your colours:** Easy and Pro mode, windows, the mini game, the start-up animation and the sign-in pages.
+
+### Fixed
+- **The Shark Sign look was the only look** after the last update. It is now one of four, and Classic is the default again.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Lacivert ve altın görünüm, son güncellemedeki daha temiz yazılarla birlikte yeniden varsayılan. Yeni Kişiselleştirme sayfasında açık, koyu ya da "Windows'u izle", dört görünüm, bir vurgu rengi ve kendi renklerini seçebilirsin.
+
+### Yeni
+- Ayarlar'da, Kolay ve Pro modda **Kişiselleştirme**: Açık, Koyu ya da Windows'u izle seç.
+- **Dört görünüm:** Klasik (lacivert ve altın, varsayılan), Okyanus (derin deniz mavisi ve deniz camı turkuazı), Shark Sign (son güncellemenin sarı görünümü) ve Yüksek karşıtlık.
+- **Vurgu rengi:** paletten seç ya da istediğin herhangi bir rengi seç. Butonları, açık sekmeyi, ilerleme çubuklarını ve vurguları renklendirir. İstersen pencere başlık çubuğunda da gösterebilirsin.
+- **Kendi renklerin:** arka plan, paneller, yazı, ikincil yazı, kenarlıklar, butonlar, bağlantılar, başarılı, uyarı, hata, bip'lenen kelimeler ve altyazı vurgusu; açık ve koyu mod için ayrı ayrı.
+- **Her zaman kolay okunur:** bir renk yazıyı zor okunur yaparsa SharkyClips bunu söyler ve kendiliğinden düzeltir (istersen kapatabilirsin).
+- **Canlı önizleme,** "Varsayılana dön" ve kaydedip yeniden açabileceğin ya da paylaşabileceğin tema dosyaları.
+- **"Bu videoyu zaten kullandın"** uyarısı artık videoyu bırakır bırakmaz ya da seçer seçmez, daha hiç klip yapılmadan görünür.
+
+### İyileştirmeler
+- **Her ekran senin renklerini izler:** Kolay ve Pro mod, pencereler, mini oyun, açılış animasyonu ve giriş sayfaları.
+
+### Düzeltmeler
+- **Son güncellemeden sonra tek görünüm Shark Sign'dı.** Artık dört görünümden biri ve Klasik yeniden varsayılan.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+El estilo azul marino y dorado vuelve a ser el predeterminado, con el texto más limpio de la última actualización. Una nueva página de Personalización te deja elegir claro, oscuro o "como Windows", cuatro estilos, un color de acento y tus propios colores.
+
+### Nuevo
+- **Personalización** en Ajustes, en el modo Fácil y en el Pro: elige Claro, Oscuro o Como Windows.
+- **Cuatro estilos:** Clásico (azul marino y dorado, el predeterminado), Océano (azul de mar profundo con turquesa de vidrio marino), Shark Sign (el estilo amarillo de la última actualización) y Alto contraste.
+- **Color de acento:** elige uno de la paleta o el color que quieras. Colorea los botones, la pestaña abierta, las barras de progreso y los resaltados. También puedes mostrarlo en la barra de título de la ventana.
+- **Tus propios colores:** fondo, paneles, texto, texto secundario, bordes, botones, enlaces, éxito, aviso, error, palabras con pitido y resaltado de subtítulos, para el modo claro y el oscuro.
+- **Siempre fácil de leer:** si un color hace que el texto cueste leerlo, SharkyClips te lo dice y lo corrige solo (puedes desactivarlo).
+- **Vista previa en vivo,** "Volver a lo predeterminado" y archivos de tema que puedes guardar, abrir otra vez o compartir.
+- **"Ya usaste este video"** aparece ahora en cuanto sueltas o eliges un video, antes de crear ningún clip.
+
+### Mejoras
+- **Todas las pantallas siguen tus colores:** modo Fácil y Pro, ventanas, el minijuego, la animación de inicio y las páginas de inicio de sesión.
+
+### Correcciones
+- **Shark Sign era el único estilo** tras la última actualización. Ahora es uno de cuatro y Clásico vuelve a ser el predeterminado.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+O visual azul-marinho e dourado voltou a ser o padrão, com o texto mais limpo da última atualização. Uma nova página de Personalização deixa você escolher claro, escuro ou "igual ao Windows", quatro visuais, uma cor de destaque e suas próprias cores.
+
+### Novo
+- **Personalização** nas Configurações, no modo Fácil e no Pro: escolha Claro, Escuro ou Igual ao Windows.
+- **Quatro visuais:** Clássico (azul-marinho e dourado, o padrão), Oceano (azul de mar profundo com verde-água de vidro do mar), Shark Sign (o visual amarelo da última atualização) e Alto contraste.
+- **Cor de destaque:** escolha uma da paleta ou qualquer cor que quiser. Ela colore os botões, a aba aberta, as barras de progresso e os destaques. Você também pode mostrá-la na barra de título da janela.
+- **Suas próprias cores:** fundo, painéis, texto, texto secundário, bordas, botões, links, sucesso, aviso, erro, palavras com bipe e destaque da legenda, para o modo claro e o escuro.
+- **Sempre fácil de ler:** se uma cor deixa o texto difícil de ler, o SharkyClips avisa e corrige sozinho (você pode desligar isso).
+- **Prévia ao vivo,** "Voltar ao padrão" e arquivos de tema que você pode salvar, abrir de novo ou compartilhar.
+- **"Você já usou este vídeo"** agora aparece assim que você solta ou escolhe um vídeo, antes de qualquer clipe ser feito.
+
+### Melhorias
+- **Todas as telas seguem suas cores:** modo Fácil e Pro, janelas, o minijogo, a animação de abertura e as páginas de login.
+
+### Correções
+- **Shark Sign era o único visual** depois da última atualização. Agora é um de quatro, e o Clássico voltou a ser o padrão.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Der Look in Marineblau und Gold ist wieder Standard, mit der klareren Schrift aus dem letzten Update. Auf der neuen Seite „Personalisierung“ wählst du hell, dunkel oder „wie Windows“, vier Looks, eine Akzentfarbe und eigene Farben.
+
+### Neu
+- **Personalisierung** in den Einstellungen, im Easy- und im Pro-Modus: wähle Hell, Dunkel oder Wie Windows.
+- **Vier Looks:** Klassisch (Marineblau und Gold, Standard), Ozean (tiefes Meeresblau mit Seeglas-Türkis), Shark Sign (der gelbe Look aus dem letzten Update) und Hoher Kontrast.
+- **Akzentfarbe:** wähle eine aus der Palette oder jede Farbe, die du magst. Sie färbt die Schaltflächen, den offenen Tab, die Fortschrittsbalken und die Hervorhebungen. Du kannst sie auch in der Titelleiste des Fensters zeigen.
+- **Eigene Farben:** Hintergrund, Bereiche, Text, Nebentext, Rahmen, Schaltflächen, Links, Erfolg, Warnung, Fehler, gepiepte Wörter und Untertitel-Hervorhebung, für den hellen und den dunklen Modus.
+- **Immer gut lesbar:** Wenn eine Farbe Text schwer lesbar macht, sagt SharkyClips es dir und korrigiert es selbst (das kannst du ausschalten).
+- **Live-Vorschau,** „Auf Standard zurücksetzen“ und Theme-Dateien, die du speichern, wieder öffnen oder teilen kannst.
+- **„Du hast dieses Video schon benutzt“** erscheint jetzt, sobald du ein Video ablegst oder auswählst, noch bevor ein Clip entsteht.
+
+### Verbessert
+- **Jeder Bildschirm folgt deinen Farben:** Easy- und Pro-Modus, Fenster, das Minispiel, die Startanimation und die Anmeldeseiten.
+
+### Behoben
+- **Shark Sign war nach dem letzten Update der einzige Look.** Jetzt ist er einer von vier, und Klassisch ist wieder Standard.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Le style bleu marine et or redevient le style par défaut, avec le texte plus net de la dernière mise à jour. Une nouvelle page Personnalisation te permet de choisir clair, sombre ou « comme Windows », quatre styles, une couleur d'accent et tes propres couleurs.
+
+### Nouveau
+- **Personnalisation** dans les Réglages, en mode Facile et en mode Pro : choisis Clair, Sombre ou Comme Windows.
+- **Quatre styles :** Classique (bleu marine et or, par défaut), Océan (bleu des grands fonds et turquoise verre de mer), Shark Sign (le style jaune de la dernière mise à jour) et Contraste élevé.
+- **Couleur d'accent :** choisis-en une dans la palette ou n'importe quelle couleur. Elle colore les boutons, l'onglet ouvert, les barres de progression et les mises en avant. Tu peux aussi l'afficher dans la barre de titre de la fenêtre.
+- **Tes propres couleurs :** fond, panneaux, texte, texte secondaire, bordures, boutons, liens, réussite, avertissement, erreur, mots bipés et mise en avant des sous-titres, pour le mode clair et le mode sombre.
+- **Toujours facile à lire :** si une couleur rend le texte difficile à lire, SharkyClips te le dit et le corrige tout seul (tu peux désactiver ça).
+- **Aperçu en direct,** « Revenir au style par défaut » et des fichiers de thème que tu peux enregistrer, rouvrir ou partager.
+- **« Tu as déjà utilisé cette vidéo »** s'affiche maintenant dès que tu déposes ou choisis une vidéo, avant qu'un clip soit créé.
+
+### Améliorations
+- **Chaque écran suit tes couleurs :** mode Facile et Pro, fenêtres, le mini-jeu, l'animation de démarrage et les pages de connexion.
+
+### Corrections
+- **Shark Sign était le seul style** après la dernière mise à jour. C'est maintenant l'un des quatre, et Classique est de nouveau le style par défaut.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Újra a sötétkék-arany megjelenés az alap, a legutóbbi frissítés tisztább szövegeivel. Az új Személyre szabás oldalon választhatsz világos, sötét vagy „Windows szerint” módot, négy megjelenést, kiemelőszínt és saját színeket.
+
+### Új
+- **Személyre szabás** a Beállításokban, Easy és Pro módban: válaszd a Világos, Sötét vagy Windows szerint módot.
+- **Négy megjelenés:** Klasszikus (sötétkék és arany, az alap), Óceán (mélytengeri kék, tengeri üveg türkizzel), Shark Sign (a legutóbbi frissítés sárga megjelenése) és Nagy kontraszt.
+- **Kiemelőszín:** válassz egyet a palettáról vagy bármilyen színt. Ez színezi a gombokat, a nyitott fület, a folyamatjelzőket és a kiemeléseket. Az ablak címsorán is megjelenítheted.
+- **Saját színek:** háttér, panelek, szöveg, másodlagos szöveg, keretek, gombok, hivatkozások, siker, figyelmeztetés, hiba, kisípolt szavak és a felirat kiemelése, világos és sötét módhoz.
+- **Mindig jól olvasható:** ha egy szín nehezen olvashatóvá teszi a szöveget, a SharkyClips szól és magától kijavítja (ezt kikapcsolhatod).
+- **Élő előnézet,** „Visszaállítás alapra” és témafájlok, amelyeket elmenthetsz, újra megnyithatsz vagy megoszthatsz.
+- **„Ezt a videót már használtad”** most azonnal megjelenik, amint behúzol vagy kiválasztasz egy videót, még mielőtt bármilyen klip készülne.
+
+### Fejlesztések
+- **Minden képernyő a te színeidet követi:** Easy és Pro mód, ablakok, a minijáték, az indítási animáció és a bejelentkezési oldalak.
+
+### Javítások
+- **A legutóbbi frissítés után a Shark Sign volt az egyetlen megjelenés.** Most egy a négy közül, és újra a Klasszikus az alap.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Тёмно-синий с золотом снова стиль по умолчанию, с более чистым текстом из прошлого обновления. На новой странице «Персонализация» можно выбрать светлый, тёмный режим или «как в Windows», один из четырёх стилей, цвет акцента и свои цвета.
+
+### Новое
+- **Персонализация** в настройках, в простом и Pro-режиме: выбери Светлый, Тёмный или Как в Windows.
+- **Четыре стиля:** Классика (тёмно-синий и золото, по умолчанию), Океан (глубокий морской синий и бирюза морского стекла), Shark Sign (жёлтый стиль из прошлого обновления) и Высокий контраст.
+- **Цвет акцента:** выбери из палитры или любой свой цвет. Он красит кнопки, открытую вкладку, полосы прогресса и выделения. Его можно показать и в заголовке окна.
+- **Свои цвета:** фон, панели, текст, второстепенный текст, рамки, кнопки, ссылки, успех, предупреждение, ошибка, запиканные слова и выделение в субтитрах — для светлого и тёмного режима.
+- **Всегда легко читать:** если цвет делает текст плохо читаемым, SharkyClips говорит об этом и сам исправляет (это можно выключить).
+- **Живой предпросмотр,** «Сбросить» и файлы тем, которые можно сохранить, открыть снова или отправить другим.
+- **«Ты уже использовал это видео»** теперь появляется сразу, как только ты перетащишь или выберешь видео, ещё до создания клипов.
+
+### Улучшения
+- **Каждый экран следует твоим цветам:** простой и Pro-режим, окна, мини-игра, анимация запуска и страницы входа.
+
+### Исправления
+- **После прошлого обновления Shark Sign был единственным стилем.** Теперь это один из четырёх, а Классика снова стоит по умолчанию.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+عاد المظهر الكحلي والذهبي ليكون الافتراضي، مع النص الأوضح من التحديث الأخير. صفحة التخصيص الجديدة تتيح لك اختيار الفاتح أو الداكن أو «مثل Windows»، وأربعة مظاهر، ولون تمييز، وألوانك الخاصة.
+
+### جديد
+- **التخصيص** في الإعدادات، في الوضع السهل ووضع Pro: اختر فاتح أو داكن أو مثل Windows.
+- **أربعة مظاهر:** كلاسيكي (كحلي وذهبي، الافتراضي)، المحيط (أزرق البحر العميق مع فيروزي زجاج البحر)، Shark Sign (المظهر الأصفر من التحديث الأخير) وتباين عالٍ.
+- **لون التمييز:** اختر لونًا من اللوحة أو أي لون تحبه. يلوّن الأزرار والتبويب المفتوح وأشرطة التقدم والتمييزات. ويمكنك أيضًا إظهاره في شريط عنوان النافذة.
+- **ألوانك الخاصة:** الخلفية واللوحات والنص والنص الثانوي والحدود والأزرار والروابط والنجاح والتحذير والخطأ والكلمات المحجوبة بصفير وتمييز الترجمة، للوضع الفاتح والداكن.
+- **سهل القراءة دائمًا:** إذا جعل لونٌ النصَّ صعب القراءة، يخبرك SharkyClips ويصلحه بنفسه (يمكنك إيقاف ذلك).
+- **معاينة مباشرة،** و«الرجوع إلى الافتراضي»، وملفات سمات يمكنك حفظها وفتحها مرة أخرى أو مشاركتها.
+- **«لقد استخدمت هذا الفيديو من قبل»** تظهر الآن فور إفلات الفيديو أو اختياره، قبل صنع أي مقطع.
+
+### تحسينات
+- **كل شاشة تتبع ألوانك:** الوضع السهل ووضع Pro والنوافذ واللعبة الصغيرة ورسوم البدء وصفحات تسجيل الدخول.
+
+### إصلاحات
+- **كان Shark Sign المظهر الوحيد** بعد التحديث الأخير. أصبح الآن واحدًا من أربعة، وعاد الكلاسيكي ليكون الافتراضي.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+海军蓝和金色的外观重新成为默认，并保留了上次更新中更清晰的文字。新的“个性化”页面让你选择浅色、深色或“跟随 Windows”、四种外观、一个强调色和你自己的颜色。
+
+### 新功能
+- 在简单模式和 Pro 模式的设置中都有 **个性化**：选择浅色、深色或跟随 Windows。
+- **四种外观：** 经典（海军蓝和金色，默认）、海洋（深海蓝配海玻璃青绿）、Shark Sign（上次更新的黄色外观）和高对比度。
+- **强调色：** 从调色板中选择，或选择任何你喜欢的颜色。它会给按钮、打开的标签、进度条和高亮上色。你也可以让它显示在窗口标题栏上。
+- **你自己的颜色：** 背景、面板、文字、次要文字、边框、按钮、链接、成功、警告、错误、被哔掉的词和字幕高亮，浅色和深色模式分别设置。
+- **始终容易阅读：** 如果某个颜色让文字难以阅读，SharkyClips 会告诉你并自动修正（你可以关闭这个功能）。
+- **实时预览、** “恢复默认”，以及可以保存、再次打开或分享的主题文件。
+- **“你已经用过这个视频”** 现在一拖入或选好视频就会显示，还没生成任何片段之前。
+
+### 改进
+- **每个界面都跟随你的颜色：** 简单模式和 Pro 模式、窗口、小游戏、启动动画和登录页面。
+
+### 修复
+- **上次更新后 Shark Sign 是唯一的外观。** 现在它是四种之一，经典重新成为默认。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+ネイビーとゴールドの外観が、前回の更新のすっきりした文字のまま標準に戻りました。新しい「個人用設定」ページでは、ライト・ダーク・「Windows に合わせる」、4 つの外観、アクセントカラー、自分の色を選べます。
+
+### 新機能
+- かんたんモードと Pro モードの設定に **個人用設定**：ライト、ダーク、Windows に合わせる から選べます。
+- **4 つの外観：** クラシック（ネイビーとゴールド、標準）、オーシャン（深い海の青とシーグラスのターコイズ）、Shark Sign（前回の更新の黄色い外観）、ハイコントラスト。
+- **アクセントカラー：** パレットから選ぶか、好きな色を選べます。ボタン、開いているタブ、進行バー、強調に使われます。ウィンドウのタイトルバーに表示することもできます。
+- **自分の色：** 背景、パネル、文字、補助の文字、枠線、ボタン、リンク、成功、注意、エラー、ピー音の言葉、字幕の強調を、ライトとダークそれぞれに設定できます。
+- **いつでも読みやすく：** 色のせいで文字が読みにくくなると、SharkyClips が知らせて自動で直します（オフにもできます）。
+- **ライブプレビュー、** 「標準に戻す」、保存・再読み込み・共有ができるテーマファイル。
+- **「この動画はもう使っています」** が、動画をドロップまたは選んだ直後、クリップを作る前に表示されるようになりました。
+
+### 改善
+- **すべての画面があなたの色に合わせます：** かんたんモードと Pro モード、ウィンドウ、ミニゲーム、起動アニメーション、ログインページ。
+
+### 修正
+- **前回の更新のあと、外観は Shark Sign だけでした。** 今は 4 つのうちの 1 つになり、クラシックが再び標準です。
+
+</details>
+
 ## [1.2.68] - 2026-11-26
 Sharing works again and is now simple: drop a video in, tick YouTube, Instagram or TikTok, press Share, and your clips go out right away. Every clip tells you clearly if it is out, with a link, or what went wrong.
 

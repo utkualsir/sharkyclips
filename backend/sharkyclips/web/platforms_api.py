@@ -238,13 +238,9 @@ def api_tiktok_callback(code: str = "", state: str = "", error: str = "", error_
             msg, ok = "TikTok is connected. You can close this tab.", True
         except SharkyClipsError as exc:
             msg, ok = f"{exc.message} {exc.hint or ''}", False
-    import html
+    from .. import welcome as W
 
-    color = "#2e9e6a" if ok else "#c0392b"
-    return HTMLResponse(f"<!doctype html><meta charset='utf-8'><title>SharkyClips</title>"
-                        f"<body style='font-family:system-ui;background:#0e1a33;color:#fff;display:grid;place-items:center;height:100vh;margin:0'>"
-                        f"<div style='max-width:460px;text-align:center'><h1 style='color:{color}'>{'✓' if ok else '!'}</h1>"
-                        f"<p>{html.escape(msg)}</p><p><a style='color:#d9b56a' href='/#/settings'>SharkyClips</a></p></div>")
+    return HTMLResponse(W.result_page(msg, ok))
 
 
 @router.post("/api/platforms/reels/connect")

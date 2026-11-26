@@ -74,6 +74,10 @@ DEFAULTS: dict[str, Any] = {
     # splash page uses it, it can't read the browser's storage).
     "ui_motion": "full",
     "ui_theme": None,
+    # 1.2.69 Settings > Personalization: preset, mode, accent, own colours (personal.clean) and the
+    # splash page's colours of that theme (welcome.clean_splash).
+    "ui_personal": None,
+    "ui_splash": None,
     # Editing tools (1.2.4). Word lists per language replace the built-in ones when set:
     # {"tr": ["amk", "siktir*"]} / {"tr": {"sure": ["ııı"], "maybe": ["şey"]}}
     "profanity_lists": {},

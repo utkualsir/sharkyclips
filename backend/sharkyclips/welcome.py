@@ -355,6 +355,73 @@ def _font_data_uri(name: str) -> str:
     return "data:font/woff2;base64," + base64.b64encode(data).decode("ascii")
 
 
+# 1.2.69: the splash page takes the user's theme colours (the UI sends them as config "ui_splash",
+# both modes, after every theme change). Classic is the default until it has.
+SPLASH_KEYS = ("l-bg", "l-text", "l-muted", "l-water", "l-fin-a", "l-fin-b", "l-cut", "mark-fin")
+SPLASH_DEFAULT = {
+    "dark": {"l-bg": "#0a1020", "l-text": "#ffffff", "l-muted": "#aeb7ca", "l-water": "#5b9bff",
+             "l-fin-a": "#ffffff", "l-fin-b": "#9ec2ff", "l-cut": "#d9b56a", "mark-fin": "#ffffff"},
+    "light": {"l-bg": "#f9fafc", "l-text": "#0e1a33", "l-muted": "#55617a", "l-water": "#a9c6f3",
+              "l-fin-a": "#1f6fe5", "l-fin-b": "#0f3a94", "l-cut": "#1f6fe5", "mark-fin": "#1650c8"},
+}
+_CSS_COLOUR = re.compile(r"#[0-9a-fA-F]{6}|rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*(0|1|0?\.\d+)\s*)?\)")
+
+
+def clean_splash(value) -> dict | None:
+    """The "ui_splash" setting, checked: only the known keys, only plain colours (it ends up in CSS)."""
+    if not isinstance(value, dict):
+        return None
+    out: dict = {}
+    for mode in ("dark", "light"):
+        m = value.get(mode)
+        if not isinstance(m, dict):
+            return None
+        row = {}
+        for k in SPLASH_KEYS:
+            v = str(m.get(k) or "").strip()
+            if not _CSS_COLOUR.fullmatch(v):
+                return None
+            row[k] = v
+        out[mode] = row
+    return out
+
+
+def splash_theme_css(cfg: dict) -> str:
+    colours = clean_splash(cfg.get("ui_splash")) or SPLASH_DEFAULT
+
+    def block(sel: str, mode: str) -> str:
+        return f"  {sel} {{ " + " ".join(f"--{k}: {v};" for k, v in colours[mode].items()) + " }"
+
+    return "\n".join([
+        block(":root", "dark"),
+        block(':root[data-theme="light"]', "light"),
+        "  @media (prefers-color-scheme: light) {",
+        "  " + block(':root[data-theme="auto"]', "light"),
+        "  }",
+    ])
+
+
+def result_page(message: str, ok: bool) -> str:
+    """A small page shown in the browser after a sign-in comes back (TikTok, Instagram), in the
+    colours of the user's theme (1.2.69: no colours of its own)."""
+    import html as H
+
+    cfg = config.load()
+    theme = cfg.get("ui_theme") if cfg.get("ui_theme") in ("dark", "light") else "auto"
+    css = "\n".join([
+        splash_theme_css(cfg),
+        "  body { font-family: system-ui, sans-serif; background: var(--l-bg); color: var(--l-text);"
+        " display: grid; place-items: center; height: 100vh; margin: 0; }",
+        "  .box { max-width: 460px; text-align: center; padding: 16px; } h1 { color: var(--l-cut); }",
+        "  p.m { color: var(--l-muted); } a { color: var(--l-text); }",
+    ])
+    return (f"<!doctype html><html data-theme='{theme}'><head><meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width, initial-scale=1'><title>SharkyClips</title>"
+            f"<style>\n{css}\n</style></head>"
+            f"<body><div class='box'><h1>{'&#10003;' if ok else '!'}</h1><p>{H.escape(message)}</p>"
+            "<p class='m'><a href='/#/settings'>SharkyClips</a></p></div></body></html>")
+
+
 def write_splash(url: str, lang: str | None = None) -> Path | None:
     """A local splash page that waits for the server at `url`, then opens the app. Returns
     its path, or None (then the launcher opens the app the old way)."""
@@ -371,7 +438,8 @@ def write_splash(url: str, lang: str | None = None) -> Path | None:
     html = (html.replace("__APP_URL__", json.dumps(url)).replace("__LANG__", json.dumps(lang))
             .replace("__FONT_ARCHIVO__", _font_data_uri("archivo-latin-standard-normal.woff2"))
             .replace("__DIR__", "rtl" if languages.is_rtl(lang) else "ltr")
-            .replace("__THEME__", theme).replace("__MOTION__", motion))
+            .replace("__THEME__", theme).replace("__MOTION__", motion)
+            .replace("__THEME_CSS__", splash_theme_css(cfg)))
     out = config.config_dir() / "splash.html"
     try:
         out.parent.mkdir(parents=True, exist_ok=True)

@@ -65,7 +65,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const ytStep = withSetup ? 4 : 3;
   const last = steps.length - 1;
   return (
-    <div className="welcome" role="dialog" aria-modal="true" aria-labelledby="onb-title">
+    <div className="welcome" data-theme-local="light" role="dialog" aria-modal="true" aria-labelledby="onb-title">
       <div className="welcome-card">
         <div className="welcome-top">
           <SharkLogo className="welcome-logo" />

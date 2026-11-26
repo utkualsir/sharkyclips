@@ -10,10 +10,13 @@ import { LanGate } from "./components/LanAccess";
 import { MetaProvider } from "./meta";
 import { ToastProvider } from "./toast";
 import { UiModeProvider } from "./uimode";
+import { initPersonal } from "./personalize";
 import "./fonts.css";
+import "./themes.css";
 import "./styles.css";
 import "./easy.css";
 
+initPersonal(); // 1.2.69: the theme (index.html already painted it from storage)
 installKeyGuard(); // 1.2.59: before any other key listener (the mini game's keys stay in the game)
 
 createRoot(document.getElementById("root")!).render(

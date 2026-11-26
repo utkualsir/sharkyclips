@@ -1,29 +1,22 @@
 // The waiting mini game (1.2.59): drawing. Everything is drawn in code on a 2D canvas (no image
 // files, no fonts to download), so the game adds only a few KB to the app.
 import { edible, H, sharkR, W, type Fish, type Game, type Hazard, type Power } from "./engine";
+import { ART, FISH_COLORS, POWER_COLORS, SEA_DEFAULT, SKINS, TONES, glow, type Skin } from "./art";
 
-export interface Skin {
-  body: string;
-  belly: string;
-  fin: string;
-  eye: string;
-  /** "" | stripes | spots | glow | ghost | dots | shine */
-  pattern: string;
-  accent: string;
+export { SKINS, type Skin };
+
+/** The water follows the app theme (--mg-* in themes.css); read once per theme change. */
+let seaCache: typeof SEA_DEFAULT | null = null;
+if (typeof window !== "undefined") window.addEventListener("cf-theme", () => (seaCache = null));
+function seaColours(): typeof SEA_DEFAULT {
+  if (seaCache) return seaCache;
+  const cs = typeof document !== "undefined" ? getComputedStyle(document.documentElement) : null;
+  const pick = (name: string, d: string) => cs?.getPropertyValue(name).trim() || d;
+  seaCache = { a: pick("--mg-water-a", SEA_DEFAULT.a), b: pick("--mg-water-b", SEA_DEFAULT.b), c: pick("--mg-water-c", SEA_DEFAULT.c), floor: pick("--mg-floor", SEA_DEFAULT.floor), dark: pick("--mg-dark", SEA_DEFAULT.dark) };
+  return seaCache;
 }
 
-export const SKINS: Record<string, Skin> = {
-  classic: { body: "#6f8fb8", belly: "#eef3fa", fin: "#5a7aa3", eye: "#0e1a33", pattern: "", accent: "#ffd23f" },
-  reef: { body: "#3fa7a0", belly: "#e9fbf6", fin: "#2f8a84", eye: "#0e1a33", pattern: "spots", accent: "#ffcf5c" },
-  tiger: { body: "#c98a3c", belly: "#fff2dc", fin: "#a86e2a", eye: "#1b1206", pattern: "stripes", accent: "#3b2410" },
-  neon: { body: "#2a2f7a", belly: "#c9f7ff", fin: "#1f2463", eye: "#ffffff", pattern: "glow", accent: "#3ef0ff" },
-  ghost: { body: "#cfd8ea", belly: "#ffffff", fin: "#b7c3dc", eye: "#4a5a80", pattern: "ghost", accent: "#ffffff" },
-  deep: { body: "#1c2740", belly: "#40507a", fin: "#141d33", eye: "#9ff7d8", pattern: "dots", accent: "#7dffcf" },
-  gold: { body: "#d9b56a", belly: "#fff6d8", fin: "#b8913f", eye: "#2a1d05", pattern: "shine", accent: "#ffffff" },
-};
 
-const FISH_COLORS = ["#ff8a5b", "#ffd35b", "#7fd36b", "#5bc8ff", "#c38bff", "#ff6fa8", "#5be0c8", "#ffe08a"];
-const TONES = ["#ffffff", "#ffe08a", "#7df9ff", "#ff8a8a"];
 
 export interface View {
   /** canvas pixels per world unit */
@@ -38,17 +31,18 @@ export interface View {
 // ------------------------------------------------------------------ the sea
 
 function background(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
+  const sea = seaColours();
   const grad = ctx.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, "#1f5a63");
-  grad.addColorStop(0.55, "#0f3a42");
-  grad.addColorStop(1, "#071c21");
+  grad.addColorStop(0, sea.a);
+  grad.addColorStop(0.55, sea.b);
+  grad.addColorStop(1, sea.c);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
   const t = g.t;
   if (v.quality > 0.5) {
     // light rays from the surface, swaying slowly
     ctx.globalAlpha = 0.07;
-    ctx.fillStyle = "#cfe9ff";
+    ctx.fillStyle = ART.ray;
     for (let i = 0; i < 4; i++) {
       const x = 60 + i * 120 + Math.sin(t * 0.3 + i * 1.7) * 26;
       ctx.beginPath();
@@ -62,7 +56,7 @@ function background(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
     ctx.globalAlpha = 1;
   }
   // far kelp
-  ctx.strokeStyle = "rgba(40, 110, 110, 0.45)";
+  ctx.strokeStyle = ART.kelp;
   ctx.lineWidth = 5;
   ctx.lineCap = "round";
   for (let i = 0; i < 7; i++) {
@@ -74,7 +68,7 @@ function background(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
     ctx.stroke();
   }
   // ambient bubbles (positions from time: nothing stored, nothing to update)
-  ctx.fillStyle = "rgba(220, 240, 255, 0.25)";
+  ctx.fillStyle = ART.bubble;
   const n = v.quality > 0.5 ? 14 : 6;
   for (let i = 0; i < n; i++) {
     const speed = 12 + (i % 5) * 5;
@@ -85,7 +79,7 @@ function background(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
     ctx.fill();
   }
   // the sea floor
-  ctx.fillStyle = "#0a2a30";
+  ctx.fillStyle = sea.floor;
   ctx.beginPath();
   ctx.moveTo(0, H);
   for (let x = 0; x <= W; x += 40) ctx.lineTo(x, H - 14 - Math.sin(x * 0.03) * 5);
@@ -106,7 +100,7 @@ function fish(ctx: CanvasRenderingContext2D, g: Game, f: Fish): void {
   if (f.kind === "predator") {
     // a long, dark barracuda-like hunter (an original shape)
     const r = f.r;
-    ctx.fillStyle = ok ? "#7a8a99" : "#3d4a5c";
+    ctx.fillStyle = ok ? ART.predatorSafe : ART.predator;
     ctx.beginPath();
     ctx.moveTo(r * 1.5, 0);
     ctx.quadraticCurveTo(r * 0.6, -r * 0.5, -r * 1.1, -r * 0.22);
@@ -120,11 +114,11 @@ function fish(ctx: CanvasRenderingContext2D, g: Game, f: Fish): void {
     ctx.lineTo(-r * 1.6, r * 0.5 + wag * r * 0.3);
     ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = ok ? "#ffffff" : "#ff5d5d"; // a red eye: dangerous
+    ctx.fillStyle = ok ? ART.white : ART.dangerEye; // a red eye: dangerous
     ctx.beginPath();
     ctx.arc(r * 0.95, -r * 0.1, r * 0.11, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,0.55)";
+    ctx.strokeStyle = ART.white55;
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i < 4; i++) {
@@ -134,7 +128,7 @@ function fish(ctx: CanvasRenderingContext2D, g: Game, f: Fish): void {
     ctx.stroke();
   } else {
     const r = f.r;
-    const col = f.kind === "gold" ? "#ffd44d" : FISH_COLORS[f.hue % FISH_COLORS.length];
+    const col = f.kind === "gold" ? ART.goldFish : FISH_COLORS[f.hue % FISH_COLORS.length];
     ctx.fillStyle = col;
     ctx.globalAlpha = ok ? 1 : 0.75;
     ctx.beginPath();
@@ -149,22 +143,22 @@ function fish(ctx: CanvasRenderingContext2D, g: Game, f: Fish): void {
     ctx.globalAlpha = 1;
     if (f.kind === "gold") {
       const glint = 0.5 + 0.5 * Math.sin(g.t * 8 + f.phase);
-      ctx.fillStyle = `rgba(255,255,255,${0.35 + 0.5 * glint})`;
+      ctx.fillStyle = glow(0.35 + 0.5 * glint);
       ctx.beginPath();
       ctx.ellipse(r * 0.1, -r * 0.25, r * 0.35, r * 0.12, -0.3, 0, Math.PI * 2);
       ctx.fill();
     } else if (f.kind !== "small") {
-      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.fillStyle = ART.white35;
       ctx.fillRect(-r * 0.15, -r * 0.55, r * 0.18, r * 1.1);
     }
     if (!ok) {
-      ctx.strokeStyle = "rgba(255, 120, 120, 0.8)";
+      ctx.strokeStyle = ART.dangerRing;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.ellipse(0, 0, r, r * 0.62, 0, 0, Math.PI * 2);
       ctx.stroke();
     }
-    ctx.fillStyle = "#0b1426";
+    ctx.fillStyle = seaColours().dark;
     ctx.beginPath();
     ctx.arc(r * 0.5, -r * 0.12, Math.max(1.2, r * 0.13), 0, Math.PI * 2);
     ctx.fill();
@@ -177,12 +171,12 @@ function hazard(ctx: CanvasRenderingContext2D, h: Hazard): void {
   ctx.translate(h.x, h.y);
   if (h.kind === "jelly") {
     const pulse = 1 + Math.sin(h.phase * 1.3) * 0.12;
-    ctx.fillStyle = "rgba(214, 140, 255, 0.85)";
+    ctx.fillStyle = ART.jelly;
     ctx.beginPath();
     ctx.ellipse(0, 0, h.r * pulse, h.r * 0.75 / pulse, 0, Math.PI, 0);
     ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = "rgba(230, 180, 255, 0.8)";
+    ctx.strokeStyle = ART.jellyLine;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     for (let i = -2; i <= 2; i++) {
@@ -193,8 +187,8 @@ function hazard(ctx: CanvasRenderingContext2D, h: Hazard): void {
     ctx.stroke();
   } else {
     ctx.rotate(h.phase * 0.5);
-    ctx.fillStyle = "#2b1d3a";
-    ctx.strokeStyle = "#e05bff";
+    ctx.fillStyle = ART.urchin;
+    ctx.strokeStyle = ART.urchinLine;
     ctx.lineWidth = 2;
     ctx.beginPath();
     for (let i = 0; i < 10; i++) {
@@ -210,7 +204,6 @@ function hazard(ctx: CanvasRenderingContext2D, h: Hazard): void {
   ctx.restore();
 }
 
-const POWER_COLORS: Record<string, string> = { magnet: "#ff6b6b", frenzy: "#ffd35b", shield: "#6bd6ff", time: "#8cff9e" };
 
 function power(ctx: CanvasRenderingContext2D, p: Power): void {
   const c = POWER_COLORS[p.kind];
@@ -218,7 +211,7 @@ function power(ctx: CanvasRenderingContext2D, p: Power): void {
   ctx.save();
   ctx.translate(p.x, p.y);
   ctx.globalAlpha = p.life < 2 ? 0.4 + 0.6 * Math.abs(Math.sin(p.life * 8)) : 1;
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillStyle = ART.white12;
   ctx.strokeStyle = c;
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -279,7 +272,7 @@ function shark(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
   const wag = Math.sin(s.tail) * 0.28;
   if (sk.pattern === "ghost") ctx.globalAlpha = 0.72;
   if (g.shield) {
-    ctx.strokeStyle = "rgba(120, 220, 255, 0.7)";
+    ctx.strokeStyle = ART.shield;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.ellipse(0, 0, L * 0.95, r * 1.1, 0, 0, Math.PI * 2);
@@ -312,7 +305,7 @@ function shark(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
   ctx.closePath();
   ctx.fill();
   // a soft light outline: the shark always stands out from the water
-  ctx.strokeStyle = "rgba(235, 245, 255, 0.55)";
+  ctx.strokeStyle = ART.trail;
   ctx.lineWidth = 1.2;
   ctx.stroke();
   // belly
@@ -354,7 +347,7 @@ function shark(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
     ctx.globalAlpha = 1;
   } else if (sk.pattern === "shine") {
     const x = ((g.t * 0.8) % 2) * L * 1.6 - L * 0.8;
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
+    ctx.fillStyle = ART.white35;
     ctx.beginPath();
     ctx.moveTo(x, -r * 0.7);
     ctx.lineTo(x + r * 0.3, -r * 0.7);
@@ -372,7 +365,7 @@ function shark(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
   ctx.closePath();
   ctx.fill();
   // gills
-  ctx.strokeStyle = "rgba(0,0,0,0.25)";
+  ctx.strokeStyle = ART.shade;
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (let i = 0; i < 3; i++) {
@@ -385,13 +378,13 @@ function shark(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
   ctx.beginPath();
   ctx.arc(L * 0.38, -r * 0.22, Math.max(1.4, r * 0.1), 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.8)";
+  ctx.fillStyle = ART.white80;
   ctx.beginPath();
   ctx.arc(L * 0.38 + r * 0.03, -r * 0.25, Math.max(0.5, r * 0.035), 0, Math.PI * 2);
   ctx.fill();
   // teeth while chomping
   if (open > 0.15) {
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = ART.white;
     ctx.beginPath();
     for (let i = 0; i < 3; i++) {
       const x = L * (0.56 - i * 0.07);
@@ -422,13 +415,13 @@ export function draw(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
     const a = Math.max(0, p.life / p.max);
     ctx.globalAlpha = a;
     if (p.kind === 0) {
-      ctx.strokeStyle = "rgba(220,240,255,0.9)";
+      ctx.strokeStyle = ART.pop;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       ctx.stroke();
     } else {
-      ctx.fillStyle = p.kind === 1 ? "#fff3b0" : FISH_COLORS[p.hue % FISH_COLORS.length];
+      ctx.fillStyle = p.kind === 1 ? ART.spark : FISH_COLORS[p.hue % FISH_COLORS.length];
       ctx.fillRect(p.x - p.size, p.y - p.size, p.size * 2, p.size * 2);
     }
   }
@@ -440,20 +433,20 @@ export function draw(ctx: CanvasRenderingContext2D, g: Game, v: View): void {
     ctx.globalAlpha = Math.min(1, p.life * 2.5);
     ctx.font = `700 ${p.tone === 2 ? 15 : 12}px Archivo, "Segoe UI", system-ui, sans-serif`;
     ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(5, 15, 35, 0.8)";
+    ctx.strokeStyle = ART.textEdge;
     ctx.strokeText(p.text, p.x, p.y);
-    ctx.fillStyle = TONES[p.tone] ?? "#fff";
+    ctx.fillStyle = TONES[p.tone] ?? ART.white;
     ctx.fillText(p.text, p.x, p.y);
   }
   ctx.globalAlpha = 1;
   // a short flash on a hit / power-up (never with reduced motion)
   if (v.motion === "full" && g.flash > 0) {
-    ctx.fillStyle = `rgba(255,255,255,${Math.min(0.18, g.flash * 0.7)})`;
+    ctx.fillStyle = glow(Math.min(0.18, g.flash * 0.7));
     ctx.fillRect(-10, -10, W + 20, H + 20);
   }
   // frenzy / magnet: a soft coloured edge
   if (g.frenzy > 0 || g.magnet > 0) {
-    ctx.strokeStyle = g.frenzy > 0 ? "rgba(255, 211, 91, 0.55)" : "rgba(255, 107, 107, 0.45)";
+    ctx.strokeStyle = g.frenzy > 0 ? ART.frenzyEdge : ART.hurtEdge;
     ctx.lineWidth = 4;
     ctx.strokeRect(2, 2, W - 4, H - 4);
   }

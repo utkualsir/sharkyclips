@@ -15,21 +15,13 @@
   @font-face { font-family: "Archivo"; font-style: normal; font-weight: 100 900; font-stretch: 62% 125%;
     src: url(__FONT_ARCHIVO__) format("woff2"); }
   :root { --font-ui: "Archivo", "Segoe UI", "Noto Sans Arabic", system-ui, -apple-system, sans-serif;
-    --font-display: var(--font-ui); --mark-fin: #0b1d22; }
-  :root[data-theme="light"] { --mark-fin: #ffd23f; }
+    --font-display: var(--font-ui); }
+  /* the colours of the user's theme, both modes (welcome.splash_theme_css, 1.2.69) */
+__THEME_CSS__
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; background: #0b1d22; font-family: var(--font-ui); }
-  :root[data-theme="light"] body { background: #e8efed; }
-  @media (prefers-color-scheme: light) {
-    :root[data-theme="auto"] { --mark-fin: #ffd23f; }
-    :root[data-theme="auto"] body { background: #e8efed; }
-    :root[data-theme="auto"] .launch {
-      --l-bg: #e8efed; --l-text: #0e2a30; --l-muted: #4c6669; --l-water: #2f7f8c;
-      --l-fin-a: #163b42; --l-fin-b: #0e2a30; --l-cut: #f2c200;
-    }
-  }
+  html, body { margin: 0; height: 100%; background: var(--l-bg); font-family: var(--font-ui); }
   .status { position: fixed; bottom: 52px; left: 0; right: 0; text-align: center; font-size: 13px;
-    color: var(--l-muted, #9bb5b2); opacity: 0; transition: opacity 0.4s; z-index: 101; }
+    color: var(--l-muted); opacity: 0; transition: opacity 0.4s; z-index: 101; }
   .status.show { opacity: 1; }
 /* splash:begin */
 /* ------------------------------------------------------- 1.2.2: launch sequence
@@ -37,15 +29,13 @@
    the sign-yellow fin (dark), sea foam with the ink fin (light). */
 
 .launch {
-  --l-bg: #0b1d22; --l-text: #ffffff; --l-muted: #9bb5b2; --l-water: #5fb7c4;
-  --l-fin-a: #ffe27a; --l-fin-b: #ffd23f; --l-cut: #ffd23f; --l-fin-solid: var(--mark-fin, #0b1d22);
+  --l-fin-solid: var(--mark-fin);
   position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
   background: var(--l-bg); color: var(--l-text); cursor: default; overflow: hidden;
   font-family: var(--font-ui, "Archivo", "Segoe UI", system-ui, sans-serif);
 }
 :root[data-theme="light"] .launch {
-  --l-bg: #e8efed; --l-text: #0e2a30; --l-muted: #4c6669; --l-water: #2f7f8c;
-  --l-fin-a: #163b42; --l-fin-b: #0e2a30; --l-cut: #f2c200;
+  --l-fin-solid: var(--mark-fin);
 }
 .launch-stage { display: grid; justify-items: center; gap: 18px; padding: 24px; text-align: center; }
 .launch-mark-wrap { position: relative; width: 112px; height: 112px; }

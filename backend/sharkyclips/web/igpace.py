@@ -11,6 +11,9 @@ API, if it is ever switched back on):
   paused    once (config "ig_paused_at"), Instagram leaves the remembered publish targets and the
             publish queue: the setup and the connection stay, switching it back on is up to you.
             An account / permission refusal from Instagram pauses it again (see pause_after_block).
+
+(1.2.62 was written while the developer's Instagram account was suspended. It is active again since
+2026-11-26: these rules stay as the safe default for everyone, Instagram stays Manual.)
 """
 
 from __future__ import annotations

@@ -179,9 +179,12 @@ jobs:
       - name: Mini game (keys stay in the game, performance budget, pausing, layout)
         working-directory: frontend
         run: node scripts/minigame-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"
-      - name: Accessibility (axe) + delete / undo flow
+      - name: Accessibility (axe, every theme preset light / dark) + delete / undo flow
         working-directory: frontend
         run: node scripts/axe-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"
+      - name: Personalization (presets, accent, contrast fix, theme file, reset)
+        working-directory: frontend
+        run: node scripts/personalize-check.mjs http://127.0.0.1:8799 "$RUNNER_TEMP/layout-shots"
       - name: Browsers (Chromium, Firefox, WebKit) - title editing, scrolling, languages, render, publish
         # last: it starts a real render, which changes the fixture project the checks above use
         working-directory: frontend

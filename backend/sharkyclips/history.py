@@ -206,6 +206,17 @@ def for_project(project) -> dict:
             "here": summary(mine), "source": src}
 
 
+def for_fingerprint(fp: str) -> dict:
+    """1.2.69: the import-time warning. What was shared from a video with this fingerprint, before
+    any project exists for it (the UI hashes a dropped file the same way, see fingerprint.ts)."""
+    fp = str(fp or "").strip()
+    if not fp.startswith("v1:") or len(fp) != 43 or any(c not in "0123456789abcdef" for c in fp[3:]):
+        return {"fingerprint": None, "before": None, "before_projects": []}
+    posts = [p for p in load()["posts"] if p.get("fingerprint") == fp]
+    return {"fingerprint": fp, "before": summary(posts) if posts else None,
+            "before_projects": sorted({p.get("project_title") or p["project_id"] for p in posts})}
+
+
 def search(q: str = "", platform: str | None = None, limit: int = 500) -> dict:
     data = load()
     rows = list(data["posts"])

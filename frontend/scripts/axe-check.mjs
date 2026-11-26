@@ -123,15 +123,19 @@ const SCREENS = [
 
 const browser = await chromium.launch(process.env.AXE_CHANNEL ? { channel: process.env.AXE_CHANNEL } : {});
 const failures = [];
+// 1.2.69: every Personalization preset, light and dark (AXE_PRESETS=classic for one)
+const PRESETS = process.env.AXE_PRESETS ? process.env.AXE_PRESETS.split(",") : ["classic", "ocean", "sign", "contrast"];
+for (const preset of PRESETS)
 for (const theme of ["dark", "light"]) {
   const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 }, bypassCSP: true }); // axe is injected as an inline script (1.2.52 CSP)
-  await ctx.addInitScript(([l, t]) => {
+  await ctx.addInitScript(([l, t, pr]) => {
     localStorage.setItem("cf-lang", l);
     localStorage.setItem("cf-lang-set", "1");
     localStorage.setItem("cf-theme", t);
+    localStorage.setItem("sc-personal", JSON.stringify({ p: { v: 1, preset: pr, mode: t, accent: null, titlebar: false, autofix: true, colors: { dark: {}, light: {} }, at: 0 } }));
     localStorage.setItem("sc-motion", "off");
     sessionStorage.setItem("sc-splash-shown", "1");
-  }, [LANG, theme]);
+  }, [LANG, theme, preset]);
   const page = await ctx.newPage();
   let mode = null;
   for (const [name, m, hash, ready, act] of SCREENS) {
@@ -154,7 +158,7 @@ for (const theme of ["dark", "light"]) {
     });
     // region / landmark rules: toasts and dialogs live outside <main> by design (checked in 1.2.6 too)
     const bad = res.filter((v) => !["region"].includes(v.id));
-    if (bad.length) failures.push({ screen: `${name} ${theme}`, bad });
+    if (bad.length) failures.push({ screen: `${name} ${preset} ${theme}`, bad });
     process.stdout.write(bad.length ? "x" : ".");
   }
   await ctx.close();
@@ -195,4 +199,4 @@ if (failures.length) {
   console.log(`AXE PROBLEMS on ${failures.length} views`);
   process.exit(1);
 }
-console.log(`Axe OK: ${SCREENS.length * 2} views (${LANG}, dark/light) + the delete / undo flow.`);
+console.log(`Axe OK: ${SCREENS.length * 2 * PRESETS.length} views (${LANG}, dark/light, presets ${PRESETS.join("/")}) + the delete / undo flow.`);

@@ -1,0 +1,621 @@
+/* SharkyClips themes (1.2.69). THE ONLY stylesheet with colour values: every other rule uses these
+   tokens (test_theme_tokens.py scans for hard-coded colours).
+
+   <html data-preset="classic|ocean|sign|contrast" data-theme="dark|light">
+     classic   the navy + gold look of 1.2.64 and before (default)
+     ocean     deep sea blue with sea-glass teal
+     sign      "Shark Sign" (1.2.65): deep-water teal + beach-sign yellow, fin-cut corners
+     contrast  high contrast (black / white, yellow or blue accents)
+   An element with data-theme-local="light" (the first-run screen) gets the light tokens of the
+   preset inside a dark page. Personalization (personalize.ts) writes the user's accent and
+   colours as inline custom properties on <html>, which win over these blocks.
+
+   Shape tokens are per preset too: only Shark Sign cuts the corner (--cut), the others round it
+   (--fin-r, --fin-r-card). Sizes, radii and spacing are shared (styles.css). */
+
+/* ================================================================ fixed: same in every theme */
+:root {
+  /* things drawn over video (always dark video underneath) */
+  --on-media: #ffffff;
+  --on-media-soft: rgba(255, 255, 255, 0.78);
+  --media-line: rgba(255, 255, 255, 0.45);
+  --media-dot: rgba(255, 255, 255, 0.85);
+  --media-dot-soft: rgba(255, 255, 255, 0.55);
+  --scrim-xs: rgba(0, 0, 0, 0.18);
+  --scrim-sm: rgba(0, 0, 0, 0.35);
+  --scrim: rgba(0, 0, 0, 0.55);
+  --scrim-strong: rgba(0, 0, 0, 0.78);
+  --media-shadow: rgba(0, 0, 0, 0.7);
+  --mask: #000000; /* alpha masks only */
+  --on-danger: #ffffff;
+  --danger-fill: #b3261e;
+  --danger-fill-hover: #9c2019;
+  /* drawn phone mock-ups */
+  --mock-phone: #0b0f19;
+  --mock-screen: #111111;
+  --mock-screen-a: #1d2944;
+  --mock-sub-text: #0f0f0f;
+  /* platform brand colours (their rules, not ours) */
+  --pf-youtube: #ff0033;
+  --pf-tiktok: #fe2c55;
+  --pf-reels: #d62976;
+  --pf-youtube-bg: #b8002a;
+  --pf-tiktok-bg: #b51b3d;
+  --pf-reels-bg: #a8195b;
+  --pf-kick-bg: #1d6b2c;
+  --pf-twitch-bg: #6a3fc4;
+  --pf-other-bg: #5b7fd1;
+  /* Google's sign-in button + the consent-screen drawings (Google's branding rules) */
+  --g-btn-bg: #ffffff;
+  --g-btn-text: #1f1f1f;
+  --g-btn-border: #747775;
+  --g-btn-hover: #f2f6fc;
+  --g-btn-hover-shadow: rgba(60, 64, 67, 0.3);
+  --g-btn-dark-bg: #131314;
+  --g-btn-dark-text: #e3e3e3;
+  --g-btn-dark-border: #8e918f;
+  --g-btn-dark-hover: #1f2023;
+  --g-blue: #1a73e8;
+  --g-blue-dark: #8ab4f8;
+  --g-warn: #f9ab00;
+  --g-ink: #202124;
+  --g-white: #ffffff;
+  /* Settings > Personalization: the accent palette (custom picker for anything else) */
+  --accent-1: #d9b56a;
+  --accent-2: #ffd23f;
+  --accent-3: #ff8c00;
+  --accent-4: #e74856;
+  --accent-5: #e3008c;
+  --accent-6: #8764b8;
+  --accent-7: #0078d4;
+  --accent-8: #4cc2ff;
+  --accent-9: #00b7c3;
+  --accent-10: #3fd0c9;
+  --accent-11: #00cc6a;
+  --accent-12: #8e9fc4;
+  /* the mood chips of the music picker */
+  --mood-hype: #e8795c;
+  --mood-chill: #5ec8e5;
+  --mood-sad: #7d9a9c;
+}
+
+/* ================================================================ Classic (default), dark */
+:root {
+  color-scheme: dark;
+  --cut-k: 0; /* 1 = cut corners (Shark Sign) */
+  --cut: 0px;
+  --cut-card: 0px;
+  --fin-r: var(--r-md);
+  --fin-r-card: var(--r-lg);
+  --page-glow: none;
+
+  --bg: #0a1020;
+  --surface: #111a2e;
+  --surface-2: #18233b;
+  --surface-3: #1d2944;
+  --border: #25324f;
+  --border-strong: #34446a;
+  --text: #eef2f8;
+  --strong: #ffffff;
+  --muted: #aeb7ca;
+  --gold: #d9b56a;
+  --gold-text: #d9b56a;
+  --gold-soft: rgba(217, 181, 106, 0.13);
+  --gold-line: rgba(217, 181, 106, 0.5);
+  --on-sign: #0a1020; /* text on an accent fill */
+  --select: #eef2f8;
+  --on: #5fc79a;
+  --chip-bg: #1e2d50;
+  --chip-text: #c9d6f2;
+  --success: #5fc79a;
+  --success-soft: rgba(95, 199, 154, 0.13);
+  --danger: #f2948a;
+  --danger-soft: rgba(242, 148, 138, 0.12);
+  --warn: #f0b45a;
+  --warn-soft: rgba(240, 180, 90, 0.14);
+  --link: #9ec2ff;
+  --primary-bg: #ffffff;
+  --primary-text: #0a1020;
+  --primary-hover: #e6ecf7;
+  --btn-bg: transparent;
+  --btn-border: rgba(255, 255, 255, 0.34);
+  --btn-border-hover: #ffffff;
+  --btn-hover-bg: rgba(255, 255, 255, 0.06);
+  --mark-tile: #0e1a33;
+  --mark-tile-border: #2b3e66;
+  --mark-fin: #ffffff;
+  --mark-wave: #5b9bff;
+  --bar: #2b3a5e;
+  --bar-cand: #5d74a8;
+  --track: #22304d;
+  --media-bg: #05080f;
+  --tip-bg: rgba(5, 8, 15, 0.9);
+  --overlay: rgba(4, 8, 18, 0.72);
+  --shadow: none;
+  --shadow-pop: 0 24px 64px -16px rgba(0, 0, 0, 0.7);
+  --focus: 0 0 0 3px rgba(217, 181, 106, 0.5);
+  --series-ours: #d9b56a;
+  --series-other: #5b7fd1;
+  --mark: #5ec8e5; /* caption / selection highlight */
+  --bleep: #f2948a;
+  --bleep-text: #f2948a;
+  --auto-cut: #e8a85c;
+  --spk-f1: #7fd6ff;
+  --spk-f2: #ff9ed8;
+  --spk-f3: #b8f27a;
+  --spk-f4: #ffc46b;
+  --l-bg: #0a1020;
+  --l-text: #ffffff;
+  --l-muted: #aeb7ca;
+  --l-water: #5b9bff;
+  --l-fin-a: #ffffff;
+  --l-fin-b: #9ec2ff;
+  --l-cut: #d9b56a;
+  --mg-water-a: #1b5b8f;
+  --mg-water-b: #0f3a66;
+  --mg-water-c: #08203f;
+  --mg-floor: #0a2340;
+  --mg-dark: #0b1426;
+}
+
+/* ================================================================ Classic, light */
+:root[data-theme="light"],
+[data-theme-local="light"] {
+  color-scheme: light;
+  --bg: #f9fafc;
+  --surface: #ffffff;
+  --surface-2: #f4f6fa;
+  --surface-3: #eceff5;
+  --border: #e1e6ef;
+  --border-strong: #c6cfdf;
+  --text: #0e1a33;
+  --strong: #0b1530;
+  --muted: #55617a;
+  --gold: #d4ae5c;
+  --gold-text: #7a5a1f;
+  --gold-soft: rgba(212, 174, 92, 0.16);
+  --gold-line: rgba(176, 138, 58, 0.6);
+  --on-sign: #0e1a33;
+  --select: #0e1a33;
+  --on: #1a724c;
+  --chip-bg: #eaf0fb;
+  --chip-text: #1d3461;
+  --success: #1a724c;
+  --success-soft: rgba(29, 122, 82, 0.1);
+  --danger: #b3261e;
+  --danger-soft: rgba(179, 38, 30, 0.08);
+  --warn: #8f5400;
+  --warn-soft: rgba(154, 91, 0, 0.1);
+  --link: #1650c8;
+  --primary-bg: #0e1a33;
+  --primary-text: #ffffff;
+  --primary-hover: #1d3461;
+  --btn-bg: #ffffff;
+  --btn-border: #cfd6e3;
+  --btn-border-hover: #0e1a33;
+  --btn-hover-bg: #f7f9fc;
+  --mark-tile: #ffffff;
+  --mark-tile-border: #d5e1f5;
+  --mark-fin: #1650c8;
+  --mark-wave: #1f6fe5;
+  --bar: #dde3ee;
+  --bar-cand: #8e9fc4;
+  --track: #e9edf4;
+  --overlay: rgba(14, 26, 51, 0.45);
+  --shadow-pop: 0 24px 64px -16px rgba(14, 26, 51, 0.3);
+  --focus: 0 0 0 3px rgba(22, 80, 200, 0.35);
+  --series-ours: #a8873a;
+  --series-other: #4f72c4;
+  --mark: #1c8fb0;
+  --bleep: #c4483b;
+  --bleep-text: #962a20;
+  --auto-cut: #b06a12;
+  --spk-f1: #0a6590;
+  --spk-f2: #982a6b;
+  --spk-f3: #33680e;
+  --spk-f4: #7c4900;
+  --l-bg: #f9fafc;
+  --l-text: #0e1a33;
+  --l-muted: #55617a;
+  --l-water: #a9c6f3;
+  --l-fin-a: #1f6fe5;
+  --l-fin-b: #0f3a94;
+  --l-cut: #1f6fe5;
+}
+
+/* ================================================================ Ocean, dark
+   The open sea at night: abyssal blue surfaces, sea-glass teal for every action and "hit",
+   a faint surface light from above (--page-glow), coral for bleeps. */
+:root[data-preset="ocean"] {
+  --page-glow: radial-gradient(1100px 420px at 50% -160px, rgba(63, 208, 201, 0.1), transparent 70%);
+  --bg: #061423;
+  --surface: #0a1d31;
+  --surface-2: #0f263e;
+  --surface-3: #14304b;
+  --border: #1b3956;
+  --border-strong: #2a4f73;
+  --text: #e2eef7;
+  --strong: #ffffff;
+  --muted: #95b0c6;
+  --gold: #3fd0c9;
+  --gold-text: #5fdcd5;
+  --gold-soft: rgba(63, 208, 201, 0.13);
+  --gold-line: rgba(63, 208, 201, 0.5);
+  --on-sign: #03212a;
+  --select: #e2eef7;
+  --on: #4fd1a0;
+  --chip-bg: #14304b;
+  --chip-text: #c6dcee;
+  --success: #57d6a3;
+  --success-soft: rgba(87, 214, 163, 0.12);
+  --danger: #ff9086;
+  --danger-soft: rgba(255, 144, 134, 0.12);
+  --warn: #ffbb6e;
+  --warn-soft: rgba(255, 187, 110, 0.13);
+  --link: #7cc6ff;
+  --primary-bg: #3fd0c9;
+  --primary-text: #03212a;
+  --primary-hover: #6bdcd6;
+  --btn-bg: transparent;
+  --btn-border: #2f5679;
+  --btn-border-hover: #95b0c6;
+  --btn-hover-bg: rgba(124, 198, 255, 0.06);
+  --mark-tile: #0a1d31;
+  --mark-tile-border: #2a4f73;
+  --mark-fin: #3fd0c9;
+  --mark-wave: #7cc6ff;
+  --bar: #1b3a58;
+  --bar-cand: #4f7fa6;
+  --track: #14304b;
+  --media-bg: #030b14;
+  --tip-bg: rgba(3, 11, 20, 0.9);
+  --overlay: rgba(2, 9, 18, 0.74);
+  --shadow-pop: 0 24px 64px -16px rgba(0, 0, 0, 0.75);
+  --focus: 0 0 0 3px rgba(63, 208, 201, 0.5);
+  --series-ours: #3fd0c9;
+  --series-other: #7cc6ff;
+  --mark: #7cc6ff;
+  --bleep: #ff8f7e;
+  --bleep-text: #ff8f7e;
+  --auto-cut: #ffbb6e;
+  --l-bg: #061423;
+  --l-text: #ffffff;
+  --l-muted: #95b0c6;
+  --l-water: #3fd0c9;
+  --l-fin-a: #c4f4f1;
+  --l-fin-b: #3fd0c9;
+  --l-cut: #3fd0c9;
+  --mg-water-a: #12507e;
+  --mg-water-b: #0a3157;
+  --mg-water-c: #04182f;
+  --mg-floor: #062035;
+  --mg-dark: #04101d;
+}
+
+/* ================================================================ Ocean, light: a sunny shallow */
+:root[data-preset="ocean"][data-theme="light"],
+:root[data-preset="ocean"] [data-theme-local="light"] {
+  --page-glow: radial-gradient(1100px 420px at 50% -160px, rgba(15, 155, 148, 0.09), transparent 70%);
+  --bg: #eaf2f7;
+  --surface: #ffffff;
+  --surface-2: #f2f8fb;
+  --surface-3: #e0ecf3;
+  --border: #cadbe6;
+  --border-strong: #a3bdd0;
+  --text: #0a2540;
+  --strong: #061a2e;
+  --muted: #476077;
+  --gold: #0c837d;
+  --gold-text: #0a6b66;
+  --gold-soft: rgba(12, 131, 125, 0.12);
+  --gold-line: rgba(10, 107, 102, 0.5);
+  --on-sign: #ffffff;
+  --select: #0a2540;
+  --on: #0b7350;
+  --chip-bg: #e0ecf3;
+  --chip-text: #12324f;
+  --success: #0b7350;
+  --success-soft: rgba(11, 115, 80, 0.1);
+  --danger: #b3261e;
+  --danger-soft: rgba(179, 38, 30, 0.08);
+  --warn: #8a5200;
+  --warn-soft: rgba(138, 82, 0, 0.1);
+  --link: #0b5ea8;
+  --primary-bg: #0b4f7a;
+  --primary-text: #ffffff;
+  --primary-hover: #0a4266;
+  --btn-bg: #ffffff;
+  --btn-border: #b3c9d8;
+  --btn-border-hover: #0a2540;
+  --btn-hover-bg: #f2f8fb;
+  --mark-tile: #ffffff;
+  --mark-tile-border: #cadbe6;
+  --mark-fin: #0b4f7a;
+  --mark-wave: #0f9b94;
+  --bar: #d3e2ec;
+  --bar-cand: #7f9db5;
+  --track: #dde9f1;
+  --overlay: rgba(10, 37, 64, 0.42);
+  --shadow-pop: 0 24px 64px -16px rgba(10, 37, 64, 0.3);
+  --focus: 0 0 0 3px rgba(11, 79, 122, 0.35);
+  --series-ours: #0c837d;
+  --series-other: #0b5ea8;
+  --mark: #0b7fb5;
+  --bleep: #c44536;
+  --bleep-text: #962a20;
+  --auto-cut: #a8620c;
+  --l-bg: #eaf2f7;
+  --l-text: #0a2540;
+  --l-muted: #476077;
+  --l-water: #0f9b94;
+  --l-fin-a: #0b4f7a;
+  --l-fin-b: #0a2540;
+  --l-cut: #0f9b94;
+}
+
+/* ================================================================ Shark Sign (1.2.65), dark */
+:root[data-preset="sign"] {
+  --cut-k: 1;
+  --cut: 14px;
+  --cut-card: 22px;
+  --fin-r: 0px;
+  --fin-r-card: 0px;
+  --bg: #0b1d22;
+  --surface: #10272d;
+  --surface-2: #153138;
+  --surface-3: #1b3c44;
+  --border: #21444c;
+  --border-strong: #2f5a63;
+  --text: #e3eeec;
+  --strong: #ffffff;
+  --muted: #9bb5b2;
+  --gold: #ffd23f;
+  --gold-text: #ffd23f;
+  --gold-soft: rgba(255, 210, 63, 0.12);
+  --gold-line: rgba(255, 210, 63, 0.55);
+  --on-sign: #0b1d22;
+  --select: #e3eeec;
+  --on: #5ad1a4;
+  --chip-bg: #1b3c44;
+  --chip-text: #cfe3e0;
+  --success: #5ad1a4;
+  --success-soft: rgba(90, 209, 164, 0.12);
+  --danger: #ff8a7a;
+  --danger-soft: rgba(255, 138, 122, 0.12);
+  --warn: #ffb35c;
+  --warn-soft: rgba(255, 179, 92, 0.13);
+  --link: #8fd3dd;
+  --primary-bg: #ffd23f;
+  --primary-text: #0b1d22;
+  --primary-hover: #ffdc66;
+  --btn-bg: transparent;
+  --btn-border: #34606a;
+  --btn-border-hover: #9bb5b2;
+  --btn-hover-bg: rgba(255, 255, 255, 0.04);
+  --mark-tile: #ffd23f;
+  --mark-tile-border: #ffd23f;
+  --mark-fin: #0b1d22;
+  --mark-wave: #0b1d22;
+  --bar: #23474f;
+  --bar-cand: #5f8c92;
+  --track: #1b3c44;
+  --media-bg: #050f12;
+  --tip-bg: rgba(5, 15, 18, 0.88);
+  --overlay: rgba(4, 14, 17, 0.75);
+  --shadow-pop: 0 24px 60px -18px rgba(0, 0, 0, 0.7);
+  --focus: 0 0 0 3px rgba(255, 210, 63, 0.55);
+  --series-ours: #ffd23f;
+  --series-other: #5fb7c4;
+  --mark: #5ec8e5;
+  --bleep: #ffa79c;
+  --bleep-text: #ffa79c;
+  --auto-cut: #e8a85c;
+  --l-bg: #0b1d22;
+  --l-text: #ffffff;
+  --l-muted: #9bb5b2;
+  --l-water: #5fb7c4;
+  --l-fin-a: #ffe27a;
+  --l-fin-b: #ffd23f;
+  --l-cut: #ffd23f;
+  --mg-water-a: #1f5a63;
+  --mg-water-b: #0f3a42;
+  --mg-water-c: #071c21;
+  --mg-floor: #0a2a30;
+  --mg-dark: #0b1426;
+}
+
+/* ================================================================ Shark Sign, light */
+:root[data-preset="sign"][data-theme="light"],
+:root[data-preset="sign"] [data-theme-local="light"] {
+  --bg: #e8efed;
+  --surface: #ffffff;
+  --surface-2: #f2f6f5;
+  --surface-3: #e1eae8;
+  --border: #cfdcd9;
+  --border-strong: #a9bebb;
+  --text: #0e2a30;
+  --strong: #071a1e;
+  --muted: #4c6669;
+  --gold: #f2c200;
+  --gold-text: #6e5400;
+  --gold-soft: rgba(242, 194, 0, 0.16);
+  --gold-line: rgba(176, 140, 0, 0.6);
+  --on-sign: #0b1d22;
+  --select: #0e2a30;
+  --on: #106b4a;
+  --chip-bg: #e1eae8;
+  --chip-text: #12343a;
+  --success: #106b4a;
+  --success-soft: rgba(16, 107, 74, 0.1);
+  --danger: #b0281c;
+  --danger-soft: rgba(176, 40, 28, 0.08);
+  --warn: #8a5200;
+  --warn-soft: rgba(138, 82, 0, 0.1);
+  --link: #1d6470;
+  --primary-bg: #0e2a30;
+  --primary-text: #ffd23f;
+  --primary-hover: #163b42;
+  --btn-bg: #ffffff;
+  --btn-border: #b9cbc8;
+  --btn-border-hover: #0e2a30;
+  --btn-hover-bg: #f6f9f8;
+  --mark-tile: #0e2a30;
+  --mark-tile-border: #0e2a30;
+  --mark-fin: #ffd23f;
+  --mark-wave: #ffd23f;
+  --bar: #d3e0dd;
+  --bar-cand: #7d9a9c;
+  --track: #dce6e4;
+  --overlay: rgba(11, 29, 34, 0.45);
+  --shadow-pop: 0 24px 60px -18px rgba(14, 42, 48, 0.35);
+  --focus: 0 0 0 3px rgba(14, 42, 48, 0.35);
+  --series-ours: #b08c00;
+  --series-other: #2f7f8c;
+  --mark: #1c8fb0;
+  --bleep: #c4483b;
+  --bleep-text: #962a20;
+  --auto-cut: #b06a12;
+  --l-bg: #e8efed;
+  --l-text: #0e2a30;
+  --l-muted: #4c6669;
+  --l-water: #2f7f8c;
+  --l-fin-a: #163b42;
+  --l-fin-b: #0e2a30;
+  --l-cut: #f2c200;
+}
+
+/* ================================================================ High contrast, dark */
+:root[data-preset="contrast"] {
+  --fin-r: var(--r-sm);
+  --fin-r-card: var(--r-sm);
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #121212;
+  --surface-3: #1f1f1f;
+  --border: #9a9a9a;
+  --border-strong: #ffffff;
+  --text: #ffffff;
+  --strong: #ffffff;
+  --muted: #e6e6e6;
+  --gold: #ffd400;
+  --gold-text: #ffd400;
+  --gold-soft: rgba(255, 212, 0, 0.2);
+  --gold-line: #ffd400;
+  --on-sign: #000000;
+  --select: #ffffff;
+  --on: #3dff8f;
+  --chip-bg: #1f1f1f;
+  --chip-text: #ffffff;
+  --success: #3dff8f;
+  --success-soft: rgba(61, 255, 143, 0.16);
+  --danger: #ff7070;
+  --danger-soft: rgba(255, 112, 112, 0.16);
+  --warn: #ffb020;
+  --warn-soft: rgba(255, 176, 32, 0.16);
+  --link: #6fe3ff;
+  --primary-bg: #ffd400;
+  --primary-text: #000000;
+  --primary-hover: #ffe14d;
+  --btn-bg: #000000;
+  --btn-border: #ffffff;
+  --btn-border-hover: #ffd400;
+  --btn-hover-bg: #1f1f1f;
+  --mark-tile: #000000;
+  --mark-tile-border: #ffffff;
+  --mark-fin: #ffffff;
+  --mark-wave: #ffd400;
+  --bar: #4d4d4d;
+  --bar-cand: #b3b3b3;
+  --track: #333333;
+  --media-bg: #000000;
+  --tip-bg: rgba(0, 0, 0, 0.94);
+  --overlay: rgba(0, 0, 0, 0.82);
+  --shadow-pop: 0 0 0 2px #ffffff;
+  --focus: 0 0 0 2px #000000, 0 0 0 5px #ffd400;
+  --series-ours: #ffd400;
+  --series-other: #6fe3ff;
+  --mark: #6fe3ff;
+  --bleep: #ff7070;
+  --bleep-text: #ff7070;
+  --auto-cut: #ffb020;
+  --spk-f1: #6fe3ff;
+  --spk-f2: #ff9ed8;
+  --spk-f3: #b8f27a;
+  --spk-f4: #ffc46b;
+  --l-bg: #000000;
+  --l-text: #ffffff;
+  --l-muted: #e6e6e6;
+  --l-water: #ffd400;
+  --l-fin-a: #ffffff;
+  --l-fin-b: #ffffff;
+  --l-cut: #ffd400;
+  --mg-water-a: #0b3a5e;
+  --mg-water-b: #05223a;
+  --mg-water-c: #000000;
+  --mg-floor: #021220;
+  --mg-dark: #000000;
+}
+
+/* ================================================================ High contrast, light */
+:root[data-preset="contrast"][data-theme="light"],
+:root[data-preset="contrast"] [data-theme-local="light"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --surface-3: #e0e0e0;
+  --border: #5c5c5c;
+  --border-strong: #000000;
+  --text: #000000;
+  --strong: #000000;
+  --muted: #262626;
+  --gold: #003fbf;
+  --gold-text: #003fbf;
+  --gold-soft: rgba(0, 63, 191, 0.12);
+  --gold-line: #003fbf;
+  --on-sign: #ffffff;
+  --select: #000000;
+  --on: #005c2e;
+  --chip-bg: #e0e0e0;
+  --chip-text: #000000;
+  --success: #005c2e;
+  --success-soft: rgba(0, 92, 46, 0.12);
+  --danger: #9e0000;
+  --danger-soft: rgba(158, 0, 0, 0.1);
+  --warn: #6b3d00;
+  --warn-soft: rgba(107, 61, 0, 0.12);
+  --link: #0000c8;
+  --primary-bg: #000000;
+  --primary-text: #ffffff;
+  --primary-hover: #262626;
+  --btn-bg: #ffffff;
+  --btn-border: #000000;
+  --btn-border-hover: #003fbf;
+  --btn-hover-bg: #f0f0f0;
+  --mark-tile: #ffffff;
+  --mark-tile-border: #000000;
+  --mark-fin: #000000;
+  --mark-wave: #003fbf;
+  --bar: #c2c2c2;
+  --bar-cand: #5c5c5c;
+  --track: #d6d6d6;
+  --overlay: rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 0 0 2px #000000;
+  --focus: 0 0 0 2px #ffffff, 0 0 0 5px #003fbf;
+  --series-ours: #003fbf;
+  --series-other: #5c5c5c;
+  --mark: #0060a8;
+  --bleep: #9e0000;
+  --bleep-text: #9e0000;
+  --auto-cut: #6b3d00;
+  --spk-f1: #00466b;
+  --spk-f2: #7a1452;
+  --spk-f3: #234a06;
+  --spk-f4: #5c3500;
+  --l-bg: #ffffff;
+  --l-text: #000000;
+  --l-muted: #262626;
+  --l-water: #003fbf;
+  --l-fin-a: #000000;
+  --l-fin-b: #000000;
+  --l-cut: #003fbf;
+}

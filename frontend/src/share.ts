@@ -52,6 +52,12 @@ export interface HistorySummary {
   clips: number;
 }
 
+export interface SourceHistory {
+  fingerprint: string | null;
+  before: HistorySummary | null;
+  before_projects: string[];
+}
+
 export interface ProjectHistory {
   fingerprint: string | null;
   before: HistorySummary | null;
@@ -242,6 +248,8 @@ export const shareApi = {
       `/api/history?q=${encodeURIComponent(q)}${platform ? `&platform=${platform}` : ""}`,
     ),
   projectHistory: (pid: string) => req<ProjectHistory>("GET", `/api/history/project/${encodeURIComponent(pid)}`),
+  sourceHistory: (fp: string) => req<SourceHistory>("GET", `/api/history/source?fp=${encodeURIComponent(fp)}`),
+  pathHistory: (path: string) => req<SourceHistory>("POST", "/api/history/check-path", { path }),
   setLanguage: (pid: string, language: string) =>
     req<{ language: string }>("PUT", `/api/projects/${encodeURIComponent(pid)}/content-language`, { language }),
 };

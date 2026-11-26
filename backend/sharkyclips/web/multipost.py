@@ -1980,8 +1980,6 @@ def api_ig_redirect(request: Request) -> dict:
 @router.get("/api/platforms/reels/callback", response_class=HTMLResponse)
 def api_ig_callback(code: str = "", state: str = "", error: str = "", error_description: str = "") -> HTMLResponse:
     """Only reached when the redirect address is plain http (Meta usually wants https)."""
-    import html
-
     if error or not code:
         msg, ok = (error_description or error or "Instagram didn't connect."), False
     elif not state:  # 1.2.52: a redirect from anywhere else (login CSRF) has no / a wrong state
@@ -1992,11 +1990,9 @@ def api_ig_callback(code: str = "", state: str = "", error: str = "", error_desc
             msg, ok = "Instagram is connected. You can close this tab.", True
         except SharkyClipsError as exc:
             msg, ok = f"{exc.message} {exc.hint or ''}", False
-    color = "#2e9e6a" if ok else "#c0392b"
-    return HTMLResponse(f"<!doctype html><meta charset='utf-8'><title>SharkyClips</title>"
-                        f"<body style='font-family:system-ui;background:#0e1a33;color:#fff;display:grid;place-items:center;height:100vh;margin:0'>"
-                        f"<div style='max-width:460px;text-align:center'><h1 style='color:{color}'>{'✓' if ok else '!'}</h1>"
-                        f"<p>{html.escape(msg)}</p><p><a style='color:#d9b56a' href='/#/settings'>SharkyClips</a></p></div>")
+    from .. import welcome as W
+
+    return HTMLResponse(W.result_page(msg, ok))
 
 
 # ===================================================================== 1.2.42: TikTok Studio login

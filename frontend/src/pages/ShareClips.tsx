@@ -30,6 +30,7 @@ import { Modal, ProgressBar } from "../components/ui";
 import { ShareFlow } from "../components/ShareFlow";
 import { UploadsLeft } from "../components/UploadsLeft";
 import { ManualUpload } from "../components/ManualUpload";
+import { AlreadyShared } from "../components/SharedBefore";
 import { ConnectDialog, accountsChanged } from "../components/Accounts";
 import { problemText } from "../components/PublishAll";
 
@@ -492,26 +493,6 @@ function LanguagePick({ pid, value, onChanged }: { pid: string; value: string; o
         ))}
       </select>
     </label>
-  );
-}
-
-// ---------------------------------------------------------------- "Did I already upload this?"
-
-function AlreadyShared({ h }: { h: NonNullable<NonNullable<ShareBoard["history"]>["before"]> }) {
-  const { t, lang, num } = useI18n();
-  const date = h.first_at ? new Date(h.first_at).toLocaleDateString(`${lang}-u-nu-latn`, { day: "numeric", month: "long", year: "numeric" }) : "";
-  const parts = ORDER.filter((p) => h.by_platform[p]).map((p) => t("share.before_on", { n: num(h.by_platform[p] ?? 0), name: TARGET_NAME[p] }));
-  return (
-    <div className="notice notice-warn share-before" role="alert">
-      <Icon name="alert" />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="notice-title">{t("share.before_title")}</div>
-        <div>{t("share.before_body", { date, where: parts.join(", ") })}</div>
-      </div>
-      <a className="btn" href={href.history}>
-        <Icon name="clock" /> {t("history.open")}
-      </a>
-    </div>
   );
 }
 

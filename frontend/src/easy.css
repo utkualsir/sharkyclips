@@ -92,6 +92,7 @@
   height: 64px;
   background: var(--gold);
   color: var(--on-sign);
+  border-radius: var(--fin-r);
   clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
 }
 [dir="rtl"] .ez-drop-icon { clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut)); }
@@ -193,7 +194,7 @@
 .ez-step-done { color: var(--text); }
 .ez-step-done .ez-step-dot { background: transparent; border-color: var(--on); color: var(--on); }
 .ez-step-active { color: var(--strong); font-weight: 700; }
-.ez-step-active .ez-step-dot { --cut: 9px; border: 0; border-radius: 0; background: var(--gold); color: var(--on-sign); clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%); }
+.ez-step-active .ez-step-dot { --cut: calc(9px * var(--cut-k)); border: 0; border-radius: calc(50% * (1 - var(--cut-k))); background: var(--gold); color: var(--on-sign); clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%); }
 [dir="rtl"] .ez-step-active .ez-step-dot { clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut)); }
 .ez-step-text { flex: 1; min-width: 0; display: grid; gap: 6px; }
 .ez-step-bar { display: block; height: 4px; border-radius: var(--r-xs); background: var(--track); overflow: hidden; max-width: 360px; }
@@ -264,6 +265,7 @@
   border: 1px solid var(--border);
   background: var(--surface);
   overflow: hidden;
+  border-radius: var(--fin-r-card);
   clip-path: polygon(0 0, calc(100% - var(--cut-card)) 0, 100% var(--cut-card), 100% 100%, 0 100%);
 }
 [dir="rtl"] .ez-card { clip-path: polygon(var(--cut-card) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-card)); }
@@ -291,7 +293,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--r-lg);
-  background: rgba(5, 9, 19, 0.55);
+  background: var(--scrim);
   cursor: pointer;
 }
 .ez-check input { width: 22px; height: 22px; accent-color: var(--gold); cursor: pointer; }
@@ -301,8 +303,8 @@
   inset-inline-end: 10px;
   padding: 2px 8px;
   border-radius: var(--r-xs);
-  background: rgba(5, 9, 19, 0.75);
-  color: #fff;
+  background: var(--scrim-strong);
+  color: var(--on-media);
   font-size: var(--fs-xs);
   pointer-events: none;
 }
@@ -691,18 +693,18 @@
 .ez-ap-state { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; font-size: var(--fs-md); }
 
 /* ---- Easy 2.0: phone-true preview (Shorts buttons over the clip) */
-.ez-phone { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); height: 100%; aspect-ratio: 9 / 16; max-width: 100%; pointer-events: none; container-type: size; color: #fff; }
+.ez-phone { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); height: 100%; aspect-ratio: 9 / 16; max-width: 100%; pointer-events: none; container-type: size; color: var(--on-media); }
 .ez-phone svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .ez-phone-channel, .ez-phone-sub, .ez-phone-title {
   position: absolute;
   font-family: Roboto, Arial, sans-serif;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 1px 2px var(--media-shadow);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .ez-phone-channel { left: 13.5%; top: 83.6%; width: 20%; font-size: 3.2cqh; font-weight: 600; line-height: 1; }
-.ez-phone-sub { left: 34.6%; top: 84%; width: 15.4%; font-size: 1.6cqh; font-weight: 700; color: #0f0f0f; text-shadow: none; text-align: center; line-height: 1.75; }
+.ez-phone-sub { left: 34.6%; top: 84%; width: 15.4%; font-size: 1.6cqh; font-weight: 700; color: var(--mock-sub-text); text-shadow: none; text-align: center; line-height: 1.75; }
 .ez-phone-title { left: 4%; top: 88.6%; width: 80%; font-size: 1.9cqh; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.25; }
 .ez-phone-btn {
   position: absolute;
@@ -714,8 +716,8 @@
   height: 40px;
   border: 0;
   border-radius: var(--r-lg);
-  background: rgba(5, 9, 19, 0.6);
-  color: #fff;
+  background: var(--scrim);
+  color: var(--on-media);
   cursor: pointer;
 }
 .ez-phone-btn.on { background: var(--gold); color: var(--on-sign); }

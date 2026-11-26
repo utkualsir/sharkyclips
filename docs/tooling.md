@@ -150,7 +150,7 @@ them, not a hard limit; the issue-triager has no Bash and no GitHub write tools 
   server was rendering (a timing flake, not a layout fault; the same commit passed it on the tag
   run). The 1.2.60 Backend (ubuntu) failure was a clock-dependent test (seconds before the
   YouTube quota reset at 08:00 UTC); the test was fixed in 1.2.62.
-- **1.2.62 (Instagram account suspended)**: Instagram paused as a default target (setup kept),
+- **1.2.62 (Instagram account suspended; active again since 2026-11-26, safe settings kept)**: Instagram paused as a default target (setup kept),
   account / permission refusals are never retried by themselves, and a safe Instagram pace
   (4 h apart, max 5 rotated hashtags, no identical captions in a row). Released through the
   normal flow below.

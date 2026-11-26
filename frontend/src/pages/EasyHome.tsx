@@ -7,6 +7,8 @@ import { Icon } from "../components/Icons";
 import { ChannelSource, ConnectChannelCard } from "../components/Channels";
 import { DeleteDialog, useUndoToast } from "../components/Trash";
 import { ProgressBar } from "../components/ui";
+import { AlreadyShared, useSharedBefore } from "../components/SharedBefore";
+import type { HistorySummary } from "../share";
 import { fmtTime } from "../format";
 import { useI18n } from "../i18n";
 import { useJobs } from "../jobs";
@@ -46,6 +48,9 @@ export default function EasyHome() {
   const [pending, setPending] = useState<string | null>(readPending);
   const [recent, setRecent] = useState<EasyProjectRow[] | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  // 1.2.69: "Clips from this video were shared on ..." right after the drop (kept while it imports)
+  const before = useSharedBefore(file, link);
+  const [importBefore, setImportBefore] = useState<HistorySummary | null>(null);
   const undoDelete = useUndoToast();
   const input = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | undefined>(undefined);
@@ -123,6 +128,7 @@ export default function EasyHome() {
       }
       writePending(j.id);
       setPending(j.id);
+      setImportBefore(before);
       setFile(null);
       setLink("");
     } catch (e) {
@@ -150,6 +156,7 @@ export default function EasyHome() {
 
       {working ? (
         <div className="ez-working">
+          {importBefore && <AlreadyShared h={importBefore} />}
           <EasyProgress
             steps={[
               { key: "download", status: "active", progress: job?.status === "running" ? job.progress : null },
@@ -230,6 +237,7 @@ export default function EasyHome() {
             )}
           </div>
 
+          {before && <AlreadyShared h={before} />}
           <div className="ez-create-row">
             <ModeChip value={mode} onChange={setMode} allowAuto />
             <button type="submit" className="btn btn-primary btn-xl" disabled={!can} data-tour="find">

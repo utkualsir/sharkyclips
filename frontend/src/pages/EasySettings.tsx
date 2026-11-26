@@ -12,7 +12,7 @@ import { AutopilotCard } from "../components/EasyAuto";
 import { AccountsGrid } from "../components/Accounts";
 import { UI_LANGUAGES, useI18n } from "../i18n";
 import { chooseLanguage, useMeta } from "../meta";
-import { useTheme } from "../theme";
+import { Personalization } from "../components/Personalization";
 import { useUiMode } from "../uimode";
 import { TrashCard } from "../components/Trash";
 import { LanguageSpeedCard } from "../components/SpeedSettings";
@@ -21,7 +21,6 @@ import { LanguageSpeedCard } from "../components/SpeedSettings";
 export default function EasySettings() {
   const { t, lang, setLang } = useI18n();
   const meta = useMeta();
-  const [theme, , toggleTheme] = useTheme();
   const { settings, update, setMode } = useUiMode();
   const [phone, setPhone] = useState<PhoneStatus | null>(null);
   const [folder, setFolder] = useState<string | null>(null);
@@ -211,17 +210,13 @@ export default function EasySettings() {
             ))}
           </select>
         </label>
-        <div className="toggle-line">
-          <span>
-            <b>{t("theme.dark")}</b>
-          </span>
-          <Toggle checked={theme === "dark"} onChange={toggleTheme} label={t("theme.dark")} />
-        </div>
         <MiniGameSetting />
         <button className="link-btn" onClick={() => update({ tour_done: false }).then(() => (window.location.hash = "#/"))}>
           <Icon name="sparkles" size={14} /> {t("easy.set_tour_again")}
         </button>
       </section>
+
+      <Personalization easy />
 
       <AboutCard easy />
 

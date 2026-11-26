@@ -960,6 +960,10 @@ export interface Settings {
   ollama_autostart: boolean | null;
   ui_motion: "full" | "reduced" | "off";
   ui_theme?: "dark" | "light";
+  /** 1.2.69 Settings > Personalization (personalize.ts) */
+  ui_personal?: import("./personalize").Personal | null;
+  /** 1.2.69: the splash page's colours of the theme, both modes (write only) */
+  ui_splash?: Record<"dark" | "light", Record<string, string>>;
   youtube_daily_quota: number;
   /** 1.2.53: es-419 (Latin America) | es-ES (Spain) */
   spanish_variant?: "es-419" | "es-ES";

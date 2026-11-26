@@ -11,15 +11,29 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="SharkyClips" />
-    <meta name="theme-color" content="#0B1D22" />
     <script>
       // Theme + language before first paint (no flash). Both are remembered per browser.
       (function () {
         try {
-          var t = localStorage.getItem("cf-theme");
+          // 1.2.69 Settings > Personalization (personalize.ts keeps preset, mode and the computed
+          // colours of both modes in "sc-personal"); before that only "cf-theme" existed.
+          var root = document.documentElement, st = null;
+          try { st = JSON.parse(localStorage.getItem("sc-personal") || "null"); } catch (e) {}
+          var p = st && st.p ? st.p : null;
+          var t = p ? p.mode : localStorage.getItem("cf-theme");
           if (t !== "light" && t !== "dark")
             t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-          document.documentElement.setAttribute("data-theme", t);
+          root.setAttribute("data-theme", t);
+          root.setAttribute("data-preset", p && /^(classic|ocean|sign|contrast)$/.test(p.preset) ? p.preset : "classic");
+          var vars = st && st.vars && st.vars[t];
+          if (vars) for (var k in vars) if (/^--[\w-]+$/.test(k)) root.style.setProperty(k, String(vars[k]));
+          var bar = st && st.bar && st.bar[t];
+          if (bar) {
+            var m = document.createElement("meta");
+            m.name = "theme-color";
+            m.content = String(bar);
+            document.head.appendChild(m);
+          }
           localStorage.removeItem("sc-design"); // the 1.2.64 redesign preview switch is gone
           var l = localStorage.getItem("cf-lang") || "tr";
           document.documentElement.lang = l;

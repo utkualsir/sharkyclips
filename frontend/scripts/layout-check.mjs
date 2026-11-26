@@ -47,6 +47,13 @@ if (process.env.LAYOUT_SIZES)
   SIZES.splice(0, SIZES.length, ...process.env.LAYOUT_SIZES.split(",").map((s) => s.split("x").map(Number)));
 const LANGS = process.env.LAYOUT_LANGS ? process.env.LAYOUT_LANGS.split(",") : quick ? ["tr", "ar"] : ["tr", "ar", "en"];
 const THEMES = ["light", "dark"];
+// 1.2.69 Personalization: every preset in light and dark. Classic (the default) gets every size and
+// language; the other presets change colours and corners, not sizes, so they get a smaller set
+// (Turkish + Arabic, 3 sizes) unless LAYOUT_PRESETS_FULL=1. LAYOUT_PRESETS=classic: only one.
+const PRESETS = process.env.LAYOUT_PRESETS ? process.env.LAYOUT_PRESETS.split(",") : ["classic", "ocean", "sign", "contrast"];
+const SMALL_SIZES = [[1024, 700], [1366, 768], [390, 844]];
+const personal = (preset, t) =>
+  JSON.stringify({ p: { v: 1, preset, mode: t, accent: null, titlebar: false, autofix: true, colors: { dark: {}, light: {} }, at: 0 } });
 const P = encodeURIComponent(pid);
 // mode: Easy (the default) or Pro; switched on the server before the screen loads
 const SCREENS = [
@@ -164,18 +171,22 @@ function audit() {
 const browser = await chromium.launch(process.env.LAYOUT_CHANNEL ? { channel: process.env.LAYOUT_CHANNEL } : {});
 const failures = [];
 let checked = 0;
+for (const preset of PRESETS)
 for (const lang of LANGS)
   for (const theme of THEMES) {
     if (lang === "en" && theme === "dark") continue;
-    for (const [w, h] of SIZES) {
+    const full = preset === "classic" || process.env.LAYOUT_PRESETS_FULL === "1" || !!process.env.LAYOUT_SIZES;
+    if (!full && lang === "en") continue;
+    for (const [w, h] of full ? SIZES : SMALL_SIZES) {
       const ctx = await browser.newContext({ viewport: { width: w, height: h } });
-      await ctx.addInitScript(([l, t]) => {
+      await ctx.addInitScript(([l, t, pers]) => {
         localStorage.setItem("cf-lang", l);
         localStorage.setItem("cf-lang-set", "1");
         localStorage.setItem("cf-theme", t);
+        localStorage.setItem("sc-personal", pers);
         localStorage.setItem("sc-motion", "off");
         sessionStorage.setItem("sc-splash-shown", "1");
-      }, [lang, theme]);
+      }, [lang, theme, personal(preset, theme)]);
       const page = await ctx.newPage();
       let mode = null;
       for (const s of SCREENS) {
@@ -191,7 +202,7 @@ for (const lang of LANGS)
             await page.waitForSelector(s.ready, { timeout: 20000 });
             break;
           } catch (e) {
-            if (attempt >= 3) throw new Error(`${s.name} ${lang} ${theme} ${w}x${h} never loaded: ${e.message.split(/\r?\n/)[0]}`);
+            if (attempt >= 3) throw new Error(`${s.name} ${preset} ${lang} ${theme} ${w}x${h} never loaded: ${e.message.split(/\r?\n/)[0]}`);
             // a slow load on a busy CI runner: try again (the reload itself may time out too)
             await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
           }
@@ -206,7 +217,7 @@ for (const lang of LANGS)
             await page.click(tab);
             await page.waitForTimeout(400);
           }
-          const label = `${s.name}${tab ? "-tab" : ""} ${lang} ${theme} ${w}x${h}`;
+          const label = `${s.name}${tab ? "-tab" : ""} ${preset} ${lang} ${theme} ${w}x${h}`;
           const issues = await page.evaluate(audit);
           checked++;
           if (issues.length) {
@@ -223,4 +234,4 @@ if (failures.length) {
   console.log(`LAYOUT PROBLEMS (${failures.length} of ${checked} views):\n` + failures.join("\n"));
   process.exit(1);
 }
-console.log(`Layout OK: ${checked} views (${SCREENS.length} screens, ${SIZES.length} sizes, ${LANGS.join("/")}, light/dark).`);
+console.log(`Layout OK: ${checked} views (${SCREENS.length} screens, ${SIZES.length} sizes, ${LANGS.join("/")}, light/dark, presets ${PRESETS.join("/")}).`);

@@ -137,6 +137,7 @@
   min-width: 0;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--fin-r-card);
   clip-path: polygon(0 0, calc(100% - var(--cut-card)) 0, 100% var(--cut-card), 100% 100%, 0 100%);
   transition: border-color 0.15s var(--ease), opacity 0.2s var(--ease);
 }
@@ -196,7 +197,7 @@
   height: 26px;
   border-radius: var(--r-sm);
   border: 2px solid var(--on-media);
-  background: rgba(5, 15, 18, 0.55);
+  background: var(--scrim);
   display: grid;
   place-items: center;
 }
@@ -240,7 +241,7 @@
   border: 0;
   display: grid;
   place-items: center;
-  background: rgba(5, 15, 18, 0.7);
+  background: var(--scrim-strong);
   color: var(--on-media);
   cursor: pointer;
 }
@@ -249,7 +250,7 @@
   height: 22px;
 }
 .sh-play:hover {
-  background: rgba(5, 15, 18, 0.9);
+  background: var(--tip-bg);
 }
 .sh-dur {
   position: absolute;

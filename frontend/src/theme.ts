@@ -1,38 +1,15 @@
-import { api } from "./api";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { resolveMode, setPersonal, getPersonal, usePersonal, type Mode } from "./personalize";
 
-export type Theme = "dark" | "light";
-let lastSent: Theme | null = null;
+export type Theme = Mode;
 
-function initial(): Theme {
-  const attr = document.documentElement.getAttribute("data-theme");
-  return attr === "light" ? "light" : "dark";
-}
-
-/** Dark / light, remembered in localStorage (index.html applies it before first paint). */
+/** Dark / light (the top bar's sun / moon button and the Easy settings switch). 1.2.69: a thin
+ *  layer over Settings > Personalization (personalize.ts): choosing one here sets the mode. */
 export function useTheme(): [Theme, (t: Theme) => void, () => void] {
-  const [theme, setThemeState] = useState<Theme>(initial);
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    try {
-      localStorage.setItem("cf-theme", theme);
-    } catch {
-      /* ignore */
-    }
-    window.dispatchEvent(new CustomEvent("cf-theme", { detail: theme }));
-    // The launcher's splash page can't read this browser's storage: tell the server.
-    if (lastSent !== theme) {
-      api.saveSettings({ ui_theme: theme }).catch(() => {});
-      lastSent = theme;
-    }
-  }, [theme]);
-  useEffect(() => {
-    const on = (e: Event) => setThemeState((e as CustomEvent<Theme>).detail);
-    window.addEventListener("cf-theme", on);
-    return () => window.removeEventListener("cf-theme", on);
-  }, []);
-  const toggle = useCallback(() => setThemeState((t) => (t === "dark" ? "light" : "dark")), []);
-  return [theme, setThemeState, toggle];
+  const { mode } = usePersonal();
+  const set = useCallback((t: Theme) => setPersonal({ mode: t }), []);
+  const toggle = useCallback(() => setPersonal({ mode: resolveMode(getPersonal()) === "dark" ? "light" : "dark" }), []);
+  return [mode, set, toggle];
 }
 
 /** Read a CSS custom property (for canvas drawing). */

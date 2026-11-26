@@ -20,15 +20,15 @@ export function BrandMark({ size = 20 }: { size?: number }) {
   );
 }
 
-/** The welcome screen's mark (ink fin, teal water); `animated`: the fin glides in, the water drifts. */
+/** The welcome screen's mark (the preset's button colour for the fin, its launch water); `animated`: the fin glides in, the water drifts. */
 export function SharkLogo({ animated = false, className }: { animated?: boolean; className?: string }) {
   const id = useId().replace(/:/g, "");
   return (
     <svg className={className} viewBox="0 0 160 64" aria-hidden="true">
       <defs>
         <linearGradient id={`${id}-fin`} x1="0" y1="0" x2="0.35" y2="1">
-          <stop offset="0" stopColor="#163B42" />
-          <stop offset="1" stopColor="#0E2A30" />
+          <stop offset="0" style={{ stopColor: "var(--primary-hover)" }} />
+          <stop offset="1" style={{ stopColor: "var(--primary-bg)" }} />
         </linearGradient>
         <clipPath id={`${id}-sea`}>
           <rect x="0" y="40" width="160" height="24" />
@@ -39,7 +39,7 @@ export function SharkLogo({ animated = false, className }: { animated?: boolean;
           className={animated ? "logo-waves" : undefined}
           d={LONG_WAVE}
           fill="none"
-          stroke="#2F7F8C"
+          style={{ stroke: "var(--l-water)" }}
           strokeWidth="2.6"
           strokeLinecap="round"
         />

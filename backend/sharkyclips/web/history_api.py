@@ -2,6 +2,8 @@
 
 GET  /api/history?q=&platform=        every shared post (date, game, clip, platform, link), newest first
 GET  /api/history/project/{project}   what was shared before from this project's source video
+GET  /api/history/source?fp=v1:..     1.2.69: the same, for a video that is only being imported
+POST /api/history/check-path {"path"} 1.2.69: the same for a local file path (this computer only)
 PUT  /api/projects/{project}/content-language  {"language": "tr"}  titles + descriptions in that
                                       language for this video (writes them again with the AI)
 """
@@ -10,7 +12,7 @@ from __future__ import annotations
 
 import threading
 
-from fastapi import APIRouter, Body
+from fastapi import APIRouter, Body, Request
 
 from .. import config, history, languages
 from ..errors import SharkyClipsError
@@ -32,6 +34,31 @@ def api_history(q: str = "", platform: str | None = None, limit: int = 500) -> d
 @router.get("/api/history/project/{project_id}")
 def api_history_project(project_id: str) -> dict:
     return history.for_project(_app()._project(project_id))
+
+
+@router.get("/api/history/source")
+def api_history_source(fp: str = "") -> dict:
+    return history.for_fingerprint(fp)
+
+
+@router.post("/api/history/check-path")
+def api_history_check_path(request: Request, body: dict | None = Body(default=None)) -> dict:
+    """A path typed into the import box: fingerprint it here (like api_create, this computer only)."""
+    from pathlib import Path
+
+    from ..ingest import is_url
+
+    src = str((body or {}).get("path") or "").strip()
+    empty = {"fingerprint": None, "before": None, "before_projects": []}
+    if not src or is_url(src) or not _app()._is_local(request):
+        return empty
+    f = Path(src).expanduser()
+    if not f.is_file():
+        return empty
+    try:
+        return history.for_fingerprint(history.fingerprint(f))
+    except OSError:
+        return empty
 
 
 @router.put("/api/projects/{project_id}/content-language")

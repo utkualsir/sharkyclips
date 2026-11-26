@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import { api, ApiError, uploadFile, urls, type Job, type Mode, type ProjectSummary } from "../api";
+import { AlreadyShared, useSharedBefore } from "../components/SharedBefore";
 import { Icon } from "../components/Icons";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { ChannelSource } from "../components/Channels";
@@ -132,6 +133,7 @@ export function NewProjectModal({ onClose }: { onClose: () => void }) {
   const [upload, setUpload] = useState<number | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
   const [drag, setDrag] = useState(false);
+  const before = useSharedBefore(tab === "file" ? file : null, tab === "link" ? url : ""); // 1.2.69
   const fileInput = useRef<HTMLInputElement>(null);
   const abortRef = useRef<(() => void) | undefined>(undefined);
 
@@ -308,6 +310,7 @@ export function NewProjectModal({ onClose }: { onClose: () => void }) {
         <Toggle checked={fullUpload} onChange={setFullUpload} label={t("full.import_switch")} />
       </div>
 
+      {before && <AlreadyShared h={before} />}
       {error && (
         <div className="notice notice-danger">
           <Icon name="alert" />

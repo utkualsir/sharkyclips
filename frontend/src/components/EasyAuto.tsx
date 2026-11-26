@@ -165,27 +165,27 @@ export function ShortsOverlay({ title, channel }: { title: string; channel?: str
       <svg viewBox="0 0 1080 1920" preserveAspectRatio="none">
         <defs>
           <linearGradient id="ezp-top" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#000" stopOpacity="0.55" />
-            <stop offset="1" stopColor="#000" stopOpacity="0" />
+            <stop offset="0" style={{ stopColor: "var(--mask)" }} stopOpacity="0.55" />
+            <stop offset="1" style={{ stopColor: "var(--mask)" }} stopOpacity="0" />
           </linearGradient>
           <linearGradient id="ezp-bot" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#000" stopOpacity="0" />
-            <stop offset="1" stopColor="#000" stopOpacity="0.6" />
+            <stop offset="0" style={{ stopColor: "var(--mask)" }} stopOpacity="0" />
+            <stop offset="1" style={{ stopColor: "var(--mask)" }} stopOpacity="0.6" />
           </linearGradient>
         </defs>
         <rect x="0" y="0" width="1080" height="220" fill="url(#ezp-top)" />
         <rect x="0" y="1400" width="1080" height="520" fill="url(#ezp-bot)" />
-        <g fill="none" stroke="#fff" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
+        <g fill="none" style={{ stroke: "var(--on-media)" }} strokeWidth="7" strokeLinecap="round" strokeLinejoin="round">
           {icons.map(([y, d]) => (
             <path key={y} d={d} transform={`translate(985 ${y})`} />
           ))}
         </g>
-        <rect x="945" y="1770" width="80" height="80" rx="16" fill="#fff" fillOpacity="0.85" />
-        <circle cx="95" cy="1640" r="38" fill="#fff" fillOpacity="0.9" />
-        <rect x="370" y="1612" width="170" height="56" rx="28" fill="#fff" />
-        <rect x="0" y="1904" width="1080" height="8" fill="#fff" fillOpacity="0.35" />
-        <rect x="0" y="1904" width="380" height="8" fill="#ff0033" />
-        <rect x="40" y="140" width="900" height="1400" fill="none" stroke="#7fd4ff" strokeWidth="4" strokeDasharray="18 14" opacity="0.7" />
+        <rect x="945" y="1770" width="80" height="80" rx="16" style={{ fill: "var(--on-media)" }} fillOpacity="0.85" />
+        <circle cx="95" cy="1640" r="38" style={{ fill: "var(--on-media)" }} fillOpacity="0.9" />
+        <rect x="370" y="1612" width="170" height="56" rx="28" style={{ fill: "var(--on-media)" }} />
+        <rect x="0" y="1904" width="1080" height="8" style={{ fill: "var(--on-media)" }} fillOpacity="0.35" />
+        <rect x="0" y="1904" width="380" height="8" style={{ fill: "var(--pf-youtube)" }} />
+        <rect x="40" y="140" width="900" height="1400" fill="none" style={{ stroke: "var(--mood-chill)" }} strokeWidth="4" strokeDasharray="18 14" opacity="0.7" />
       </svg>
       <span className="ez-phone-channel">@{channel || "channel"}</span>
       <span className="ez-phone-sub">{t("easy2.phone_subscribe")}</span>

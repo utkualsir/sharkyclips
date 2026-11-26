@@ -4,7 +4,8 @@
 //   SHARKYCLIPS_HOME=<dir>/home python backend/cli.py serve --port 8799 --no-browser
 //   node frontend/scripts/screens.mjs http://127.0.0.1:8799 <project-id> <out-dir>
 //
-// env: SHOT_W / SHOT_H (1440x900), SHOT_THEMES (light,dark), SHOT_LANG (en), SHOT_ONLY (names).
+// env: SHOT_W / SHOT_H (1440x900), SHOT_THEMES (light,dark), SHOT_LANG (en), SHOT_ONLY (names),
+//      SHOT_PRESETS (1.2.69: classic,ocean,sign,contrast; files get a -<preset> suffix when set).
 import { mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -27,6 +28,7 @@ const HGT = Number(process.env.SHOT_H || 900);
 const LANG = process.env.SHOT_LANG || "en";
 const ONLY = process.env.SHOT_ONLY ? process.env.SHOT_ONLY.split(",") : null;
 const THEMES = process.env.SHOT_THEMES ? process.env.SHOT_THEMES.split(",") : ["light", "dark"];
+const PRESETS = process.env.SHOT_PRESETS ? process.env.SHOT_PRESETS.split(",") : [null];
 
 const SCREENS = [
   { name: "home", mode: "easy", hash: "#/", ready: ".ez-create" },
@@ -47,15 +49,17 @@ const SCREENS = [
 ];
 
 const browser = await chromium.launch({ channel: process.env.SHOT_CHANNEL || "msedge" });
+for (const preset of PRESETS)
 for (const theme of THEMES) {
   const ctx = await browser.newContext({ viewport: { width: W, height: HGT }, deviceScaleFactor: 1 });
-  await ctx.addInitScript(([t, l]) => {
+  await ctx.addInitScript(([t, l, pr]) => {
     localStorage.setItem("cf-lang", l);
     localStorage.setItem("cf-lang-set", "1");
     localStorage.setItem("cf-theme", t);
+    if (pr) localStorage.setItem("sc-personal", JSON.stringify({ p: { v: 1, preset: pr, mode: t, accent: null, titlebar: false, autofix: true, colors: { dark: {}, light: {} }, at: 0 } }));
     localStorage.setItem("sc-motion", "off");
     sessionStorage.setItem("sc-splash-shown", "1");
-  }, [theme, LANG]);
+  }, [theme, LANG, preset]);
   const page = await ctx.newPage();
   let mode = null;
   for (const s of SCREENS) {
@@ -79,7 +83,7 @@ for (const theme of THEMES) {
         await page.waitForTimeout(900);
       }
       await page.evaluate(() => document.fonts.ready);
-      const file = join(outDir, `${s.name}-${theme}.png`);
+      const file = join(outDir, `${s.name}-${theme}${preset ? `-${preset}` : ""}.png`);
       await page.screenshot({ path: file, fullPage: !!process.env.SHOT_FULL });
       console.log("saved", file);
     } catch (e) {

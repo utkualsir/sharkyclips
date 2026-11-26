@@ -38,7 +38,7 @@ html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-
   position: relative;
   border-radius: var(--r-md);
   overflow: hidden;
-  background: #0f3a42;
+  background: var(--mg-water-b);
   touch-action: none;
   user-select: none;
   outline: none;
@@ -53,9 +53,9 @@ html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  background: rgba(5, 15, 35, 0.45);
-  color: #fff;
+  border: 1px solid var(--media-line);
+  background: var(--scrim);
+  color: var(--on-media);
   display: none;
   place-items: center;
 }
@@ -66,7 +66,7 @@ html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-
   display: grid;
   place-items: center;
   padding: 8px;
-  background: rgba(5, 14, 32, 0.55);
+  background: var(--scrim);
   overflow: auto;
 }
 .mg-card {
@@ -90,7 +90,7 @@ html[data-motion="reduced"] .mg-job-bar span.indet, html[data-motion="off"] .mg-
 .mg-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
 .mg-skins ul { list-style: none; padding: 0; gap: 6px; }
 .mg-skins li { display: flex; align-items: center; gap: 8px; }
-.mg-skin-pic { width: 56px; height: 35px; flex: none; border-radius: var(--r-sm); background: #134a7c; }
+.mg-skin-pic { width: 56px; height: 35px; flex: none; border-radius: var(--r-sm); background: var(--mg-water-a); }
 .mg-skin-pic.locked { filter: grayscale(1) brightness(0.6); }
 .mg-skin-txt { flex: 1; min-width: 0; display: grid; text-align: start; }
 .mg-skin-txt .mg-sub { margin: 0; }

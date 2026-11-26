@@ -3,6 +3,7 @@ import { urls, type BrandPreset, type Candidate, type ClipOptions, type Facecam,
 import { captionAt, groupWords, joinerFor, upper } from "../captions";
 import { coverRect, gfxPillPath, gfxStateAt, OUT_W, SPLIT_TOP as OUT_SPLIT, splitRects, toMain, zoomRect, zoomsAt, type GfxPlanView, type PreviewFx, type Rect } from "../previewMath";
 import { motion } from "../motion";
+import { EXPORT } from "../exportLook";
 
 // Canvas size (9:16). The picture is cut and zoomed with previewMath.ts = what the renderer
 // does (backend/sharkyclips/clips.py at 1080x1920); captions / hook / brand are drawn on top.
@@ -10,7 +11,6 @@ const W = 360;
 const H = 640;
 const S = W / OUT_W; // scale from the 1080-wide render to this canvas
 const SPLIT_TOP = OUT_SPLIT * S;
-const GOLD = "#D9B56A";
 
 interface Props {
   video: RefObject<HTMLVideoElement | null>;
@@ -113,14 +113,14 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
     const layout = resolveLayout(options.layout, facecam);
     const start = range?.start ?? clip?.start ?? 0;
     const end = range?.end ?? clip?.end ?? 0;
-    const prim = brand?.caption_color || "#fff";
-    const high = brand?.caption_highlight || GOLD;
-    const outline = brand?.caption_outline || "#000";
+    const prim = brand?.caption_color || EXPORT.caption;
+    const high = brand?.caption_highlight || EXPORT.highlight;
+    const outline = brand?.caption_outline || EXPORT.outline;
     const fontFam = `${brand?.caption_font ? `"${brand.caption_font}", ` : ""}Arial, "Noto Sans Arabic", "Microsoft YaHei", sans-serif`;
     let raf = 0;
 
     const draw = () => {
-      ctx.fillStyle = "#05080f";
+      ctx.fillStyle = EXPORT.canvas;
       ctx.fillRect(0, 0, W, H);
       const vw = v.videoWidth;
       const vh = v.videoHeight;
@@ -146,7 +146,7 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
           const tc = tiny.getContext("2d")!;
           blit(tc, v, coverRect(whole, tiny.width, tiny.height), 0, 0, tiny.width, tiny.height);
           ctx.drawImage(tiny, 0, 0, W, H);
-          ctx.fillStyle = "rgba(0,0,0,0.25)";
+          ctx.fillStyle = EXPORT.fitDim;
           ctx.fillRect(0, 0, W, H);
           const scale = Math.min(W / vw, H / vh);
           const dw = vw * scale;
@@ -179,7 +179,7 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
           const full = texts.join(joiner);
           const fw = ctx.measureText(full).width;
           if (options.subtitles === "clean") {
-            ctx.fillStyle = "rgba(0,0,0,0.69)";
+            ctx.fillStyle = EXPORT.cleanBox;
             const padX = 14 * S * 1.4;
             const padY = 14 * S;
             ctx.beginPath();
@@ -204,7 +204,7 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
           } else {
             ctx.lineJoin = "round";
             ctx.lineWidth = (bold ? 7 : 2) * S * 2;
-            ctx.strokeStyle = bold ? outline : "rgba(0,0,0,0.6)";
+            ctx.strokeStyle = bold ? outline : EXPORT.thinOutline;
             ctx.strokeText(full, W / 2, capY);
             ctx.fillStyle = prim;
             ctx.fillText(full, W / 2, capY);
@@ -233,12 +233,12 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
           if (line) lines.push(line);
           const lh = size * 1.18;
           const pad = 22 * S;
-          ctx.fillStyle = "#fff";
+          ctx.fillStyle = EXPORT.hookBox;
           lines.forEach((l, i) => {
             const lw = ctx.measureText(l).width;
             ctx.fillRect(W / 2 - lw / 2 - pad, hookY + i * lh - pad / 2, lw + pad * 2, lh + pad);
           });
-          ctx.fillStyle = "#0E1A33";
+          ctx.fillStyle = EXPORT.hookText;
           lines.forEach((l, i) => ctx.fillText(l, W / 2, hookY + i * lh + (lh - size) / 2));
         }
       }
@@ -270,9 +270,9 @@ export default function VerticalPreview({ video, clip, range, options, facecam, 
           ctx.direction = "ltr";
           const y = top ? m + lh + (lh ? 10 * S : 0) : H - m - lh - (lh ? 10 * S : 0);
           ctx.lineWidth = 3 * S * 2;
-          ctx.strokeStyle = "rgba(0,0,0,0.6)";
+          ctx.strokeStyle = EXPORT.thinOutline;
           ctx.strokeText(`@${brand.handle}`, right ? W - m : m, y);
-          ctx.fillStyle = "#fff";
+          ctx.fillStyle = EXPORT.handle;
           ctx.fillText(`@${brand.handle}`, right ? W - m : m, y);
         }
       }

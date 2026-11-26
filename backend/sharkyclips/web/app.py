@@ -1083,6 +1083,7 @@ def _settings_view() -> dict:
             "fast_analysis": bool(cfg.get("fast_analysis")),
             "glossary": [str(t) for t in glossary],
             "ui_motion": cfg.get("ui_motion") if cfg.get("ui_motion") in MOTION else "full",
+            "ui_personal": _personal(cfg),
             "youtube_daily_quota": int(cfg.get("youtube_daily_quota") or 10000),
             "full_upload_default": cfg.get("full_upload_default") is not False,
             "full_upload_time": str(cfg.get("full_upload_time") or "20:00"),
@@ -1090,6 +1091,12 @@ def _settings_view() -> dict:
 
 
 MOTION = ("full", "reduced", "off")
+
+
+def _personal(cfg: dict) -> dict | None:
+    from .. import personal
+
+    return personal.clean(cfg.get("ui_personal"))
 
 
 PERF_BOOLS = ("perf_pause_fullscreen", "perf_pause_video", "perf_pause_busy", "perf_idle_only")
@@ -1233,6 +1240,19 @@ def api_settings_put(body: dict) -> dict:
         changes["ui_motion"] = body["ui_motion"]
     if "ui_theme" in body:
         changes["ui_theme"] = "light" if body["ui_theme"] == "light" else "dark"
+    if "ui_personal" in body:  # 1.2.69 Settings > Personalization (checked: it is written into pages)
+        from .. import personal
+
+        p = personal.clean(body["ui_personal"])
+        if p is None and body["ui_personal"] is not None:
+            raise SharkyClipsError("This isn't a SharkyClips theme.")
+        changes["ui_personal"] = p  # None: forget it (every browser keeps its own until it changes)
+    if "ui_splash" in body:
+        from .. import welcome as W
+
+        sp = W.clean_splash(body["ui_splash"])
+        if sp is not None:
+            changes["ui_splash"] = sp
     if "youtube_daily_quota" in body:
         changes["youtube_daily_quota"] = max(100, min(10_000_000, int(body["youtube_daily_quota"])))
     changes.update(_perf_changes(body))

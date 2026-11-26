@@ -16,7 +16,7 @@
    otomatik yükleme kapalıyken de aynı sessizlik vardı.
 4. **Gizli kalan video "yayında" görünüyordu.** Bir kez herkese açık yükleme olduysa, sonradan gizli
    kalan videolar uygulamada "yayında" diye görünüyordu.
-5. **Instagram:** hesabın askıya alındığı için (1.2.62) otomatik paylaşım kapalı, sadece Elle mod var;
+5. **Instagram:** (26 Kasım güncellemesi: hesap yeniden aktif; güvenli ayarlar aynen kaldı, bkz. phase-d2.md) hesabın askıya alındığı için (1.2.62) otomatik paylaşım kapalı, sadece Elle mod var;
    ayrıca 4 saat kuralı gönderiyi sessizce saatler sonrasına bir hatırlatmaya kaydırıyordu.
 6. **TikTok:** otomatik paylaşım (TikTok Studio'yu tarayıcıda süren) kırılgan: CAPTCHA / giriş
    ekranında duruyor; günlük 3 sınırı fazlasını sonraki günlere kaydırıyordu. Kayıtlarda şimdiye kadar
@@ -70,7 +70,7 @@ değişmemiş, 1.2.66 testleri geçici bir test klasöründe çalışmış. Sili
    (senin girişin çalışmaya devam eder); çözüm doğrulama (docs/google-verification.md). N küçükse
    sorun yok.
 2. **TikTok otomatik paylaşımı** istersen Ayarlar → Platformlar'dan tekrar aç (deneme özelliği).
-3. **Instagram** hesabın askıda olduğu sürece sadece elle; hesap düzelince yine "Elle yükle" ile.
+3. **Instagram** (26 Kasım: hesap yeniden aktif) hesabın askıda olduğu sürece sadece elle; hesap düzelince yine "Elle yükle" ile.
 4. 22 Kasım'da takılı kalan klip ("2026-11-20 18-03-12", c01) uygulamada artık "dikkat" durumunda,
    nedeniyle birlikte duruyor; istersen kartından **Yeniden dene** ile şimdi yükle. 4 gün sonra
    kendiliğinden herkese açık yüklenmesin diye bekletiyorum.
@@ -100,7 +100,7 @@ not run since), and a read-only YouTube Data API listing of the channel's last 5
 | 3 | Daily limit + automatic rollover | 22 Nov batch: c02 now, c03/c09/c11 planned 23 Nov 04:30 / 11:00 / 21:00 | removed; everything now; a choice for what doesn't fit |
 | 4 | Other silent waits | scheduler: `governor:` (paused while gaming), not connected / `publish_auto` off returned without a word | `waiting` / `error` on the clip, shown on the card |
 | 5 | Private shown as published | `row_status` only said "locked" when the lock state wasn't "unlocked" | always "private" + YouTube Studio button |
-| 6 | Instagram never automatic | 1.2.50 `META_AUTOMATION=False`, 1.2.62 off by default (account suspended); 4 h pace moved "now" to a reminder hours later | stays Manual (honest); pace = a warning only; "Upload manually" everywhere |
+| 6 | Instagram never automatic | 1.2.50 `META_AUTOMATION=False`, 1.2.62 off by default (account suspended then; active again since 2026-11-26, see phase-d2.md); 4 h pace moved "now" to a reminder hours later | stays Manual (honest); pace = a warning only; "Upload manually" everywhere |
 | 7 | TikTok automation fragile + cap moved posts to later days | `platform_modes.tiktok = browser`; one TikTok post ever (22 Nov); `browser_slot` moved posts to the next day with room | by hand by default (once, `tiktok_manual_default_v1`); a full day says "upload this one by hand" |
 | 8 | Easy had its own upload path ("Auto" = best-time plan) | `web/easy.upload(when="auto")` | Easy = the Share board (same engine as Pro) |
 | - | NOT a cause: forced private | channel: all 50 latest uploads public; `unlocked.json` since 1 Nov; Google 2026-11-02: unverified projects are no longer restricted to private | detection kept (a channel setting can still keep one private) |
@@ -128,7 +128,7 @@ Instagram quota file 15 Nov. Nothing to delete or cancel.
 5. **Library "auto" = now; a picked time is kept exactly.** `schedule(mode="auto")` no longer spreads
    over release times; manual times are never moved to another slot (Pro can still schedule a date).
 6. **Instagram pace**: a warning row in the plan + a notice in the confirm dialog; never a delay.
-   Instagram stays Manual (Meta suspended the account; never re-enable automation without being asked).
+   Instagram stays Manual (Meta suspended the account in 1.2.62; it is active again since 2026-11-26, the safe settings stay; never re-enable automation without being asked).
 7. **TikTok by hand by default**: a one-time migration switched the user's `browser` mode to `semi`
    (`tiktok_was_auto` remembers it). Automatic posting is labelled a test feature in the Share bar.
 8. **One manual mechanism for all platforms** (`web/manual.py`, `<project>/manual.json`), separate
