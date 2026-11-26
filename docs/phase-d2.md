@@ -146,6 +146,9 @@ Pro editör ve Kişiselleştirme paneli her görünümde: `phase-d2/pro-editor-*
   High contrast in Turkish + Arabic x 3 sizes (1024x700, 1366x768, phone) x light / dark (they
   change colours and corners, not sizes; `LAYOUT_PRESETS_FULL=1` runs everything).
 - Axe: every screen + dialog in all 4 presets x light / dark.
+- CI: the first 1.2.69 run hit the Layout job's 45-minute limit (it already took 30 minutes in
+  1.2.68). Split: "Layout" = Classic (layout + axe), new parallel job "Layout (theme presets,
+  personalization)" = the other three presets (layout + axe) + `personalize-check.mjs`.
 - New tests: `test_theme_tokens.py` (scan + AA for every preset x mode + cascade),
   `test_personalize.py` (contrast maths via Node, setting / splash validation, result page),
   `test_import_history.py` (fingerprint.ts == Python, the two endpoints).
