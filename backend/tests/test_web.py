@@ -34,8 +34,18 @@ def test_settings_reject_unknown_mode():
     assert r.status_code >= 400
 
 
-def test_projects_empty():
-    assert client.get("/api/projects").json() == []
+def test_projects_empty(tmp_path):
+    """An empty workspace lists no projects. 1.2.75: its own empty folder, so it doesn't depend on
+    which test files ran before it on the same pytest-xdist worker."""
+    from sharkyclips import config
+
+    old = config.get("workspace_dir")
+    config.update(workspace_dir=str(tmp_path / "empty-ws"))
+    try:
+        (tmp_path / "empty-ws").mkdir()
+        assert client.get("/api/projects").json() == []
+    finally:
+        config.update(workspace_dir=old)
 
 
 def test_update_status_without_fetch():
