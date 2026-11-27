@@ -9,6 +9,121 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.73] - 2026-11-27
+A small fix for the new Photo slideshow in the Library.
+
+### Fixed
+- **A slideshow's picture in the Library was too tall** and spilled out of its small box. It now fits, like every other clip.
+- **The project link of a slideshow** (in the Library and on the Share screen) now opens the slideshow, not an empty project page.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Kütüphanedeki yeni Fotoğraf slayt gösterisi için küçük bir düzeltme.
+
+### Düzeltmeler
+- **Kütüphanede slayt gösterisinin resmi fazla uzundu** ve küçük kutusundan taşıyordu. Artık diğer klipler gibi sığıyor.
+- **Bir slayt gösterisinin proje bağlantısı** (Kütüphanede ve Paylaş ekranında) artık boş bir proje sayfasını değil, slayt gösterisini açıyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Un arreglo pequeño para la nueva presentación de fotos en la Biblioteca.
+
+### Correcciones
+- **La imagen de una presentación en la Biblioteca era demasiado alta** y se salía de su cuadro. Ahora cabe, como cualquier otro clip.
+- **El enlace al proyecto de una presentación** (en la Biblioteca y en la pantalla Compartir) ahora abre la presentación, no una página de proyecto vacía.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Uma correção pequena para a nova apresentação de fotos na Biblioteca.
+
+### Correções
+- **A imagem de uma apresentação na Biblioteca era alta demais** e saía da caixinha. Agora cabe, como qualquer outro clipe.
+- **O link do projeto de uma apresentação** (na Biblioteca e na tela Compartilhar) agora abre a apresentação, não uma página de projeto vazia.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Eine kleine Korrektur für die neue Foto-Diashow in der Bibliothek.
+
+### Behoben
+- **Das Bild einer Diashow in der Bibliothek war zu hoch** und ragte aus seinem kleinen Feld. Jetzt passt es, wie bei jedem anderen Clip.
+- **Der Projekt-Link einer Diashow** (in der Bibliothek und auf dem Teilen-Bildschirm) öffnet jetzt die Diashow statt einer leeren Projektseite.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Une petite correction pour le nouveau diaporama photo dans la Bibliothèque.
+
+### Corrections
+- **L’image d’un diaporama dans la Bibliothèque était trop haute** et dépassait de son petit cadre. Elle tient maintenant, comme tous les autres clips.
+- **Le lien de projet d’un diaporama** (dans la Bibliothèque et sur l’écran Partager) ouvre maintenant le diaporama, pas une page de projet vide.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Kis javítás az új fotó-diavetítéshez a Könyvtárban.
+
+### Javítások
+- **A diavetítés képe a Könyvtárban túl magas volt,** és kilógott a kis keretéből. Most már elfér, mint bármelyik másik klip.
+- **A diavetítés projektlinkje** (a Könyvtárban és a Megosztás képernyőn) most a diavetítést nyitja meg, nem egy üres projektoldalt.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшое исправление для нового слайд-шоу из фото в Библиотеке.
+
+### Исправления
+- **Картинка слайд-шоу в Библиотеке была слишком высокой** и вылезала из своей рамки. Теперь она помещается, как у любого другого клипа.
+- **Ссылка на проект слайд-шоу** (в Библиотеке и на экране «Поделиться») теперь открывает само слайд-шоу, а не пустую страницу проекта.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+إصلاح صغير لعرض الصور الجديد في المكتبة.
+
+### إصلاحات
+- **كانت صورة عرض الصور في المكتبة طويلة جدًا** وتخرج من مربعها الصغير. أصبحت الآن تتسع مثل أي مقطع آخر.
+- **رابط مشروع عرض الصور** (في المكتبة وشاشة المشاركة) يفتح الآن عرض الصور، لا صفحة مشروع فارغة.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+针对媒体库中新的照片幻灯片的一个小修复。
+
+### 修复
+- **媒体库中幻灯片的图片太高**，会超出它的小框。现在它和其他剪辑一样能正常放下。
+- **幻灯片的项目链接**（在媒体库和分享页面中）现在会打开幻灯片本身，而不是一个空的项目页面。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+ライブラリでの新しい写真スライドショーに関する小さな修正です。
+
+### 修正
+- **ライブラリでスライドショーの画像が縦に長すぎて**、小さな枠からはみ出していました。今はほかのクリップと同じように収まります。
+- **スライドショーのプロジェクトリンク**（ライブラリと共有画面）が、空のプロジェクトページではなくスライドショーを開くようになりました。
+
+</details>
+
 ## [1.2.72] - 2026-11-27
 New: Photo slideshow. Turn 2 to 20 photos (for example a job from before to after) into a vertical video for Reels, Shorts and TikTok.
 

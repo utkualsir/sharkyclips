@@ -206,7 +206,7 @@ def build(root: Path) -> str:
     return PID
 
 
-SLIDESHOW = "layout-check-slideshow-0001"
+SLIDESHOW = "slideshow_layout-check-0001"
 
 
 def _slideshow(home: Path, ws: Path) -> None:

@@ -59,6 +59,7 @@ MAX_PHOTO_BYTES = 60 * 1024 * 1024
 MAX_PIXELS = 120_000_000  # a 108 MP phone photo still opens; a "decompression bomb" doesn't
 THUMB = 360
 CID = "c01"
+ID_PREFIX = "slideshow_"  # the UI routes these ids to the slideshow editor (router.ts)
 VERSION = 1
 
 # Shorts / Reels / TikTok cover these parts of a 1080 x 1920 video with their own buttons, the
@@ -935,7 +936,8 @@ def create(title: str = "") -> Project:
     """A new, empty slideshow project."""
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M")
     title = " ".join(str(title or "").split())[:80]
-    pid = f"slideshow-{slugify(title, 24) + '-' if title else ''}{uuid.uuid4().hex[:8]}"
+    # "slideshow_": slugify() never makes an underscore, so no stream project id can look like this
+    pid = f"{ID_PREFIX}{slugify(title, 24) + '-' if title else ''}{uuid.uuid4().hex[:8]}"
     d = config.workspace_dir() / pid
     d.mkdir(parents=True, exist_ok=False)
     project = Project(pid, d)

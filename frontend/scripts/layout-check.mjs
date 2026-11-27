@@ -86,10 +86,10 @@ const SCREENS = [
   { name: "easy-trash", mode: "easy", hash: "#/trash", ready: ".trash-usage" },
   { name: "updates", mode: "pro", hash: "#/updates", ready: ".updates-item" },
   { name: "easy-updates", mode: "easy", hash: "#/updates", ready: ".updates-item" },
-  // 1.2.72 Photo slideshow (layout-fixture.py makes "layout-check-slideshow-0001")
+  // 1.2.72 Photo slideshow (layout-fixture.py makes "slideshow_layout-check-0001")
   { name: "slideshows", mode: "pro", hash: "#/slideshow", ready: ".ss-recent" },
-  { name: "slideshow", mode: "pro", hash: "#/slideshow/layout-check-slideshow-0001", ready: ".ss-grid" },
-  { name: "easy-slideshow", mode: "easy", hash: "#/slideshow/layout-check-slideshow-0001", ready: ".ss-grid" },
+  { name: "slideshow", mode: "pro", hash: "#/slideshow/slideshow_layout-check-0001", ready: ".ss-grid" },
+  { name: "easy-slideshow", mode: "easy", hash: "#/slideshow/slideshow_layout-check-0001", ready: ".ss-grid" },
 ];
 // LAYOUT_SCREENS=slideshow,easy-home: only those screens (local use; CI checks all of them)
 if (process.env.LAYOUT_SCREENS) {

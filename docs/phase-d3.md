@@ -81,3 +81,8 @@ arayüz dili). Slayt gösterileri normal proje listelerinde görünmez, kendi ek
 15. **YouTube category for slideshows:** People & Blogs (22) instead of Gaming.
 16. **Layout check:** new `LAYOUT_SCREENS` filter for local runs; the fixture gets a synthetic
     slideshow (10 generated pictures) so CI checks the list, the editor (Pro + Easy) and axe.
+17. **1.2.73 (CI fix):** the Layout job found that the Pro Library's small 16:9 thumbnail box let a
+    vertical (slideshow) thumbnail grow out of it; the image is now absolutely positioned and cropped.
+    Slideshow ids start with `slideshow_` (an underscore `slugify` never makes), so `href.project()`
+    can send every project link (Library, Easy Library, Share screen) to the slideshow editor without
+    ever mistaking a stream titled "Slideshow ..." for one.

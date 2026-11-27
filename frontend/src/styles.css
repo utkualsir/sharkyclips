@@ -3603,8 +3603,9 @@ a.edit-note:hover { text-decoration: underline; }
 .lib-row { display: grid; grid-template-columns: 24px 112px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface); }
 .lib-row.selected { border-color: var(--gold-line); }
 .lib-check input { accent-color: var(--gold); width: 16px; height: 16px; }
-.lib-thumb { width: 112px; aspect-ratio: 16 / 9; border-radius: var(--r-sm); overflow: hidden; background: var(--surface-2); display: grid; place-items: center; color: var(--muted); }
-.lib-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lib-thumb { position: relative; width: 112px; aspect-ratio: 16 / 9; border-radius: var(--r-sm); overflow: hidden; background: var(--surface-2); display: grid; place-items: center; color: var(--muted); }
+/* absolute: a 9:16 thumbnail (photo slideshow) is cropped, never taller than the box */
+.lib-thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .lib-main { min-width: 0; display: grid; gap: 4px; }
 .lib-title { font-weight: 500; color: var(--strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lib-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: var(--fs-sm); }

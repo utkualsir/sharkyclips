@@ -350,6 +350,7 @@ def test_api_from_photos_to_the_share_board(cfg, monkeypatch):  # noqa: F811
     c = _client()
     v = c.post("/api/slideshow", json={"title": "Kitchen"}).json()
     pid = v["id"]
+    assert pid.startswith(S.ID_PREFIX) and "_" not in __import__("sharkyclips.project").project.slugify("x_y z")
     from sharkyclips.project import get_project
 
     proj = get_project(pid)

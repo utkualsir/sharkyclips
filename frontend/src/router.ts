@@ -72,7 +72,8 @@ export const href = {
   slideshows: "#/slideshow",
   slideshow: (id: string) => `#/slideshow/${encodeURIComponent(id)}`,
   publish: (view: "list" | "calendar" = "list") => (view === "calendar" ? "#/library/calendar" : "#/library"),
-  project: (id: string) => `#/p/${encodeURIComponent(id)}`,
+  // 1.2.72: a slideshow's id starts with "slideshow_" (stream ids never have an underscore)
+  project: (id: string) => (id.startsWith("slideshow_") ? `#/slideshow/${encodeURIComponent(id)}` : `#/p/${encodeURIComponent(id)}`),
   bestof: (id: string) => `#/p/${encodeURIComponent(id)}/bestof`,
   game: (id: string) => `#/p/${encodeURIComponent(id)}/game`,
   stories: (id: string) => `#/p/${encodeURIComponent(id)}/stories`,
