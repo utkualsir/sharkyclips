@@ -3599,6 +3599,18 @@ const ru: Record<string, string> = {
   "stage.slideshow_photos": "Подготовка фото",
   "stage.slideshow_outro": "Рисуем логотип",
   "stage.slideshow_rendering": "Создаём видео",
+  // 1.2.74: Send feedback / Report a bug
+  "fb.send": "Отправить отзыв",
+  "fb.bug": "Сообщить об ошибке",
+  "fb.idea": "Предложить идею",
+  "fb.hint": "Открывает форму GitHub в браузере. Заполняются только версия приложения и ваша система, и ничего не отправляется, пока вы сами не отправите.",
+  "fb.report": "Сообщить",
+  // 1.2.74: a Helper from a store pairs with a code
+  "assist.store_title": "Установили Helper из магазина?",
+  "assist.store_body": "Если вы добавили SharkyClips Helper из Microsoft Edge Add-ons или Firefox Add-ons, подключите его один раз: нажмите на значок Helper на панели браузера и введите этот код.",
+  "assist.store_code_label": "Код подключения",
+  "assist.store_left": "Действует ещё {m}:{s}",
+  "assist.store_btn": "Показать код подключения",
 };
 
 export default ru;

@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "tr"
+  },
+  "dir": {
+    "message": "ltr"
+  },
+  "name": {
+    "message": "SharkyClips Yardımcısı"
+  },
+  "description": {
+    "message": "Ücretsiz SharkyClips uygulaması için TikTok ve Instagram yüklemeni doldurur. Kontrol eder, Paylaş'a kendin tıklarsın."
+  },
+  "pair_howto": {
+    "message": "SharkyClips'te Ayarlar'ı, sonra Yardımcı rehberini aç ve \"Bağlantı kodunu göster\"e tıkla. Kodu buraya yaz."
+  },
+  "pair_label": {
+    "message": "Bağlantı kodu"
+  },
+  "pair_button": {
+    "message": "Bağlan"
+  },
+  "pair_wrong": {
+    "message": "Bu kod işe yaramadı. SharkyClips'te yeni bir kod göster ve tekrar dene."
+  },
+  "state_ok": {
+    "message": "Bu bilgisayardaki SharkyClips'e bağlı."
+  },
+  "state_no_app": {
+    "message": "SharkyClips bu bilgisayarda çalışmıyor. Başlat ve tekrar dene."
+  },
+  "state_off": {
+    "message": "Henüz SharkyClips'e bağlı değil."
+  },
+  "state_checking": {
+    "message": "Kontrol ediliyor..."
+  },
+  "about": {
+    "message": "Yardımcı yalnızca TikTok ve Instagram sayfalarında çalışır ve yalnızca bu bilgisayardaki SharkyClips ile konuşur. Paylaş'a asla tıklamaz."
+  },
+  "pair_banner": {
+    "message": "Önce SharkyClips Yardımcısını bağla."
+  },
+  "pair_banner_sub": {
+    "message": "Araç çubuğundaki Yardımcı simgesine tıkla ve SharkyClips'in gösterdiği kodu yaz."
+  }
+}

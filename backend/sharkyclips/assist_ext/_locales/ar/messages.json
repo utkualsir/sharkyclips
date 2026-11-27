@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "ar"
+  },
+  "dir": {
+    "message": "rtl"
+  },
+  "name": {
+    "message": "مساعد SharkyClips"
+  },
+  "description": {
+    "message": "يملأ رفعك إلى TikTok وInstagram لتطبيق SharkyClips المجاني. أنت تراجعه وتضغط نشر بنفسك."
+  },
+  "pair_howto": {
+    "message": "في SharkyClips افتح الإعدادات، ثم دليل المساعد، واضغط \"إظهار رمز الاتصال\". اكتب الرمز هنا."
+  },
+  "pair_label": {
+    "message": "رمز الاتصال"
+  },
+  "pair_button": {
+    "message": "اتصال"
+  },
+  "pair_wrong": {
+    "message": "لم يعمل هذا الرمز. اعرض رمزًا جديدًا في SharkyClips وحاول مرة أخرى."
+  },
+  "state_ok": {
+    "message": "متصل بـ SharkyClips على هذا الحاسوب."
+  },
+  "state_no_app": {
+    "message": "SharkyClips لا يعمل على هذا الحاسوب. شغّله وحاول مرة أخرى."
+  },
+  "state_off": {
+    "message": "غير متصل بـ SharkyClips بعد."
+  },
+  "state_checking": {
+    "message": "جارٍ التحقق..."
+  },
+  "about": {
+    "message": "يعمل المساعد فقط على صفحات TikTok وInstagram ولا يتواصل إلا مع SharkyClips على هذا الحاسوب. لا يضغط نشر أبدًا."
+  },
+  "pair_banner": {
+    "message": "اربط مساعد SharkyClips أولًا."
+  },
+  "pair_banner_sub": {
+    "message": "اضغط أيقونة المساعد في شريط الأدوات واكتب الرمز الذي يعرضه SharkyClips."
+  }
+}

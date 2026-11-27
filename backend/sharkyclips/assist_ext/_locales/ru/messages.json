@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "ru"
+  },
+  "dir": {
+    "message": "ltr"
+  },
+  "name": {
+    "message": "SharkyClips Helper"
+  },
+  "description": {
+    "message": "Заполняет публикацию в TikTok и Instagram для бесплатного SharkyClips. Вы проверяете и сами нажимаете «Опубликовать»."
+  },
+  "pair_howto": {
+    "message": "В SharkyClips откройте «Настройки», затем руководство по Helper, и нажмите «Показать код подключения». Введите код здесь."
+  },
+  "pair_label": {
+    "message": "Код подключения"
+  },
+  "pair_button": {
+    "message": "Подключить"
+  },
+  "pair_wrong": {
+    "message": "Этот код не подошёл. Покажите новый код в SharkyClips и попробуйте снова."
+  },
+  "state_ok": {
+    "message": "Подключено к SharkyClips на этом ПК."
+  },
+  "state_no_app": {
+    "message": "SharkyClips не запущен на этом ПК. Запустите его и попробуйте снова."
+  },
+  "state_off": {
+    "message": "Ещё не подключено к SharkyClips."
+  },
+  "state_checking": {
+    "message": "Проверка..."
+  },
+  "about": {
+    "message": "Helper работает только на страницах TikTok и Instagram и общается только с SharkyClips на этом ПК. Он никогда не нажимает «Опубликовать»."
+  },
+  "pair_banner": {
+    "message": "Сначала подключите SharkyClips Helper."
+  },
+  "pair_banner_sub": {
+    "message": "Нажмите на значок Helper на панели инструментов и введите код, который показывает SharkyClips."
+  }
+}

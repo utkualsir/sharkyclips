@@ -248,8 +248,10 @@ def test_outro_uses_the_logo_geometry_of_the_app():
     spec = importlib.util.spec_from_file_location("make_icons", ROOT / "installer" / "make_icons.py")
     mi = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mi)
-    assert (S.FIN, S.PLAY, S.TILE, S.WAVE, S.WAVE_Y, S.WAVE_W) == (mi.FIN, mi.PLAY, mi.TILE, mi.WAVE, mi.WAVE_Y, mi.WAVE_W)
-    assert (S.WATER, S.SIGN, S.INK) == (mi.WATER, mi.SIGN, mi.INK)
+    assert (S.FIN, S.PLAY, S.WAVE, S.WAVE_Y, S.WAVE_W) == (mi.FIN, mi.PLAY, mi.WAVE, mi.WAVE_Y, mi.WAVE_W)
+    assert (S.TILE_R, S.EDGE_W, S.GLYPH) == (mi.TILE_R, mi.EDGE_W, mi.GLYPH)
+    assert (S.NAVY, S.TILE_DARK, S.EDGE_DARK, S.WHITE, S.BLUE, S.GOLD) == (
+        mi.NAVY, mi.TILE_DARK, mi.EDGE_DARK, mi.WHITE, mi.BLUE, mi.GOLD)
 
 
 def test_outro_animates_and_ends_on_a_clean_logo(tmp_path):
@@ -257,11 +259,11 @@ def test_outro_animates_and_ends_on_a_clean_logo(tmp_path):
     last = S.outro_frame(S.OUTRO_S - 1 / S.FPS, 216, 384)
     mid = S.outro_frame(0.5, 216, 384)
 
-    def yellow(img) -> int:
+    def white(img) -> int:  # the fin and the wordmark (the background is navy)
         px = img.get_flattened_data() if hasattr(img, "get_flattened_data") else img.getdata()
-        return sum(1 for r, g, b in px if r > 220 and g > 180 and b < 120)
+        return sum(1 for r, g, b in px if r > 235 and g > 235 and b > 235)
 
-    assert yellow(first) == 0 and yellow(last) > 1000 and 0 < yellow(mid)  # it moves, the logo lands
+    assert white(first) == 0 and white(last) > 1000 and 0 < white(mid)  # it moves, the logo lands
     assert first.getpixel((5, 5)) == last.getpixel((5, 5))  # same deep-water background
     n = S.write_outro(tmp_path / "o", 108, 192)
     assert n == round(S.OUTRO_S * S.FPS) == len(list((tmp_path / "o").glob("o*.png")))

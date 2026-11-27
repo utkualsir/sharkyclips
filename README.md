@@ -19,7 +19,7 @@ No account, no cloud, no credits, no watermark.<br>
 
 <p align="center">
   <a href="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml"><img src="https://github.com/utkualsir/sharkyclips/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.73-0E1A33" alt="Version 1.2.73"></a>
+  <a href="https://github.com/utkualsir/sharkyclips/releases/latest"><img src="https://img.shields.io/badge/version-1.2.74-0E1A33" alt="Version 1.2.74"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0E1A33" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/Windows%20%7C%20macOS-0E1A33?logo=windows&logoColor=white" alt="Windows and macOS">
   <img src="https://img.shields.io/badge/runs-100%25%20locally-2ea043" alt="Runs 100% locally">
@@ -41,10 +41,7 @@ No account, no cloud, no credits, no watermark.<br>
   <a href="#türkçe">Türkçe</a>
 </p>
 
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/project-light.png">
-  <img src="docs/screenshots/project-dark.png" alt="SharkyClips project screen: the video with its Hype Map, a live 9:16 preview and the AI-ranked clip candidates">
-</picture>
+<img src="docs/screenshots/v1274-easy-project.png" alt="SharkyClips in Easy mode: a stream with its ready 9:16 clips and one Share button for YouTube, TikTok and Instagram">
 
 ## Highlights
 
@@ -63,22 +60,22 @@ No account, no cloud, no credits, no watermark.<br>
 
 ## See it in action
 
-Review a candidate, accept it, render. The clips land in the Clips tab, ready to download.
+Open a stream, watch a clip, share it. Made with a synthetic demo stream (no real person or game).
 
-![Demo: selecting clip candidates, accepting two of them and rendering them as 9:16 clips](docs/demo.gif)
+![Demo: the home screen, a stream with its clips and the Share window](docs/demo-v1274.gif)
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/screenshots/library-dark.png" alt="Library"><br><sub><b>Library</b>: every stream with live progress</sub></td>
-    <td width="50%"><img src="docs/screenshots/clips-light.png" alt="Rendered clips"><br><sub><b>Clips</b>: rendered 9:16 clips, playable and downloadable</sub></td>
+    <td width="50%"><img src="docs/screenshots/v1274-easy-home.png" alt="Home screen"><br><sub><b>Create clips</b>: drop a video or paste a link</sub></td>
+    <td width="50%"><img src="docs/screenshots/v1274-share.png" alt="Share window"><br><sub><b>Share</b>: YouTube, TikTok and Instagram in one go</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/bestof-light.png" alt="Best-of video"><br><sub><b>Best-of video</b>: 16:9 compilation with chapters</sub></td>
-    <td><img src="docs/screenshots/settings-dark.png" alt="Settings"><br><sub><b>Settings</b>: language, performance mode, accounts, local AI</sub></td>
+    <td><img src="docs/screenshots/v1274-pro-project.png" alt="Pro mode project"><br><sub><b>Pro mode</b>: Hype Map, live 9:16 preview, every setting</sub></td>
+    <td><img src="docs/screenshots/v1274-slideshow.png" alt="Photo slideshow"><br><sub><b>Photo slideshow</b>: 2-20 photos into a vertical video</sub></td>
   </tr>
 </table>
 
-More screenshots, in both themes, are in [docs/screenshots](docs/screenshots).
+More screenshots and the guide in 11 languages: **[the SharkyClips website](https://utkualsir.github.io/sharkyclips-site/)**.
 
 ## How it works
 
@@ -121,7 +118,7 @@ it stopped. Details: **[docs/how-it-works.md](docs/how-it-works.md)**.
 
 | Layer | Built with |
 |---|---|
-| UI | React 18, TypeScript, Vite; 7 locales with a completeness check in CI; dark and light themes; axe-checked accessibility |
+| UI | React 19, TypeScript, Vite; 11 locales with a completeness check in CI; dark and light themes; axe-checked accessibility |
 | Server | Python 3.11-3.13, FastAPI + Uvicorn, a persistent multi-lane job queue, a resource governor (psutil, NVML) |
 | Speech | faster-whisper (CUDA / CPU), mlx-whisper (Apple Silicon), a CTC aligner for word timing, sherpa-onnx (laughter, voices) |
 | Analysis | NumPy / SciPy signal scoring, librosa (music mode), OpenCV (facecam), RapidOCR (game HUD) |

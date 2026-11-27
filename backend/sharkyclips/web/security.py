@@ -166,6 +166,8 @@ def origin_matches(origin: str, host: str) -> bool:
 # (chrome-extension://...) with its own key; nothing else under this path is reachable cross-site
 EXT_API = "/api/assist/ext/"
 EXT_HEADER = "x-sharkyclips-assist"
+EXT_PAIR = EXT_API + "pair"  # 1.2.74: a store copy of the Helper asks for its key with a code
+EXT_ORIGINS = ("chrome-extension://", "moz-extension://", "extension://")
 
 
 def check(method: str, path: str, headers: Headers) -> tuple[int, str, str] | None:
@@ -176,6 +178,11 @@ def check(method: str, path: str, headers: Headers) -> tuple[int, str, str] | No
     if path.startswith(EXT_API):
         from .. import assist
 
+        if path == EXT_PAIR and method == "POST":
+            # no key yet: only a browser extension (a page can't fake its Origin), code checked in the route
+            if (headers.get("origin") or "").startswith(EXT_ORIGINS):
+                return None
+            return 403, "ext_origin", "Only the SharkyClips Helper can pair."
         if assist.token_ok(headers.get(EXT_HEADER)):
             return None
         return 403, "ext_key", "Missing or wrong SharkyClips Helper key."

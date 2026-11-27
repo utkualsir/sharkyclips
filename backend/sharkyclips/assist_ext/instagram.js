@@ -35,6 +35,7 @@
     return "";
   };
 
+  if (!(await SCX.claim())) return; // 1.2.74: another copy of the Helper fills this page (or none is paired)
   let r = await SCX.send({ type: "task", platform: P, url: location.href });
   let task = r && r.task;
   if (!task) return;

@@ -69,13 +69,17 @@ SAFE = {"left": 70, "top": 250, "right": 170, "bottom": 520}
 FONT_FILE = Path(__file__).resolve().parent / "assets" / "fonts" / "ArchivoSC-ExtraBold.ttf"
 FONT_NAME = "Archivo SC"  # Archivo (the UI font, OFL) as a static ExtraBold TTF: libass can't read WOFF2
 
-# Logo colours and geometry: the same shapes as installer/make_icons.py (test_slideshow checks it)
-WATER = "#0B1D22"
-INK = "#0E2A30"
-SIGN = "#FFD23F"
-PAPER = "#F3F2EE"
-CUT = 16
-TILE = [(0.0, 0.0), (64.0 - CUT, 0.0), (64.0, float(CUT)), (64.0, 64.0), (0.0, 64.0)]
+# Logo colours and geometry: the same shapes as installer/make_icons.py (test_slideshow checks it).
+# 1.2.74: the Classic look (navy rounded tile, white fin, blue water line, gold accent).
+NAVY = "#0A1020"
+TILE_DARK = "#0E1A33"
+EDGE_DARK = "#2B3E66"
+WHITE = "#FFFFFF"
+BLUE = "#5B9BFF"
+GOLD = "#D9B56A"
+TILE_R = 17.0
+EDGE_W = 1.6
+GLYPH = 20 / 30 * 64 / 52
 FIN = [("M", (13.0, 44.0)), ("C", (17.5, 33.0), (28.0, 18.0), (48.5, 11.5)),
        ("C", (42.0, 20.0), (39.5, 32.0), (46.5, 44.0)), ("Z",)]
 PLAY = [(25.5, 30.0), (25.5, 40.5), (35.0, 35.25)]
@@ -509,6 +513,18 @@ def fin_points() -> list[tuple[float, float]]:
     return pts
 
 
+def tile_points(inset: float = 0.0, n: int = 10) -> list[tuple[float, float]]:
+    """The rounded square tile (make_icons: TILE_R) as a polygon on the 64 grid."""
+    r = max(0.5, TILE_R - inset)
+    lo, hi = inset, 64.0 - inset
+    pts: list[tuple[float, float]] = []
+    for cx, cy, a0 in ((hi - r, lo + r, -90), (hi - r, hi - r, 0), (lo + r, hi - r, 90), (lo + r, lo + r, 180)):
+        for i in range(n + 1):
+            a = math.radians(a0 + 90 * i / n)
+            pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
+    return pts
+
+
 def wave_points() -> list[tuple[float, float]]:
     x0, y = WAVE[0]
     pts = [(x0, y)]
@@ -550,7 +566,7 @@ def ease_out_back(p: float, s: float = 1.6) -> float:
 def outro_frame(t: float, w: int = W, h: int = H):
     """One frame of the logo outro at t seconds (0 .. OUTRO_S).
 
-    0.05-0.45  the yellow sign tile swings in (scale with a small overshoot, a little turn)
+    0.05-0.45  the navy tile swings in (scale with a small overshoot, a little turn)
     0.25-0.70  the water line draws itself from left to right
     0.30-0.78  the fin surfaces out of the water
     0.62-0.92  the play triangle opens in the fin (the mark is a shark AND a play button)
@@ -576,52 +592,57 @@ def outro_frame(t: float, w: int = W, h: int = H):
     unit = tile_px * ss / 64 * scale
     mid = big / 2
 
-    def tr(pts, dy: float = 0.0):
+    def tr(pts, dy: float = 0.0, g: float = 1.0):
+        """64-grid points -> layer pixels; g = the mark's scale inside the tile (GLYPH)."""
         out = []
         ca, sa = math.cos(angle), math.sin(angle)
         for x, y in pts:
-            gx, gy = (x - 32) * unit, (y + dy - 32) * unit
+            gx, gy = (x - 32) * g * unit, (y + dy - 32) * g * unit
             out.append((mid + gx * ca - gy * sa, mid + gx * sa + gy * ca))
         return out
 
     if scale > 0:
         alpha = int(255 * _clamp01(p_tile * 2.2))
         tile_mask = Image.new("L", (big, big), 0)
-        ImageDraw.Draw(tile_mask).polygon(tr(TILE), fill=255)
+        ImageDraw.Draw(tile_mask).polygon(tr(tile_points()), fill=255)
+        inner = Image.new("L", (big, big), 0)
+        ImageDraw.Draw(inner).polygon(tr(tile_points(EDGE_W)), fill=255)
         shadow = Image.new("L", (big, big), 0)
-        ImageDraw.Draw(shadow).polygon(tr([(x + 1.2, y + 2.2) for x, y in TILE]), fill=110)
+        ImageDraw.Draw(shadow).polygon(tr([(x + 1.2, y + 2.2) for x, y in tile_points()]), fill=110)
         layer.paste((0, 0, 0, 255), (0, 0), shadow)
-        layer.paste(_rgb(SIGN) + (255,), (0, 0), tile_mask)
+        layer.paste(_rgb(EDGE_DARK) + (255,), (0, 0), tile_mask)
+        layer.paste(_rgb(TILE_DARK) + (255,), (0, 0), inner)
         # the fin rises out of the water: clipped at the water line, inside the tile
         rise = ease_out_cubic(_seg(t, 0.30, 0.78))
         if rise > 0:
             fin = Image.new("L", (big, big), 0)
             fd = ImageDraw.Draw(fin)
-            fd.polygon(tr(fin_points(), dy=(1 - rise) * 36.0), fill=255)
+            fd.polygon(tr(fin_points(), dy=(1 - rise) * 36.0, g=GLYPH), fill=255)
             hole = ease_out_back(_seg(t, 0.62, 0.92), 2.0)
             if hole > 0:
                 c0 = (sum(x for x, _ in PLAY) / 3, sum(y for _, y in PLAY) / 3)
                 tri = [(c0[0] + (x - c0[0]) * hole, c0[1] + (y - c0[1]) * hole) for x, y in PLAY]
-                fd.polygon(tr(tri, dy=(1 - rise) * 36.0), fill=0)
+                fd.polygon(tr(tri, dy=(1 - rise) * 36.0, g=GLYPH), fill=0)
             water = Image.new("L", (big, big), 0)
-            ImageDraw.Draw(water).polygon(tr([(-8, -8), (72, -8), (72, WAVE_Y - 1.0), (-8, WAVE_Y - 1.0)]), fill=255)
-            fin = ImageChops.multiply(ImageChops.multiply(fin, water), tile_mask)
-            layer.paste(_rgb(WATER) + (255,), (0, 0), fin)
+            ImageDraw.Draw(water).polygon(
+                tr([(-8, -8), (72, -8), (72, WAVE_Y - 1.0), (-8, WAVE_Y - 1.0)], g=GLYPH), fill=255)
+            fin = ImageChops.multiply(ImageChops.multiply(fin, water), inner)
+            layer.paste(_rgb(WHITE) + (255,), (0, 0), fin)
         draw_p = ease_out_cubic(_seg(t, 0.25, 0.70))
         if draw_p > 0:
             pts = wave_points()
             upto = max(2, int(len(pts) * draw_p))
             wl = Image.new("L", (big, big), 0)
             wd = ImageDraw.Draw(wl)
-            line = tr(pts[:upto])
-            r = WAVE_W * unit / 2
+            line = tr(pts[:upto], g=GLYPH)
+            r = WAVE_W * GLYPH * unit / 2
             for (x0, y0), (x1, y1) in zip(line, line[1:]):
                 steps = max(1, int(math.hypot(x1 - x0, y1 - y0) / 2))
                 for i in range(steps + 1):
                     x, y = x0 + (x1 - x0) * i / steps, y0 + (y1 - y0) * i / steps
                     wd.ellipse([x - r, y - r, x + r, y + r], fill=255)
-            wl = ImageChops.multiply(wl, tile_mask)
-            layer.paste(_rgb(WATER) + (255,), (0, 0), wl)
+            wl = ImageChops.multiply(wl, inner)
+            layer.paste(_rgb(BLUE) + (255,), (0, 0), wl)
         if alpha < 255:
             a = layer.getchannel("A").point(lambda v: v * alpha // 255)
             layer.putalpha(a)
@@ -634,7 +655,7 @@ def outro_frame(t: float, w: int = W, h: int = H):
         rad = tile_px * (0.62 + 0.55 * ease_out_cubic(rp))
         width = max(1, int(6 * k * (1 - rp) + 1))
         a = int(170 * (1 - rp))
-        rd.ellipse([cx - rad, cy - rad, cx + rad, cy + rad], outline=_rgb(SIGN) + (a,), width=width)
+        rd.ellipse([cx - rad, cy - rad, cx + rad, cy + rad], outline=_rgb(GOLD) + (a,), width=width)
         frame.alpha_composite(ring)
     frame.alpha_composite(small, (int(cx - box / 2), int(cy - box / 2)))
     # ---- the wordmark
@@ -648,13 +669,13 @@ def outro_frame(t: float, w: int = W, h: int = H):
         wa = td.textlength(a_txt, font=font)
         wb = td.textlength(b_txt, font=font)
         x0 = (w - wa - wb) / 2
-        td.text((x0, size * 0.3), a_txt, font=font, fill=_rgb(PAPER) + (255,))
-        td.text((x0 + wa, size * 0.3), b_txt, font=font, fill=_rgb(SIGN) + (255,))
+        td.text((x0, size * 0.3), a_txt, font=font, fill=_rgb(WHITE) + (255,))
+        td.text((x0 + wa, size * 0.3), b_txt, font=font, fill=_rgb(WHITE) + (255,))
         up = _seg(t, 0.95, 1.30)
-        if up > 0:  # a short sign-yellow bar sweeps in under the name
+        if up > 0:  # a short gold bar sweeps in under the name
             bw = (wa + wb) * 0.28 * ease_out_cubic(up)
             by = size * 1.55
-            td.rectangle([w / 2 - bw / 2, by, w / 2 + bw / 2, by + max(2, 7 * k)], fill=_rgb(SIGN) + (255,))
+            td.rectangle([w / 2 - bw / 2, by, w / 2 + bw / 2, by + max(2, 7 * k)], fill=_rgb(GOLD) + (255,))
         if wp < 1:
             txt.putalpha(txt.getchannel("A").point(lambda v: int(v * wp)))
         ty = int(cy + tile_px * 0.5 + 70 * k + (1 - wp) * 46 * k)
@@ -666,17 +687,17 @@ _BG_CACHE: dict[tuple[int, int], object] = {}
 
 
 def _outro_bg(w: int, h: int):
-    """Deep water with a soft lighter glow behind the logo (cached per size)."""
+    """Classic navy with a soft blue glow behind the logo (cached per size)."""
     from PIL import Image, ImageDraw, ImageFilter
 
     key = (w, h)
     if key not in _BG_CACHE:
-        img = Image.new("RGBA", (w, h), _rgb(WATER) + (255,))
+        img = Image.new("RGBA", (w, h), _rgb(NAVY) + (255,))
         glow = Image.new("L", (w, h), 0)
         r = w * 0.55
         ImageDraw.Draw(glow).ellipse([w / 2 - r, h * 0.43 - r, w / 2 + r, h * 0.43 + r], fill=60)
         glow = glow.filter(ImageFilter.GaussianBlur(w / 6))
-        img.paste((40, 92, 104, 255), (0, 0), glow)
+        img.paste((34, 58, 110, 255), (0, 0), glow)
         _BG_CACHE.clear()
         _BG_CACHE[key] = img
     return _BG_CACHE[key]

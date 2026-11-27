@@ -1,0 +1,175 @@
+{
+  "nav": {"index": "Kezdőlap", "features": "Funkciók", "download": "Letöltés", "faq": "GYIK", "updates": "Újdonságok", "contact": "Kapcsolat"},
+  "ui": {
+    "skip": "Ugrás a tartalomra",
+    "nav_label": "Fő menü",
+    "lang_label": "Nyelv",
+    "theme_toggle": "Váltás sötét és világos téma között",
+    "close": "Bezárás",
+    "langhint": "Ez az oldal magyarul is elérhető.",
+    "langhint_go": "Olvasás magyarul",
+    "og_alt": "SharkyClips: az app egy stream felvételéből függőleges klipeket készít"
+  },
+  "footer": {"label": "Lábléc", "license": "Ingyenes és nyílt forráskódú (MIT)", "privacy": "Adatvédelem", "terms": "Feltételek", "feedback": "Visszajelzés küldése", "source": "Forráskód a GitHubon"},
+  "common": {
+    "download_btn": "Letöltés Windowsra",
+    "download_sub": "Ingyenes · {size} MB · {version} verzió",
+    "new": "Új",
+    "english_binding": "Az alábbi teljes szöveg angol nyelvű, és az angol szöveg az irányadó."
+  },
+  "home": {
+    "title": "SharkyClips: stream-pillanatok ingyen Shorts, TikTok és Reels videókká",
+    "desc": "A SharkyClips ingyenes app streamereknek. Megtalálja a stream felvételed legjobb pillanatait, és posztolásra kész függőleges klipeket készít belőlük, mindezt a saját gépeden.",
+    "eyebrow": "Ingyenes app streamereknek",
+    "h1": "Bemegy a streamed, kijönnek a posztolásra kész klipek.",
+    "lead": "A SharkyClips megtalálja a stream felvételed legjobb pillanatait, és függőleges klipeket készít belőlük YouTube Shortsra, TikTokra és Instagram Reelsre. Minden a saját gépeden fut.",
+    "see_features": "Nézd meg, mit tud",
+    "facts": ["Ingyenes és nyílt forráskódú", "Nincs fiók, nincs felhő", "11 nyelv", "Windows 10 / 11"],
+    "hero_alt": "SharkyClips Egyszerű módban: egy stream a kész klipjeivel, mindegyikhez egy Megosztás gombbal",
+    "how_h": "Hogyan működik",
+    "how_lead": "Három lépés. A vágást közben a SharkyClips végzi.",
+    "steps": [
+      {"h": "Add hozzá a streamed", "p": "Húzz be egy videófájlt, vagy illessz be egy Twitch-, YouTube- vagy Kick-linket. A SharkyClips az OBS-mappád legújabb felvételét is fel tudja venni."},
+      {"h": "A SharkyClips elkészíti a klipeket", "p": "Megtalálja a hangos, vicces és izgalmas pillanatokat, tisztán vágja őket, feliratot tesz rájuk, kisípolja a káromkodást és megírja a címeket."},
+      {"h": "Ellenőrizd és oszd meg", "p": "Nézd meg a klipeket, változtass, amit akarsz, és oszd meg őket YouTube Shortson, TikTokon és Instagram Reelsen."}
+    ],
+    "demo_h": "Nézd működés közben",
+    "demo_lead": "Rövid körbevezetés a jelenlegi verzióban, egy bemutató streammel (nincs benne valódi személy vagy játék).",
+    "demo_alt": "Rövid videó: a SharkyClips kezdőképernyője, egy stream a klipjeivel és a Megosztás ablak",
+    "demo_cap": "Egyszerű mód: nyiss meg egy streamet, nézz meg egy klipet, oszd meg.",
+    "gallery": [
+      {"img": "easy-home", "alt": "A SharkyClips kezdőképernyője egy nagy területtel, ahová videót vagy linket húzhatsz", "cap": "Kezdés: húzz be egy videót vagy illessz be egy linket."},
+      {"img": "share", "alt": "A Megosztás ablak YouTube-bal, TikTokkal és Instagrammal, mindegyikhez szöveggel", "cap": "Egy Megosztás minden platformra."},
+      {"img": "pro-project", "alt": "Profi mód: a stream az izgalmi térképével, 9:16-os előnézettel és a klipek listájával", "cap": "Profi mód: minden beállítás, ha szeretnéd."}
+    ],
+    "feat_h": "Streamereknek készült",
+    "cards": [
+      {"icon": "wave", "h": "Megtalálja a pillanatokat", "p": "Hangos reakciókból, nevetésből, chatrobbanásokból és játékbeli eseményekből egy sorba rendezett kliplista lesz."},
+      {"icon": "mute", "h": "Sípolás, ellenőrizve", "p": "A káromkodást 11 nyelven kisípolja, és minden kész klipet újra meghallgat."},
+      {"icon": "share", "h": "Egy Megosztás gomb", "p": "YouTube Shorts, TikTok és Instagram Reels, mindegyikhez a megfelelő szöveggel és korlátokkal."},
+      {"icon": "puzzle", "h": "TikTok-segéd", "p": "Egy kis böngészőbővítmény kitölti a TikTok-feltöltésedet. Te ellenőrzöd, és te kattintasz a Közzétételre.", "new": "1"},
+      {"icon": "photos", "h": "Fotó-diavetítés", "p": "2-20 fotóból függőleges előtte-utána videó lesz feliratokkal és zenével.", "new": "1"},
+      {"icon": "palette", "h": "A te stílusod", "p": "Négy megjelenés az apphoz, sötét és világos, és a saját színeid.", "new": "1"}
+    ],
+    "all_features": "Minden funkció",
+    "yt_h": "Hogyan használja a SharkyClips a YouTube-ot",
+    "yt_html": "<p>A YouTube-ra feltöltés nem kötelező. Ha a <b>Beállítások → YouTube</b> alatt összekapcsolod a csatornádat, a SharkyClips a hivatalos YouTube API-szolgáltatásokat pontosan ezekre használja, és csak akkor, ha te kéred:</p><div class='tablewrap'><table><thead><tr><th scope='col'>Művelet</th><th scope='col'>Engedély (scope)</th><th scope='col'>Mikor</th></tr></thead><tbody><tr><td>Egy általad előkészített klip feltöltése (cím, leírás, címkék, láthatóság, közzététel ideje, lejátszási lista, bélyegkép); adatainak vagy idejének módosítása, korábbi közzététele vagy törlése, ha nyilvánossá válás előtt lemondod; a csatlakoztatott csatorna megjelenítése; a <i>SharkyClipsszel</i> feltöltött videók megtekintéseinek, kedveléseinek és láthatóságának olvasása</td><td><code>youtube</code></td><td>Amikor megnyomod a <b>Közzététel most</b> gombot vagy ütemezel egy klipet (előre feltöltve, amíg a géped be van kapcsolva), a Könyvtárban szerkeszted vagy lemondod, megnyitod a Beállításokat, és nagyjából 6 óránként, amíg az app fut</td></tr><tr><td>Ugyanezen videók átlagos megtekintési arányának olvasása, hogy kiderüljön, melyik kezdés (hook) tartja meg a nézőket</td><td><code>yt-analytics.readonly</code></td><td>Csak hook-teszt részeként feltöltött klipeknél, miután 48 órája nyilvánosak</td></tr></tbody></table></div><p class='callout'>Ezek az adatok csak a te gépeden tárolódnak, és csak arra szolgálnak, hogy megmutassák az eredményeidet és javítsák a klipek pontszámát a <i>te</i> csatornádra. A SharkyClipsnek nincs szervere: a fejlesztők soha nem kapják meg, nem látják és nem osztják meg a YouTube-adataidat, és semmit nem használnak hirdetésre. A SharkyClips soha nem olvassa mások csatornáit, a hozzászólásaidat, a feliratkozóidat vagy az előzményeidet. Csak a SharkyClipsszel feltöltött videókat módosítja vagy törli, és csak akkor, ha kéred (például ha szerkesztesz vagy lemondasz egy ütemezett klipet).</p><p>A kapcsolatot bármikor bonthatod a Beállítások → YouTube alatt (ez visszavonja a hozzáférési tokent a Google-nál), vagy eltávolíthatod a hozzáférést a <a href='https://myaccount.google.com/permissions'>Google-fiókod engedélyei</a> között. A csatlakozással elfogadod a <a href='https://www.youtube.com/t/terms'>YouTube Általános Szerződési Feltételeit</a>; a Google az adataidat a <a href='https://policies.google.com/privacy'>Google Adatvédelmi irányelvei</a> szerint kezeli. Olvasd el a teljes <a href='{privacy}'>adatvédelmi szabályzatunkat</a> és a <a href='{terms}'>felhasználási feltételeket</a>.</p>",
+    "oss_h": "Ingyenes, nyílt, privát",
+    "oss_p": "A SharkyClips MIT-licences: nincs előfizetés, nincs kredit, nincs vízjel. Nincs fiók és nincs követés, a videóid pedig a gépeden maradnak, hacsak meg nem osztod őket. A forráskód és minden verzió a <a href='{gh}'>GitHubon</a> van."
+  },
+  "features": {
+    "title": "Funkciók: SharkyClips, az ingyenes stream-klipkészítő",
+    "desc": "Minden, amit a SharkyClips tud: megtalálja a legjobb pillanatokat, ismeri a játékodat, kisípolja a káromkodást, feliratoz, egy Megosztás YouTube-ra, TikTokra és Reelsre, TikTok-segéd, fotó-diavetítés és négy megjelenés.",
+    "h1": "Minden, amit a SharkyClips tud",
+    "lead": "Egy hosszú streamből végig megnézett klipek. Az Egyszerű mód mindent magától csinál; a Profi mód minden beállítást megad.",
+    "sections": [
+      {"id": "moments", "eyebrow": "Legjobb pillanatok", "h": "Megtalálja a posztolásra érdemes pillanatokat", "p": "A SharkyClips úgy hallgat és olvas, mint egy vágó.", "items": ["Hangerő, nevetés, kiabálás és reakciószavak", "Chatrobbanások a chat-visszajátszásból (Twitch, YouTube, Kick)", "A vágások szavak közé esnek, sosem mondat közepére", "Egy helyi MI minden klipet pontoz és címet ír"], "img": "pro-project", "alt": "Egy stream izgalmi térképe a legjobb pillanatokkal megjelölve"},
+      {"id": "games", "eyebrow": "Játékok", "h": "Ismeri a játékodat", "p": "A Delta Force és a League of Legends esetén magát a játék képernyőjét olvassa.", "items": ["Ölések, többszörös ölések, célok és győzelmek", "Egy többszörös ölés mindig egy klipbe fér", "Címek abból, ami a játékban történt", "További játékok hozzáadható profilként"], "icon": "game", "aside": "Más játékok is működnek: a pillanatok ilyenkor a hangodból, a játék hangjából és a chatből jönnek."},
+      {"id": "editing", "eyebrow": "Vágás", "h": "Posztolásra kész klipek", "p": "9:16-os videó, fent a kamerád, lent a játék.", "items": ["Szóról szóra felirat, jobbról balra író nyelveken is", "Káromkodás kisípolva 11 nyelven, és minden klip újraellenőrizve", "Okos zoom, azonnali visszajátszás és chatbuborékok", "Vágás szövegből: törölj szavakat, hogy kivágd őket"], "icon": "mute", "aside": "Az a klip, amelyben még hallható káromkodás van, nem kerül automatikus megosztásra, amíg meg nem hallgatod."},
+      {"id": "easy", "eyebrow": "Egyszerű és Profi", "h": "Az Egyszerű mód mindent elintéz", "p": "Húzz be egy videót, és térj vissza kész klipekhez. Válts Profi módra minden beállításért.", "items": ["A legjobb klipek maguktól kiválasztva, formázva és elkészítve", "Klipek maguktól egy stream után (OBS-mappa vagy a csatornád)", "Jelölj pillanatokat játék közben gyorsbillentyűvel vagy !clip paranccsal a chatben", "Klipek jóváhagyása telefonról"], "img": "easy-home", "alt": "Az Egyszerű mód kezdőképernyője"},
+      {"id": "share", "eyebrow": "Megosztás", "h": "Egy Megosztás minden platformra", "p": "YouTube Shorts, TikTok és Instagram Reels egyetlen ablakból.", "items": ["Szöveg minden platformhoz, ellenőrzött korlátokkal", "Megosztás most, vagy válassz időpontot", "A YouTube-feltöltéseid a saját ingyenes Google-projekteddel", "Előzmények a megosztottakról, hogy semmi ne kerüljön ki kétszer"], "img": "share", "alt": "A Megosztás ablak három platformmal"},
+      {"id": "helper", "eyebrow": "TikTok és Instagram", "h": "A SharkyClips Helper kitölti a feltöltést", "new": "1", "p": "Egy kis böngészőbővítmény. A SharkyClips megnyitja a TikTok feltöltési oldalát a böngésződben, a Helper pedig beteszi a videót és a szöveget.", "items": ["A Közzététel előtt megáll: te ellenőrzöd és te teszed közzé", "Edge-ben, Operában és Brave-ben magától működik; a Chrome egy beállítási lépést kér", "Csak TikTok- és Instagram-oldalakon fut", "Csak a gépeden lévő SharkyClipsszel beszél, mással nem"], "icon": "puzzle", "aside": "Semmilyen jelszót nem tárol és nem ír be helyetted: a TikTokra egyszer magad jelentkezel be."},
+      {"id": "slideshow", "eyebrow": "Fotók", "h": "Fotó-diavetítés", "new": "1", "p": "2-20 fotóból függőleges videó: tökéletes előtte-utánához.", "items": ["Feliratok, mint Előtte, Folyamat és Eredmény a te nyelveden", "Lassú, finom zoom minden fotón és lágy áttűnések", "A zenéd, a végén a SharkyClips logóval", "Ugyanazzal a Megosztás gombbal osztható meg"], "img": "slideshow", "alt": "A diavetítés képernyője a sorba rendezett fotókkal és 9:16-os előnézettel"},
+      {"id": "looks", "eyebrow": "Személyre szabás", "h": "Legyen a tiéd", "new": "1", "p": "Válassz megjelenést az apphoz: Klasszikus, Óceán, Shark Sign vagy Nagy kontraszt.", "items": ["Sötét és világos minden megjelenéshez", "Saját kiemelőszín, jó kontrasztra ellenőrizve", "Nyugodt vagy teljes animáció, vagy semmi", "Egy kis cápás játék, amíg egy stream feldolgozása tart"], "img": "looks", "alt": "Beállítások az app négy megjelenésével"},
+      {"id": "languages", "eyebrow": "Nyelvek", "h": "11 nyelv", "p": "Az app, a beszédfelismerés, a címek és a feliratok.", "items": ["English, Türkçe, Español, Português (Brasil), Deutsch, Français, Magyar", "Русский, العربية (jobbról balra), 中文, 日本語", "A címek a beszélttől eltérő nyelven is lehetnek", "Feliratok fordítva, az időzítés megtartásával"], "icon": "lang", "aside": "A beszédfelismerés (Whisper) és az MI minden nyelven a gépeden fut."},
+      {"id": "lowend", "eyebrow": "Bármilyen gép", "h": "Átlagos gépeken is fut", "p": "Nem kell gamer gép. A SharkyClips megnézi a hardveredet, és kiválasztja a megfelelő beállítást.", "items": ["Egy NVIDIA videokártya sokkal gyorsabbá teszi", "Könnyű mód régebbi gépekhez és videokártya nélküli laptopokhoz", "A Csendes mód szünetel, amíg játszol vagy teljes képernyőn nézel valamit", "A bezárt app ott folytatja, ahol abbahagyta"], "icon": "cpu", "aside": "Egy kis, 2 magos, videokártya nélküli laptopon egy 17 perces videó Könnyű módban kb. 16 percig tart."},
+      {"id": "private", "eyebrow": "Adatvédelem", "h": "Eleve privát", "p": "Nincs SharkyClips szerver.", "items": ["A beszédfelismerés és az MI a gépeden fut", "Nincs fiók, nincs elemzés, nincs hirdetés", "A bejelentkezéseid titkosítva tárolódnak a gépeden", "A videóid csak akkor hagyják el a gépedet, ha megosztod őket"], "icon": "lock", "aside": "Olvasd el a teljes <a href='{privacy}'>adatvédelmi szabályzatot</a>."}
+    ]
+  },
+  "download": {
+    "title": "SharkyClips letöltése Windowsra (ingyenes)",
+    "desc": "Töltsd le az ingyenes SharkyClips telepítőt Windows 10-re és 11-re. Rendszerkövetelmények, telepítési lépések és segítség a Windows SmartScreen üzenethez.",
+    "h1": "SharkyClips letöltése",
+    "lead": "Egy telepítő, benne minden. Nem kell rendszergazdai jog, nincsenek extra programok.",
+    "all_releases": "Minden verzió",
+    "facts": ["{version} verzió", "Kb. {size} MB", "Windows 10 / 11, 64 bites", "Ingyenes, fiók nélkül"],
+    "steps_h": "Telepítés három lépésben",
+    "steps": [
+      {"h": "Letöltés", "p": "Kattints a letöltés gombra. A fájl neve SharkyClips-Setup-{version}.exe."},
+      {"h": "Telepítés", "p": "Nyisd meg, kattints a Tovább, majd a Telepítés gombra. Kb. egy percig tart. Kék üzenetet mutat a Windows? <a href='#smartscreen'>Lásd lent</a>."},
+      {"h": "Első indítás", "p": "A SharkyClips megnyílik a böngésződben, megkérdezi a nyelvedet és ellenőrzi a gépedet. Aztán egyszer letölti a gépedhez illő MI-részeket."}
+    ],
+    "req_h": "Rendszerkövetelmények",
+    "req_p": "A SharkyClips minden indításkor megnézi a hardveredet, és a leggyorsabb működő beállítást választja.",
+    "req_cols": ["Rész", "Minimum", "Ajánlott"],
+    "req_rows": [
+      ["Rendszer", "Windows 10 (1809 vagy újabb) vagy 11, 64 bites", "Windows 11"],
+      ["Memória", "8 GB RAM (4 GB Könnyű módban, lassan működik)", "16 GB RAM"],
+      ["Grafika", "Nem kell videokártya", "NVIDIA videokártya legalább 6 GB-tal"],
+      ["Lemez", "Kb. 3 GB az appnak és 2-10 GB az MI-modelleknek", "SSD, plusz hely a videóidnak"],
+      ["Internet", "Az első indításhoz és a megosztáshoz", "Utána offline is működik"]
+    ],
+    "smart_h": "\"A Windows megvédte a számítógépet\"?",
+    "smart_p": "A telepítő még nincs fizetős tanúsítvánnyal aláírva, ezért a Microsoft Defender SmartScreen figyelmeztethet egy új letöltésre. Ez új ingyenes appoknál normális.",
+    "smart_steps": ["Kattints a <b>További információ</b> linkre.", "Ellenőrizd, hogy az app a SharkyClips-Setup-{version}.exe.", "Kattints a <b>Futtatás mindenképp</b> gombra."],
+    "smart_note": "Biztosra mennél? Minden verzióhoz tartozik egy .sha256 fájl. PowerShellben a <code>Get-FileHash SharkyClips-Setup-{version}.exe</code> parancsnak ugyanazt a számot kell mutatnia.",
+    "smart_alt": "A Windows SmartScreen üzenet: előbb a További információ, aztán a Futtatás mindenképp gombra kattints",
+    "more_h": "Továbbiak",
+    "more": [
+      {"h": "Frissítések", "p": "Beállítások → Frissítések → Frissítések keresése. A SharkyClips akkor telepíti az új verziót, amikor nem használod. <a href='{updates}'>Újdonságok</a>."},
+      {"h": "Eltávolítás", "p": "Windows Gépház → Alkalmazások → SharkyClips → Eltávolítás. Megkérdezi, hogy a beállításaidat is törölje-e; a videóid megmaradnak."},
+      {"h": "macOS és Linux", "p": "macOS-re van egyparancsos telepítő, fejlesztőknek pedig kézi telepítés. Ezek kevésbé teszteltek, mint a Windows. Lásd a <a href='{gh}#install'>telepítési útmutatót</a>."}
+    ]
+  },
+  "faq": {
+    "title": "GYIK: kérdések és válaszok a SharkyClipsről",
+    "desc": "Válaszok a SharkyClipsről: adatvédelem, YouTube-bejelentkezés saját Google-projekttel és a 100 felhasználós korlát, a TikTok-segéd bővítmény, gyengébb gépek és még sok más.",
+    "h1": "Kérdések és válaszok",
+    "lead": "Nem találod a kérdésed? <a href='{contact}'>Kérdezz minket</a>.",
+    "items": [
+      {"id": "free", "q": "Tényleg ingyenes a SharkyClips?", "a": "<p>Igen. Nyílt forráskódú (MIT-licenc). Nincs előfizetés, kredit, vízjel és hirdetés. Az MI a saját gépeden fut, így nincs miért fizetni.</p>"},
+      {"id": "privacy", "q": "Feltölti valahová a SharkyClips a videóimat?", "a": "<p>Nem. Minden a gépeden fut: a beszédfelismerés, az MI, a pillanatok keresése és a klipek készítése. Nincs SharkyClips szerver és nincs követés. A videóid csak akkor hagyják el a gépedet, ha te magad osztasz meg egy klipet YouTube-on, TikTokon vagy Instagramon. A részletek az <a href='{privacy}'>adatvédelmi szabályzatban</a>.</p>"},
+      {"id": "google", "q": "Miért kell saját Google-projekt a YouTube-hoz? Mi az a 100 felhasználós korlát?", "a": "<p>A YouTube-ra feltöltéshez egy appnak Google-bejelentkezés kell. A Google egy általa nem ellenőrzött bejelentkezést <b>összesen 100 felhasználóra</b> korlátoz (a Google ezt felhasználói korlátnak hívja). Egy minden SharkyClips-felhasználó által közösen használt bejelentkezés nagyon gyorsan megtelne.</p><p>Ezért a letöltésben nincs közös Google-bejelentkezés. Ehelyett egy <b>saját, ingyenes Google-projektet</b> kapcsolsz össze. Így a korlát és a napi feltöltési kvóta csak a tiéd. Ingyenes, nem kell hozzá bankkártya, és egyszer kb. 5-10 perc.</p>"},
+      {"id": "google-setup", "q": "Hogyan kapcsolom össze a saját Google-projektemet?", "a": "<p>A SharkyClipsben: Beállítások → YouTube → <b>Saját Google-projekt összekapcsolása</b>. Egy útmutató megnyitja neked a megfelelő Google-oldalakat:</p><ol class='howto'><li>Hozz létre egy projektet (bármilyen névvel).</li><li>Kapcsold be a YouTube Data API v3-at.</li><li>Állítsd be a hozzájárulási képernyőt (Külső), és add hozzá magad tesztfelhasználóként.</li><li>Hozz létre egy Asztali alkalmazás típusú OAuth-klienst, és töltsd le a fájlját.</li><li>Húzd be ezt a fájlt a SharkyClipsbe, és kattints a Kapcsolódás Google-lal gombra.</li></ol><p>A Google jelezheti, hogy az app nincs ellenőrizve: ez a saját projekted, nyugodtan folytathatod. Amíg a projekt Tesztelés állapotban van, a Google 7 nap után megszünteti a bejelentkezést; állítsd Éles üzemre, hogy bejelentkezve maradj. <a href='{own_google}'>Teljes útmutató</a>.</p>"},
+      {"id": "helper", "q": "Hogyan állítom be a TikTok-segéd bővítményt?", "a": "<p>A SharkyClips Helper egy kis böngészőbővítmény. Kitölti a TikTok (és ha szeretnéd, az Instagram) feltöltési oldalát, és a Közzététel előtt megáll.</p><ul><li><b>Microsoft Edge, Opera, Opera GX, Brave:</b> nincs teendő. A SharkyClips magától hozzáadja a Helpert, amikor megnyitja a feltöltési oldalt.</li><li><b>Google Chrome:</b> egy beállítási lépés. A SharkyClips rövid útmutatót mutat: nyisd meg a chrome://extensions oldalt, kapcsold be a Fejlesztői módot, kattints a Kicsomagolt bővítmény betöltése gombra, és válaszd ki a mappát, amit a SharkyClips mutat.</li><li>Először jelentkezz be te magad a TikTokra abban az ablakban. A SharkyClips sosem látja a jelszavadat.</li></ul><p>A Helper csak TikTok- és Instagram-oldalakon fut, és csak a gépeden lévő SharkyClipsszel beszél. Nélküle a SharkyClips kimásolja neked a szöveget, és kézzel posztolsz.</p>"},
+      {"id": "lowend", "q": "Futni fog a gépemen? Nincs gamer gépem.", "a": "<p>Igen. Windows 10 vagy 11 (64 bites) és 8 GB RAM kell. Videokártya nem kell. NVIDIA videokártya nélküli gépen a SharkyClips magától a <b>Könnyű módot</b> választja: kisebb beszédmodellt és kisebb MI-t, amelyek a processzoron futnak. Lassabb, de működik: egy 17 perces videó egy kis, 2 magos laptopon kb. 16 percig tart. NVIDIA videokártyával sokkal gyorsabb. Lásd a <a href='{download}#requirements'>rendszerkövetelményeket</a>.</p>"},
+      {"id": "gaming", "q": "Lelassítja a játékaimat?", "a": "<p>Nem. Az alapértelmezett Csendes módban a SharkyClips szünetelteti a nehéz munkát, amíg játszol vagy teljes képernyőn nézel valamit, és visszaadja a videomemóriát a játéknak. Amikor abbahagyod, folytatja.</p>"},
+      {"id": "smartscreen", "q": "A Windows azt írja: \"A Windows megvédte a számítógépet\". Biztonságos?", "a": "<p>Ez a SmartScreen figyelmeztetése egy új letöltésre, amely még nincs fizetős tanúsítvánnyal aláírva. Kattints a <b>További információ</b>, majd a <b>Futtatás mindenképp</b> gombra. A fájlt a verzió .sha256 fájljával ellenőrizheted. <a href='{download}#smartscreen'>Lépésről lépésre</a>.</p>"},
+      {"id": "sources", "q": "Milyen videókat használhatok?", "a": "<p>Twitch-, YouTube- és Kick-felvételeket (a chat-visszajátszással), a legtöbb más videóoldalt vagy bármilyen videófájlt a gépedről. Több órás streamek sem gond. Csak olyan videót használj, amely a tiéd, vagy amelyhez jogod van.</p>"},
+      {"id": "posting", "q": "Helyettem posztol TikTokra és Instagramra?", "a": "<p>A SharkyClips mindent előkészít, és a Helper kitölti a feltöltési oldalt, de a Közzétételre <b>te</b> kattintasz. Az Instagramot mindig te osztod meg. A YouTube-feltöltések automatikusak lehetnek, ha összekapcsoltad a saját Google-projektedet.</p>"},
+      {"id": "mac", "q": "Működik Macen vagy Linuxon?", "a": "<p>A fő platform a Windows, egykattintásos telepítővel. macOS-re van egyparancsos telepítő, Linuxra és fejlesztőknek kézi telepítés, de ezek kevésbé teszteltek. Lásd a <a href='{gh}#install'>telepítési útmutatót</a>.</p>"},
+      {"id": "feedback", "q": "Hogyan jelentek be hibát vagy javasolok ötletet?", "a": "<p>Az appban: Beállítások → Névjegy → <b>Visszajelzés küldése</b>, vagy ugyanez a gomb egy hibaüzenetben. Megnyit egy GitHub-űrlapot, amelyben az app verziója és a rendszered ki van töltve, más semmi. Vagy használd a <a href='{contact}'>kapcsolati oldalt</a>.</p>"}
+    ],
+    "more_h": "Még mindig elakadtál?",
+    "more_p": "Nyiss egy <a href='{bug}'>hibajelentést</a>, vagy nézd meg az összes <a href='{issues}'>kérdést a GitHubon</a>."
+  },
+  "updates": {
+    "title": "Újdonságok: mi új a SharkyClipsben",
+    "desc": "A legújabb SharkyClips-verziók, és mi változott mindegyikben: új funkciók, fejlesztések és javítások.",
+    "h1": "Újdonságok",
+    "lead": "A SharkyClips magától frissül: Beállítások → Frissítések. Itt látod, mi változott a legutóbbi verziókban.",
+    "version": "Verzió",
+    "show": "Részletek",
+    "groups": {"new": "Új", "improved": "Fejlesztések", "fixed": "Javítások", "other": "Változások"},
+    "older": "A régebbi verziók és minden verzió telepítője a <a href='{releases}'>GitHubon</a> van."
+  },
+  "contact": {
+    "title": "Kapcsolat és visszajelzés: SharkyClips",
+    "desc": "Jelents be hibát, javasolj funkciót, vagy kérdezz a SharkyClipsről. Bizalmas biztonsági bejelentéseket is szívesen fogadunk.",
+    "h1": "Kapcsolat és visszajelzés",
+    "lead": "A SharkyClips nyíltan, a GitHubon készül. Minden bejelentés segít.",
+    "cards": [
+      {"icon": "bug", "h": "Hiba bejelentése", "p": "Valami nem működik? Írd le, mit csináltál és mi történt.", "btn": "Hiba bejelentése", "href": "{bug}"},
+      {"icon": "bulb", "h": "Ötlet javaslása", "p": "Egy hiányzó funkció, egy játék, amivel játszol, egy nyelv, amit javítanunk kellene.", "btn": "Ötlet javaslása", "href": "{idea}"},
+      {"icon": "shield", "h": "Biztonsági probléma", "p": "Biztonsági problémát találtál? Kérjük, bizalmasan jelentsd, ne nyilvános hibajegyben.", "btn": "Bizalmas bejelentés", "href": "{security}"},
+      {"icon": "mail", "h": "Ez a weboldal és az adatvédelem", "p": "Kérdések erről a weboldalról, az adatvédelmi szabályzatról vagy a feltételekről.", "btn": "Kérdés a weboldalról", "href": "{site_issues}"}
+    ],
+    "app_note": "<b>Az appban:</b> a Beállítások → Névjegy → <b>Visszajelzés küldése</b> (minden hibaüzenetben is) kitölti neked az app verzióját és a rendszeredet.",
+    "privacy_note": "A GitHub-hibajegyek nyilvánosak. Kérjük, ne tegyél bele privát videókat, privát tartalomra mutató linkeket, jelszavakat vagy személyes adatokat tartalmazó naplófájlokat. A posztoláshoz ingyenes GitHub-fiók kell."
+  },
+  "privacy": {
+    "title": "Adatvédelmi szabályzat: SharkyClips",
+    "desc": "Hogyan kezeli a SharkyClips az adataidat: minden a gépeden marad, nincs szerver és nincs követés. A YouTube API-adatok használata elmagyarázva.",
+    "h1": "Adatvédelmi szabályzat",
+    "summary_h": "Röviden",
+    "summary": "<ul><li>A SharkyClips a gépeden fut. Nincs szervere, fiókja és követése.</li><li>A videóid, átirataid, klipjeid és YouTube-adataid a gépeden maradnak. A SharkyClips készítői semmit sem kapnak meg ezekből.</li><li>Az app csak az általad indított dolgokhoz megy online: letöltések, frissítések és megosztás YouTube-ra, TikTokra vagy Instagramra.</li><li>A YouTube nem kötelező. Bontsd a kapcsolatot a Beállításokban, vagy vond vissza a hozzáférést a Google-fiókodban.</li></ul>"
+  },
+  "terms": {
+    "title": "Felhasználási feltételek: SharkyClips",
+    "desc": "Az ingyenes, nyílt forráskódú SharkyClips app (MIT-licenc) és az opcionális YouTube-kapcsolat felhasználási feltételei.",
+    "h1": "Felhasználási feltételek",
+    "summary_h": "Röviden",
+    "summary": "<ul><li>A SharkyClips ingyenes, nyílt forráskódú szoftver (MIT-licenc).</li><li>Csak olyan videót, zenét és logót használj, amely a tiéd, vagy amelyet használhatsz. Te felelsz azért, amit posztolsz.</li><li>Az MI címei és szövegei javaslatok: posztolás előtt ellenőrizd őket.</li><li>Az app mindenféle garancia nélkül érhető el. Készíts mentést a számodra fontos videókról.</li></ul>"
+  },
+  "notfound": {"title": "Az oldal nem található: SharkyClips", "h1": "Az oldal nem található", "p": "Ez az oldal nem létezik (már).", "back": "Kezdőlap"}
+}

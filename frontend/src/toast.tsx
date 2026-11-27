@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import { Icon } from "./components/Icons";
+import { openFeedback } from "./feedback";
+import { useI18n } from "./i18n";
 
 interface Toast {
   id: number;
@@ -15,6 +17,7 @@ const Ctx = createContext<(t: Omit<Toast, "id">) => void>(() => {});
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const { t: tr } = useI18n();
   const push = useCallback((t: Omit<Toast, "id">) => {
     const id = Date.now() + Math.random();
     setToasts((ts) => [...ts.slice(-3), { ...t, id }]);
@@ -31,6 +34,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
               <div>{t.text}</div>
               {t.hint && <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>{t.hint}</div>}
             </div>
+            {!t.action && t.kind === "err" && (
+              // 1.2.74: every error message offers "Report" (a pre-filled GitHub form, see feedback.ts)
+              <button
+                className="btn btn-sm btn-ghost"
+                title={tr("fb.hint")}
+                onClick={() => openFeedback("bug", [t.text, t.hint].filter(Boolean).join(" - "))}
+              >
+                {tr("fb.report")}
+              </button>
+            )}
             {t.action && (
               <button
                 className="btn btn-sm btn-ghost"

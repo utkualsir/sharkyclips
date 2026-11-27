@@ -2,6 +2,10 @@ name: Feature request
 description: Suggest an idea for SharkyClips
 labels: [enhancement]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea! Issues are **public**: please don't add private links or personal data.
   - type: textarea
     id: problem
     attributes:
@@ -17,4 +21,23 @@ body:
     id: area
     attributes:
       label: Area
-      options: [Highlight detection, AI titles / scores, Rendering / subtitles, Web UI, Installer / updates, Languages, Other]
+      options:
+        - Finding highlights
+        - AI titles / scores
+        - Editing / subtitles / bleeps
+        - Sharing (YouTube, TikTok, Instagram)
+        - TikTok / Instagram helper extension
+        - Photo slideshow
+        - Easy mode
+        - Pro mode
+        - Looks / personalization
+        - Games
+        - Languages / translations
+        - Installer / updates
+        - Website
+        - Other
+  - type: input
+    id: source
+    attributes:
+      label: Sent from
+      description: Filled in automatically (app or website); leave it as it is.

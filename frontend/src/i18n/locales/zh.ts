@@ -3459,6 +3459,18 @@ const zh: Record<string, string> = {
   "stage.slideshow_photos": "正在准备照片",
   "stage.slideshow_outro": "正在绘制标志",
   "stage.slideshow_rendering": "正在生成视频",
+  // 1.2.74: Send feedback / Report a bug
+  "fb.send": "发送反馈",
+  "fb.bug": "报告问题",
+  "fb.idea": "提出建议",
+  "fb.hint": "在浏览器中打开 GitHub 表单。只会填入应用版本和你的系统，在你提交之前不会发送任何内容。",
+  "fb.report": "报告",
+  // 1.2.74: a Helper from a store pairs with a code
+  "assist.store_title": "从扩展商店安装了助手？",
+  "assist.store_body": "如果你从 Microsoft Edge 加载项或 Firefox 附加组件添加了 SharkyClips 助手，请连接一次：点击浏览器工具栏中的助手图标，输入这个连接码。",
+  "assist.store_code_label": "连接码",
+  "assist.store_left": "还有 {m}:{s} 有效",
+  "assist.store_btn": "显示连接码",
 };
 
 export default zh;

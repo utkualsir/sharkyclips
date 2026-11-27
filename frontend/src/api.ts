@@ -27,6 +27,8 @@ export interface Meta {
   lan_url: string | null;
   workspace: string | null;
   llm: { available: boolean };
+  /** 1.2.74: short OS label for "Send feedback" (e.g. "Windows 11 (AMD64, build 26100)") */
+  system?: string;
 }
 
 export interface Job {

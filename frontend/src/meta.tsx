@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { api, type Meta } from "./api";
+import { setFeedbackInfo } from "./feedback";
 import { useI18n } from "./i18n";
 import { applyMotion, storedMotion } from "./motion";
 
@@ -10,7 +11,13 @@ export function MetaProvider({ children }: { children: ReactNode }) {
   const [meta, setMeta] = useState<Meta | null>(null);
   const { lang, setLang } = useI18n();
   useEffect(() => {
-    api.meta().then(setMeta).catch(() => {});
+    api
+      .meta()
+      .then((m) => {
+        setFeedbackInfo(m);
+        setMeta(m);
+      })
+      .catch(() => {});
     api.settings()
       .then((s) => {
         let explicit = false;

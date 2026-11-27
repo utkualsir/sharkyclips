@@ -3503,6 +3503,18 @@ const hu: Record<string, string> = {
   "stage.slideshow_photos": "Fotók előkészítése",
   "stage.slideshow_outro": "Logó rajzolása",
   "stage.slideshow_rendering": "A videó készül",
+  // 1.2.74: Send feedback / Report a bug
+  "fb.send": "Visszajelzés küldése",
+  "fb.bug": "Hiba bejelentése",
+  "fb.idea": "Ötlet javaslása",
+  "fb.hint": "Megnyit egy GitHub-űrlapot a böngészőben. Csak az app verziója és a rendszered kerül bele, és semmi sem megy el, amíg el nem küldöd.",
+  "fb.report": "Bejelentés",
+  // 1.2.74: a Helper from a store pairs with a code
+  "assist.store_title": "Áruházból telepítetted a Helpert?",
+  "assist.store_body": "Ha a SharkyClips Helpert a Microsoft Edge Add-ons vagy a Firefox Add-ons oldaláról adtad hozzá, kapcsold össze egyszer: kattints a Helper ikonjára a böngésző eszköztárán, és írd be ezt a kódot.",
+  "assist.store_code_label": "Kapcsolódási kód",
+  "assist.store_left": "Még {m}:{s} percig érvényes",
+  "assist.store_btn": "Kapcsolódási kód mutatása",
 };
 
 export default hu;

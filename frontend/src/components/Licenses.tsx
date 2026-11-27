@@ -6,6 +6,7 @@ import { useI18n } from "../i18n";
 import { Icon } from "./Icons";
 import { Toggle, Sep } from "./ui";
 import { href } from "../router";
+import { openFeedback } from "../feedback";
 
 function Ext({ href, children }: { href?: string; children: React.ReactNode }) {
   if (!href) return <>{children}</>;
@@ -74,6 +75,25 @@ function UpdatesLink() {
   );
 }
 
+/** 1.2.74: Send feedback / Report a bug + Suggest an idea (pre-filled GitHub forms, see feedback.ts). */
+export function FeedbackButtons() {
+  const { t } = useI18n();
+  return (
+    <div className="feedback-box" id="feedback">
+      <span className="field-label">{t("fb.send")}</span>
+      <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+        <button type="button" className="btn btn-sm" onClick={() => openFeedback("bug")} data-testid="feedback-bug">
+          <Icon name="alert" size={14} /> {t("fb.bug")}
+        </button>
+        <button type="button" className="btn btn-sm" onClick={() => openFeedback("idea")} data-testid="feedback-idea">
+          <Icon name="sparkles" size={14} /> {t("fb.idea")}
+        </button>
+      </div>
+      <span className="field-hint">{t("fb.hint")}</span>
+    </div>
+  );
+}
+
 export function AboutCard({ easy }: { easy?: boolean }) {
   const { t } = useI18n();
   const [data, setData] = useState<LicensesView | null>(null);
@@ -99,6 +119,7 @@ export function AboutCard({ easy }: { easy?: boolean }) {
           {intro}
         </p>
         <UpdatesLink />
+        <FeedbackButtons />
         {body}
       </section>
     );
@@ -108,6 +129,7 @@ export function AboutCard({ easy }: { easy?: boolean }) {
         <h2>{t("about.title")}</h2>
         <p>{intro}</p>
         <UpdatesLink />
+        <FeedbackButtons />
       </div>
       {body}
     </section>

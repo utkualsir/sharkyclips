@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "zh-Hans"
+  },
+  "dir": {
+    "message": "ltr"
+  },
+  "name": {
+    "message": "SharkyClips 助手"
+  },
+  "description": {
+    "message": "为免费应用 SharkyClips 填写你的 TikTok 和 Instagram 上传内容。由你检查并亲自点击发布。"
+  },
+  "pair_howto": {
+    "message": "在 SharkyClips 中打开设置，再打开助手指南，点击“显示连接码”。在这里输入连接码。"
+  },
+  "pair_label": {
+    "message": "连接码"
+  },
+  "pair_button": {
+    "message": "连接"
+  },
+  "pair_wrong": {
+    "message": "这个连接码无效。请在 SharkyClips 中显示新的连接码后重试。"
+  },
+  "state_ok": {
+    "message": "已连接到这台电脑上的 SharkyClips。"
+  },
+  "state_no_app": {
+    "message": "这台电脑上没有运行 SharkyClips。请启动后重试。"
+  },
+  "state_off": {
+    "message": "尚未连接到 SharkyClips。"
+  },
+  "state_checking": {
+    "message": "正在检查..."
+  },
+  "about": {
+    "message": "助手只在 TikTok 和 Instagram 页面上运行，只与这台电脑上的 SharkyClips 通信，从不点击发布。"
+  },
+  "pair_banner": {
+    "message": "请先连接 SharkyClips 助手。"
+  },
+  "pair_banner_sub": {
+    "message": "点击工具栏中的助手图标，输入 SharkyClips 显示的连接码。"
+  }
+}

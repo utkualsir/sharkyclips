@@ -1,97 +1,116 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SharkyClips</title>
-  <meta name="description" content="SharkyClips is a free, open-source app that finds the best moments in your stream recordings and turns them into vertical Shorts, entirely on your own computer.">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="site.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SharkyClips: free stream highlights to Shorts, TikTok and Reels</title>
+<meta name="description" content="SharkyClips is a free app for streamers. It finds the best moments in your stream recording and turns them into ready-to-post vertical clips, all on your own PC.">
+<link rel="canonical" href="https://utkualsir.github.io/sharkyclips-site/">
+<link rel="alternate" hreflang="en" href="https://utkualsir.github.io/sharkyclips-site/"><link rel="alternate" hreflang="tr" href="https://utkualsir.github.io/sharkyclips-site/tr/"><link rel="alternate" hreflang="es" href="https://utkualsir.github.io/sharkyclips-site/es/"><link rel="alternate" hreflang="pt-BR" href="https://utkualsir.github.io/sharkyclips-site/pt/"><link rel="alternate" hreflang="de" href="https://utkualsir.github.io/sharkyclips-site/de/"><link rel="alternate" hreflang="fr" href="https://utkualsir.github.io/sharkyclips-site/fr/"><link rel="alternate" hreflang="hu" href="https://utkualsir.github.io/sharkyclips-site/hu/"><link rel="alternate" hreflang="ru" href="https://utkualsir.github.io/sharkyclips-site/ru/"><link rel="alternate" hreflang="ar" href="https://utkualsir.github.io/sharkyclips-site/ar/"><link rel="alternate" hreflang="zh-Hans" href="https://utkualsir.github.io/sharkyclips-site/zh/"><link rel="alternate" hreflang="ja" href="https://utkualsir.github.io/sharkyclips-site/ja/"><link rel="alternate" hreflang="x-default" href="https://utkualsir.github.io/sharkyclips-site/">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0a1020" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f9fafc" media="(prefers-color-scheme: light)">
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="site.css?v=1.2.74">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SharkyClips">
+<meta property="og:title" content="SharkyClips: free stream highlights to Shorts, TikTok and Reels">
+<meta property="og:description" content="SharkyClips is a free app for streamers. It finds the best moments in your stream recording and turns them into ready-to-post vertical clips, all on your own PC.">
+<meta property="og:url" content="https://utkualsir.github.io/sharkyclips-site/">
+<meta property="og:image" content="https://utkualsir.github.io/sharkyclips-site/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="SharkyClips: the app turns a stream recording into vertical clips">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="tr_TR"><meta property="og:locale:alternate" content="es_LA"><meta property="og:locale:alternate" content="pt_BR"><meta property="og:locale:alternate" content="de_DE"><meta property="og:locale:alternate" content="fr_FR"><meta property="og:locale:alternate" content="hu_HU"><meta property="og:locale:alternate" content="ru_RU"><meta property="og:locale:alternate" content="ar_AR"><meta property="og:locale:alternate" content="zh_CN"><meta property="og:locale:alternate" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<script>try{var s=localStorage.getItem("sc-theme");if(s==="light"||s==="dark")document.documentElement.dataset.theme=s}catch(e){}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SharkyClips","description":"SharkyClips is a free app for streamers. It finds the best moments in your stream recording and turns them into ready-to-post vertical clips, all on your own PC.","url":"https://utkualsir.github.io/sharkyclips-site/","applicationCategory":"MultimediaApplication","applicationSubCategory":"Video editing","operatingSystem":"Windows 10, Windows 11","softwareVersion":"1.2.74","downloadUrl":"https://github.com/utkualsir/sharkyclips/releases/download/v1.2.74/SharkyClips-Setup-1.2.74.exe","fileSize":"375 MB","image":"https://utkualsir.github.io/sharkyclips-site/img/og.png","screenshot":"https://utkualsir.github.io/sharkyclips-site/img/shots/easy-project-1280.webp","license":"https://opensource.org/license/mit","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"inLanguage":["en","tr","es","pt-BR","de","fr","hu","ru","ar","zh-Hans","ja"],"author":{"@type":"Person","name":"utkualsir","url":"https://github.com/utkualsir"}}</script><script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"SharkyClips","url":"https://utkualsir.github.io/sharkyclips-site/","inLanguage":"en"}</script>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+<aside class="langhint" id="langhint" aria-label="Language" hidden><div class="wrap"><span id="langhint-text"></span><a id="langhint-go" href="#"></a><button type="button" class="iconbtn" id="langhint-x"></button></div></aside>
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="index.html" aria-label="SharkyClips home">
-      <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="0,0 48,0 64,16 64,64 0,64" fill="#FFD23F"/><path fill-rule="evenodd" d="M13 44C17.5 33 28 18 48.5 11.5C42 20 39.5 32 46.5 44ZM25.5 30L25.5 40.5L35 35.25Z" fill="#0B1D22"/><path d="M8 50Q11 48.4 14 50Q17 51.6 20 50Q23 48.4 26 50Q29 51.6 32 50Q35 48.4 38 50Q41 51.6 44 50Q47 48.4 50 50Q53 51.6 56 50" fill="none" stroke="#0B1D22" stroke-width="3.4" stroke-linecap="round"/></svg>
+    <a class="brand" href="./">
+      <img class="logo-dark" src="img/logo-dark.svg" width="32" height="32" alt="">
+      <img class="logo-light" src="img/logo-light.svg" width="32" height="32" alt="">
       SharkyClips
     </a>
-    <nav class="links" aria-label="Site">
-      <a href="index.html" aria-current="page">Home</a>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>
-    </nav>
+    <nav class="links" aria-label="Main"><a href="./" aria-current="page">Home</a><a href="features.html">Features</a><a href="download.html">Download</a><a href="faq.html">FAQ</a><a href="updates.html">Updates</a><a href="contact.html">Contact</a></nav>
+    <div class="tools">
+      <details class="lang">
+        <summary><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg><span>EN</span><span class="vh"> - Language: English</span></summary>
+        <ul><li><a href="./" hreflang="en" lang="en" data-setlang="en" aria-current="true">English</a></li><li><a href="tr/" hreflang="tr" lang="tr" data-setlang="tr">Türkçe</a></li><li><a href="es/" hreflang="es" lang="es" data-setlang="es">Español</a></li><li><a href="pt/" hreflang="pt-BR" lang="pt-BR" data-setlang="pt">Português (Brasil)</a></li><li><a href="de/" hreflang="de" lang="de" data-setlang="de">Deutsch</a></li><li><a href="fr/" hreflang="fr" lang="fr" data-setlang="fr">Français</a></li><li><a href="hu/" hreflang="hu" lang="hu" data-setlang="hu">Magyar</a></li><li><a href="ru/" hreflang="ru" lang="ru" data-setlang="ru">Русский</a></li><li><a href="ar/" hreflang="ar" lang="ar" data-setlang="ar">العربية</a></li><li><a href="zh/" hreflang="zh-Hans" lang="zh-Hans" data-setlang="zh">中文</a></li><li><a href="ja/" hreflang="ja" lang="ja" data-setlang="ja">日本語</a></li></ul>
+      </details>
+      <button type="button" class="iconbtn" id="theme" aria-label="Switch between dark and light theme" title="Switch between dark and light theme"><svg class="theme-light-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="theme-dark-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></svg></button>
+    </div>
   </div>
 </header>
-
-<main id="main" class="wrap">
-  <h1>SharkyClips</h1>
-  <p class="tagline">Hunt your best moments.</p>
-  <p class="lead">A free, open-source app for streamers. Point it at a stream recording and it finds
-    the best moments, writes titles and a description, and renders vertical clips ready for YouTube
-    Shorts, TikTok or Reels. Everything runs on your own computer.</p>
-  <div class="cta">
-    <a class="btn primary" href="https://github.com/utkualsir/sharkyclips/releases/latest">Download</a>
-    <a class="btn" href="https://github.com/utkualsir/sharkyclips#readme">Read the guide</a>
+<main id="main">
+<div class="wrap">
+<section class="hero">
+  <div>
+    <p class="eyebrow">Free app for streamers</p>
+    <h1>Your stream in, ready-to-post clips out.</h1>
+    <p class="lead">SharkyClips finds the best moments in your stream recording and turns them into vertical clips for YouTube Shorts, TikTok and Instagram Reels. It all runs on your own PC.</p>
+    <div class="cta"><a class="btn primary big" href="https://github.com/utkualsir/sharkyclips/releases/download/v1.2.74/SharkyClips-Setup-1.2.74.exe"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor" stroke="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5 10.5 4.5v7H3zM12 4.3 21 3v8.5h-9zM3 12.5h7.5v7L3 18.5zM12 12.5h9V21l-9-1.3z"/></svg><span class="t">Download for Windows<small>Free · 375 MB · version 1.2.74</small></span></a><a class="btn" href="features.html">See what it does</a></div>
+    <ul class="facts"><li>Free and open source</li><li>No account, no cloud</li><li>11 languages</li><li>Windows 10 / 11</li></ul>
   </div>
-
-<figure class="shot illo" role="img" aria-label="A long stream recording with its hype curve; the peaks become three vertical 9:16 clips">
-    <svg viewBox="0 50 960 300" aria-hidden="true">
-      <rect x="20" y="70" width="460" height="259" rx="14" class="i-frame"/>
-      <rect x="44" y="94" width="120" height="68" rx="8" class="i-cam"/>
-      <polyline class="i-curve" points="44,290 90,282 130,286 170,250 200,272 240,262 280,190 310,240 350,252 390,214 420,150 450,236 456,280"/>
-      <circle cx="280" cy="190" r="7" class="i-peak"/><circle cx="420" cy="150" r="7" class="i-peak"/><circle cx="170" cy="250" r="7" class="i-peak"/>
-      <path d="M510 200h70m-16-14 16 14-16 14" class="i-arrow"/>
-      <g class="i-clip"><rect x="610" y="40" width="100" height="178" rx="12" transform="translate(0 60)" class="i-frame"/><rect x="622" y="112" width="76" height="46" rx="6" class="i-cam"/><rect x="626" y="232" width="68" height="10" rx="5" class="i-cap"/></g>
-      <g class="i-clip"><rect x="725" y="100" width="100" height="178" rx="12" class="i-frame"/><rect x="737" y="112" width="76" height="46" rx="6" class="i-cam"/><rect x="741" y="232" width="68" height="10" rx="5" class="i-cap"/></g>
-      <g class="i-clip"><rect x="840" y="100" width="100" height="178" rx="12" class="i-frame"/><rect x="852" y="112" width="76" height="46" rx="6" class="i-cam"/><rect x="856" y="232" width="68" height="10" rx="5" class="i-cap"/></g>
-    </svg>
-  </figure>
-
-  <h2>What it does</h2>
-  <div class="grid">
-    <div class="card"><h3>Finds the moments</h3><p>Volume spikes, laughter, reaction words, chat bursts and in-game events become one ranked list of clip candidates.</p></div>
-    <div class="card"><h3>Writes the text</h3><p>A local AI model scores each clip and suggests titles, hashtags and a short description in 7 languages.</p></div>
-    <div class="card"><h3>Renders 9:16 clips</h3><p>Facecam on top, gameplay below, word-timed subtitles, music and your brand kit, on your own GPU.</p></div>
-    <div class="card"><h3>Stays local</h3><p>No account, no cloud, no telemetry. Your videos never leave your computer unless you upload them.</p></div>
-  </div>
-
-  <h2 id="youtube">How SharkyClips uses YouTube</h2>
-  <p>Uploading to YouTube is optional. If you connect your channel in <b>Settings → YouTube</b>,
-    SharkyClips uses the official YouTube API Services to do exactly these things, and only when you
-    ask for them:</p>
-  <table>
-    <thead><tr><th>Action</th><th>Permission (scope)</th><th>When</th></tr></thead>
-    <tbody>
-      <tr><td>Upload a clip you set up (title, description, tags, privacy, release time, playlist, thumbnail); change its details or release time, publish it early or delete it when you cancel it before it is public; show which channel is connected; read the views, likes and privacy status of videos uploaded <i>with SharkyClips</i></td><td><code>youtube</code></td><td>When you press <b>Publish now</b> or schedule a clip (uploaded in advance while your PC is on), edit or cancel it in the Library, open Settings, and about every 6 hours while the app runs</td></tr>
-      <tr><td>Read the average view percentage of those same videos, to learn which opening (hook) style keeps your viewers watching</td><td><code>yt-analytics.readonly</code></td><td>Only for clips uploaded as part of a hook test, once they have been public for 48 hours</td></tr>
-    </tbody>
-  </table>
-  <p class="callout">This data is stored only on your computer and is used only to show you your
-    results and to improve the clip scores for <i>your</i> channel. SharkyClips has no server: the
-    developers never receive, see or share your YouTube data, and nothing is used for ads.
-    SharkyClips never reads other people's channels, your comments, your subscribers or your
-    watch history. It only changes or deletes videos that were uploaded with SharkyClips, and only
-    when you ask (for example when you edit or cancel a scheduled clip).</p>
-  <p>You can disconnect at any time in Settings → YouTube (this revokes the access token at Google),
-    or remove the access in your <a href="https://myaccount.google.com/permissions">Google account
-    permissions</a>. By connecting you agree to the
-    <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>; Google handles your data
-    under the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. Read our full
-    <a href="privacy.html">privacy policy</a> and <a href="terms.html">terms of use</a>.</p>
-
-  <h2>Open source</h2>
-  <p>SharkyClips is MIT-licensed. The source code, the installers and every release are on
-    <a href="https://github.com/utkualsir/sharkyclips">GitHub</a>, where you can also report a bug. Questions about this website or the privacy policy:
-    <a href="https://github.com/utkualsir/sharkyclips-site/issues">open an issue here</a>.</p>
+  <figure class="shot"><img src="img/shots/easy-project-1280.webp" srcset="img/shots/easy-project-640.webp 640w, img/shots/easy-project-1280.webp 1280w" sizes="(min-width: 980px) 560px, 100vw" width="1280" height="800" alt="SharkyClips in Easy mode: a stream with its ready clips and one Share button for each" fetchpriority="high"></figure>
+</section>
+<section id="how" aria-labelledby="how-h">
+  <h2 id="how-h">How it works</h2>
+  <p class="lead">Three steps. SharkyClips does the editing work in between.</p>
+  <ol class="steps"><li><h3>Add your stream</h3><p>Drop a video file, or paste a Twitch, YouTube or Kick link. SharkyClips can also take the newest recording from your OBS folder.</p></li><li><h3>SharkyClips makes the clips</h3><p>It finds the loud, funny and exciting moments, cuts them cleanly, adds subtitles, bleeps swear words and writes titles.</p></li><li><h3>Check and share</h3><p>Watch the clips, change what you like, and share them to YouTube Shorts, TikTok and Instagram Reels.</p></li></ol>
+</section>
+<section aria-labelledby="demo-h">
+  <h2 id="demo-h">See it in action</h2>
+  <p class="lead">A short tour of the current version, made with a demo stream (no real person or game in it).</p>
+  <figure class="shot"><video controls muted playsinline preload="none" width="1280" height="760" poster="img/demo-poster.webp" aria-label="Short video: the SharkyClips home screen, a stream with its clips, and the Share window"><source src="img/demo.mp4" type="video/mp4"></video><figcaption>Easy mode: open a stream, watch a clip, share it.</figcaption></figure>
+  <div class="gallery"><figure class="shot"><img src="img/shots/easy-home-1280.webp" srcset="img/shots/easy-home-640.webp 640w, img/shots/easy-home-1280.webp 1280w" sizes="(min-width: 1080px) 340px, (min-width: 700px) 50vw, 100vw" width="1280" height="800" alt="The SharkyClips home screen with a big drop area for a video or a link" loading="lazy" decoding="async"><figcaption>Start: drop a video or paste a link.</figcaption></figure><figure class="shot"><img src="img/shots/share-1280.webp" srcset="img/shots/share-640.webp 640w, img/shots/share-1280.webp 1280w" sizes="(min-width: 1080px) 340px, (min-width: 700px) 50vw, 100vw" width="1280" height="800" alt="The Share window with YouTube, TikTok and Instagram and a caption for each" loading="lazy" decoding="async"><figcaption>One Share for every platform.</figcaption></figure><figure class="shot"><img src="img/shots/pro-project-1280.webp" srcset="img/shots/pro-project-640.webp 640w, img/shots/pro-project-1280.webp 1280w" sizes="(min-width: 1080px) 340px, (min-width: 700px) 50vw, 100vw" width="1280" height="800" alt="Pro mode: the stream with its Hype Map, a 9:16 preview and the clip list" loading="lazy" decoding="async"><figcaption>Pro mode: every setting, if you want it.</figcaption></figure></div>
+</section>
+<section aria-labelledby="feat-h">
+  <h2 id="feat-h">Made for streamers</h2>
+  <div class="grid"><div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15c3-3 6 3 9 0s6 3 9 0M7 11l5-7 2.5 7"/></svg></span><h3>Finds the moments</h3><p>Loud reactions, laughter, chat explosions and in-game events become one ranked list of clips.</p></div><div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4zM17 9l4 6m0-6-4 6"/></svg></span><h3>Bleeps, checked</h3><p>Swear words are bleeped in 11 languages, and every finished clip is listened to again.</p></div><div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L7 8m5-5 5 5M5 12v8h14v-8"/></svg></span><h3>One Share button</h3><p>YouTube Shorts, TikTok and Instagram Reels, with the right caption and limits for each.</p></div><div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h3a2 2 0 1 1 4 0h3v3a2 2 0 1 1 0 4v3h-3a2 2 0 1 0-4 0H5v-3a2 2 0 1 0 0-4z"/></svg></span><h3>TikTok helper<span class=new>New</span></h3><p>A small browser extension fills in your TikTok upload. You check it and click Post yourself.</p></div><div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="15" height="13" rx="2"/><path d="M7 21h12a2 2 0 0 0 2-2V8M6 15l3.5-4 3 3 2-2 3.5 3"/></svg></span><h3>Photo slideshow<span class=new>New</span></h3><p>Turn 2 to 20 photos into a vertical before-and-after video with labels and music.</p></div><div class="card"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-1 2-2s-1-1.5-1-2.5 1-2 2.5-2H18a3 3 0 0 0 3-3c0-4.7-4-8.5-9-8.5Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15" cy="7.5" r="1"/></svg></span><h3>Your look<span class=new>New</span></h3><p>Four looks for the app, dark and light, and your own colours.</p></div></div>
+  <p><a class="btn" href="features.html">All features</a></p>
+</section>
+<section id="youtube" aria-labelledby="yt-h">
+  <h2 id="yt-h">How SharkyClips uses YouTube</h2>
+  <p>Uploading to YouTube is optional. If you connect your channel in <b>Settings → YouTube</b>, SharkyClips uses the official YouTube API Services to do exactly these things, and only when you ask for them:</p><div class='tablewrap'><table><thead><tr><th scope='col'>Action</th><th scope='col'>Permission (scope)</th><th scope='col'>When</th></tr></thead><tbody><tr><td>Upload a clip you set up (title, description, tags, privacy, release time, playlist, thumbnail); change its details or release time, publish it early or delete it when you cancel it before it is public; show which channel is connected; read the views, likes and privacy status of videos uploaded <i>with SharkyClips</i></td><td><code>youtube</code></td><td>When you press <b>Publish now</b> or schedule a clip (uploaded in advance while your PC is on), edit or cancel it in the Library, open Settings, and about every 6 hours while the app runs</td></tr><tr><td>Read the average view percentage of those same videos, to learn which opening (hook) style keeps your viewers watching</td><td><code>yt-analytics.readonly</code></td><td>Only for clips uploaded as part of a hook test, once they have been public for 48 hours</td></tr></tbody></table></div><p class='callout'>This data is stored only on your computer and is used only to show you your results and to improve the clip scores for <i>your</i> channel. SharkyClips has no server: the developers never receive, see or share your YouTube data, and nothing is used for ads. SharkyClips never reads other people's channels, your comments, your subscribers or your watch history. It only changes or deletes videos that were uploaded with SharkyClips, and only when you ask (for example when you edit or cancel a scheduled clip).</p><p>You can disconnect at any time in Settings → YouTube (this revokes the access token at Google), or remove the access in your <a href='https://myaccount.google.com/permissions'>Google account permissions</a>. By connecting you agree to the <a href='https://www.youtube.com/t/terms'>YouTube Terms of Service</a>; Google handles your data under the <a href='https://policies.google.com/privacy'>Google Privacy Policy</a>. Read our full <a href='privacy.html'>privacy policy</a> and <a href='terms.html'>terms of use</a>.</p>
+</section>
+<section aria-labelledby="oss-h">
+  <h2 id="oss-h">Free, open source, private</h2>
+  <p>SharkyClips is MIT-licensed: no subscription, no credits, no watermark. There is no account and no tracking, and your videos stay on your PC unless you share them. The source code and every release are on <a href='https://github.com/utkualsir/sharkyclips'>GitHub</a>.</p>
+  <div class="cta"><a class="btn primary" href="https://github.com/utkualsir/sharkyclips/releases/download/v1.2.74/SharkyClips-Setup-1.2.74.exe"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor" stroke="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.5 10.5 4.5v7H3zM12 4.3 21 3v8.5h-9zM3 12.5h7.5v7L3 18.5zM12 12.5h9V21l-9-1.3z"/></svg><span class="t">Download for Windows<small>Free · 375 MB · version 1.2.74</small></span></a><a class="btn" href="https://github.com/utkualsir/sharkyclips">Source code on GitHub</a></div>
+</section>
+</div>
 </main>
-
 <footer>
   <div class="wrap">
-    <span>SharkyClips<span class="sep" aria-hidden="true"></span>MIT license</span>
-    <span><a href="privacy.html">Privacy policy</a><span class="sep" aria-hidden="true"></span><a href="terms.html">Terms of use</a><span class="sep" aria-hidden="true"></span><a href="https://github.com/utkualsir/sharkyclips-site/issues">Contact</a></span>
+    <span>SharkyClips 1.2.74<span class="sep" aria-hidden="true"></span>Free and open source (MIT)</span>
+    <nav aria-label="Footer">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="contact.html">Send feedback</a>
+      <a href="https://github.com/utkualsir/sharkyclips">Source code on GitHub</a>
+    </nav>
   </div>
 </footer>
+<script>(function(){var d=document.documentElement,b=document.getElementById("theme");
+function cur(){return d.dataset.theme||(matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}
+b.addEventListener("click",function(){var n=cur()==="light"?"dark":"light";d.dataset.theme=n;try{localStorage.setItem("sc-theme",n)}catch(e){}});
+var l=document.querySelector(".lang");document.addEventListener("click",function(e){if(l.open&&!l.contains(e.target))l.open=false});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&l.open){l.open=false;l.querySelector("summary").focus()}});
+document.querySelectorAll("[data-setlang]").forEach(function(a){a.addEventListener("click",function(){try{localStorage.setItem("sc-lang",a.dataset.setlang)}catch(e){}})});
+var H={"en":{"t":"This page is also available in English.","go":"Read in English","x":"Close","h":"./"},"tr":{"t":"Bu sayfa Türkçe olarak da var.","go":"Türkçe oku","x":"Kapat","h":"tr/"},"es":{"t":"Esta página también está en español.","go":"Leer en español","x":"Cerrar","h":"es/"},"pt":{"t":"Esta página também está em português.","go":"Ler em português","x":"Fechar","h":"pt/"},"de":{"t":"Diese Seite gibt es auch auf Deutsch.","go":"Auf Deutsch lesen","x":"Schließen","h":"de/"},"fr":{"t":"Cette page existe aussi en français.","go":"Lire en français","x":"Fermer","h":"fr/"},"hu":{"t":"Ez az oldal magyarul is elérhető.","go":"Olvasás magyarul","x":"Bezárás","h":"hu/"},"ru":{"t":"Эта страница есть и на русском.","go":"Читать на русском","x":"Закрыть","h":"ru/"},"ar":{"t":"هذه الصفحة متوفرة بالعربية أيضًا.","go":"اقرأ بالعربية","x":"إغلاق","h":"ar/"},"zh":{"t":"本页也有中文版。","go":"阅读中文版","x":"关闭","h":"zh/"},"ja":{"t":"このページは日本語でも読めます。","go":"日本語で読む","x":"閉じる","h":"ja/"}},me="en",pick=null;try{if(localStorage.getItem("sc-lang"))return}catch(e){return}
+(navigator.languages||[navigator.language||""]).some(function(x){var c=String(x).slice(0,2).toLowerCase();if(H[c]){pick=c;return true}return false});
+if(!pick||pick===me)return;var h=H[pick],bar=document.getElementById("langhint"),go=document.getElementById("langhint-go"),x=document.getElementById("langhint-x");
+document.getElementById("langhint-text").textContent=h.t;go.textContent=h.go;go.href=h.h;go.lang=pick;bar.lang=pick;x.textContent=h.x;
+go.addEventListener("click",function(){try{localStorage.setItem("sc-lang",pick)}catch(e){}});
+x.addEventListener("click",function(){bar.hidden=true;try{localStorage.setItem("sc-lang",me)}catch(e){}});bar.hidden=false})();</script>
 </body>
 </html>

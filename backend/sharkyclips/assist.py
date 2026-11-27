@@ -18,8 +18,14 @@ How the page gets filled (decided in docs/assisted-upload.md, "Decisions"):
              and Brave load it by themselves (--load-extension); Google Chrome ignores that switch
              since Chrome 137, so the first time SharkyClips shows a 4-step guide (Developer mode >
              Load unpacked > this folder). Chrome keeps it in the profile after that.
-  firefox    Firefox only runs signed extensions and has no other clean way in: the page opens
-             there, and the clip goes the by-hand way (copy buttons, file, folder) with a clear note.
+  firefox    Firefox only runs signed extensions: the page opens there, and the clip goes the
+             by-hand way (copy buttons, file, folder) with a clear note, unless the SharkyClips
+             Helper from Firefox Add-ons is in that profile (1.2.74): then Firefox fills too.
+  stores     1.2.74: the same extension can be installed from Microsoft Edge Add-ons / Firefox
+             Add-ons (installer/build_extension.py makes the packages). A store copy has no
+             config.js with this install's key, so it pairs once: Settings shows a 6-digit code
+             (pair_code, 10 minutes, 5 tries), the Helper's popup sends it to
+             /api/assist/ext/pair (only from an extension origin) and keeps the key it gets back.
   login      never automated: the user logs in once in that window (the extension only says "Log
              in here once"); a CAPTCHA / verification pauses everything ("Please complete this in
              the browser") until the page is clear again. SharkyClips never solves or skips them.
@@ -41,7 +47,11 @@ from . import config, procs
 from .errors import SharkyClipsError
 
 EXT_NAME = "SharkyClips Helper"
-EXT_FILES = ("bg.js", "common.js", "tiktok.js", "instagram.js")
+EXT_FILES = ("bg.js", "common.js", "tiktok.js", "instagram.js", "popup.html", "popup.js", "popup.css")
+EXT_ICON_SIZES = (16, 32, 48, 128)
+GECKO_ID = "sharkyclips-helper@utkualsir.github.io"  # Firefox Add-ons id (fixed forever once listed)
+PAIR_TTL = 600  # seconds a pairing code works
+PAIR_TRIES = 5  # wrong codes before it stops working
 PORTS = tuple(range(8000, 8011))  # the server's port range (web server: 8000-8010)
 PAUSE_DEFAULT = 60  # seconds between two assisted posts on one platform (a batch): no spam pattern
 PAUSE_MIN, PAUSE_MAX = 20, 600
@@ -258,7 +268,10 @@ def pick() -> tuple[str, str] | None:
 
 
 def can_fill(key: str | None) -> bool:
-    return bool(key) and BROWSERS.get(key, {}).get("kind") == "chromium"
+    """Chromium browsers get the Helper from SharkyClips; Firefox only once the store add-on spoke to
+    this SharkyClips from there (it was installed into the SharkyClips Firefox profile and paired)."""
+    kind = BROWSERS.get(key or "", {}).get("kind")
+    return bool(key) and (kind == "chromium" or (kind == "firefox" and seen("firefox") > 0))
 
 
 def pause_s() -> int:
@@ -285,6 +298,36 @@ def _template() -> Path:
     return Path(__file__).with_name("assist_ext")
 
 
+def _ext_version(version: str) -> str:
+    return ".".join(str(int(x)) for x in re.findall(r"\d+", version)[:4]) or "1.0.0"
+
+
+def store_manifest(version: str, target: str) -> dict:
+    """The manifest of a store package (installer/build_extension.py): target "edge" | "firefox".
+    Same scripts as the copy SharkyClips writes itself, plus localized name/description, icons and
+    the pairing popup; no test origins, no config.js (a store copy pairs with a code)."""
+    m = {"manifest_version": 3, "name": "__MSG_name__", "short_name": "SharkyClips",
+         "version": _ext_version(version), "description": "__MSG_description__", "default_locale": "en",
+         "homepage_url": "https://utkualsir.github.io/sharkyclips-site/",
+         "icons": {str(n): f"icons/icon-{n}.png" for n in EXT_ICON_SIZES},
+         "action": {"default_title": "__MSG_name__", "default_popup": "popup.html",
+                    "default_icon": {str(n): f"icons/icon-{n}.png" for n in EXT_ICON_SIZES}},
+         "permissions": ["storage"],
+         "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
+         "content_scripts": [
+             {"matches": ["https://www.tiktok.com/*"], "js": ["common.js", "tiktok.js"], "run_at": "document_idle"},
+             {"matches": ["https://www.instagram.com/*"], "js": ["common.js", "instagram.js"], "run_at": "document_idle"},
+         ]}
+    if target == "firefox":
+        m["background"] = {"scripts": ["bg.js"]}
+        m["browser_specific_settings"] = {"gecko": {"id": GECKO_ID, "strict_min_version": "142.0",
+                                                    "data_collection_permissions": {"required": ["none"]}}}
+    else:
+        m["background"] = {"service_worker": "bg.js"}
+        m["minimum_chrome_version"] = "116"
+    return m
+
+
 def manifest(version: str) -> dict:
     tt = ["https://www.tiktok.com/*"]
     ig = ["https://www.instagram.com/*"]
@@ -297,10 +340,13 @@ def manifest(version: str) -> dict:
         tt.append(f"{base}/tiktokstudio/*")
         tt.append(f"{base}/login*")
         ig.append(f"{base}/fakeig/*")
-    v = ".".join(str(int(x)) for x in re.findall(r"\d+", version)[:4]) or "1.0.0"
+    v = _ext_version(version)
     return {"manifest_version": 3, "name": EXT_NAME, "version": v,
+            "default_locale": "en",  # required once _locales/ is there: without it Chromium refuses the extension
             "description": "Fills in your TikTok / Instagram upload for SharkyClips. You check it and click Post yourself.",
             "background": {"service_worker": "bg.js"},
+            "icons": {str(n): f"icons/icon-{n}.png" for n in EXT_ICON_SIZES},
+            "action": {"default_title": EXT_NAME, "default_popup": "popup.html"},
             "permissions": ["storage"],
             "host_permissions": ["http://127.0.0.1/*", "http://localhost/*"],
             "content_scripts": [
@@ -328,7 +374,67 @@ def write_extension(base_url: str | None = None) -> Path:
         except OSError:
             pass
         f.write_text(text, encoding="utf-8")
+    write_icons(dest / "icons")
+    loc = _template() / "_locales"
+    for d in loc.iterdir() if loc.is_dir() else ():
+        f = dest / "_locales" / d.name / "messages.json"
+        text = (d / "messages.json").read_text(encoding="utf-8")
+        if not (f.is_file() and f.read_text(encoding="utf-8") == text):
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_text(text, encoding="utf-8")
     return dest
+
+
+def write_icons(folder: Path) -> None:
+    """The extension's icons (the app's logo, assets/icon/sharkyclips.png scaled), once."""
+    src = config.REPO_ROOT / "assets" / "icon" / "sharkyclips.png"
+    folder.mkdir(parents=True, exist_ok=True)
+    if all((folder / f"icon-{n}.png").is_file() for n in EXT_ICON_SIZES):
+        return
+    try:
+        from PIL import Image
+
+        with Image.open(src) as im:
+            im = im.convert("RGBA")
+            for n in EXT_ICON_SIZES:
+                im.resize((n, n), Image.Resampling.LANCZOS).save(folder / f"icon-{n}.png")
+    except (OSError, ImportError):
+        pass  # icons are optional: the browser shows a letter instead
+
+
+# ===================================================================== pairing (store copies)
+
+_pair: dict = {}
+
+
+def pair_code(now: float | None = None) -> dict:
+    """A fresh 6-digit code for a store-installed Helper (shown in Settings; replaces the old one)."""
+    import time
+
+    now = time.time() if now is None else now
+    with _lock:
+        code = f"{secrets.randbelow(10 ** 6):06d}"
+        _pair.clear()
+        _pair.update(code=code, until=now + PAIR_TTL, tries=0)
+        return {"code": code, "expires_in": PAIR_TTL}
+
+
+def pair(code: str | None, now: float | None = None) -> str | None:
+    """The Helper's key for a right, fresh code (once); None otherwise. 5 wrong tries end the code."""
+    import hmac
+    import time
+
+    now = time.time() if now is None else now
+    want = str(code or "").strip().replace(" ", "")
+    with _lock:
+        if not _pair or now > _pair["until"] or _pair["tries"] >= PAIR_TRIES:
+            _pair.clear()
+            return None
+        if not (re.fullmatch(r"\d{6}", want) and hmac.compare_digest(want.encode(), _pair["code"].encode())):
+            _pair["tries"] += 1
+            return None
+        _pair.clear()
+    return token()
 
 
 def note_base(url: str) -> None:

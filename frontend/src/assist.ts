@@ -77,6 +77,8 @@ export const assistApi = {
   settings: (body: { browser?: string; pause_s?: number }) => req<AssistView>("PUT", "/api/assist/settings", body),
   open: (platform: "tiktok" | "reels") => req<{ browser: string; name: string }>("POST", "/api/assist/open", { platform }),
   setup: (action: "extensions" | "folder") => req<{ dir: string }>("POST", "/api/assist/setup", { action }),
+  /** 1.2.74: a 6-digit code for a Helper installed from a store (Edge Add-ons / Firefox Add-ons) */
+  pairCode: () => req<{ code: string; expires_in: number }>("POST", "/api/assist/pair-code"),
   act: (id: string, action: AssistAction, url?: string) =>
     req<AssistView>("POST", `/api/assist/task/${encodeURIComponent(id)}/${action}`, url ? { url } : {}),
 };

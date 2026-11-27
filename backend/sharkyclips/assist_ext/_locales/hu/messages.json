@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "hu"
+  },
+  "dir": {
+    "message": "ltr"
+  },
+  "name": {
+    "message": "SharkyClips Helper"
+  },
+  "description": {
+    "message": "Kitölti a TikTok- és Instagram-feltöltést az ingyenes SharkyClips apphoz. Te ellenőrzöd, és te kattintasz a Közzétételre."
+  },
+  "pair_howto": {
+    "message": "A SharkyClipsben nyisd meg a Beállításokat, majd a Helper útmutatót, és kattints a \"Kapcsolódási kód mutatása\" gombra. Írd be ide a kódot."
+  },
+  "pair_label": {
+    "message": "Kapcsolódási kód"
+  },
+  "pair_button": {
+    "message": "Kapcsolódás"
+  },
+  "pair_wrong": {
+    "message": "Ez a kód nem működött. Kérj új kódot a SharkyClipsben, és próbáld újra."
+  },
+  "state_ok": {
+    "message": "Kapcsolódva a gép SharkyClips appjához."
+  },
+  "state_no_app": {
+    "message": "A SharkyClips nem fut ezen a gépen. Indítsd el, és próbáld újra."
+  },
+  "state_off": {
+    "message": "Még nincs kapcsolat a SharkyClipsszel."
+  },
+  "state_checking": {
+    "message": "Ellenőrzés..."
+  },
+  "about": {
+    "message": "A Helper csak TikTok- és Instagram-oldalakon fut, és csak a gépen lévő SharkyClipsszel beszél. Soha nem kattint a Közzétételre."
+  },
+  "pair_banner": {
+    "message": "Először kapcsold össze a SharkyClips Helpert."
+  },
+  "pair_banner_sub": {
+    "message": "Kattints a Helper ikonjára az eszköztáron, és írd be a kódot, amit a SharkyClips mutat."
+  }
+}

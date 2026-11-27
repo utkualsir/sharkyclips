@@ -3479,6 +3479,18 @@ const ar: Record<string, string> = {
   "stage.slideshow_photos": "تجهيز الصور",
   "stage.slideshow_outro": "رسم الشعار",
   "stage.slideshow_rendering": "جارٍ صنع الفيديو",
+  // 1.2.74: Send feedback / Report a bug
+  "fb.send": "إرسال ملاحظات",
+  "fb.bug": "الإبلاغ عن خطأ",
+  "fb.idea": "اقتراح فكرة",
+  "fb.hint": "يفتح نموذج GitHub في متصفحك. يُملأ فقط إصدار التطبيق ونظامك، ولا يُرسل شيء حتى ترسله بنفسك.",
+  "fb.report": "إبلاغ",
+  // 1.2.74: a Helper from a store pairs with a code
+  "assist.store_title": "هل ثبّتّ المساعد من متجر؟",
+  "assist.store_body": "إذا أضفت مساعد SharkyClips من Microsoft Edge Add-ons أو Firefox Add-ons، فاربطه مرة واحدة: اضغط أيقونة المساعد في شريط أدوات المتصفح واكتب هذا الرمز.",
+  "assist.store_code_label": "رمز الاتصال",
+  "assist.store_left": "صالح لمدة {m}:{s}",
+  "assist.store_btn": "إظهار رمز الاتصال",
 };
 
 export default ar;

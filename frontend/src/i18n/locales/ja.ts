@@ -3718,6 +3718,18 @@ const ja: Record<string, string> = {
   "stage.slideshow_photos": "写真を準備中",
   "stage.slideshow_outro": "ロゴを描画中",
   "stage.slideshow_rendering": "動画を作成中",
+  // 1.2.74: Send feedback / Report a bug
+  "fb.send": "フィードバックを送る",
+  "fb.bug": "不具合を報告",
+  "fb.idea": "アイデアを提案",
+  "fb.hint": "ブラウザーで GitHub のフォームを開きます。入力されるのはアプリのバージョンとシステムだけで、あなたが送信するまで何も送られません。",
+  "fb.report": "報告",
+  // 1.2.74: a Helper from a store pairs with a code
+  "assist.store_title": "ストアからヘルパーを入れましたか？",
+  "assist.store_body": "Microsoft Edge アドオンまたは Firefox アドオンから SharkyClips ヘルパーを追加した場合は、一度だけ接続してください。ブラウザーのツールバーにあるヘルパーのアイコンをクリックし、このコードを入力します。",
+  "assist.store_code_label": "接続コード",
+  "assist.store_left": "あと {m}:{s} 有効",
+  "assist.store_btn": "接続コードを表示",
 };
 
 export default ja;

@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "ja"
+  },
+  "dir": {
+    "message": "ltr"
+  },
+  "name": {
+    "message": "SharkyClips ヘルパー"
+  },
+  "description": {
+    "message": "無料アプリ SharkyClips のために TikTok と Instagram の投稿内容を入力します。確認して投稿ボタンを押すのはあなたです。"
+  },
+  "pair_howto": {
+    "message": "SharkyClips で設定を開き、ヘルパーのガイドを開いて「接続コードを表示」を押します。ここにコードを入力してください。"
+  },
+  "pair_label": {
+    "message": "接続コード"
+  },
+  "pair_button": {
+    "message": "接続"
+  },
+  "pair_wrong": {
+    "message": "このコードは使えませんでした。SharkyClips で新しいコードを表示して、もう一度お試しください。"
+  },
+  "state_ok": {
+    "message": "この PC の SharkyClips に接続しています。"
+  },
+  "state_no_app": {
+    "message": "この PC で SharkyClips が起動していません。起動してからもう一度お試しください。"
+  },
+  "state_off": {
+    "message": "まだ SharkyClips に接続していません。"
+  },
+  "state_checking": {
+    "message": "確認中..."
+  },
+  "about": {
+    "message": "ヘルパーは TikTok と Instagram のページでのみ動作し、この PC の SharkyClips とだけ通信します。投稿ボタンは決して押しません。"
+  },
+  "pair_banner": {
+    "message": "まず SharkyClips ヘルパーを接続してください。"
+  },
+  "pair_banner_sub": {
+    "message": "ツールバーのヘルパーのアイコンをクリックし、SharkyClips に表示されたコードを入力してください。"
+  }
+}

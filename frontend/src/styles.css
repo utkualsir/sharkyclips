@@ -543,6 +543,9 @@ h3.section-title {
     min-height: 30px;
     padding: 4px 8px;
     line-height: 1.2;
+    /* one long word ("Полуавтоматически", 1.2.74) can't wrap at a space: hyphenate, else break */
+    hyphens: auto;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -2927,7 +2930,7 @@ h3.section-title {
   text-decoration: underline; text-underline-offset: 3px;
 }
 .welcome-skip:hover { color: var(--text); }
-.welcome-body { display: grid; gap: 14px; animation: logo-rise 0.35s var(--ease) both; }
+.welcome-body { display: grid; gap: 14px; animation: logo-rise 0.35s var(--ease) backwards; }
 .welcome-title:focus-visible {
   box-shadow: none; /* focus moves here for screen readers on every step; no ring needed */
 }
@@ -3116,8 +3119,8 @@ h3.section-title {
 
 /* The header logo hides while the launch logo flies into its place */
 .launch-handoff .topbar .brand { visibility: hidden; }
-.app-enter .topbar > :not(.brand) { animation: m-rise 0.45s 0.18s var(--ease) both; }
-.app-enter .page-fx { animation: m-rise 0.42s 0.26s var(--ease-sign) both; }
+.app-enter .topbar > :not(.brand) { animation: m-rise 0.45s 0.18s var(--ease) backwards; }
+.app-enter .page-fx { animation: m-rise 0.42s 0.26s var(--ease-sign) backwards; }
 
 /* index.html's copy of the last frame (after the launcher's splash page) */
 #boot-launch { display: none; }
@@ -3131,7 +3134,10 @@ h3.section-title {
 @keyframes m-fade { from { opacity: 0; } to { opacity: 1; } }
 
 /* page transitions */
-.page-fx { animation: m-rise 0.42s var(--ease-sign) both; }
+/* "backwards", never "both"/"forwards": a transform that stays applied after the animation makes
+   .page-fx the containing block of every position:fixed dialog inside the page, so on a scrolled
+   page the dialog opened off-screen, under the top bar (1.2.74, Settings > Helper guide) */
+.page-fx { animation: m-rise 0.42s var(--ease-sign) backwards; }
 
 /* the viral ring draws */
 .score-ring circle + circle { transition: stroke-dasharray 0.7s var(--ease); }
@@ -4945,3 +4951,8 @@ body:has(.mg-dock) .app-footer { padding-bottom: 72px; }
 
 /* Ocean: the faint light from the surface (none in the other presets) */
 body { background-image: var(--page-glow); background-repeat: no-repeat; }
+.feedback-box { display: grid; gap: 6px; margin-top: 12px; }
+.assist-store { display: grid; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.assist-store p { margin: 0; }
+.assist-code-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.assist-code { font-family: var(--font-mono); font-size: var(--fs-xl); letter-spacing: 0.12em; padding: 4px 10px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--strong); }

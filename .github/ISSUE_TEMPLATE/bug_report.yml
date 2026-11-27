@@ -5,7 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for reporting! Please don't attach private videos; a short description of the video is enough.
+        Thanks for reporting! Issues are **public**: please don't attach private videos, links to private content, passwords or log files with personal data. A short description is enough.
+        Tip: in SharkyClips, *Settings → About → Send feedback* (or *Report* in an error message) fills in the version and your system for you.
   - type: textarea
     id: what
     attributes:
@@ -18,36 +19,41 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Import a 2 h Twitch VOD
-        2. Click "Analyze with AI"
+        1. Import a 2 h Twitch VOD in Easy mode
+        2. Click "Share" on the first clip
         3. ...
   - type: input
     id: version
     attributes:
       label: SharkyClips version
-      description: Shown at the bottom of Settings (e.g. 1.0.0)
-    validations:
-      required: true
-  - type: dropdown
-    id: os
-    attributes:
-      label: Operating system
-      options: [Windows 11, Windows 10, macOS (Apple Silicon), macOS (Intel), Linux, Other]
+      description: Shown in Settings → About (e.g. 1.2.74)
     validations:
       required: true
   - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Windows 11, Windows 10, macOS 15
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options: [Easy mode, Pro mode, Not sure]
+  - type: input
     id: hardware
     attributes:
-      label: GPU / RAM
-      placeholder: e.g. RTX 3060 12 GB, 16 GB RAM
-  - type: textarea
-    id: doctor
-    attributes:
-      label: Output of `python cli.py doctor`
-      description: Run it in the `backend` folder with the venv active, then paste the table.
-      render: text
+      label: GPU / RAM (optional)
+      placeholder: e.g. RTX 3060 12 GB, 16 GB RAM, or "no GPU"
   - type: textarea
     id: logs
     attributes:
-      label: Error messages / terminal output
+      label: Error message or anything else (optional)
+      description: Paste the exact error text if there is one. Please remove names, paths and links you don't want to be public.
       render: text
+  - type: input
+    id: source
+    attributes:
+      label: Sent from
+      description: Filled in automatically (app or website); leave it as it is.

@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "pt-BR"
+  },
+  "dir": {
+    "message": "ltr"
+  },
+  "name": {
+    "message": "SharkyClips Helper"
+  },
+  "description": {
+    "message": "Preenche seu envio para o TikTok e o Instagram para o app gratuito SharkyClips. Você confere e clica em Publicar."
+  },
+  "pair_howto": {
+    "message": "No SharkyClips, abra Configurações, depois o guia do Helper, e clique em \"Mostrar código de conexão\". Digite o código aqui."
+  },
+  "pair_label": {
+    "message": "Código de conexão"
+  },
+  "pair_button": {
+    "message": "Conectar"
+  },
+  "pair_wrong": {
+    "message": "Esse código não funcionou. Mostre um código novo no SharkyClips e tente de novo."
+  },
+  "state_ok": {
+    "message": "Conectado ao SharkyClips neste PC."
+  },
+  "state_no_app": {
+    "message": "O SharkyClips não está aberto neste PC. Abra e tente de novo."
+  },
+  "state_off": {
+    "message": "Ainda não conectado ao SharkyClips."
+  },
+  "state_checking": {
+    "message": "Verificando..."
+  },
+  "about": {
+    "message": "O Helper só funciona em páginas do TikTok e do Instagram e só fala com o SharkyClips neste PC. Ele nunca clica em Publicar."
+  },
+  "pair_banner": {
+    "message": "Conecte o SharkyClips Helper primeiro."
+  },
+  "pair_banner_sub": {
+    "message": "Clique no ícone do Helper na barra de ferramentas e digite o código que o SharkyClips mostra."
+  }
+}

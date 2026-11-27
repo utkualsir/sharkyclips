@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://utkualsir.github.io/sharkyclips-site/sitemap.xml

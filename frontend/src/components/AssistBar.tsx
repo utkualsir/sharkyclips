@@ -163,6 +163,46 @@ function AssistRow({
   );
 }
 
+/** 1.2.74: a Helper from Microsoft Edge Add-ons / Firefox Add-ons pairs once with a 6-digit code. */
+function StorePairing() {
+  const { t } = useI18n();
+  const toast = useToast();
+  const [code, setCode] = useState<{ code: string; until: number } | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!code) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [code]);
+  const left = code ? Math.max(0, Math.round((code.until - now) / 1000)) : 0;
+  const show = () =>
+    assistApi
+      .pairCode()
+      .then((r) => {
+        setNow(Date.now());
+        setCode({ code: r.code, until: Date.now() + r.expires_in * 1000 });
+      })
+      .catch((e: any) => toast({ kind: "err", text: e.message, hint: e.hint }));
+  return (
+    <div className="assist-store" data-testid="assist-store">
+      <b>{t("assist.store_title")}</b>
+      <p className="muted">{t("assist.store_body")}</p>
+      {code && left > 0 ? (
+        <p className="assist-code-row">
+          <code className="assist-code" dir="ltr" aria-label={t("assist.store_code_label")}>
+            {code.code.slice(0, 3)} {code.code.slice(3)}
+          </code>
+          <span className="muted">{t("assist.store_left", { m: Math.floor(left / 60), s: String(left % 60).padStart(2, "0") })}</span>
+        </p>
+      ) : (
+        <button type="button" className="btn btn-sm" onClick={show} data-testid="assist-pair-code">
+          <Icon name="link" size={13} /> {t("assist.store_btn")}
+        </button>
+      )}
+    </div>
+  );
+}
+
 /** The one-time guide: put the SharkyClips Helper into the SharkyClips browser profile. */
 export function AssistGuide({ v, onClose }: { v: AssistView; onClose: () => void }) {
   const { t } = useI18n();
@@ -231,6 +271,7 @@ export function AssistGuide({ v, onClose }: { v: AssistView; onClose: () => void
           </li>
         </ol>
       )}
+      <StorePairing />
       <p className="muted assist-safe">
         <Icon name="lock" size={13} /> {t("assist.guide_safe")}
       </p>

@@ -1,0 +1,28 @@
+<!doctype html>
+<!-- SharkyClips Helper (1.2.74): the toolbar popup. Shows whether the Helper reaches SharkyClips on
+     this PC; a copy from a store pairs here once with the code SharkyClips shows. -->
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SharkyClips Helper</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+<main>
+  <header><img src="icons/icon-32.png" width="24" height="24" alt=""><h1 data-i18n="name">SharkyClips Helper</h1></header>
+  <p id="state" class="state" role="status" aria-live="polite"></p>
+  <form id="pair" hidden>
+    <p class="muted" data-i18n="pair_howto"></p>
+    <label for="code" data-i18n="pair_label"></label>
+    <div class="row">
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" pattern="[0-9 ]{6,7}" required dir="ltr">
+      <button type="submit" id="go" data-i18n="pair_button"></button>
+    </div>
+    <p id="err" class="err" role="alert"></p>
+  </form>
+  <p class="muted small" data-i18n="about"></p>
+</main>
+<script src="popup.js"></script>
+</body>
+</html>

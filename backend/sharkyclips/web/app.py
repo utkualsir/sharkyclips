@@ -21,7 +21,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from .. import __version__, config, governor, languages, startup
+from .. import __version__, config, feedback, governor, languages, startup
 from ..clips import LAYOUTS, SUBTITLE_STYLES, ClipOptions, Facecam, first_sentence, render_clip
 from ..edit import bleepcheck
 from ..errors import SharkyClipsError, require_tool
@@ -954,6 +954,7 @@ def api_meta(request: Request) -> dict:
         "lan_url": app.state.lan_url,
         "workspace": str(config.workspace_dir()) if _is_local(request) else None,
         "llm": {"available": llm_available()},
+        "system": feedback.system_label(),  # 1.2.74: "Send feedback" fills it into the GitHub form
     }
 
 

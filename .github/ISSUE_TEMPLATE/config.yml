@@ -1,5 +1,11 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Questions and answers (FAQ)
+    url: https://utkualsir.github.io/sharkyclips-site/faq.html
+    about: Google sign-in, the TikTok helper extension, low-end PCs, SmartScreen and more.
   - name: Troubleshooting guide
     url: https://github.com/utkualsir/sharkyclips#troubleshooting
     about: Most install and GPU problems are covered here.
+  - name: Report a security problem privately
+    url: https://github.com/utkualsir/sharkyclips/security/advisories/new
+    about: Please don't post security problems in a public issue.

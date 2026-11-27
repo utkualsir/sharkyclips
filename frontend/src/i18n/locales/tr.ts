@@ -3500,6 +3500,18 @@ const tr: Record<string, string> = {
   "stage.slideshow_photos": "Fotoğraflar hazırlanıyor",
   "stage.slideshow_outro": "Logo çiziliyor",
   "stage.slideshow_rendering": "Video hazırlanıyor",
+  // 1.2.74: Send feedback / Report a bug
+  "fb.send": "Geri bildirim gönder",
+  "fb.bug": "Hata bildir",
+  "fb.idea": "Fikir öner",
+  "fb.hint": "Tarayıcında bir GitHub formu açar. Yalnızca uygulama sürümü ve sistemin doldurulur; sen göndermeden hiçbir şey gitmez.",
+  "fb.report": "Bildir",
+  // 1.2.74: a Helper from a store pairs with a code
+  "assist.store_title": "Yardımcıyı bir mağazadan mı kurdun?",
+  "assist.store_body": "SharkyClips Yardımcısını Microsoft Edge Eklentileri'nden veya Firefox Eklentileri'nden eklediysen bir kez bağla: tarayıcının araç çubuğundaki Yardımcı simgesine tıkla ve bu kodu yaz.",
+  "assist.store_code_label": "Bağlantı kodu",
+  "assist.store_left": "{m}:{s} daha geçerli",
+  "assist.store_btn": "Bağlantı kodunu göster",
 };
 
 export default tr;

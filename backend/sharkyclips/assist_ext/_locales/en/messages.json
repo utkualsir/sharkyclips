@@ -1,0 +1,47 @@
+{
+  "lang": {
+    "message": "en"
+  },
+  "dir": {
+    "message": "ltr"
+  },
+  "name": {
+    "message": "SharkyClips Helper"
+  },
+  "description": {
+    "message": "Fills in your TikTok and Instagram upload for the free SharkyClips app. You check it and click Post yourself."
+  },
+  "pair_howto": {
+    "message": "In SharkyClips, open Settings, then the Helper guide, and click \"Show connection code\". Type the code here."
+  },
+  "pair_label": {
+    "message": "Connection code"
+  },
+  "pair_button": {
+    "message": "Connect"
+  },
+  "pair_wrong": {
+    "message": "That code didn't work. Show a new code in SharkyClips and try again."
+  },
+  "state_ok": {
+    "message": "Connected to SharkyClips on this PC."
+  },
+  "state_no_app": {
+    "message": "SharkyClips isn't running on this PC. Start it and try again."
+  },
+  "state_off": {
+    "message": "Not connected to SharkyClips yet."
+  },
+  "state_checking": {
+    "message": "Checking..."
+  },
+  "about": {
+    "message": "The Helper only runs on TikTok and Instagram pages and only talks to SharkyClips on this PC. It never clicks Post."
+  },
+  "pair_banner": {
+    "message": "Connect the SharkyClips Helper first."
+  },
+  "pair_banner_sub": {
+    "message": "Click the Helper's icon in the toolbar and type the code SharkyClips shows you."
+  }
+}

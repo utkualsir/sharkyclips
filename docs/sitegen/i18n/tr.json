@@ -1,0 +1,175 @@
+{
+  "nav": {"index": "Ana sayfa", "features": "Özellikler", "download": "İndir", "faq": "SSS", "updates": "Yenilikler", "contact": "İletişim"},
+  "ui": {
+    "skip": "İçeriğe geç",
+    "nav_label": "Ana menü",
+    "lang_label": "Dil",
+    "theme_toggle": "Koyu ve açık tema arasında geçiş yap",
+    "close": "Kapat",
+    "langhint": "Bu sayfa Türkçe olarak da var.",
+    "langhint_go": "Türkçe oku",
+    "og_alt": "SharkyClips: uygulama bir yayın kaydını dikey kliplere çevirir"
+  },
+  "footer": {"label": "Alt bilgi", "license": "Ücretsiz ve açık kaynak (MIT)", "privacy": "Gizlilik", "terms": "Koşullar", "feedback": "Geri bildirim gönder", "source": "GitHub'da kaynak kodu"},
+  "common": {
+    "download_btn": "Windows için indir",
+    "download_sub": "Ücretsiz · {size} MB · sürüm {version}",
+    "new": "Yeni",
+    "english_binding": "Aşağıdaki tam metin İngilizcedir ve geçerli olan İngilizce metindir."
+  },
+  "home": {
+    "title": "SharkyClips: yayın kesitlerini ücretsiz Shorts, TikTok ve Reels'e çevir",
+    "desc": "SharkyClips yayıncılar için ücretsiz bir uygulama. Yayın kaydındaki en iyi anları bulur ve paylaşmaya hazır dikey kliplere çevirir; hepsi kendi bilgisayarında.",
+    "eyebrow": "Yayıncılar için ücretsiz uygulama",
+    "h1": "Yayının girer, paylaşmaya hazır klipler çıkar.",
+    "lead": "SharkyClips yayın kaydındaki en iyi anları bulur ve YouTube Shorts, TikTok ve Instagram Reels için dikey kliplere çevirir. Hepsi kendi bilgisayarında çalışır.",
+    "see_features": "Neler yaptığını gör",
+    "facts": ["Ücretsiz ve açık kaynak", "Hesap yok, bulut yok", "11 dil", "Windows 10 / 11"],
+    "hero_alt": "Kolay modda SharkyClips: hazır klipleriyle bir yayın ve her biri için bir Paylaş düğmesi",
+    "how_h": "Nasıl çalışır",
+    "how_lead": "Üç adım. Aradaki kurgu işini SharkyClips yapar.",
+    "steps": [
+      {"h": "Yayınını ekle", "p": "Bir video dosyası bırak ya da Twitch, YouTube veya Kick bağlantısı yapıştır. SharkyClips OBS klasöründeki en yeni kaydı da alabilir."},
+      {"h": "SharkyClips klipleri yapar", "p": "Gürültülü, komik ve heyecanlı anları bulur, temiz keser, altyazı ekler, küfürleri bipler ve başlıkları yazar."},
+      {"h": "Kontrol et ve paylaş", "p": "Klipleri izle, istediğini değiştir ve YouTube Shorts, TikTok ve Instagram Reels'e paylaş."}
+    ],
+    "demo_h": "Çalışırken gör",
+    "demo_lead": "Güncel sürümden kısa bir tur; demo bir yayınla hazırlandı (içinde gerçek kişi ya da oyun yok).",
+    "demo_alt": "Kısa video: SharkyClips ana ekranı, klipleriyle bir yayın ve Paylaş penceresi",
+    "demo_cap": "Kolay mod: bir yayını aç, bir klibi izle, paylaş.",
+    "gallery": [
+      {"img": "easy-home", "alt": "Video ya da bağlantı için büyük bir bırakma alanı olan SharkyClips ana ekranı", "cap": "Başla: bir video bırak ya da bağlantı yapıştır."},
+      {"img": "share", "alt": "YouTube, TikTok ve Instagram ile her biri için açıklama içeren Paylaş penceresi", "cap": "Her platform için tek Paylaş."},
+      {"img": "pro-project", "alt": "Pro mod: Heyecan Haritası, 9:16 önizleme ve klip listesiyle yayın", "cap": "Pro mod: istersen her ayar."}
+    ],
+    "feat_h": "Yayıncılar için yapıldı",
+    "cards": [
+      {"icon": "wave", "h": "Anları bulur", "p": "Yüksek tepkiler, kahkahalar, sohbet patlamaları ve oyun içi olaylar sıralı tek bir klip listesine dönüşür."},
+      {"icon": "mute", "h": "Bipler, kontrollü", "p": "Küfürler 11 dilde biplenir ve her biten klip yeniden dinlenir."},
+      {"icon": "share", "h": "Tek Paylaş düğmesi", "p": "YouTube Shorts, TikTok ve Instagram Reels; her biri için doğru açıklama ve sınırlarla."},
+      {"icon": "puzzle", "h": "TikTok yardımcısı", "p": "Küçük bir tarayıcı eklentisi TikTok yüklemeni doldurur. Kontrol eder, Paylaş'a kendin tıklarsın.", "new": "1"},
+      {"icon": "photos", "h": "Fotoğraf slayt gösterisi", "p": "2 ile 20 fotoğrafı etiketli ve müzikli dikey bir önce-sonra videosuna çevir.", "new": "1"},
+      {"icon": "palette", "h": "Senin görünümün", "p": "Uygulama için dört görünüm, koyu ve açık, bir de kendi renklerin.", "new": "1"}
+    ],
+    "all_features": "Tüm özellikler",
+    "yt_h": "SharkyClips YouTube'u nasıl kullanır",
+    "yt_html": "<p>YouTube'a yüklemek isteğe bağlıdır. Kanalını <b>Ayarlar → YouTube</b> bölümünden bağlarsan SharkyClips resmî YouTube API Hizmetleri'ni tam olarak şunlar için ve yalnızca sen istediğinde kullanır:</p><div class='tablewrap'><table><thead><tr><th scope='col'>İşlem</th><th scope='col'>İzin (kapsam)</th><th scope='col'>Ne zaman</th></tr></thead><tbody><tr><td>Hazırladığın bir klibi yüklemek (başlık, açıklama, etiketler, gizlilik, yayın zamanı, oynatma listesi, küçük resim); ayrıntılarını ya da yayın zamanını değiştirmek, erken yayınlamak veya herkese açık olmadan iptal ettiğinde silmek; hangi kanalın bağlı olduğunu göstermek; <i>SharkyClips ile</i> yüklenen videoların izlenme, beğeni ve gizlilik durumunu okumak</td><td><code>youtube</code></td><td><b>Şimdi yayınla</b>'ya bastığında ya da bir klibi zamanladığında (bilgisayarın açıkken önceden yüklenir), Kütüphanede düzenlediğinde ya da iptal ettiğinde, Ayarları açtığında ve uygulama çalışırken yaklaşık 6 saatte bir</td></tr><tr><td>Aynı videoların ortalama izlenme yüzdesini okumak; böylece hangi açılış (hook) tarzının izleyicileri tuttuğunu öğrenmek</td><td><code>yt-analytics.readonly</code></td><td>Yalnızca bir hook testinin parçası olarak yüklenen ve 48 saattir herkese açık olan klipler için</td></tr></tbody></table></div><p class='callout'>Bu veriler yalnızca senin bilgisayarında saklanır ve yalnızca sana sonuçlarını göstermek ve <i>senin</i> kanalın için klip puanlarını iyileştirmek için kullanılır. SharkyClips'in sunucusu yoktur: geliştiriciler YouTube verilerini asla almaz, görmez ya da paylaşmaz ve hiçbir şey reklam için kullanılmaz. SharkyClips başkalarının kanallarını, yorumlarını, abonelerini ya da izleme geçmişini asla okumaz. Yalnızca SharkyClips ile yüklenen videoları ve yalnızca sen istediğinde değiştirir ya da siler (örneğin zamanlanmış bir klibi düzenlediğinde ya da iptal ettiğinde).</p><p>Bağlantıyı istediğin zaman Ayarlar → YouTube bölümünden kesebilirsin (bu, Google'daki erişim jetonunu iptal eder) ya da erişimi <a href='https://myaccount.google.com/permissions'>Google hesap izinlerinden</a> kaldırabilirsin. Bağlanarak <a href='https://www.youtube.com/t/terms'>YouTube Hizmet Şartları</a>'nı kabul edersin; Google verilerini <a href='https://policies.google.com/privacy'>Google Gizlilik Politikası</a>'na göre işler. Tam <a href='{privacy}'>gizlilik politikamızı</a> ve <a href='{terms}'>kullanım koşullarımızı</a> oku.</p>",
+    "oss_h": "Ücretsiz, açık kaynak, gizli",
+    "oss_p": "SharkyClips MIT lisanslıdır: abonelik yok, kredi yok, filigran yok. Hesap ve takip yok; videoların sen paylaşmadıkça bilgisayarında kalır. Kaynak kodu ve her sürüm <a href='{gh}'>GitHub</a>'da."
+  },
+  "features": {
+    "title": "Özellikler: SharkyClips, ücretsiz yayın klipleyici",
+    "desc": "SharkyClips'in yaptığı her şey: en iyi anları bulur, oyunu tanır, küfürleri bipler, altyazı ekler, YouTube, TikTok ve Reels için tek Paylaş, TikTok yardımcısı, fotoğraf slayt gösterileri ve dört görünüm.",
+    "h1": "SharkyClips'in yaptığı her şey",
+    "lead": "Uzun bir yayından sonuna kadar izlenen kliplere. Kolay mod her şeyi kendi yapar; Pro mod sana her ayarı verir.",
+    "sections": [
+      {"id": "moments", "eyebrow": "En iyi anlar", "h": "Paylaşmaya değer anları bulur", "p": "SharkyClips bir kurgucu gibi dinler ve okur.", "items": ["Ses yüksekliği, kahkaha, bağırma ve tepki kelimeleri", "Sohbet tekrarındaki patlamalar (Twitch, YouTube, Kick)", "Klip kenarları kelimelere oturur, asla cümle ortasında kesmez", "Yerel bir yapay zekâ her klibe puan verir ve başlık yazar"], "img": "pro-project", "alt": "En iyi anları işaretli bir yayının Heyecan Haritası"},
+      {"id": "games", "eyebrow": "Oyunlar", "h": "Oyununu tanır", "p": "Delta Force ve League of Legends için oyun ekranının kendisini okur.", "items": ["Leş, çoklu leş, hedefler ve galibiyetler", "Bir çoklu leş her zaman tek klibe sığar", "Oyunda olanlardan başlıklar", "Eklenebilen profillerle daha fazla oyun"], "icon": "game", "aside": "Diğer oyunlar da çalışır: anlar o zaman sesinden, oyun sesinden ve sohbetten gelir."},
+      {"id": "editing", "eyebrow": "Kurgu", "h": "Paylaşmaya hazır klipler", "p": "Üstte yüz kameran, altta oyun olan 9:16 video.", "items": ["Kelime kelime altyazı, sağdan sola diller de", "Küfürler 11 dilde biplenir ve her klip yeniden kontrol edilir", "Akıllı yakınlaştırma, anlık tekrar ve sohbet balonları", "Metinden kurgu: kelimeleri silerek kes"], "icon": "mute", "aside": "Hâlâ duyulan bir küfür içeren klip, sen dinleyene kadar otomatik paylaşımdan geri tutulur."},
+      {"id": "easy", "eyebrow": "Kolay ve Pro", "h": "Kolay mod her şeyi yapar", "p": "Bir video bırak, bitmiş kliplere geri dön. Her ayar için Pro moda geç.", "items": ["En iyi klipler kendiliğinden seçilir, şekillendirilir ve oluşturulur", "Yayından sonra klipler kendiliğinden (OBS klasörü ya da kanalın)", "Oynarken kısayol tuşuyla ya da sohbette !clip ile an işaretle", "Klipleri telefonundan onayla"], "img": "easy-home", "alt": "Kolay mod ana ekranı"},
+      {"id": "share", "eyebrow": "Paylaşım", "h": "Her platform için tek Paylaş", "p": "YouTube Shorts, TikTok ve Instagram Reels tek pencereden.", "items": ["Her platform için sınırları kontrol edilmiş bir açıklama", "Hemen paylaş ya da bir zaman seç", "YouTube yüklemelerin kendi ücretsiz Google projenle", "Paylaştıklarının geçmişi; hiçbir şey iki kez paylaşılmaz"], "img": "share", "alt": "Üç platformlu Paylaş penceresi"},
+      {"id": "helper", "eyebrow": "TikTok ve Instagram", "h": "SharkyClips Yardımcısı yüklemeni doldurur", "new": "1", "p": "Küçük bir tarayıcı eklentisi. SharkyClips TikTok'un yükleme sayfasını tarayıcında açar, Yardımcı da videoyu ve açıklamayı yerleştirir.", "items": ["Paylaş'tan önce durur: kontrol eder, kendin paylaşırsın", "Edge, Opera ve Brave'de kendiliğinden çalışır; Chrome bir kurulum adımı ister", "Yalnızca TikTok ve Instagram sayfalarında çalışır", "Yalnızca bilgisayarındaki SharkyClips ile konuşur, başka hiçbir şeyle"], "icon": "puzzle", "aside": "Hiçbir şifre saklanmaz ya da senin yerine yazılmaz: TikTok'a bir kez kendin giriş yaparsın."},
+      {"id": "slideshow", "eyebrow": "Fotoğraflar", "h": "Fotoğraf slayt gösterisi", "new": "1", "p": "2 ile 20 fotoğrafı dikey bir videoya çevir: önce-sonra için birebir.", "items": ["Önce, Süreç, Sonuç gibi etiketler kendi dilinde", "Her fotoğrafta yavaş, yumuşak bir yakınlaştırma ve yumuşak geçişler", "Kendi müziğin, sonunda SharkyClips logosu", "Aynı Paylaş düğmesiyle paylaşılır"], "img": "slideshow", "alt": "Sıralı fotoğraflar ve 9:16 önizlemeli fotoğraf slayt gösterisi ekranı"},
+      {"id": "looks", "eyebrow": "Kişiselleştirme", "h": "Kendine göre ayarla", "new": "1", "p": "Uygulama için bir görünüm seç: Klasik, Okyanus, Shark Sign ya da Yüksek karşıtlık.", "items": ["Her görünüm için koyu ve açık", "İyi kontrast için kontrol edilen kendi vurgu rengin", "Sakin ya da tam animasyon, ya da hiç", "Bir yayın işlenirken küçük bir köpekbalığı oyunu"], "img": "looks", "alt": "Uygulamanın dört görünümünü gösteren Ayarlar"},
+      {"id": "languages", "eyebrow": "Diller", "h": "11 dil", "p": "Uygulama, konuşma tanıma, başlıklar ve altyazılar.", "items": ["English, Türkçe, Español, Português (Brasil), Deutsch, Français, Magyar", "Русский, العربية (sağdan sola), 中文, 日本語", "Başlıklar konuşulandan farklı bir dilde olabilir", "Altyazılar zamanlamaları korunarak çevrilir"], "icon": "lang", "aside": "Konuşma tanıma (Whisper) ve yapay zekâ her dilde senin bilgisayarında çalışır."},
+      {"id": "lowend", "eyebrow": "Her bilgisayar", "h": "Normal bilgisayarlarda çalışır", "p": "Oyuncu bilgisayarı gerekmez. SharkyClips donanımını kontrol eder ve doğru kurulumu seçer.", "items": ["NVIDIA ekran kartı çok hızlandırır", "Eski bilgisayarlar ve ekran kartsız dizüstüler için Hafif mod", "Sessiz mod sen oynarken ya da tam ekran izlerken bekler", "Kapanan uygulama kaldığı yerden devam eder"], "icon": "cpu", "aside": "Ekran kartı olmayan küçük, 2 çekirdekli bir dizüstünde 17 dakikalık bir video Hafif modda yaklaşık 16 dakika sürer."},
+      {"id": "private", "eyebrow": "Gizlilik", "h": "Baştan gizli", "p": "SharkyClips sunucusu yok.", "items": ["Konuşma tanıma ve yapay zekâ bilgisayarında çalışır", "Hesap yok, analiz yok, reklam yok", "Girişlerin bilgisayarında şifreli saklanır", "Videoların yalnızca sen paylaşınca bilgisayarından çıkar"], "icon": "lock", "aside": "Tam <a href='{privacy}'>gizlilik politikasını</a> oku."}
+    ]
+  },
+  "download": {
+    "title": "SharkyClips'i Windows için indir (ücretsiz)",
+    "desc": "Windows 10 ve 11 için ücretsiz SharkyClips kurulumunu indir. Sistem gereksinimleri, kurulum adımları ve Windows SmartScreen uyarısı için yardım.",
+    "h1": "SharkyClips'i indir",
+    "lead": "İçinde her şey olan tek bir kurulum. Yönetici izni yok, ek program yok.",
+    "all_releases": "Tüm sürümler",
+    "facts": ["Sürüm {version}", "Yaklaşık {size} MB", "Windows 10 / 11, 64 bit", "Ücretsiz, hesap yok"],
+    "steps_h": "Üç adımda kur",
+    "steps": [
+      {"h": "İndir", "p": "İndir düğmesine tıkla. Dosyanın adı SharkyClips-Setup-{version}.exe."},
+      {"h": "Kur", "p": "Aç ve İleri'ye, sonra Kur'a tıkla. Yaklaşık bir dakika sürer. Windows mavi bir mesaj mı gösteriyor? <a href='#smartscreen'>Aşağıya bak</a>."},
+      {"h": "İlk açılış", "p": "SharkyClips tarayıcında açılır, dilini sorar ve bilgisayarını kontrol eder. Sonra bilgisayarına uygun yapay zekâ parçalarını bir kez indirir."}
+    ],
+    "req_h": "Sistem gereksinimleri",
+    "req_p": "SharkyClips her açılışta donanımını kontrol eder ve çalışan en hızlı kurulumu seçer.",
+    "req_cols": ["Parça", "En az", "Önerilen"],
+    "req_rows": [
+      ["Sistem", "Windows 10 (1809 ya da daha yeni) veya 11, 64 bit", "Windows 11"],
+      ["Bellek", "8 GB RAM (4 GB Hafif modda yavaşça çalışır)", "16 GB RAM"],
+      ["Ekran kartı", "Ekran kartı gerekmez", "6 GB ya da daha fazla NVIDIA ekran kartı"],
+      ["Disk", "Uygulama için yaklaşık 3 GB, yapay zekâ modelleri için 2-10 GB", "Bir SSD, artı videoların için yer"],
+      ["İnternet", "İlk açılış ve paylaşım için", "Sonrasında çevrimdışı çalışır"]
+    ],
+    "smart_h": "\"Windows bilgisayarınızı korudu\" mu?",
+    "smart_p": "Kurulum henüz ücretli bir sertifikayla imzalı değil, bu yüzden Microsoft Defender SmartScreen yeni bir indirme için uyarabilir. Yeni ücretsiz uygulamalarda bu normaldir.",
+    "smart_steps": ["<b>Ek bilgi</b>'ye tıkla.", "Uygulamanın SharkyClips-Setup-{version}.exe olduğunu kontrol et.", "<b>Yine de çalıştır</b>'a tıkla."],
+    "smart_note": "Emin olmak mı istiyorsun? Her sürümün bir .sha256 dosyası var. PowerShell'de <code>Get-FileHash SharkyClips-Setup-{version}.exe</code> aynı sayıyı göstermeli.",
+    "smart_alt": "Windows SmartScreen mesajı: önce Ek bilgi'ye, sonra Yine de çalıştır'a tıkla",
+    "more_h": "Daha fazlası",
+    "more": [
+      {"h": "Güncellemeler", "p": "Ayarlar → Güncellemeler → Güncellemeleri denetle. SharkyClips yeni sürümü sen kullanmıyorken kurar. <a href='{updates}'>Yenilikler</a>."},
+      {"h": "Kaldırma", "p": "Windows Ayarlar → Uygulamalar → SharkyClips → Kaldır. Ayarlarını da silmek isteyip istemediğini sorar; videoların korunur."},
+      {"h": "macOS ve Linux", "p": "macOS için tek komutluk bir kurulum ve geliştiriciler için elle kurulum var. Windows kadar test edilmediler. <a href='{gh}#install'>Kurulum rehberine</a> bak."}
+    ]
+  },
+  "faq": {
+    "title": "SSS: SharkyClips soruları ve cevapları",
+    "desc": "SharkyClips hakkında cevaplar: gizlilik, kendi Google projenle YouTube girişi ve 100 kullanıcı sınırı, TikTok yardımcı eklentisi, zayıf bilgisayarlar ve daha fazlası.",
+    "h1": "Sorular ve cevaplar",
+    "lead": "Sorunu bulamadın mı? <a href='{contact}'>Bize sor</a>.",
+    "items": [
+      {"id": "free", "q": "SharkyClips gerçekten ücretsiz mi?", "a": "<p>Evet. Açık kaynaktır (MIT lisansı). Abonelik, kredi, filigran ve reklam yok. Yapay zekâ kendi bilgisayarında çalışır, bu yüzden ödenecek bir şey yok.</p>"},
+      {"id": "privacy", "q": "SharkyClips videolarımı bir yere yükler mi?", "a": "<p>Hayır. Her şey bilgisayarında çalışır: konuşma tanıma, yapay zekâ, anları bulma ve klip yapma. SharkyClips sunucusu ve takip yok. Videoların yalnızca bir klibi YouTube, TikTok ya da Instagram'a kendin paylaştığında bilgisayarından çıkar. Ayrıntılar <a href='{privacy}'>gizlilik politikasında</a>.</p>"},
+      {"id": "google", "q": "YouTube için neden kendi Google projem gerekiyor? 100 kullanıcı sınırı nedir?", "a": "<p>YouTube'a yüklemek için bir uygulamanın Google girişine ihtiyacı var. Google, incelemediği bir girişi <b>toplam 100 kullanıcıyla</b> sınırlar (Google buna kullanıcı sınırı der). Tüm SharkyClips kullanıcıları için ortak tek bir giriş çok hızlı dolardı.</p><p>Bu yüzden indirmede ortak bir Google girişi yok. Bunun yerine <b>kendine ait ücretsiz bir Google projesi</b> bağlarsın. O zaman sınır ve günlük yükleme kotası yalnızca senin olur. Ücretsizdir, kredi kartı gerekmez ve bir kereye mahsus yaklaşık 5-10 dakika sürer.</p>"},
+      {"id": "google-setup", "q": "Kendi Google projemi nasıl bağlarım?", "a": "<p>SharkyClips'te: Ayarlar → YouTube → <b>Kendi Google projeni bağla</b>. Bir rehber senin için doğru Google sayfalarını açar:</p><ol class='howto'><li>Bir proje oluştur (herhangi bir ad).</li><li>YouTube Data API v3'ü aç.</li><li>İzin ekranını (Harici) ayarla ve kendini test kullanıcısı olarak ekle.</li><li>Masaüstü uygulaması türünde bir OAuth istemcisi oluştur ve dosyasını indir.</li><li>O dosyayı SharkyClips'e bırak ve Google ile bağlan'a tıkla.</li></ol><p>Google uygulamanın doğrulanmadığını söyleyebilir: o senin kendi projen, devam edebilirsin. Proje Test aşamasındayken Google girişi 7 gün sonra bitirir; girişli kalmak için Üretim'e al. <a href='{own_google}'>Tam rehber</a>.</p>"},
+      {"id": "helper", "q": "TikTok yardımcı eklentisini nasıl kurarım?", "a": "<p>SharkyClips Yardımcısı küçük bir tarayıcı eklentisidir. TikTok (istersen Instagram) yükleme sayfanı doldurur ve Paylaş'tan önce durur.</p><ul><li><b>Microsoft Edge, Opera, Opera GX, Brave:</b> yapacak bir şey yok. SharkyClips yükleme sayfasını açarken Yardımcıyı kendisi ekler.</li><li><b>Google Chrome:</b> tek bir kurulum adımı. SharkyClips kısa bir rehber gösterir: chrome://extensions'ı aç, Geliştirici modunu aç, Paketlenmemiş öğe yükle'ye tıkla ve SharkyClips'in gösterdiği klasörü seç.</li><li>İlk seferde o tarayıcı penceresinde TikTok'a kendin giriş yap. SharkyClips şifreni asla görmez.</li></ul><p>Yardımcı yalnızca TikTok ve Instagram sayfalarında çalışır ve yalnızca bilgisayarındaki SharkyClips ile konuşur. O olmadan SharkyClips açıklamayı senin için kopyalar ve elle paylaşırsın.</p>"},
+      {"id": "lowend", "q": "Bilgisayarımda çalışır mı? Oyuncu bilgisayarım yok.", "a": "<p>Evet. Windows 10 ya da 11 (64 bit) ve 8 GB RAM gerekir. Ekran kartı gerekmez. NVIDIA ekran kartı olmayan bir bilgisayarda SharkyClips <b>Hafif modu</b> kendiliğinden seçer: işlemcide çalışan daha küçük bir konuşma modeli ve daha küçük bir yapay zekâ. Daha yavaştır ama çalışır: küçük, 2 çekirdekli bir dizüstünde 17 dakikalık bir video yaklaşık 16 dakika sürer. NVIDIA ekran kartıyla çok daha hızlıdır. <a href='{download}#requirements'>Sistem gereksinimlerine</a> bak.</p>"},
+      {"id": "gaming", "q": "Oyunlarımı yavaşlatır mı?", "a": "<p>Hayır. Varsayılan Sessiz modda SharkyClips sen oynarken ya da tam ekran bir şey izlerken ağır işini duraklatır ve ekran kartı belleğini oyuna geri verir. Bıraktığında devam eder.</p>"},
+      {"id": "smartscreen", "q": "Windows \"Windows bilgisayarınızı korudu\" diyor. Güvenli mi?", "a": "<p>Bu, henüz ücretli bir sertifikayla imzalanmamış yeni bir indirme için SmartScreen uyarısıdır. <b>Ek bilgi</b>'ye, sonra <b>Yine de çalıştır</b>'a tıkla. Dosyayı sürümün .sha256 dosyasıyla kontrol edebilirsin. <a href='{download}#smartscreen'>Adım adım</a>.</p>"},
+      {"id": "sources", "q": "Hangi videoları kullanabilirim?", "a": "<p>Twitch, YouTube ve Kick kayıtları (sohbet tekrarlarıyla), çoğu başka video sitesi ya da bilgisayarındaki herhangi bir video dosyası. Saatlerce süren uzun yayınlar sorun değil. Yalnızca sahibi olduğun ya da kullanma hakkın olan videoları kullan.</p>"},
+      {"id": "posting", "q": "TikTok ve Instagram'a benim yerime paylaşır mı?", "a": "<p>SharkyClips her şeyi hazırlar ve Yardımcı yükleme sayfasını doldurur, ama Paylaş'a <b>sen</b> tıklarsın. Instagram her zaman senin tarafından paylaşılır. YouTube yüklemeleri kendi Google projeni bağladıktan sonra otomatik olabilir.</p>"},
+      {"id": "mac", "q": "Mac ya da Linux'ta çalışır mı?", "a": "<p>Ana platform tek tıkla kurulumlu Windows. macOS için tek komutluk bir kurulum, Linux ve geliştiriciler için elle kurulum var ama daha az test edildiler. <a href='{gh}#install'>Kurulum rehberine</a> bak.</p>"},
+      {"id": "feedback", "q": "Bir hatayı nasıl bildiririm ya da fikir öneririm?", "a": "<p>Uygulamada: Ayarlar → Hakkında → <b>Geri bildirim gönder</b> ya da bir hata mesajındaki aynı düğme. Uygulama sürümü ve sistemin doldurulmuş, başka hiçbir şey içermeyen bir GitHub formu açar. Ya da <a href='{contact}'>iletişim sayfasını</a> kullan.</p>"}
+    ],
+    "more_h": "Hâlâ takıldın mı?",
+    "more_p": "Bir <a href='{bug}'>hata bildirimi</a> aç ya da <a href='{issues}'>GitHub'daki tüm sorulara</a> bak."
+  },
+  "updates": {
+    "title": "Yenilikler: SharkyClips'te neler yeni",
+    "desc": "En yeni SharkyClips sürümleri ve her birinde neyin değiştiği: yeni özellikler, iyileştirmeler ve düzeltmeler.",
+    "h1": "Neler yeni",
+    "lead": "SharkyClips kendini günceller: Ayarlar → Güncellemeler. Son sürümlerde değişenler burada.",
+    "version": "Sürüm",
+    "show": "Ayrıntıları göster",
+    "groups": {"new": "Yeni", "improved": "İyileştirmeler", "fixed": "Düzeltmeler", "other": "Değişiklikler"},
+    "older": "Eski sürümler ve her sürümün kurulumları <a href='{releases}'>GitHub</a>'da."
+  },
+  "contact": {
+    "title": "İletişim ve geri bildirim: SharkyClips",
+    "desc": "SharkyClips hakkında hata bildir, özellik öner ya da soru sor. Gizli güvenlik bildirimleri de memnuniyetle karşılanır.",
+    "h1": "İletişim ve geri bildirim",
+    "lead": "SharkyClips açık olarak, GitHub'da geliştiriliyor. Her bildirim işe yarar.",
+    "cards": [
+      {"icon": "bug", "h": "Hata bildir", "p": "Bir şey çalışmıyor mu? Ne yaptığını ve ne olduğunu anlat.", "btn": "Hata bildir", "href": "{bug}"},
+      {"icon": "bulb", "h": "Fikir öner", "p": "Eksik bulduğun bir özellik, oynadığın bir oyun, iyileştirmemiz gereken bir dil.", "btn": "Fikir öner", "href": "{idea}"},
+      {"icon": "shield", "h": "Güvenlik sorunu", "p": "Bir güvenlik sorunu mu buldun? Lütfen herkese açık bir konuda değil, gizli olarak bildir.", "btn": "Gizli bildir", "href": "{security}"},
+      {"icon": "mail", "h": "Bu site ve gizlilik", "p": "Bu site, gizlilik politikası ya da koşullar hakkında sorular.", "btn": "Site hakkında sor", "href": "{site_issues}"}
+    ],
+    "app_note": "<b>Uygulamada:</b> Ayarlar → Hakkında → <b>Geri bildirim gönder</b> (her hata mesajında da var) uygulama sürümünü ve sistemini senin için doldurur.",
+    "privacy_note": "GitHub konuları herkese açıktır. Lütfen özel videolar, özel içerik bağlantıları, şifreler ya da kişisel veri içeren kayıt dosyaları ekleme. Paylaşmak için ücretsiz bir GitHub hesabı gerekir."
+  },
+  "privacy": {
+    "title": "Gizlilik politikası: SharkyClips",
+    "desc": "SharkyClips verilerini nasıl ele alır: her şey bilgisayarında kalır, sunucu ve takip yok. YouTube API veri kullanımı açıklandı.",
+    "h1": "Gizlilik politikası",
+    "summary_h": "Kısaca",
+    "summary": "<ul><li>SharkyClips senin bilgisayarında çalışır. Sunucusu, hesabı ve takibi yok.</li><li>Videoların, dökümlerin, kliplerin ve YouTube verilerin bilgisayarında kalır. SharkyClips'i yapanlar bunların hiçbirini almaz.</li><li>Uygulama yalnızca senin başlattığın şeyler için internete çıkar: indirmeler, güncellemeler ve YouTube, TikTok ya da Instagram'a paylaşım.</li><li>YouTube isteğe bağlı. Ayarlardan bağlantıyı kes ya da Google hesabından erişimi kaldır.</li></ul>"
+  },
+  "terms": {
+    "title": "Kullanım koşulları: SharkyClips",
+    "desc": "Ücretsiz, açık kaynak SharkyClips uygulamasının (MIT lisansı) ve isteğe bağlı YouTube bağlantısının kullanım koşulları.",
+    "h1": "Kullanım koşulları",
+    "summary_h": "Kısaca",
+    "summary": "<ul><li>SharkyClips ücretsiz, açık kaynak bir yazılımdır (MIT lisansı).</li><li>Yalnızca sahibi olduğun ya da kullanabileceğin videoları, müzikleri ve logoları kullan. Paylaştıklarından sen sorumlusun.</li><li>Yapay zekâ başlıkları ve metinleri öneridir: paylaşmadan önce kontrol et.</li><li>Uygulama hiçbir garanti olmadan sunulur. Önemli videolarının yedeğini al.</li></ul>"
+  },
+  "notfound": {"title": "Sayfa bulunamadı: SharkyClips", "h1": "Sayfa bulunamadı", "p": "Bu sayfa yok (artık yok).", "back": "Ana sayfa"}
+}

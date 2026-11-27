@@ -201,5 +201,32 @@ var SCX = (() => {
   }
 
   const report = (body) => send({ type: "report", body });
-  return { sleep, send, vis, q, qa, norm, waitFor, press, setFiles, getFile, fillEditor, banner, bannerOff, ring, onPersonClick, report, strings: null };
+
+  // 1.2.74: the Helper can be in one browser twice (the copy SharkyClips adds + one from a store).
+  // Only one fills the page: the first copy that has its key marks the page; the other stays quiet.
+  // A store copy without a key (not paired yet) only speaks if no other copy took the page.
+  const MARK = "data-sharkyclips-helper";
+  async function claim() {
+    const root = document.documentElement;
+    const r = await send({ type: "ready" });
+    if (root.hasAttribute(MARK)) return false;
+    if (r && r.ok) {
+      root.setAttribute(MARK, "1");
+      return true;
+    }
+    await sleep(2500);
+    if (root.hasAttribute(MARK)) return false;
+    const msg = (k, fb) => {
+      try {
+        return chrome.i18n.getMessage(k) || fb;
+      } catch (e) {
+        return fb;
+      }
+    };
+    banner("act", msg("pair_banner", "Connect the SharkyClips Helper first."),
+      msg("pair_banner_sub", "Click the Helper's icon in the toolbar and type the code SharkyClips shows you."));
+    return false;
+  }
+
+  return { sleep, send, vis, q, qa, norm, waitFor, press, setFiles, getFile, fillEditor, banner, bannerOff, ring, onPersonClick, report, claim, strings: null };
 })();

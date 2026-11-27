@@ -451,6 +451,8 @@ def _browser_of(ua: str | None) -> str | None:
     if "Chrome/" in ua:
         last = assist.load_state().get("last_browser")
         return last if last in ("chrome", "brave") else "chrome"
+    if "Firefox/" in ua:  # 1.2.74: the Helper from Firefox Add-ons
+        return "firefox"
     return None
 
 
@@ -468,6 +470,26 @@ def api_ext_hello(request: Request) -> dict:
 
     assist.note_seen(_browser_of(request.headers.get("user-agent")), time.time())
     return {"app": "sharkyclips", "version": __version__, "ok": True}
+
+
+@router.post("/api/assist/ext/pair")
+def api_ext_pair(request: Request, body: dict | None = Body(default=None)) -> dict:
+    """1.2.74: a store-installed Helper trades the code shown in Settings for its key (once).
+    security.check lets this one path in without the key, and only from an extension origin."""
+    from .. import __version__
+
+    b = body or {}
+    tok = assist.pair(b.get("code"))
+    if not tok:
+        raise HTTPException(status_code=403, detail="That code didn't work. Show a new code in SharkyClips.")
+    assist.note_seen(_browser_of(b.get("ua") or request.headers.get("user-agent")), time.time())
+    return {"app": "sharkyclips", "version": __version__, "token": tok}
+
+
+@router.post("/api/assist/pair-code")
+def api_pair_code() -> dict:
+    """Settings > the Helper guide: "Show connection code" (for a Helper from a store)."""
+    return assist.pair_code()
 
 
 @router.post("/api/assist/ext/task")

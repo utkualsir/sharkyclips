@@ -9,6 +9,232 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.74] - 2026-11-27
+One logo everywhere, a new website in 11 languages, and a simple way to send feedback. The TikTok helper can now also come from a browser store, and dialogs no longer open off-screen.
+
+### New
+- **Send feedback / Report a bug.** In Settings → About, and as a "Report" button on every error message. It opens a GitHub form with the app version and your system filled in, and nothing else. Nothing is sent until you send it yourself.
+- **The SharkyClips Helper from a store.** If you install the Helper from Microsoft Edge Add-ons or Firefox Add-ons (coming soon), connect it once: the Helper guide shows a 6-digit code, and you type it into the Helper's menu. With it, Firefox can fill in your upload too.
+- **A new website** in 11 languages: what SharkyClips does, screenshots and a short demo, download help (also for the blue "Windows protected your PC" message), questions and answers, and the update notes.
+
+### Improved
+- **One logo everywhere.** The app icon, the icon next to the clock, the installer pictures, the start screen, the end of a photo slideshow and the website now all use the Classic look of the app.
+- **The Helper has a small menu** in the browser toolbar that shows if it is connected to SharkyClips.
+- **The Helper twice in one browser** (for example SharkyClips' own copy and a store copy) no longer fills in the page twice: only one of them does.
+
+### Fixed
+- **Dialogs on a scrolled page opened off-screen**, partly under the top bar (for example the Helper guide near the bottom of Settings). They now always open in the middle of the window.
+- **A choice in Settings was cut off on phones in Russian** (TikTok's "Semi-automatic"). Very long words now wrap inside the button.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Her yerde aynı logo, 11 dilde yeni bir web sitesi ve geri bildirim göndermenin kolay bir yolu. TikTok yardımcısı artık bir tarayıcı mağazasından da gelebiliyor ve pencereler artık ekran dışında açılmıyor.
+
+### Yeni
+- **Geri bildirim gönder / Hata bildir.** Ayarlar → Hakkında'da ve her hata mesajında bir "Bildir" düğmesi olarak. Uygulama sürümü ve sistemin doldurulmuş, başka hiçbir şey içermeyen bir GitHub formu açar. Sen göndermeden hiçbir şey gitmez.
+- **Mağazadan SharkyClips Yardımcısı.** Yardımcıyı Microsoft Edge Eklentileri'nden ya da Firefox Eklentileri'nden (yakında) kurarsan bir kez bağla: Yardımcı rehberi 6 haneli bir kod gösterir, sen de bunu Yardımcının menüsüne yazarsın. Böylece Firefox da yüklemeni doldurabilir.
+- **11 dilde yeni bir web sitesi**: SharkyClips'in ne yaptığı, ekran görüntüleri ve kısa bir tanıtım, indirme yardımı (mavi "Windows bilgisayarınızı korudu" mesajı için de), sorular ve cevaplar ve güncelleme notları.
+
+### İyileştirmeler
+- **Her yerde aynı logo.** Uygulama simgesi, saatin yanındaki simge, kurulum görselleri, açılış ekranı, fotoğraf slayt gösterisinin sonu ve web sitesi artık uygulamanın Klasik görünümünü kullanıyor.
+- **Yardımcının tarayıcı araç çubuğunda küçük bir menüsü var**; SharkyClips'e bağlı olup olmadığını gösteriyor.
+- **Bir tarayıcıda iki Yardımcı** (örneğin SharkyClips'in kendi kopyası ve bir mağaza kopyası) artık sayfayı iki kez doldurmuyor: yalnızca biri dolduruyor.
+
+### Düzeltmeler
+- **Kaydırılmış bir sayfadaki pencereler ekran dışında açılıyordu**, kısmen üst çubuğun altında (örneğin Ayarlar'ın altına yakın Yardımcı rehberi). Artık hep pencerenin ortasında açılıyor.
+- **Rusça telefonlarda Ayarlar'daki bir seçim kesiliyordu** (TikTok'un "Yarı otomatik" seçeneği). Çok uzun kelimeler artık düğmenin içinde alt satıra geçiyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+El mismo logo en todas partes, un sitio web nuevo en 11 idiomas y una forma sencilla de enviar comentarios. El ayudante de TikTok ahora también puede venir de una tienda del navegador, y las ventanas ya no se abren fuera de la pantalla.
+
+### Nuevo
+- **Enviar comentarios / Informar de un error.** En Ajustes → Acerca de, y como botón "Informar" en cada mensaje de error. Abre un formulario de GitHub con la versión de la app y tu sistema ya rellenos, y nada más. No se envía nada hasta que tú lo mandes.
+- **El SharkyClips Helper desde una tienda.** Si instalas el Helper desde Microsoft Edge Add-ons o Firefox Add-ons (pronto), conéctalo una vez: la guía del Helper muestra un código de 6 cifras y tú lo escribes en el menú del Helper. Así Firefox también puede rellenar tu subida.
+- **Un sitio web nuevo** en 11 idiomas: qué hace SharkyClips, capturas y una demo corta, ayuda para descargar (también para el mensaje azul "Windows protegió su PC"), preguntas y respuestas, y las notas de cada versión.
+
+### Mejoras
+- **El mismo logo en todas partes.** El icono de la app, el icono junto al reloj, las imágenes del instalador, la pantalla de inicio, el final de una presentación de fotos y el sitio web usan ahora el estilo Clásico de la app.
+- **El Helper tiene un pequeño menú** en la barra del navegador que muestra si está conectado a SharkyClips.
+- **El Helper dos veces en un navegador** (por ejemplo, la copia propia de SharkyClips y una copia de tienda) ya no rellena la página dos veces: solo lo hace uno.
+
+### Correcciones
+- **Las ventanas de una página desplazada se abrían fuera de la pantalla**, en parte bajo la barra superior (por ejemplo, la guía del Helper al final de Ajustes). Ahora siempre se abren en el centro de la ventana.
+- **Una opción de Ajustes se cortaba en móviles en ruso** ("Semi-automático" de TikTok). Las palabras muy largas ahora se parten dentro del botón.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+O mesmo logo em todo lugar, um site novo em 11 idiomas e um jeito simples de enviar feedback. O ajudante do TikTok agora também pode vir de uma loja do navegador, e as janelas não abrem mais fora da tela.
+
+### Novo
+- **Enviar feedback / Relatar um erro.** Em Configurações → Sobre, e como botão "Relatar" em toda mensagem de erro. Abre um formulário do GitHub com a versão do app e o seu sistema já preenchidos, e mais nada. Nada é enviado até você mesmo enviar.
+- **O SharkyClips Helper de uma loja.** Se você instalar o Helper pelo Microsoft Edge Add-ons ou pelo Firefox Add-ons (em breve), conecte uma vez: o guia do Helper mostra um código de 6 dígitos e você digita no menu do Helper. Assim o Firefox também consegue preencher seu envio.
+- **Um site novo** em 11 idiomas: o que o SharkyClips faz, capturas de tela e uma demo curta, ajuda para baixar (também para a mensagem azul "O Windows protegeu o computador"), perguntas e respostas e as notas de cada versão.
+
+### Melhorias
+- **O mesmo logo em todo lugar.** O ícone do app, o ícone ao lado do relógio, as imagens do instalador, a tela de abertura, o final de uma apresentação de fotos e o site agora usam o visual Clássico do app.
+- **O Helper tem um pequeno menu** na barra do navegador que mostra se ele está conectado ao SharkyClips.
+- **O Helper duas vezes no mesmo navegador** (por exemplo a cópia do próprio SharkyClips e uma cópia da loja) não preenche mais a página duas vezes: só um deles preenche.
+
+### Correções
+- **Janelas numa página rolada abriam fora da tela**, em parte embaixo da barra de cima (por exemplo o guia do Helper perto do fim das Configurações). Agora elas sempre abrem no meio da janela.
+- **Uma opção das Configurações era cortada no celular em russo** (o "Semi-automático" do TikTok). Palavras muito longas agora quebram dentro do botão.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Überall dasselbe Logo, eine neue Website in 11 Sprachen und ein einfacher Weg, Feedback zu senden. Der TikTok-Helfer kann jetzt auch aus einem Browser-Store kommen, und Fenster öffnen sich nicht mehr außerhalb des Bildschirms.
+
+### Neu
+- **Feedback senden / Fehler melden.** Unter Einstellungen → Über und als Knopf „Melden" in jeder Fehlermeldung. Er öffnet ein GitHub-Formular, in dem die App-Version und dein System eingetragen sind, sonst nichts. Nichts wird gesendet, bevor du es selbst abschickst.
+- **Der SharkyClips Helper aus einem Store.** Wenn du den Helper aus Microsoft Edge Add-ons oder Firefox Add-ons (bald) installierst, verbinde ihn einmal: Die Helper-Anleitung zeigt einen 6-stelligen Code, den du ins Menü des Helpers eingibst. Damit kann auch Firefox deinen Upload ausfüllen.
+- **Eine neue Website** in 11 Sprachen: was SharkyClips kann, Screenshots und eine kurze Demo, Hilfe zum Download (auch zur blauen Meldung „Der Computer wurde durch Windows geschützt"), Fragen und Antworten und die Update-Notizen.
+
+### Verbessert
+- **Überall dasselbe Logo.** Das App-Symbol, das Symbol neben der Uhr, die Bilder des Installers, der Startbildschirm, das Ende einer Foto-Diashow und die Website nutzen jetzt den Klassisch-Look der App.
+- **Der Helper hat ein kleines Menü** in der Symbolleiste des Browsers, das zeigt, ob er mit SharkyClips verbunden ist.
+- **Der Helper zweimal in einem Browser** (zum Beispiel die eigene Kopie von SharkyClips und eine Store-Kopie) füllt die Seite nicht mehr doppelt aus: Nur einer von beiden tut es.
+
+### Behoben
+- **Fenster auf einer gescrollten Seite öffneten sich außerhalb des Bildschirms**, teils unter der oberen Leiste (zum Beispiel die Helper-Anleitung weit unten in den Einstellungen). Jetzt öffnen sie sich immer in der Mitte des Fensters.
+- **Eine Auswahl in den Einstellungen wurde auf Russisch am Handy abgeschnitten** (TikToks „Halbautomatisch“). Sehr lange Wörter brechen jetzt im Knopf um.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Le même logo partout, un nouveau site web en 11 langues et un moyen simple d'envoyer un avis. L'assistant TikTok peut maintenant aussi venir d'une boutique du navigateur, et les fenêtres ne s'ouvrent plus hors de l'écran.
+
+### Nouveau
+- **Envoyer un avis / Signaler un bug.** Dans Paramètres → À propos, et en bouton « Signaler » dans chaque message d'erreur. Il ouvre un formulaire GitHub avec la version de l'app et votre système déjà remplis, et rien d'autre. Rien n'est envoyé avant que vous ne l'envoyiez vous-même.
+- **Le SharkyClips Helper depuis une boutique.** Si vous installez le Helper depuis Microsoft Edge Add-ons ou Firefox Add-ons (bientôt), connectez-le une fois : le guide du Helper affiche un code à 6 chiffres que vous tapez dans le menu du Helper. Firefox peut alors lui aussi remplir votre publication.
+- **Un nouveau site web** en 11 langues : ce que fait SharkyClips, des captures et une courte démo, de l'aide au téléchargement (aussi pour le message bleu « Windows a protégé votre ordinateur »), des questions-réponses et les notes de version.
+
+### Améliorations
+- **Le même logo partout.** L'icône de l'app, l'icône près de l'horloge, les images de l'installateur, l'écran de démarrage, la fin d'un diaporama photo et le site web utilisent maintenant le style Classique de l'app.
+- **Le Helper a un petit menu** dans la barre du navigateur qui indique s'il est connecté à SharkyClips.
+- **Le Helper deux fois dans un navigateur** (par exemple la copie de SharkyClips et une copie de boutique) ne remplit plus la page deux fois : un seul le fait.
+
+### Corrections
+- **Les fenêtres d'une page défilée s'ouvraient hors de l'écran**, en partie sous la barre du haut (par exemple le guide du Helper en bas des Paramètres). Elles s'ouvrent maintenant toujours au milieu de la fenêtre.
+- **Un choix des Paramètres était coupé sur téléphone en russe** (le « Semi-automatique » de TikTok). Les mots très longs passent maintenant à la ligne dans le bouton.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Mindenhol ugyanaz a logó, új weboldal 11 nyelven, és egyszerű módja a visszajelzésnek. A TikTok-segéd mostantól böngészőáruházból is jöhet, és az ablakok többé nem a képernyőn kívül nyílnak meg.
+
+### Új
+- **Visszajelzés küldése / Hiba bejelentése.** A Beállítások → Névjegy alatt, és „Bejelentés" gombként minden hibaüzenetben. Megnyit egy GitHub-űrlapot, amelyben az app verziója és a rendszered ki van töltve, más semmi. Semmi sem megy el, amíg te magad el nem küldöd.
+- **A SharkyClips Helper áruházból.** Ha a Helpert a Microsoft Edge Add-ons vagy a Firefox Add-ons oldaláról telepíted (hamarosan), kapcsold össze egyszer: a Helper útmutató egy 6 jegyű kódot mutat, ezt beírod a Helper menüjébe. Így a Firefox is ki tudja tölteni a feltöltésedet.
+- **Új weboldal** 11 nyelven: mit tud a SharkyClips, képernyőképek és egy rövid bemutató, letöltési segítség (a kék „A Windows megvédte a számítógépet" üzenethez is), kérdések és válaszok, és a frissítési jegyzetek.
+
+### Fejlesztések
+- **Mindenhol ugyanaz a logó.** Az app ikonja, az óra melletti ikon, a telepítő képei, az indítóképernyő, a fotó-diavetítés vége és a weboldal mostantól az app Klasszikus megjelenését használja.
+- **A Helpernek kis menüje van** a böngésző eszköztárán, amely mutatja, hogy kapcsolódik-e a SharkyClipshez.
+- **Két Helper egy böngészőben** (például a SharkyClips saját példánya és egy áruházi példány) már nem tölti ki kétszer az oldalt: csak az egyik teszi.
+
+### Javítások
+- **Egy legörgetett oldalon az ablakok a képernyőn kívül nyíltak meg**, részben a felső sáv alatt (például a Helper útmutató a Beállítások alján). Mostantól mindig az ablak közepén nyílnak meg.
+- **Egy választó a Beállításokban levágódott orosz nyelven telefonon** (a TikTok „Félautomatikus” lehetősége). A nagyon hosszú szavak most a gombon belül törnek.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Один логотип везде, новый сайт на 11 языках и простой способ отправить отзыв. Помощник для TikTok теперь можно установить и из магазина браузера, а окна больше не открываются за пределами экрана.
+
+### Новое
+- **Отправить отзыв / Сообщить об ошибке.** В Настройки → О программе и кнопкой «Сообщить» в каждом сообщении об ошибке. Открывается форма GitHub, где уже заполнены версия приложения и ваша система, и больше ничего. Ничего не отправляется, пока вы сами не отправите.
+- **SharkyClips Helper из магазина.** Если вы установите Helper из Microsoft Edge Add-ons или Firefox Add-ons (скоро), подключите его один раз: руководство по Helper покажет 6-значный код, а вы введёте его в меню Helper. Тогда и Firefox сможет заполнять вашу загрузку.
+- **Новый сайт** на 11 языках: что умеет SharkyClips, скриншоты и короткая демонстрация, помощь со скачиванием (и с синим сообщением «Система Windows защитила ваш компьютер»), вопросы и ответы, а также заметки об обновлениях.
+
+### Улучшения
+- **Один логотип везде.** Значок приложения, значок рядом с часами, картинки установщика, стартовый экран, концовка слайд-шоу из фото и сайт теперь в классическом стиле приложения.
+- **У Helper есть маленькое меню** на панели браузера, которое показывает, подключён ли он к SharkyClips.
+- **Два Helper в одном браузере** (например, своя копия SharkyClips и копия из магазина) больше не заполняют страницу дважды: это делает только один.
+
+### Исправления
+- **Окна на прокрученной странице открывались за пределами экрана**, частично под верхней панелью (например, руководство по Helper внизу Настроек). Теперь они всегда открываются посередине окна.
+- **Выбор в Настройках обрезался на телефонах по-русски** («Полуавтоматически» для TikTok). Очень длинные слова теперь переносятся внутри кнопки.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+الشعار نفسه في كل مكان، وموقع جديد بـ 11 لغة، وطريقة بسيطة لإرسال الملاحظات. يمكن الآن تثبيت مساعد TikTok من متجر المتصفح أيضًا، ولم تعد النوافذ تُفتح خارج الشاشة.
+
+### جديد
+- **إرسال ملاحظات / الإبلاغ عن خطأ.** في الإعدادات ← حول، وكزر "إبلاغ" في كل رسالة خطأ. يفتح نموذج GitHub فيه إصدار التطبيق ونظامك فقط، ولا شيء غيرهما. لا يُرسل شيء حتى ترسله بنفسك.
+- **مساعد SharkyClips من متجر.** إذا ثبّتّ المساعد من Microsoft Edge Add-ons أو Firefox Add-ons (قريبًا)، فاربطه مرة واحدة: يعرض دليل المساعد رمزًا من 6 أرقام تكتبه في قائمة المساعد. وبذلك يستطيع Firefox أيضًا ملء رفعك.
+- **موقع جديد** بـ 11 لغة: ما يفعله SharkyClips، ولقطات شاشة وعرض قصير، ومساعدة في التنزيل (وأيضًا في الرسالة الزرقاء "قام Windows بحماية الكمبيوتر")، وأسئلة وأجوبة، وملاحظات التحديثات.
+
+### تحسينات
+- **الشعار نفسه في كل مكان.** أيقونة التطبيق، والأيقونة بجانب الساعة، وصور المثبّت، وشاشة البدء، ونهاية عرض الصور، والموقع، كلها تستخدم الآن المظهر الكلاسيكي للتطبيق.
+- **للمساعد قائمة صغيرة** في شريط أدوات المتصفح تُظهر إن كان متصلًا بـ SharkyClips.
+- **المساعد مرتين في متصفح واحد** (مثلًا نسخة SharkyClips الخاصة ونسخة من المتجر) لم يعد يملأ الصفحة مرتين: واحد فقط يفعل ذلك.
+
+### إصلاحات
+- **كانت النوافذ في صفحة مُمرَّرة تُفتح خارج الشاشة**، جزئيًا تحت الشريط العلوي (مثل دليل المساعد قرب أسفل الإعدادات). أصبحت الآن تُفتح دائمًا في وسط النافذة.
+- **كان أحد الخيارات في الإعدادات مقطوعًا على الهواتف باللغة الروسية** (خيار "شبه تلقائي" في TikTok). أصبحت الكلمات الطويلة جدًا تنتقل الآن إلى سطر جديد داخل الزر.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+到处都是同一个标志，新增 11 种语言的网站，以及发送反馈的简单方式。TikTok 助手现在也可以从浏览器扩展商店安装。
+另外，对话框不会再在屏幕外打开了。
+
+### 新功能
+- **发送反馈 / 报告问题。** 在设置 → 关于中，以及每条错误消息里的“报告”按钮。它会打开一个 GitHub 表单，只填好应用版本和你的系统，不含其他内容。在你亲自提交之前不会发送任何内容。
+- **从扩展商店安装 SharkyClips 助手。** 如果你从 Microsoft Edge 加载项或 Firefox 附加组件（即将上架）安装助手，只需连接一次：助手指南会显示一个 6 位数的连接码，把它输入助手的菜单即可。这样 Firefox 也能帮你填写上传内容。
+- **全新的网站**，支持 11 种语言：介绍 SharkyClips 的功能、截图和简短演示、下载帮助（包括蓝色的“Windows 已保护你的电脑”提示）、问答以及更新说明。
+
+### 改进
+- **到处都是同一个标志。** 应用图标、时钟旁的图标、安装程序图片、启动画面、照片幻灯片的结尾和网站，现在都使用应用的经典外观。
+- **助手在浏览器工具栏中有一个小菜单**，显示它是否已连接到 SharkyClips。
+- **同一浏览器里有两个助手**（例如 SharkyClips 自带的副本和商店副本）时，不会再把页面填写两次：只有其中一个会填写。
+
+### 修复
+- **滚动后的页面上，对话框会在屏幕外打开**，部分被顶部栏挡住（例如设置页底部附近的助手指南）。现在它们总是在窗口中间打开。
+- **在手机上使用俄语时，设置中的一个选项会被截断**（TikTok 的“半自动”）。现在很长的单词会在按钮内换行。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+どこでも同じロゴ、11 言語の新しいウェブサイト、そしてフィードバックを送るかんたんな方法。TikTok ヘルパーはブラウザーのストアからも入れられるようになり、ダイアログが画面の外に開くこともなくなりました。
+
+### 新機能
+- **フィードバックを送る / 不具合を報告。** 設定 → 情報、そしてすべてのエラーメッセージにある「報告」ボタンから。アプリのバージョンとシステムだけが入力された GitHub のフォームが開きます。あなたが送信するまで何も送られません。
+- **ストアから SharkyClips ヘルパー。** Microsoft Edge アドオンや Firefox アドオン（近日公開）からヘルパーを入れた場合は、一度だけ接続します。ヘルパーのガイドに 6 桁のコードが表示されるので、ヘルパーのメニューに入力してください。これで Firefox でも投稿内容を入力できます。
+- **新しいウェブサイト**を 11 言語で：SharkyClips でできること、スクリーンショットと短いデモ、ダウンロードの手引き（青い「Windows によって PC が保護されました」の表示についても）、質問と回答、更新情報。
+
+### 改善
+- **どこでも同じロゴ。** アプリのアイコン、時計の横のアイコン、インストーラーの画像、起動画面、写真スライドショーの最後、ウェブサイトが、アプリのクラシックの外観になりました。
+- **ヘルパーにブラウザーのツールバーの小さなメニュー**ができ、SharkyClips に接続しているかがわかります。
+- **1 つのブラウザーにヘルパーが 2 つ**（SharkyClips 自身のコピーとストアのコピーなど）あっても、ページを二重に入力しなくなりました。入力するのは片方だけです。
+
+### 修正
+- **スクロールしたページのダイアログが画面の外に開いていました**（一部が上部バーの下に隠れる。設定の下の方にあるヘルパーのガイドなど）。今は常にウィンドウの中央に開きます。
+- **ロシア語のスマホ表示で、設定の選択肢が切れていました**（TikTok の「半自動」）。とても長い単語もボタンの中で折り返すようになりました。
+
+</details>
+
 ## [1.2.73] - 2026-11-27
 A small fix for the new Photo slideshow in the Library.
 

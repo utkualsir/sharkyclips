@@ -3608,6 +3608,18 @@ const es: Record<string, string> = {
   "stage.slideshow_photos": "Preparando las fotos",
   "stage.slideshow_outro": "Dibujando el logo",
   "stage.slideshow_rendering": "Creando el vídeo",
+  // 1.2.74: Send feedback / Report a bug
+  "fb.send": "Enviar comentarios",
+  "fb.bug": "Informar de un error",
+  "fb.idea": "Sugerir una idea",
+  "fb.hint": "Abre un formulario de GitHub en tu navegador. Solo se rellenan la versión de la app y tu sistema, y no se envía nada hasta que tú lo mandes.",
+  "fb.report": "Informar",
+  // 1.2.74: a Helper from a store pairs with a code
+  "assist.store_title": "¿Instalaste el Helper desde una tienda?",
+  "assist.store_body": "Si añadiste el SharkyClips Helper desde Microsoft Edge Add-ons o Firefox Add-ons, conéctalo una vez: pulsa el icono del Helper en la barra del navegador y escribe este código.",
+  "assist.store_code_label": "Código de conexión",
+  "assist.store_left": "Válido {m}:{s} más",
+  "assist.store_btn": "Mostrar código de conexión",
 };
 
 export default es;
