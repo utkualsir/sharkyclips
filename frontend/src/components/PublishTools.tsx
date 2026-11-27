@@ -25,6 +25,7 @@ import { Icon } from "./Icons";
 import { Markdown } from "./Shell";
 import { Modal, Segmented, Toggle, Sep } from "./ui";
 import { ConnectPrompt } from "./YoutubeConnect";
+import { isExact } from "../uploads";
 
 // ------------------------------------------------------------------ helpers
 
@@ -330,7 +331,9 @@ export function PublishSetupDialog({
           <div className="export-sum">
             {data.youtube.connected ? (
               <span className={limits.quota.uploads_left < 1 ? "warn-text" : "muted"}>
-                {t("pub.quota_left", { n: limits.quota.uploads_left })}
+                {isExact(limits.quota)
+                  ? t("pub.quota_left", { n: limits.quota.uploads_left })
+                  : t("yq.shared_short", { n: limits.quota.mine_today ?? 0 })}
               </span>
             ) : (
               <span className="warn-text">{t("pub.not_connected_short")}</span>

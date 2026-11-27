@@ -49,3 +49,8 @@ google_client.json
 client_secret*.json
 *.enc
 api_token
+
+# 1.2.75 shared-pool Worker: local config, service-account keys (secrets live only in Cloudflare)
+workers/shared-pool/wrangler.toml
+workers/shared-pool/.wrangler/
+workers/**/*key*.json

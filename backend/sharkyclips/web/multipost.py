@@ -446,7 +446,8 @@ def quotas(fetch: bool = True) -> dict:
 
     browser = PF.mode("tiktok") == "browser"
     return {"youtube": {"used": q["used"], "total": q["limit"], "uploads_left": q["uploads_left"],
-                        "resets_at": q["resets_at"]},
+                        "resets_at": q["resets_at"], "mode": q["mode"], "exact": q["exact"],
+                        "mine_today": q["mine_today"], "exhausted": q["exhausted"]},
             "tiktok": {"used": _tiktok_day_count(_now()), "total": TB.daily_cap(), "approx": False, "auto": True}
             if browser else {"used": tt, "total": PF.DAILY_POST_MAX, "approx": True},
             "reels": ig and {"used": ig["used"], "total": ig["total"]} or {"used": _posts_last_day("reels"),

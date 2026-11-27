@@ -36,7 +36,13 @@ export function UploadsLeft({ value, big }: { value?: DailyLimit | null; big?: b
   const v = useDailyLimit(value);
   if (!v || v.connected === false) return null;
   const full = v.left <= 0;
-  const text = t("share.uploads_left", { n: num(v.left) });
+  // 1.2.75: the built-in client shares one pool with everyone: no made-up "X left"
+  const exact = v.exact !== false;
+  const text = full && v.mode === "shared"
+    ? t("yq.exceeded_title")
+    : exact
+      ? t("share.uploads_left", { n: num(v.left) })
+      : t("yq.shared_short", { n: num(v.mine_today ?? 0) });
   const reset = new Date(v.resets_at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
   return (
     <span
@@ -47,7 +53,7 @@ export function UploadsLeft({ value, big }: { value?: DailyLimit | null; big?: b
       <Icon name="upload" size={big ? 15 : 13} />
       <span className="ul-long">{text}</span>
       <span className="ul-short mono" aria-hidden="true">
-        {num(v.left)}
+        {exact || full ? num(v.left) : "·"}
       </span>
     </span>
   );

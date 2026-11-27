@@ -113,6 +113,11 @@
   --danger-soft: rgba(242, 148, 138, 0.12);
   --warn: #f0b45a;
   --warn-soft: rgba(240, 180, 90, 0.14);
+  /* 1.2.75 Uploads chart: YouTube, Instagram, TikTok, by hand (fixed order, CVD-checked on the surface) */
+  --chart-1: #e8655a;
+  --chart-2: #a77cf0;
+  --chart-3: #13a6b0;
+  --chart-4: #bd8e2e;
   --link: #9ec2ff;
   --primary-bg: #ffffff;
   --primary-text: #0a1020;
@@ -186,6 +191,10 @@
   --danger-soft: rgba(179, 38, 30, 0.08);
   --warn: #8f5400;
   --warn-soft: rgba(154, 91, 0, 0.1);
+  --chart-1: #c8372d;
+  --chart-2: #7f3fd1;
+  --chart-3: #00869e;
+  --chart-4: #946500;
   --link: #1650c8;
   --primary-bg: #0e1a33;
   --primary-text: #ffffff;

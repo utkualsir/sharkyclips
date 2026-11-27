@@ -195,7 +195,20 @@ def quota_used(now: datetime | None = None) -> int:
 
 
 def uploads_used(now: datetime | None = None) -> int:
+    """Uploads that count against today's bucket: the real count, or the whole bucket once Google
+    answered quotaExceeded (1.2.75: "uploads_full", so the user's own count stays true)."""
+    q = _quota_today(now)
+    return daily_uploads() if q.get("uploads_full") else int(q.get("uploads") or 0)
+
+
+def my_uploads_today(now: datetime | None = None) -> int:
+    """1.2.75: what THIS install uploaded today (Pacific quota day), even after quotaExceeded."""
     return int(_quota_today(now).get("uploads") or 0)
+
+
+def uploads_exhausted(now: datetime | None = None) -> bool:
+    """Google said today's upload bucket is used up (quotaExceeded / uploadLimitExceeded)."""
+    return bool(_quota_today(now).get("uploads_full"))
 
 
 def uploads_left(now: datetime | None = None) -> int:
@@ -209,9 +222,10 @@ def _bump(units: int = 0, uploads: int = 0, *, full_units: bool = False, full_up
         same = q.get("day") == day
         used = int(q.get("used") or 0) if same else 0
         ups = int(q.get("uploads") or 0) if same else 0
+        full = bool(q.get("uploads_full")) if same else False
         used = daily_quota() if full_units else used + units
-        ups = daily_uploads() if full_uploads else ups + uploads
-        _write("quota.json", {"day": day, "used": used, "uploads": ups})
+        _write("quota.json", {"day": day, "used": used, "uploads": ups + uploads,
+                              "uploads_full": full or full_uploads})
 
 
 def spend(units: int) -> None:
@@ -244,25 +258,56 @@ def thumbnail_fits(now: datetime | None = None) -> bool:
 
 
 def quota_view(now: datetime | None = None) -> dict:
+    """Today's YouTube quota, honestly (1.2.75):
+
+    mode "own"     the user's own Google project: its buckets are theirs alone, so
+                   "uploads_left of uploads_limit" is exact (1 upload = 1 of 100 a day).
+    mode "shared"  the built-in SharkyClips client: one daily pool for EVERY user of it. This PC
+                   only knows its own uploads ("mine_today"); "exact" is False and the UI says
+                   "Shared daily pool" instead of a count, unless the pool counter (poolcounter.py,
+                   off by default) gives the real project-wide number ("pool")."""
     used = quota_used(now)
     limit = daily_quota()
     left = uploads_left(now)
-    return {"used": used, "limit": limit, "reserve": quota_reserve(),
+    mode = client_mode()
+    view = {"used": used, "limit": limit, "reserve": quota_reserve(),
             "uploads_left": left, "uploads_used": uploads_used(now), "uploads_limit": daily_uploads(),
             "uploads_left_with_thumbnail": min(left, max(0, upload_room(now)) // COST["thumbnail"]),
             "resets_at": next_reset(now).isoformat(timespec="seconds"),
-            "deferred": len(deferred_list())}
+            "deferred": len(deferred_list()),
+            "mode": mode, "mine_today": my_uploads_today(now), "exhausted": uploads_exhausted(now),
+            "cost_per_upload": COST["upload"], "exact": mode == "own", "pool": None}
+    if mode == "shared":
+        from . import poolcounter
+
+        pool = poolcounter.read(now)
+        if pool is not None:
+            view["pool"] = pool
+            if not view["exhausted"]:  # the real pool number decides what is left today
+                view["uploads_left"] = min(left, pool["left"])
+            view["exact"] = True
+    return view
 
 
 def _reset_text() -> str:
     return next_reset().astimezone().strftime("%H:%M")
 
 
+def quota_exceeded_text() -> tuple[str, str]:
+    """The message for "no uploads left today", in the words of the client mode (1.2.75)."""
+    if client_mode() == "shared":
+        return ("Today's shared upload limit is used up.",
+                f"It resets at {_reset_text()} (your time). Upload by hand now, or use your own Google "
+                "client (Settings > YouTube > Advanced) for your own daily limit.")
+    return (f"Today's YouTube uploads are used up ({daily_uploads()} a day).",
+            f"Google resets them at midnight Pacific Time ({_reset_text()} here). Upload the rest by hand "
+            "now, or put them on tomorrow.")
+
+
 def check_upload_quota() -> None:
     if uploads_left() < 1:
-        raise _err(f"Today's YouTube uploads are used up ({daily_uploads()} a day).",
-                   f"Google resets them at midnight Pacific Time ({_reset_text()} here). Upload the rest by hand "
-                   "now, or put them on tomorrow.", reason="quotaExceeded")
+        msg, hint = quota_exceeded_text()
+        raise _err(msg, hint, reason="quotaExceeded")
 
 
 def check_quota(units: int) -> None:
@@ -802,6 +847,9 @@ def _api_error(res: Any, what: str) -> SharkyClipsError:
     }
     if reason in ("quotaExceeded", "uploadLimitExceeded") and what == "upload":
         _bump(full_uploads=True)  # Google says today's uploads are gone: show 0 left until the reset
+        if reason == "quotaExceeded":
+            msg, hint = quota_exceeded_text()
+            return _err(msg, hint, reason=reason, status=getattr(res, "status_code", None))
     elif reason == "quotaExceeded":
         _bump(full_units=True)
     return _err(f"YouTube {what} failed: {msg}"[:400], hints.get(reason), reason=reason or None,

@@ -44,6 +44,11 @@ export interface DailyLimit {
   max: number;
   resets_at: string;
   connected?: boolean;
+  /** 1.2.75: with the shared client "left" is not exact (one pool for everyone) */
+  mode?: "own" | "shared" | null;
+  exact?: boolean;
+  mine_today?: number;
+  exhausted?: boolean;
 }
 
 export interface HistorySummary {

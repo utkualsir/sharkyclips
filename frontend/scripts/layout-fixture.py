@@ -170,6 +170,7 @@ def build(root: Path) -> str:
     (d / "previews").mkdir()
     _video(d / "previews" / "01_s100_00-00-01.mp4", "180x320", 1.0)
     _channel_style(home)
+    _upload_history(home)
     _channels(home)
     # 1.2.51: the full video waits on its confirm screen (long title / description / chapters)
     _ff("-f", "lavfi", "-i", "testsrc2=size=1280x720:rate=1:duration=1", "-frames:v", "1", str(d / "full_thumb.jpg"))
@@ -351,6 +352,26 @@ def _channels(home: Path) -> None:
                           "url": "https://kick.com/democreator/videos/v-old", "title": "Old", "started_at": base - 99999,
                           "duration": 7200, "first_seen": base}
     _json(home / "channels.json", {"version": 1, "channels": chans, "vods": vods, "log": []})
+
+
+def _upload_history(home: Path) -> None:
+    """1.2.75: shared posts over the last two weeks (the Uploads stats tab: tiles, bars, details)."""
+    import datetime as dt
+
+    now = dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
+    plats = [("youtube", False), ("tiktok", False), ("reels", True), ("youtube", False), ("reels", False),
+             ("tiktok", True), ("youtube", False)]
+    posts = []
+    for i in range(26):
+        plat, manual = plats[i % len(plats)]
+        at = now - dt.timedelta(hours=1 + i * 11)
+        posts.append({"key": f"{PID}:c{i % N_CANDS + 1:02d}:{plat}:{i}", "at": at.isoformat(), "fingerprint": None,
+                      "project_id": PID, "project_title": "Layout check stream", "clip_id": f"c{i % N_CANDS + 1:02d}",
+                      "title": TITLES[i % len(TITLES)], "game": "Delta Force", "platform": plat,
+                      "url": f"https://example.com/{plat}/{i}", "video_id": None, "manual": manual,
+                      "private": plat == "youtube" and i % 5 == 0})
+    _json(home / "history" / "history.json", {"version": 1, "sources": {}, "posts": posts,
+                                              "backfilled": [PID]})
 
 
 def _channel_style(home: Path) -> None:

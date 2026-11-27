@@ -2698,6 +2698,7 @@ from .slideshow_api import router as _slideshow_router  # noqa: E402 - Photo sli
 from .manual import router as _manual_router  # noqa: E402 - Upload manually (1.2.68)
 from .space import router as _space_router  # noqa: E402 - Free up space (1.2.68)
 from .history_api import router as _history_router  # noqa: E402 - Upload history (1.2.68)
+from .uploads_api import router as _uploads_router  # noqa: E402
 
 app.include_router(_auth_router)
 app.include_router(_studio_router)
@@ -2723,6 +2724,7 @@ app.include_router(_slideshow_router)
 app.include_router(_manual_router)
 app.include_router(_space_router)
 app.include_router(_history_router)
+app.include_router(_uploads_router)
 
 
 @app.get("/api/{rest:path}")

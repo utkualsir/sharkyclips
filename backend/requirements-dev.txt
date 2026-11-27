@@ -1,5 +1,6 @@
 # Development / CI only (not needed to use SharkyClips).
 pytest>=9.2.0
+pytest-xdist>=3.8.0     # 1.2.75: parallel tests (pytest -n auto), docs/test-speed.md
 ruff>=0.17.5
 httpx>=0.28.1          # FastAPI TestClient
 lxml>=6.1.3             # tests: DTD validation of the editor timelines (FCPXML)

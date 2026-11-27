@@ -27,6 +27,8 @@ import { LockBanner } from "./PublishTools";
 import { Icon } from "./Icons";
 import { Modal, Segmented, Toggle, Sep } from "./ui";
 import { AdvancedWizard, ChannelPicker, ConnectPrompt, ConnectYoutube, NoChannel, VerificationStatus, YoutubeAccount } from "./YoutubeConnect";
+import { YouTubeQuota } from "./YouTubeQuota";
+import { isExact } from "../uploads";
 
 let optionsCache: Promise<ExportOptions> | null = null;
 export function exportOptions(): Promise<ExportOptions> {
@@ -566,7 +568,11 @@ export function UploadDialog({
           <div className="export-sum">
             {yt?.connected && (
               <span className={noQuota ? "warn-text" : "muted"}>
-                {noQuota ? t("yt.quota_tomorrow") : t("yt.left_today", { n: yt.quota.uploads_left })}
+                {noQuota
+                  ? t("yt.quota_tomorrow")
+                  : isExact(yt.quota)
+                    ? t("yt.left_today", { n: yt.quota.uploads_left })
+                    : t("yq.shared_short", { n: yt.quota.mine_today ?? 0 })}
               </span>
             )}
           </div>
@@ -729,7 +735,7 @@ export function UploadsLine({ uploads }: { uploads: YoutubeUpload[] }) {
 const PRIVACY_URL = "https://utkualsir.github.io/sharkyclips-site/privacy.html";
 
 export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quota: number; onQuota: (n: number) => void }) {
-  const { t, num, relTime } = useI18n();
+  const { t, relTime } = useI18n();
   const toast = useToast();
   const [yt, setYt] = useState<YoutubeStatus | null>(null);
   const [wizard, setWizard] = useState(false);
@@ -809,18 +815,8 @@ export function YoutubeCard({ isLocal, quota, onQuota }: { isLocal: boolean; quo
                 <span>{t("yt.no_analytics")}</span>
               </div>
             )}
-            <div className="yt-quota">
-              <div className="bar">
-                <span style={{ width: `${Math.min(100, (yt.quota.used / yt.quota.limit) * 100)}%` }} />
-              </div>
-              <span className="muted">
-                {t("yt.quota_line", {
-                  n: yt.quota.uploads_left,
-                  used: num(yt.quota.used),
-                  limit: num(yt.quota.limit),
-                })}
-              </span>
-            </div>
+            {/* 1.2.75: honest quota (exact with an own client, "shared daily pool" with the built-in one) */}
+            <YouTubeQuota compact />
             {yt.token_protection && (
               <span className="muted" style={{ fontSize: 12 }}>
                 <Icon name="lock" size={12} /> {t(`yt.token_${yt.token_protection}`)}

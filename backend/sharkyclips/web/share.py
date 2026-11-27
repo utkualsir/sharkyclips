@@ -81,11 +81,18 @@ def limit_view(now: datetime | None = None, events=None) -> dict:
     """{"limit", "used", "left", "resets_at", "connected"}: "X uploads left today" (YouTube's real quota)."""
     from .. import youtube
 
+    q = youtube.quota_view(now)
     lim = youtube.daily_uploads()
     used = youtube.uploads_used(now) + _pending_youtube_now()
-    return {"limit": lim, "used": min(lim, used), "left": max(0, lim - used), "max": lim,
+    left = max(0, lim - used)
+    if q["pool"] is not None and not q["exhausted"]:  # 1.2.75: the real shared-pool number
+        left = min(left, max(0, q["pool"]["left"] - _pending_youtube_now()))
+    # 1.2.75: "mode" / "exact": with the shared client this PC can't know the pool, so the UI says
+    # "Shared daily pool" (and "mine_today") instead of a made-up "X left"
+    return {"limit": lim, "used": min(lim, used), "left": left, "max": lim,
             "resets_at": youtube.next_reset(now).isoformat(timespec="seconds"),
-            "connected": youtube.connected()}
+            "connected": youtube.connected(), "mode": q["mode"], "exact": q["exact"],
+            "mine_today": q["mine_today"], "exhausted": q["exhausted"], "pool": q["pool"]}
 
 
 # ===================================================================== the board

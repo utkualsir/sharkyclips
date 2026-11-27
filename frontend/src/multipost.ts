@@ -111,6 +111,10 @@ export interface Quota {
   auto?: boolean;
   uploads_left?: number;
   resets_at?: string;
+  mode?: "own" | "shared" | null;
+  exact?: boolean;
+  mine_today?: number;
+  exhausted?: boolean;
 }
 
 export type Accounts = Record<Target, Account> & { quota?: Record<Target, Quota | null> };

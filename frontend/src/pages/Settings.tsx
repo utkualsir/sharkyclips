@@ -38,6 +38,7 @@ import { AboutCard } from "../components/Licenses";
 import { DeviceSettings } from "../components/SpeedSettings";
 import { TrashCard } from "../components/Trash";
 import { Personalization } from "../components/Personalization";
+import { QuotaOwnerSettings } from "../components/YouTubeQuota";
 
 function SpeedCompare({ info, fast }: { info: LlmInfo; fast: boolean }) {
   const { t, num } = useI18n();
@@ -746,6 +747,7 @@ export default function Settings() {
             className="settings-advanced"
             id="settings-advanced"
           >
+            <QuotaOwnerSettings />
             <section className="card setting" id="ai">
               <div>
                 <h2>{t("settings.ai")}</h2>

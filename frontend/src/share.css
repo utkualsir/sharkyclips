@@ -99,7 +99,8 @@
 .share-tabs button:hover {
   color: var(--text);
 }
-.share-tabs button[aria-pressed="true"] {
+.share-tabs button[aria-pressed="true"],
+.share-tabs button[aria-selected="true"] {
   background: var(--surface);
   color: var(--strong);
   box-shadow: inset 0 -2px 0 var(--gold);
@@ -1149,6 +1150,41 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+}
+/* 1.2.75: on phones every row is a small card (the table no longer scrolls sideways) */
+@media (max-width: 640px) {
+  .history-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .history-table,
+  .history-table tbody,
+  .history-table tr,
+  .history-table td {
+    display: block;
+  }
+  .history-table tr {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-table td {
+    display: grid;
+    grid-template-columns: 7.5em minmax(0, 1fr);
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+  .history-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .history-table td:first-child {
+    white-space: normal;
+  }
 }
 @media (max-width: 640px) {
   .share-where {

@@ -1,8 +1,8 @@
 # YouTube uploads with your own Google project
 
 Since 1.2.52 SharkyClips ships **no** Google OAuth client. Uploads to YouTube go through a free
-Google Cloud project that **you** own. That keeps your quota (10,000 units a day, about 6 uploads)
-to yourself and nobody else's app can be blocked or abused in your name.
+Google Cloud project that **you** own. That keeps your quota (since June 2026: 100 uploads a day in their own bucket, plus
+10,000 units for everything else) to yourself and nobody else's app can be blocked or abused in your name.
 
 ## The guided way (recommended)
 
@@ -33,6 +33,10 @@ client**: with the same client ID your sign-in keeps working. A different client
 sign-in (the app tells you).
 
 ## Quota
+
+1.2.75: History → Uploads shows "X of 100 uploads left today" with your own client, and
+"Shared daily pool" (never a guessed number) with the built-in one. Step-by-step owner guide for a
+separate personal project: [own-google-client.md](own-google-client.md).
 
 Settings → YouTube shows today's use. SharkyClips stops starting new uploads before the limit
 (it keeps 300 units free for thumbnails and edits, setting `youtube_quota_reserve`) and queues

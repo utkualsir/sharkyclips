@@ -56,8 +56,10 @@ jobs:
         run: python -m ruff check backend installer
       - name: Bleep guarantee (end-to-end render, every swear bleeped)
         run: python -m pytest -q backend/tests/test_bleep_guarantee.py
-      - name: Tests (pytest)
-        run: python -m pytest
+      - name: Tests (pytest, parallel with pytest-xdist)
+        run: python -m pytest -n auto --dist loadfile -m "not serial"
+      - name: Tests that start real browsers / servers (serial)
+        run: python -m pytest -m serial
 
   backend-macos:
     # macOS runners are free for public repositories but cost 10x minutes on private ones, so
@@ -100,8 +102,10 @@ jobs:
           procs._darwin_bg(procs.os.getpid(), True)
           procs._darwin_bg(procs.os.getpid(), False)
           PY
-      - name: Tests (pytest)
-        run: python -m pytest
+      - name: Tests (pytest, parallel with pytest-xdist)
+        run: python -m pytest -n auto --dist loadfile -m "not serial"
+      - name: Tests that start real browsers / servers (serial)
+        run: python -m pytest -m serial
 
   frontend:
     name: Frontend
@@ -128,51 +132,49 @@ jobs:
         run: npm run build
 
   layout:
-    # Every screen at laptop / desktop / phone sizes, light + dark, Turkish / Arabic / English:
-    # fails when panels overlap, a list is squeezed, content is cut off or the page scrolls
-    # sideways (frontend/scripts/layout-check.mjs). Runs against the committed frontend/dist.
-    name: Layout (no overlapping panels, preview = render)
+    # Every screen at laptop / desktop / phone sizes, light + dark, Turkish / Arabic / English, all
+    # Personalization presets: fails when panels overlap, a list is squeezed, content is cut off or
+    # the page scrolls sideways (frontend/scripts/layout-check.mjs). 1.2.75 (docs/test-speed.md): the
+    # matrix is split into 4 parallel shards (LAYOUT_SHARD), each with its own fixture server.
+    name: Layout matrix (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-24.04  # Playwright 1.55 can't install Chromium on ubuntu-latest (26.04) yet
-    timeout-minutes: 45  # 1.2.53: + Firefox / WebKit and the browser check
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false  # 1.2.52: no token left in .git/config for later steps
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: backend/requirements*.txt
-      - name: Install backend dependencies
-        run: |
-          grep -v nvidia backend/requirements.txt > "$RUNNER_TEMP/requirements-ci.txt"
-          python -m pip install --upgrade pip
-          python -m pip install -r "$RUNNER_TEMP/requirements-ci.txt"
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install ffmpeg (the fixture's playable test video for the preview check)
-        timeout-minutes: 10
-        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
-      - name: Install Playwright + Chromium
+      - uses: ./.github/actions/fixture-server
+      - name: Layout check (Classic full + Ocean / Shark Sign / High contrast small set)
         working-directory: frontend
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium firefox webkit
-      - name: Start SharkyClips on a synthetic project
-        run: |
-          PID=$(python frontend/scripts/layout-fixture.py "$RUNNER_TEMP/layout")
-          echo "LAYOUT_PID=$PID" >> "$GITHUB_ENV"
-          SHARKYCLIPS_HOME="$RUNNER_TEMP/layout/home" SHARKYCLIPS_NO_MIGRATE=1 SHARKYCLIPS_NO_BROWSER=1 \
-            SHARKYCLIPS_PUBLISH_LOOP=0 SHARKYCLIPS_LIVE_LOOP=0 SHARKYCLIPS_SHARED_CLIENT="$RUNNER_TEMP/none.json" \
-            nohup python backend/cli.py serve --port 8799 --no-browser > "$RUNNER_TEMP/server.log" 2>&1 &
-          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8799/api/meta > /dev/null && exit 0; sleep 1; done
-          cat "$RUNNER_TEMP/server.log"; exit 1
-      - name: Layout check
-        working-directory: frontend
-        run: LAYOUT_PRESETS=classic node scripts/layout-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
+        run: LAYOUT_SHARD=${{ matrix.shard }}/4 node scripts/layout-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
+      - name: Server log (on failure)
+        if: failure()
+        run: tail -n 300 "$RUNNER_TEMP/server.log" || true
+      - name: Screenshots of failing views
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: layout-screenshots-${{ matrix.shard }}
+          path: ${{ runner.temp }}/layout-shots
+          if-no-files-found: ignore
+
+  layout-checks:
+    # The preview = render plan, the mini game, axe (Classic) and the three browsers. The browser
+    # check runs last: it starts a real render, which changes the fixture project.
+    name: Layout (preview = render, axe, browsers)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/fixture-server
+        with:
+          browsers: chromium firefox webkit
       - name: Preview matches the render plan
         working-directory: frontend
         run: node scripts/preview-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
@@ -183,7 +185,6 @@ jobs:
         working-directory: frontend
         run: AXE_PRESETS=classic node scripts/axe-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"
       - name: Browsers (Chromium, Firefox, WebKit) - title editing, scrolling, languages, render, publish
-        # last: it starts a real render, which changes the fixture project the checks above use
         working-directory: frontend
         run: BROWSERS=chromium,firefox,webkit node scripts/browser-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"
       - name: Server log (on failure)
@@ -196,56 +197,21 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: layout-screenshots
+          name: layout-check-shots
           path: ${{ runner.temp }}/layout-shots
           if-no-files-found: ignore
 
   layout-presets:
-    # 1.2.69: the other Personalization presets (Ocean, Shark Sign, High contrast), light + dark:
-    # layout (Turkish + Arabic, 3 sizes: they change colours and corners, not sizes), axe on every
-    # screen, and the Personalization flow. Its own job so the Classic job stays within its time.
-    name: Layout (theme presets, personalization)
+    # 1.2.69: axe on every screen for the other Personalization presets (light + dark) and the
+    # Personalization flow (their layout runs in the matrix above).
+    name: Layout (theme presets axe, personalization)
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          persist-credentials: false  # 1.2.52: no token left in .git/config for later steps
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: backend/requirements*.txt
-      - name: Install backend dependencies
-        run: |
-          grep -v nvidia backend/requirements.txt > "$RUNNER_TEMP/requirements-ci.txt"
-          python -m pip install --upgrade pip
-          python -m pip install -r "$RUNNER_TEMP/requirements-ci.txt"
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install ffmpeg (the fixture's playable test video for the preview check)
-        timeout-minutes: 10
-        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
-      - name: Install Playwright + Chromium
-        working-directory: frontend
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
-      - name: Start SharkyClips on a synthetic project
-        run: |
-          PID=$(python frontend/scripts/layout-fixture.py "$RUNNER_TEMP/layout")
-          echo "LAYOUT_PID=$PID" >> "$GITHUB_ENV"
-          SHARKYCLIPS_HOME="$RUNNER_TEMP/layout/home" SHARKYCLIPS_NO_MIGRATE=1 SHARKYCLIPS_NO_BROWSER=1 \
-            SHARKYCLIPS_PUBLISH_LOOP=0 SHARKYCLIPS_LIVE_LOOP=0 SHARKYCLIPS_SHARED_CLIENT="$RUNNER_TEMP/none.json" \
-            nohup python backend/cli.py serve --port 8799 --no-browser > "$RUNNER_TEMP/server.log" 2>&1 &
-          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8799/api/meta > /dev/null && exit 0; sleep 1; done
-          cat "$RUNNER_TEMP/server.log"; exit 1
-      - name: Layout check (Ocean, Shark Sign, High contrast)
-        working-directory: frontend
-        run: LAYOUT_PRESETS=ocean,sign,contrast node scripts/layout-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID" "$RUNNER_TEMP/layout-shots"
+          persist-credentials: false
+      - uses: ./.github/actions/fixture-server
       - name: Accessibility (axe, Ocean / Shark Sign / High contrast, light / dark)
         working-directory: frontend
         run: AXE_PRESETS=ocean,sign,contrast node scripts/axe-check.mjs http://127.0.0.1:8799 "$LAYOUT_PID"

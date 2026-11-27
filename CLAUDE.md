@@ -73,6 +73,10 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
 
 - Tests: `.venv/Scripts/python -m pytest -q` (from the repo root; tests use a throwaway
   `SHARKYCLIPS_HOME` and set `SHARKYCLIPS_NO_MIGRATE=1`). Lint: `.venv/Scripts/python -m ruff check backend`.
+- Fast local loop (1.2.75, `docs/test-speed.md`): `.venv/Scripts/python scripts/quick-check.py`
+  (lint + tests of the changed files, parallel), `--layout [--screens a,b]` adds a small layout
+  smoke set, `--full` the whole suite (`-n 6 --dist loadfile`: more workers run the dev PC out of
+  memory). The full layout matrix runs only in CI, in 4 shards (`LAYOUT_SHARD=i/n`).
 - Frontend: `cd frontend && npm run build` (also typechecks), `node scripts/check-i18n.mjs` (every
   key in all 7 locales: en, tr, de, hu, ru, ar, zh). Commit the rebuilt `frontend/dist`.
 - Layout check (CI job "Layout"): `python frontend/scripts/layout-fixture.py <dir>`, serve with

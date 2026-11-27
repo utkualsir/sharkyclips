@@ -80,7 +80,13 @@ function QuotaLine({ p, q }: { p: Target; q: Quota | null | undefined }) {
   const { t, num } = useI18n();
   if (!q) return null;
   if (p === "youtube")
-    return <span className="acc-quota">{t("acc.quota_youtube", { n: num(q.uploads_left ?? 0) })}</span>;
+    return (
+      <span className="acc-quota">
+        {q.exact === false
+          ? t("yq.shared_short", { n: num(q.mine_today ?? 0) })
+          : t("acc.quota_youtube", { n: num(q.uploads_left ?? 0) })}
+      </span>
+    );
   return (
     <span className="acc-quota">
       {t(q.approx ? "acc.quota_posts_approx" : "acc.quota_posts", { used: num(q.used), total: num(q.total) })}

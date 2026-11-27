@@ -9,6 +9,198 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.75] - 2026-11-27
+See how much you shared: a new Uploads tab counts your uploads today, this week and in total on every platform. The YouTube upload limit is now shown honestly, with the reset time in your own time.
+
+### New
+- **Uploads tab** on the History page: your uploads today, this week and in total for YouTube, Instagram, TikTok and the ones you posted by hand, plus a chart of the last 14 days. Point at, tap or select any number or bar to see its clips: the time, the platform, the link and the status.
+- **An exact counter with your own Google sign-in**: "X of 100 uploads left today", with the time it starts again.
+
+### Improved
+- **The shared YouTube limit is shown honestly.** With the built-in SharkyClips Google sign-in, everybody shares one daily upload pool, so the app no longer shows a number it can't know. It says "Shared daily pool", how many you uploaded today, and when the pool starts again in your own time (00:00 Pacific Time, for example 09:00 in Hungary).
+- **When the shared limit is used up**, you see "Today's shared upload limit is used up. It resets at …" with two buttons: upload by hand, or use your own Google sign-in.
+
+### Fixed
+- **After YouTube said the day's uploads were used up, your own count jumped to 100.** It now stays at the real number.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Ne kadar paylaştığını gör: yeni Yüklemeler sekmesi her platformda bugünkü, bu haftaki ve toplam yüklemelerini sayar. YouTube yükleme sınırı artık dürüstçe, sıfırlanma saati de senin saatinle gösteriliyor.
+
+### Yeni
+- **Geçmiş sayfasında Yüklemeler sekmesi**: YouTube, Instagram, TikTok ve elle paylaştıkların için bugünkü, bu haftaki ve toplam yüklemelerin, ayrıca son 14 günün grafiği. Kliplerini görmek için herhangi bir sayının ya da çubuğun üzerine gel, dokun ya da seç: saat, platform, bağlantı ve durum.
+- **Kendi Google girişinle tam sayaç**: "Bugün 100 yüklemeden X kaldı" ve yeniden başlayacağı saat.
+
+### İyileştirmeler
+- **Ortak YouTube sınırı dürüstçe gösteriliyor.** Yerleşik SharkyClips Google girişiyle herkes tek bir günlük yükleme havuzunu paylaşır; bu yüzden uygulama artık bilemeyeceği bir sayı göstermiyor. "Ortak günlük havuz" yazıyor, bugün kaç tane yüklediğini ve havuzun senin saatinle ne zaman yeniden başlayacağını söylüyor (Pasifik saatiyle 00:00, örneğin Macaristan'da 09:00).
+- **Ortak sınır dolduğunda** "Bugünkü ortak yükleme hakkı doldu. … saatinde sıfırlanır." mesajını ve iki düğme görürsün: elle yükle ya da kendi Google girişini kullan.
+
+### Düzeltmeler
+- **YouTube günün yüklemelerinin dolduğunu söyleyince senin sayın 100'e fırlıyordu.** Artık gerçek sayıda kalıyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Mira cuánto has compartido: una nueva pestaña Subidas cuenta tus subidas de hoy, de esta semana y en total en cada plataforma. El límite de subidas de YouTube ahora se muestra con honestidad, con la hora de reinicio en tu propia hora.
+
+### Nuevo
+- **Pestaña Subidas** en la página Historial: tus subidas de hoy, de esta semana y en total en YouTube, Instagram, TikTok y las que publicaste a mano, más un gráfico de los últimos 14 días. Pasa el ratón, toca o selecciona cualquier número o barra para ver sus clips: la hora, la plataforma, el enlace y el estado.
+- **Un contador exacto con tu propio inicio de sesión de Google**: "Te quedan X de 100 subidas hoy", con la hora en que vuelve a empezar.
+
+### Mejoras
+- **El límite compartido de YouTube se muestra con honestidad.** Con el inicio de sesión de Google integrado en SharkyClips, todos comparten una bolsa diaria de subidas, así que la app ya no muestra un número que no puede saber. Dice "Bolsa diaria compartida", cuántas subiste hoy y cuándo vuelve a empezar en tu hora (00:00 hora del Pacífico, por ejemplo las 09:00 en Hungría).
+- **Cuando se agota el límite compartido**, ves "El límite compartido de subidas de hoy se ha agotado. Se reinicia a las …" con dos botones: subir a mano o usar tu propio inicio de sesión de Google.
+
+### Correcciones
+- **Después de que YouTube dijera que las subidas del día se habían agotado, tu propio contador saltaba a 100.** Ahora se queda en el número real.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Veja quanto você compartilhou: uma nova aba Envios conta seus envios de hoje, desta semana e no total em cada plataforma. O limite de envios do YouTube agora aparece com honestidade, com o horário de reinício no seu próprio horário.
+
+### Novo
+- **Aba Envios** na página Histórico: seus envios de hoje, desta semana e no total no YouTube, Instagram, TikTok e os que você postou à mão, mais um gráfico dos últimos 14 dias. Passe o mouse, toque ou selecione qualquer número ou barra para ver os clipes: o horário, a plataforma, o link e o status.
+- **Um contador exato com o seu próprio login do Google**: "Restam X de 100 envios hoje", com o horário em que recomeça.
+
+### Melhorias
+- **O limite compartilhado do YouTube aparece com honestidade.** Com o login Google integrado do SharkyClips, todos dividem uma cota diária de envios, então o app não mostra mais um número que não tem como saber. Ele diz "Cota diária compartilhada", quantos você enviou hoje e quando a cota recomeça no seu horário (00:00 do horário do Pacífico, por exemplo 09:00 na Hungria).
+- **Quando o limite compartilhado acaba**, você vê "O limite compartilhado de envios de hoje acabou. Ele reinicia às …" com dois botões: enviar à mão ou usar seu próprio login do Google.
+
+### Correções
+- **Depois que o YouTube dizia que os envios do dia tinham acabado, a sua própria contagem pulava para 100.** Agora ela fica no número real.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Sieh, wie viel du geteilt hast: Ein neuer Tab „Uploads" zählt deine Uploads von heute, dieser Woche und insgesamt auf jeder Plattform. Das YouTube-Upload-Limit wird jetzt ehrlich angezeigt, mit der Reset-Zeit in deiner eigenen Uhrzeit.
+
+### Neu
+- **Tab „Uploads"** auf der Verlauf-Seite: deine Uploads von heute, dieser Woche und insgesamt für YouTube, Instagram, TikTok und die von Hand geposteten, dazu ein Diagramm der letzten 14 Tage. Zeig auf eine Zahl oder einen Balken, tippe darauf oder wähle sie aus, um die Clips zu sehen: Zeit, Plattform, Link und Status.
+- **Ein genauer Zähler mit deiner eigenen Google-Anmeldung**: „Noch X von 100 Uploads heute", mit der Uhrzeit, zu der es neu losgeht.
+
+### Verbessert
+- **Das gemeinsame YouTube-Limit wird ehrlich angezeigt.** Mit der eingebauten Google-Anmeldung von SharkyClips teilen sich alle einen Upload-Pool pro Tag, deshalb zeigt die App keine Zahl mehr, die sie nicht wissen kann. Sie zeigt „Gemeinsamer Tagespool", wie viele du heute hochgeladen hast und wann der Pool in deiner Uhrzeit neu startet (00:00 Pazifikzeit, zum Beispiel 09:00 in Ungarn).
+- **Wenn das gemeinsame Limit aufgebraucht ist**, siehst du „Das gemeinsame Upload-Limit für heute ist aufgebraucht. Es wird um … zurückgesetzt." mit zwei Knöpfen: von Hand hochladen oder deine eigene Google-Anmeldung nutzen.
+
+### Behoben
+- **Nachdem YouTube gemeldet hatte, dass die Uploads des Tages aufgebraucht sind, sprang dein eigener Zähler auf 100.** Jetzt bleibt er bei der echten Zahl.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Vois combien tu as partagé : un nouvel onglet Mises en ligne compte tes mises en ligne du jour, de la semaine et au total sur chaque plateforme. La limite de mises en ligne YouTube est maintenant affichée honnêtement, avec l'heure de remise à zéro dans ta propre heure.
+
+### Nouveau
+- **Onglet Mises en ligne** sur la page Historique : tes mises en ligne du jour, de la semaine et au total pour YouTube, Instagram, TikTok et celles publiées à la main, plus un graphique des 14 derniers jours. Survole, touche ou sélectionne un nombre ou une barre pour voir ses clips : l'heure, la plateforme, le lien et l'état.
+- **Un compteur exact avec ta propre connexion Google** : « Il te reste X mises en ligne sur 100 aujourd'hui », avec l'heure où il repart.
+
+### Améliorations
+- **La limite YouTube partagée est affichée honnêtement.** Avec la connexion Google intégrée de SharkyClips, tout le monde partage une réserve quotidienne de mises en ligne, donc l'app n'affiche plus un nombre qu'elle ne peut pas connaître. Elle indique « Réserve quotidienne partagée », combien tu as mis en ligne aujourd'hui et quand la réserve repart dans ta propre heure (00:00 heure du Pacifique, par exemple 09:00 en Hongrie).
+- **Quand la limite partagée est atteinte**, tu vois « La limite partagée de mises en ligne du jour est atteinte. Elle se réinitialise à … » avec deux boutons : mettre en ligne à la main ou utiliser ta propre connexion Google.
+
+### Corrections
+- **Après que YouTube a dit que les mises en ligne du jour étaient épuisées, ton propre compteur passait à 100.** Il reste maintenant au vrai nombre.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Nézd meg, mennyit osztottál meg: az új Feltöltések fül megszámolja a mai, a heti és az összes feltöltésedet minden platformon. A YouTube feltöltési kerete most őszintén látszik, a nullázás idejével a saját időd szerint.
+
+### Új
+- **Feltöltések fül** az Előzmények oldalon: a mai, a heti és az összes feltöltésed YouTube-on, Instagramon, TikTokon és a kézzel közzétettek, plusz egy grafikon az elmúlt 14 napról. Mutass egy számra vagy oszlopra, koppints rá vagy válaszd ki, és látod a klipjeit: az időt, a platformot, a linket és az állapotot.
+- **Pontos számláló a saját Google-bejelentkezéseddel**: „Ma még X / 100 feltöltés maradt”, és az idő, amikor újraindul.
+
+### Fejlesztések
+- **A közös YouTube-keret őszintén látszik.** A SharkyClips beépített Google-bejelentkezésével mindenki egy közös napi feltöltési kereten osztozik, ezért az app már nem mutat olyan számot, amit nem tudhat. Azt írja: „Közös napi keret”, hogy ma hányat töltöttél fel, és hogy a saját időd szerint mikor indul újra (csendes-óceáni idő szerint 00:00, például Magyarországon 09:00).
+- **Ha a közös keret elfogy**, ezt látod: „A mai közös feltöltési keret elfogyott. …-kor nullázódik.”, két gombbal: kézi feltöltés vagy a saját Google-bejelentkezésed.
+
+### Javítások
+- **Miután a YouTube jelezte, hogy a napi feltöltések elfogytak, a saját számlálód 100-ra ugrott.** Most a valódi számon marad.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Смотрите, сколько вы опубликовали: новая вкладка «Загрузки» считает ваши загрузки за сегодня, за неделю и всего на каждой платформе. Лимит загрузок YouTube теперь показан честно, а время сброса — по вашему времени.
+
+### Новое
+- **Вкладка «Загрузки»** на странице «История»: ваши загрузки за сегодня, за эту неделю и всего на YouTube, в Instagram, TikTok и опубликованные вручную, плюс график за последние 14 дней. Наведите, нажмите или выберите любое число или столбец, чтобы увидеть его клипы: время, платформу, ссылку и статус.
+- **Точный счётчик со своим входом Google**: «Осталось загрузок сегодня: X из 100» и время, когда счёт начнётся заново.
+
+### Улучшения
+- **Общий лимит YouTube показан честно.** При встроенном входе Google в SharkyClips все делят один дневной пул загрузок, поэтому приложение больше не показывает число, которое не может знать. Оно пишет «Общий дневной пул», сколько вы загрузили сегодня и когда пул начнётся заново по вашему времени (00:00 по тихоокеанскому времени, например 09:00 в Венгрии).
+- **Когда общий лимит исчерпан**, вы видите «Общий лимит загрузок на сегодня исчерпан. Сброс в …» и две кнопки: загрузить вручную или использовать свой вход Google.
+
+### Исправления
+- **После того как YouTube сообщал, что загрузки на день закончились, ваш собственный счётчик прыгал до 100.** Теперь он остаётся на настоящем числе.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+اعرف كم شاركت: تبويب الرفع الجديد يعدّ عمليات الرفع اليوم وهذا الأسبوع وإجمالًا على كل منصة. ويظهر حد الرفع في YouTube الآن بصدق، مع وقت إعادة الضبط بتوقيتك أنت.
+
+### جديد
+- **تبويب الرفع** في صفحة السجل: عمليات الرفع اليوم وهذا الأسبوع وإجمالًا على YouTube وInstagram وTikTok وما نشرته يدويًا، مع رسم بياني لآخر 14 يومًا. مرّر المؤشر أو انقر أو اختر أي رقم أو عمود لترى مقاطعه: الوقت والمنصة والرابط والحالة.
+- **عدّاد دقيق مع تسجيل دخولك الخاص إلى Google**: "تبقّى X من 100 عملية رفع اليوم"، مع وقت بدئه من جديد.
+
+### تحسينات
+- **يظهر حد YouTube المشترك بصدق.** مع تسجيل الدخول المدمج من Google في SharkyClips يتشارك الجميع رصيدًا يوميًا واحدًا للرفع، لذلك لم يعد التطبيق يعرض رقمًا لا يمكنه معرفته. يكتب "رصيد يومي مشترك"، وكم رفعت اليوم، ومتى يبدأ الرصيد من جديد بتوقيتك (00:00 بتوقيت المحيط الهادئ، مثلًا 09:00 في المجر).
+- **عندما ينتهي الحد المشترك** ترى "انتهى حد الرفع المشترك لهذا اليوم. يُعاد ضبطه عند …" مع زرّين: الرفع يدويًا أو استخدام تسجيل دخولك الخاص إلى Google.
+
+### إصلاحات
+- **بعد أن يقول YouTube إن عمليات رفع اليوم انتهت، كان عدّادك الخاص يقفز إلى 100.** الآن يبقى عند الرقم الحقيقي.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+看看你分享了多少：新的"上传"标签页会统计你在每个平台今天、本周和总共的上传。YouTube 上传上限现在会如实显示，重置时间也按你自己的时间显示。
+
+### 新功能
+- **"历史"页面中的"上传"标签页**：你在 YouTube、Instagram、TikTok 以及手动发布的今天、本周和总共的上传，另有最近 14 天的图表。指向、点按或选中任意数字或柱条即可看到对应片段：时间、平台、链接和状态。
+- **使用你自己的 Google 登录时有精确计数**："今天还剩 X / 100 次上传"，并显示重新开始的时间。
+
+### 改进
+- **共享的 YouTube 上限如实显示。** 使用 SharkyClips 内置的 Google 登录时，所有人共享一个每日上传额度，因此应用不再显示它无法知道的数字。它会显示"共享每日额度"、你今天上传了多少，以及额度按你的时间何时重新开始（太平洋时间 00:00，例如匈牙利的 09:00）。
+- **共享上限用完时**，你会看到"今天的共享上传额度已用完。将在 … 重置。"以及两个按钮：手动上传，或使用你自己的 Google 登录。
+
+### 修复
+- **YouTube 表示当天的上传已用完后，你自己的计数会跳到 100。** 现在它会保持真实的数字。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+どれだけ共有したかが分かります：新しい「アップロード」タブで、各プラットフォームの今日・今週・合計のアップロード数を数えます。YouTube のアップロード上限は正直に表示され、リセット時刻もあなたの時間で表示されます。
+
+### 新機能
+- **履歴ページの「アップロード」タブ**：YouTube、Instagram、TikTok、手動で投稿したものについて、今日・今週・合計のアップロード数と直近 14 日間のグラフ。数字やバーにカーソルを合わせる、タップする、または選ぶと、そのクリップ（時刻、プラットフォーム、リンク、状態）が見られます。
+- **自分の Google ログインなら正確なカウンター**：「今日の残り：100 件中 X 件」と、再開する時刻。
+
+### 改善
+- **共有の YouTube 上限を正直に表示。** SharkyClips の内蔵 Google ログインでは全員が 1 日 1 つのアップロードプールを共有するため、アプリは知り得ない数字を表示しなくなりました。「共有の 1 日プール」、今日あなたがアップロードした数、そしてプールがあなたの時間でいつ再開するか（太平洋時間 00:00、たとえばハンガリーでは 09:00）を表示します。
+- **共有の上限に達したとき**は「今日の共有アップロード上限に達しました。… にリセットされます。」と、2 つのボタン（手動でアップロード／自分の Google ログインを使う）が表示されます。
+
+### 修正
+- **YouTube がその日のアップロードの上限を伝えた後、あなた自身のカウントが 100 に跳ね上がっていました。** 今は本当の数のままです。
+
+</details>
+
 ## [1.2.74] - 2026-11-27
 One logo everywhere, a new website in 11 languages, and a simple way to send feedback. The TikTok helper can now also come from a browser store, and dialogs no longer open off-screen.
 

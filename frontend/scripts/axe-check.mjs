@@ -70,6 +70,18 @@ const SCREENS = [
   }],
   ["history", "pro", "#/history", ".history-tools"],
   ["easy-history", "easy", "#/history", ".history-tools"],
+  // 1.2.75 Uploads stats: the tab, a picked number (details list with links) and a picked bar
+  ["history-uploads", "pro", "#/history", ".history-tools", async (page) => {
+    await page.locator("#history-tab-stats").click();
+    await page.waitForSelector(".ups-tiles");
+    await page.locator(".ups-num").nth(2).focus(); // Total: always has posts
+    await page.waitForSelector(".ups-item");
+  }],
+  ["easy-history-uploads", "easy", "#/history", ".history-tools", async (page) => {
+    await page.locator("#history-tab-stats").click();
+    await page.waitForSelector(".ups-bars");
+    await page.locator(".ups-bar").last().hover();
+  }],
   ["easy-trash", "easy", "#/trash", ".trash-usage"],
   // 1.2.66 Share clips: the board, a selection, the platform step and the summary
   ["share", "pro", `#/p/${P}/share`, ".share-grid"],

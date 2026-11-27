@@ -93,8 +93,18 @@ def _offline_dns() -> None:
 _offline_dns()
 
 
+# 1.2.75 (docs/test-speed.md): files that start real browsers / servers / child processes and wait
+# for them with short timeouts. Under parallel load (pytest -n) they time out, so the parallel pass
+# runs `-m "not serial"` and a second, serial pass runs `-m serial`. Plain `pytest` runs everything.
+SERIAL_FILES = {"test_assisted_upload.py", "test_cancel_final.py", "test_governor.py", "test_instance.py",
+                "test_no_window.py", "test_stuck_exit.py", "test_tiktok_browser.py", "test_update_restart.py"}
+
+
 def pytest_collection_modifyitems(config, items):
-    """Skip tests that need ffmpeg when it is not installed (CI installs it, so they run there)."""
+    """Mark the serial files; skip tests that need ffmpeg when it is not installed (CI installs it)."""
+    for item in items:
+        if item.path.name in SERIAL_FILES:
+            item.add_marker(pytest.mark.serial)
     if shutil.which("ffmpeg"):
         return
     skip = pytest.mark.skip(reason="ffmpeg is not installed")

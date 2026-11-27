@@ -12,6 +12,7 @@ import { PostBadges, PublishEverywhereButton } from "../components/PublishAll";
 import { useJobs } from "../jobs";
 import { go, href } from "../router";
 import { useToast } from "../toast";
+import { isExact } from "../uploads";
 
 type Tab = "all" | LibStatus;
 const TABS: Tab[] = ["all", "draft", "scheduled", "published", "failed", "locked"];
@@ -521,7 +522,11 @@ export default function ClipLibrary({ view }: { view: "list" | "calendar" }) {
           <div className="lib-summary card">
             <div>
               <span className="muted">{t("pub.quota_today")}</span>
-              <b className="mono">{data.youtube.connected ? num(data.quota.uploads_left) : "–"}</b>
+              {data.youtube.connected && !isExact(data.quota) ? (
+                <b>{t("yq.shared_pool")}</b>
+              ) : (
+                <b className="mono">{data.youtube.connected ? num(data.quota.uploads_left) : "–"}</b>
+              )}
               <span className="muted">{data.youtube.connected ? t("pub.resets", { when: relTime(data.quota.resets_at) }) : t("pub.not_connected_short")}</span>
             </div>
             <a className="btn btn-sm btn-ghost icon-btn" href={href.settings} aria-label={t("pub.settings")} title={t("pub.settings")}>

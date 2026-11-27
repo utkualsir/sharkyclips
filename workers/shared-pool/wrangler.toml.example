@@ -1,0 +1,13 @@
+# Copy to wrangler.toml (that file is git-ignored) and fill in. Setup: docs/phase-d5.md.
+name = "sharkyclips-pool"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+PROJECT_ID = "your-google-cloud-project-id"
+QUOTA_METRIC = "youtube.googleapis.com/REPLACE-with-the-upload-bucket-metric"
+LIMIT = "100"
+
+# The service-account key is a SECRET, never a [vars] entry and never committed:
+#   npx wrangler secret put SA_KEY      (paste the whole JSON key file)

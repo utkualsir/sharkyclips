@@ -1082,6 +1082,14 @@ export interface YoutubeQuota {
   uploads_left: number;
   uploads_left_with_thumbnail: number;
   resets_at: string;
+  /** 1.2.75: "shared" = one daily pool for every user of the built-in client (not exact) */
+  mode?: "own" | "shared" | null;
+  exact?: boolean;
+  mine_today?: number;
+  exhausted?: boolean;
+  uploads_limit?: number;
+  cost_per_upload?: number;
+  pool?: { used: number; limit: number; left: number; resets_at: string; fetched_at: string } | null;
 }
 
 export interface YoutubeStatus {

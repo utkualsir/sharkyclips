@@ -59,8 +59,9 @@ const P = encodeURIComponent(pid);
 const SCREENS = [
   { name: "easy-home", mode: "easy", hash: "#/", ready: ".ez-create" },
   { name: "easy-project", mode: "easy", hash: `#/p/${P}`, ready: ".share-grid" },
-  { name: "history", mode: "pro", hash: "#/history", ready: ".history-page .history-tools" },
-  { name: "easy-history", mode: "easy", hash: "#/history", ready: ".history-page .history-tools" },
+  // 1.2.75: the Uploads stats tab too
+  { name: "history", mode: "pro", hash: "#/history", ready: ".history-page .history-tools", tabs: [null, "#history-tab-stats"] },
+  { name: "easy-history", mode: "easy", hash: "#/history", ready: ".history-page .history-tools", tabs: [null, "#history-tab-stats"] },
   { name: "easy-library", mode: "easy", hash: "#/library", ready: ".ez-tabs", tabs: [null, ".ez-tabs button:nth-child(3)"] },
   { name: "easy-settings", mode: "easy", hash: "#/settings", ready: ".ez-settings" },
   { name: "approve", mode: "easy", hash: "#/approve", ready: ".approve-card, .approve-empty" },
@@ -177,16 +178,26 @@ function audit() {
   return [...new Set(issues)];
 }
 
+// 1.2.75 (docs/test-speed.md): every (preset, language, theme, size) combination is one unit;
+// LAYOUT_SHARD=2/4 checks every 4th unit starting at the 2nd, so CI runs the matrix in parallel jobs.
+const COMBOS = [];
+for (const preset of PRESETS)
+  for (const lang of LANGS)
+    for (const theme of THEMES) {
+      if (lang === "en" && theme === "dark") continue;
+      const full = preset === "classic" || process.env.LAYOUT_PRESETS_FULL === "1" || !!process.env.LAYOUT_SIZES;
+      if (!full && lang === "en") continue;
+      for (const [w, h] of full ? SIZES : SMALL_SIZES) COMBOS.push([preset, lang, theme, w, h]);
+    }
+const [shardI, shardN] = (process.env.LAYOUT_SHARD || "1/1").split("/").map(Number);
+if (!(shardN >= 1 && shardI >= 1 && shardI <= shardN)) throw new Error(`bad LAYOUT_SHARD ${process.env.LAYOUT_SHARD}`);
+const MINE = COMBOS.filter((_, i) => i % shardN === shardI - 1);
+
 const browser = await chromium.launch(process.env.LAYOUT_CHANNEL ? { channel: process.env.LAYOUT_CHANNEL } : {});
 const failures = [];
 let checked = 0;
-for (const preset of PRESETS)
-for (const lang of LANGS)
-  for (const theme of THEMES) {
-    if (lang === "en" && theme === "dark") continue;
-    const full = preset === "classic" || process.env.LAYOUT_PRESETS_FULL === "1" || !!process.env.LAYOUT_SIZES;
-    if (!full && lang === "en") continue;
-    for (const [w, h] of full ? SIZES : SMALL_SIZES) {
+for (const [preset, lang, theme, w, h] of MINE) {
+    {
       const ctx = await browser.newContext({ viewport: { width: w, height: h } });
       await ctx.addInitScript(([l, t, pers]) => {
         localStorage.setItem("cf-lang", l);
@@ -243,4 +254,4 @@ if (failures.length) {
   console.log(`LAYOUT PROBLEMS (${failures.length} of ${checked} views):\n` + failures.join("\n"));
   process.exit(1);
 }
-console.log(`Layout OK: ${checked} views (${SCREENS.length} screens, ${SIZES.length} sizes, ${LANGS.join("/")}, light/dark, presets ${PRESETS.join("/")}).`);
+console.log(`Layout OK: ${checked} views, shard ${shardI}/${shardN} (${MINE.length} of ${COMBOS.length} combinations; ${SCREENS.length} screens, ${SIZES.length} sizes, ${LANGS.join("/")}, light/dark, presets ${PRESETS.join("/")}).`);
