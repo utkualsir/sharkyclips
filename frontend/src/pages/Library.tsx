@@ -13,6 +13,7 @@ import { UI_LANGUAGES, useI18n } from "../i18n";
 import { isActive, useJobs } from "../jobs";
 import { useMeta } from "../meta";
 import { href } from "../router";
+import { SlideshowButton } from "../components/SlideshowButton";
 import { useToast } from "../toast";
 
 const MODE_ICON: Record<string, string> = { gaming: "gamepad", study: "book", music: "music" };
@@ -397,6 +398,9 @@ export default function Library() {
             {t("library.new")}
           </button>
         </div>
+      </div>
+      <div className="ss-home-pro">
+        <SlideshowButton />
       </div>
 
       {failed && (

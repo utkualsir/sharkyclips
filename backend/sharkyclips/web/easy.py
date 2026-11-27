@@ -800,6 +800,8 @@ def api_projects() -> list[dict]:
         if p.posts_only:
             continue
         meta = p.load_meta()
+        if meta.get("kind") == "slideshow":  # 1.2.72: listed on the Photo slideshow screen
+            continue
         data = E.load(p)
         hl = _hl(p)
         out.append({"id": p.id, "title": meta.get("title") or p.id, "created_at": meta.get("created_at"),

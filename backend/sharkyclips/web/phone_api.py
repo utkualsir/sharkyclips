@@ -218,6 +218,8 @@ def approve_queue() -> list[dict]:
     for project in A.list_projects():
         if project.posts_only:
             continue
+        if project.load_meta().get("kind") == "slideshow":  # 1.2.72: nothing to approve
+            continue
         data = E.load(project)
         if not data["easy"]:
             continue

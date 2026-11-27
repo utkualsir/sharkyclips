@@ -202,7 +202,70 @@ def build(root: Path) -> str:
          "browser_name": "Google Chrome", "created_at": 4102444800, "updated_at": 4102444800, "ready_at": 4102444800,
          "file": "", "file_name": "clip.mp4"}]})
     _stamp_current(home, ws, d)
+    _slideshow(home, ws)
     return PID
+
+
+SLIDESHOW = "layout-check-slideshow-0001"
+
+
+def _slideshow(home: Path, ws: Path) -> None:
+    """1.2.72: a photo slideshow (10 generated pictures, labels, an export) for the slideshow screens."""
+    import os
+    import sys
+    import time
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "backend"))
+    old_home = os.environ.get("SHARKYCLIPS_HOME")
+    os.environ["SHARKYCLIPS_HOME"] = str(home)
+    os.environ.setdefault("SHARKYCLIPS_NO_MIGRATE", "1")
+    try:
+        import io
+
+        from PIL import Image, ImageDraw
+
+        from sharkyclips import slideshow as S
+        from sharkyclips.project import Project
+
+        d = ws / SLIDESHOW
+        d.mkdir(parents=True)
+        project = Project(SLIDESHOW, d)
+        project.save_meta({"title": "Mutfak tadilatı: önce ve sonra, uzun bir başlık denemesi", "kind": "slideshow",
+                           "mode": "slideshow", "created_at": "2026-10-02T00:00:00+00:00", "duration": 0.0})
+        S.save(project, S.defaults())
+        sizes = [(1200, 1600), (1600, 1200), (1000, 1000), (1200, 1600), (4000, 900)]
+        for i in range(10):
+            w, h = sizes[i % len(sizes)]
+            img = Image.new("RGB", (w, h), (40 + 18 * i, 90, 160 - 10 * i))
+            dr = ImageDraw.Draw(img)
+            for x in range(0, w + h, 80):
+                dr.line([(x, 0), (x - h, h)], fill=(200, 200 - 12 * i, 120), width=10)
+            buf = io.BytesIO()
+            exif = Image.Exif()
+            exif.get_ifd(0x8769)[36867] = f"2026:05:{i + 1:02d} 09:00:00"
+            img.save(buf, "JPEG", quality=80, exif=exif.tobytes())
+            S.add_photo(project, f"IMG_{2040 + i}.jpg", buf.getvalue())
+        data = S.load(project)
+        data.update(labels=True, subject="Mutfak tadilatı")
+        S.active(data)[4]["text"] = "Day 3"
+        S.save(project, data)
+        (d / "clips").mkdir(exist_ok=True)
+        _video(d / "clips" / "slideshow.mp4", "270x480", 3.0, vp9=True)
+        lang = S.language_of(project, data)
+        S.write_clip(project, {"file": "slideshow.mp4", "duration": S.duration(10, 3.0, True), "width": S.W,
+                               "height": S.H, "encoder": "CPU (x264)", "photos": 10,
+                               "fingerprint": S.fingerprint(data, lang, S.W)})
+        (d / "cache").mkdir(exist_ok=True)
+        _video(d / "cache" / "slideshow_preview.mp4", "180x320", 3.0, vp9=True)
+        meta = project.load_meta()
+        fp = S.fingerprint(data, lang, S.W // S.PREVIEW_SCALE)
+        meta["preview"] = {"stamp": f"{fp}{int(time.time())}", "fingerprint": fp}
+        project.save_meta(meta)
+    finally:
+        if old_home is None:
+            os.environ.pop("SHARKYCLIPS_HOME", None)
+        else:
+            os.environ["SHARKYCLIPS_HOME"] = old_home
 
 
 def _stamp_current(home: Path, ws: Path, d: Path) -> None:

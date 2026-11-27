@@ -95,6 +95,9 @@ const SCREENS = [
     await page.locator(".updates-item summary").nth(2).click();
   }],
   ["easy-updates", "easy", "#/updates", ".updates-item"],
+  // 1.2.72 Photo slideshow
+  ["slideshows", "pro", "#/slideshow", ".ss-recent"],
+  ["slideshow", "easy", "#/slideshow/layout-check-slideshow-0001", ".ss-grid"],
   // 1.2.59 the waiting mini game: how-to, start screen, skins, a round paused (Pro and Easy)
   ["minigame-howto", "pro", "#/settings", "#settings-advanced", async (page) => {
     await page.request.put(`${base}/api/minigame`, { data: { howto_seen: false, today: "2000-01-01" }, headers: H });

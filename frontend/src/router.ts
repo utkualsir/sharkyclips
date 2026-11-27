@@ -18,7 +18,9 @@ export type Route =
   | { name: "pubqueue" }
   | { name: "trash" }
   | { name: "updates" }
-  | { name: "history" };
+  | { name: "history" }
+  | { name: "slideshows" }
+  | { name: "slideshow"; id: string };
 
 function parse(): Route {
   const h = window.location.hash.replace(/^#\/?/, "");
@@ -37,6 +39,8 @@ function parse(): Route {
   if (a === "trash") return { name: "trash" };
   if (a === "updates") return { name: "updates" };
   if (a === "history") return { name: "history" };
+  if (a === "slideshow" && b) return { name: "slideshow", id: decodeURIComponent(b) };
+  if (a === "slideshow") return { name: "slideshows" };
   if (a === "library") return { name: "publish", view: b === "calendar" ? "calendar" : "list" };
   return { name: "library" };
 }
@@ -65,6 +69,8 @@ export const href = {
   trash: "#/trash",
   updates: "#/updates",
   history: "#/history",
+  slideshows: "#/slideshow",
+  slideshow: (id: string) => `#/slideshow/${encodeURIComponent(id)}`,
   publish: (view: "list" | "calendar" = "list") => (view === "calendar" ? "#/library/calendar" : "#/library"),
   project: (id: string) => `#/p/${encodeURIComponent(id)}`,
   bestof: (id: string) => `#/p/${encodeURIComponent(id)}/bestof`,

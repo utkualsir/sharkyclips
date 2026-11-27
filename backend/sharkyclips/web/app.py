@@ -1492,7 +1492,7 @@ def _render_is_current(clip: dict | None, cand: dict, options: dict, hook: str, 
 
 def _accepted_overview(project: Project) -> dict | None:
     hl = state.load_highlights(project)
-    if not hl:
+    if not hl or hl.get("kind") == "slideshow":  # 1.2.72: its one clip IS the export, never re-rendered
         return None
     review = state.load_review(project, hl)
     by_id = {c["id"]: c for c in hl.get("candidates", [])}
@@ -1626,7 +1626,8 @@ def _summary(project: Project) -> dict:
 
 @app.get("/api/projects")
 def api_projects() -> list[dict]:
-    out = [_summary(p) for p in list_projects() if not p.posts_only]
+    # 1.2.72: slideshows have their own list (Photo slideshow screen), not a stream project's
+    out = [_summary(p) for p in list_projects() if not p.posts_only and p.load_meta().get("kind") != "slideshow"]
     out.sort(key=lambda p: p.get("created_at") or "", reverse=True)
     return out
 
@@ -2550,9 +2551,15 @@ def api_clip_video(project_id: str, cid: str, download: bool = False):
 
 
 def _frame(project: Project, t: float, width: int, dest: Path) -> Path:
-    if dest.is_file():
-        return dest
     src = project.source_path
+    stale = False
+    if src is None and project.load_meta().get("kind") == "slideshow":  # 1.2.72: its video is the export
+        clip = state.load_clips(project).get("c01")
+        src = project.dir / "clips" / clip["file"] if clip else None
+        # a frame cached from an older export is made again (and overwritten below)
+        stale = src is not None and dest.is_file() and dest.stat().st_mtime < src.stat().st_mtime
+    if dest.is_file() and not stale:
+        return dest
     if src is None:
         raise HTTPException(404, "Source video missing")
     dest.parent.mkdir(parents=True, exist_ok=True)
@@ -2686,6 +2693,7 @@ from .fullvideo_api import router as _fullvideo_router  # noqa: E402 - full vide
 from .setup_api import router as _setup_router  # noqa: E402 - first-run downloads + diagnostics (1.2.56)
 from .mystyle_api import router as _mystyle_router  # noqa: E402 - My style template (1.2.63)
 from .share import router as _share_router  # noqa: E402 - Share clips board, daily limit, batches (1.2.66)
+from .slideshow_api import router as _slideshow_router  # noqa: E402 - Photo slideshow (1.2.72)
 from .manual import router as _manual_router  # noqa: E402 - Upload manually (1.2.68)
 from .space import router as _space_router  # noqa: E402 - Free up space (1.2.68)
 from .history_api import router as _history_router  # noqa: E402 - Upload history (1.2.68)
@@ -2710,6 +2718,7 @@ app.include_router(_dub_router)
 app.include_router(_fullvideo_router)
 app.include_router(_mystyle_router)
 app.include_router(_share_router)
+app.include_router(_slideshow_router)
 app.include_router(_manual_router)
 app.include_router(_space_router)
 app.include_router(_history_router)

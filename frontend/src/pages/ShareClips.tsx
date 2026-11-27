@@ -45,9 +45,11 @@ const isShared = (c: ShareCard) => c.status.shared.length > 0;
 
 export default function ShareClips({ id }: { id: string }) {
   const { t } = useI18n();
+  // 1.2.72: a slideshow's board goes back to the slideshow (its ids start with "slideshow-")
+  const back = id.startsWith("slideshow-") ? href.slideshow(id) : href.project(id);
   return (
     <main className="page share-page">
-      <a className="crumbs" href={href.project(id)}>
+      <a className="crumbs" href={back}>
         <Icon name="chevron-left" className="icon flip-rtl" />
         <span>{t("share.back_project")}</span>
       </a>

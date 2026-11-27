@@ -44,6 +44,8 @@ const Approve = lazy(() => import("./pages/Approve"));
 const Updates = lazy(() => import("./pages/Updates"));
 const ShareClips = lazy(() => import("./pages/ShareClips"));
 const UploadHistory = lazy(() => import("./pages/UploadHistory"));
+const SlideshowList = lazy(() => import("./pages/Slideshow").then((m) => ({ default: m.SlideshowList })));
+const SlideshowEditor = lazy(() => import("./pages/Slideshow").then((m) => ({ default: m.SlideshowEditor })));
 import { UploadsLeft } from "./components/UploadsLeft";
 import { ShareNotices } from "./components/ShareNotices";
 import { AssistBar } from "./components/AssistBar";
@@ -88,7 +90,8 @@ function EasyTopBar() {
         <a
           href={href.library}
           aria-current={
-            route.name === "library" || route.name === "project" || route.name === "share"
+            route.name === "library" || route.name === "project" || route.name === "share" ||
+            route.name === "slideshows" || route.name === "slideshow"
               ? "page"
               : undefined
           }
@@ -166,7 +169,7 @@ function TopBar() {
         <a
           href={href.library}
           aria-current={
-            ["library", "project", "bestof", "game", "stories"].includes(
+            ["library", "project", "bestof", "game", "stories", "slideshows", "slideshow"].includes(
               route.name,
             )
               ? "page"
@@ -387,6 +390,8 @@ export default function App() {
           {route.name === "trash" && <Trash />}
           {route.name === "updates" && <Updates />}
           {route.name === "history" && <UploadHistory />}
+          {route.name === "slideshows" && <SlideshowList />}
+          {route.name === "slideshow" && <SlideshowEditor key={route.id} id={route.id} />}
         </Suspense>
       </div>
       <Footer onWhatsNew={() => setManualWhatsNew(true)} />

@@ -9,6 +9,154 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.72] - 2026-11-27
+New: Photo slideshow. Turn 2 to 20 photos (for example a job from before to after) into a vertical video for Reels, Shorts and TikTok.
+
+### New
+- **Photo slideshow,** in Easy and Pro mode, with its own button on the home screen. Drop 2 to 20 photos (JPG, PNG, HEIC or WebP). They are put in order by the date they were taken, and you can drag them into a different order.
+- **A clean 9:16 video:** each photo shows for 3 seconds (you can pick 2 to 5), with a soft change between photos (crossfade, slide or zoom) and a slow, gentle zoom that never cuts off the important part. Photos taken sideways are turned the right way, and wide photos fit inside the frame over a blurred copy of themselves, never stretched.
+- **Short text on photos,** like "BEFORE", "DAY 3" or "RESULT". One switch adds Before / Progress / Result in your language. The text stays where the app buttons don't cover it.
+- **An animated SharkyClips logo at the end** (about 1.5 seconds). It is on by default and you can turn it off.
+- **Preview, then export** on your graphics card or on the processor, so it also works on slower PCs. After the export: Save, Open folder, or Share to YouTube Shorts, Instagram or TikTok with a title and description in your style. No music is added: you add a song in Instagram or YouTube.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Yeni: Fotoğraf slayt gösterisi. 2 ile 20 fotoğrafı (örneğin bir işin öncesinden sonrasına) Reels, Shorts ve TikTok için dikey bir videoya çevir.
+
+### Yeni
+- **Fotoğraf slayt gösterisi,** Kolay ve Pro modda, ana ekranda kendi düğmesiyle. 2 ile 20 fotoğraf bırak (JPG, PNG, HEIC veya WebP). Çekildikleri tarihe göre sıralanır, istersen sürükleyerek sırayı değiştirirsin.
+- **Temiz bir 9:16 video:** her fotoğraf 3 saniye görünür (2 ile 5 arası seçebilirsin), fotoğraflar arasında yumuşak bir geçiş olur (yumuşak geçiş, kaydırma veya yakınlaştırma) ve önemli kısmı asla kesmeyen yavaş, hafif bir yakınlaştırma vardır. Yan çekilmiş fotoğraflar düzeltilir; geniş fotoğraflar kendi bulanık kopyasının üstünde kadraja sığar, asla esnetilmez.
+- **Fotoğrafların üstünde kısa yazı,** örneğin "ÖNCE", "3. GÜN" veya "SONUÇ". Tek düğme, senin dilinde Önce / Süreç / Sonuç ekler. Yazı, uygulama düğmelerinin kapatmadığı yerde durur.
+- **Sonda hareketli SharkyClips logosu** (yaklaşık 1,5 saniye). Varsayılan olarak açıktır, kapatabilirsin.
+- **Önce ön izleme, sonra dışa aktarma;** ekran kartında ya da işlemcide, yani yavaş bilgisayarlarda da çalışır. Dışa aktardıktan sonra: Kaydet, Klasörü aç ya da senin tarzında başlık ve açıklamayla YouTube Shorts, Instagram veya TikTok'ta Paylaş. Müzik eklenmez: şarkıyı Instagram'da veya YouTube'da sen eklersin.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Nuevo: presentación de fotos. Convierte de 2 a 20 fotos (por ejemplo, un trabajo de antes a después) en un vídeo vertical para Reels, Shorts y TikTok.
+
+### Nuevo
+- **Presentación de fotos,** en modo Fácil y Pro, con su propio botón en la pantalla de inicio. Suelta de 2 a 20 fotos (JPG, PNG, HEIC o WebP). Se ordenan por la fecha en que se tomaron y puedes arrastrarlas para cambiar el orden.
+- **Un vídeo 9:16 limpio:** cada foto se ve 3 segundos (puedes elegir de 2 a 5), con un cambio suave entre fotos (fundido, deslizar o zoom) y un zoom lento y suave que nunca corta la parte importante. Las fotos tomadas de lado se giran bien, y las fotos anchas caben en el cuadro sobre una copia borrosa de sí mismas, nunca estiradas.
+- **Texto corto en las fotos,** como "ANTES", "DÍA 3" o "RESULTADO". Un interruptor añade Antes / Proceso / Resultado en tu idioma. El texto queda donde los botones de las apps no lo tapan.
+- **Un logo animado de SharkyClips al final** (unos 1,5 segundos). Está activado por defecto y puedes desactivarlo.
+- **Vista previa y luego exportar** con la tarjeta gráfica o el procesador, así que también funciona en PCs más lentos. Después: Guardar, Abrir carpeta o Compartir en YouTube Shorts, Instagram o TikTok con un título y una descripción a tu estilo. No se añade música: la añades tú en Instagram o YouTube.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Novo: apresentação de fotos. Transforme de 2 a 20 fotos (por exemplo, um trabalho do antes ao depois) em um vídeo vertical para Reels, Shorts e TikTok.
+
+### Novo
+- **Apresentação de fotos,** no modo Fácil e Pro, com seu próprio botão na tela inicial. Solte de 2 a 20 fotos (JPG, PNG, HEIC ou WebP). Elas são ordenadas pela data em que foram tiradas, e você pode arrastá-las para mudar a ordem.
+- **Um vídeo 9:16 limpo:** cada foto aparece por 3 segundos (você pode escolher de 2 a 5), com uma troca suave entre as fotos (esmaecer, deslizar ou zoom) e um zoom lento e leve que nunca corta a parte importante. Fotos tiradas de lado são viradas do jeito certo, e fotos largas cabem no quadro sobre uma cópia desfocada delas mesmas, nunca esticadas.
+- **Texto curto nas fotos,** como "ANTES", "DIA 3" ou "RESULTADO". Um botão adiciona Antes / Processo / Resultado no seu idioma. O texto fica onde os botões dos apps não cobrem.
+- **Um logo animado do SharkyClips no final** (cerca de 1,5 segundo). Vem ligado e você pode desligar.
+- **Prévia e depois exportar** na placa de vídeo ou no processador, então funciona também em PCs mais lentos. Depois: Salvar, Abrir pasta ou Compartilhar no YouTube Shorts, Instagram ou TikTok com título e descrição no seu estilo. Nenhuma música é adicionada: você adiciona no Instagram ou no YouTube.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Neu: Foto-Diashow. Mach aus 2 bis 20 Fotos (zum Beispiel eine Arbeit von vorher bis nachher) ein Hochkant-Video für Reels, Shorts und TikTok.
+
+### Neu
+- **Foto-Diashow,** im Einfach- und Pro-Modus, mit eigenem Button auf dem Startbildschirm. Leg 2 bis 20 Fotos ab (JPG, PNG, HEIC oder WebP). Sie werden nach dem Aufnahmedatum sortiert, und du kannst sie in eine andere Reihenfolge ziehen.
+- **Ein sauberes 9:16-Video:** Jedes Foto ist 3 Sekunden zu sehen (wählbar von 2 bis 5), mit einem weichen Wechsel zwischen den Fotos (Überblenden, Schieben oder Zoom) und einem langsamen, sanften Zoom, der nie den wichtigen Teil abschneidet. Seitlich aufgenommene Fotos werden richtig gedreht, breite Fotos passen über einer unscharfen Kopie von sich selbst ins Bild und werden nie gestreckt.
+- **Kurzer Text auf den Fotos,** etwa "VORHER", "TAG 3" oder "ERGEBNIS". Ein Schalter fügt Vorher / Fortschritt / Ergebnis in deiner Sprache hinzu. Der Text steht dort, wo die Buttons der Apps ihn nicht verdecken.
+- **Ein animiertes SharkyClips-Logo am Ende** (etwa 1,5 Sekunden). Es ist standardmäßig an und lässt sich ausschalten.
+- **Erst Vorschau, dann Export** auf der Grafikkarte oder dem Prozessor, also auch auf langsameren PCs. Danach: Speichern, Ordner öffnen oder Teilen auf YouTube Shorts, Instagram oder TikTok mit Titel und Beschreibung in deinem Stil. Es wird keine Musik hinzugefügt: Den Song fügst du in Instagram oder YouTube hinzu.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Nouveau : le diaporama photo. Transforme 2 à 20 photos (par exemple un chantier d’avant à après) en vidéo verticale pour Reels, Shorts et TikTok.
+
+### Nouveau
+- **Diaporama photo,** en mode Facile et Pro, avec son propre bouton sur l’écran d’accueil. Dépose 2 à 20 photos (JPG, PNG, HEIC ou WebP). Elles sont classées par date de prise de vue, et tu peux les faire glisser pour changer l’ordre.
+- **Une vidéo 9:16 propre :** chaque photo s’affiche 3 secondes (au choix de 2 à 5), avec un passage doux entre les photos (fondu, glissement ou zoom) et un zoom lent et léger qui ne coupe jamais la partie importante. Les photos prises de côté sont remises droites, et les photos larges tiennent dans le cadre sur une copie floue d’elles-mêmes, jamais étirées.
+- **Un court texte sur les photos,** comme "AVANT", "JOUR 3" ou "RÉSULTAT". Un bouton ajoute Avant / En cours / Résultat dans ta langue. Le texte reste là où les boutons des applis ne le cachent pas.
+- **Un logo SharkyClips animé à la fin** (environ 1,5 seconde). Il est activé par défaut et tu peux le désactiver.
+- **Aperçu, puis export** sur la carte graphique ou le processeur, donc ça marche aussi sur les PC plus lents. Ensuite : Enregistrer, Ouvrir le dossier ou Partager sur YouTube Shorts, Instagram ou TikTok avec un titre et une description dans ton style. Aucune musique n’est ajoutée : tu ajoutes la chanson dans Instagram ou YouTube.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Új: fotó-diavetítés. 2–20 fotóból (például egy munka előtte és utána képeiből) álló videó Reelsre, Shortsra és TikTokra.
+
+### Új
+- **Fotó-diavetítés,** Egyszerű és Pro módban, saját gombbal a kezdőképernyőn. Húzz be 2–20 fotót (JPG, PNG, HEIC vagy WebP). A készítés dátuma szerint kerülnek sorba, és áthúzással más sorrendbe teheted őket.
+- **Tiszta 9:16-os videó:** minden fotó 3 másodpercig látszik (2 és 5 között választhatsz), a fotók között lágy váltással (áttűnés, csúsztatás vagy nagyítás) és lassú, finom nagyítással, amely sosem vágja le a fontos részt. Az oldalra fordított fotók helyes állásba kerülnek, a széles fotók a saját elmosott másolatuk fölött férnek a képbe, sosem nyújtva.
+- **Rövid szöveg a fotókon,** például "ELŐTTE", "3. NAP" vagy "EREDMÉNY". Egy kapcsoló hozzáadja az Előtte / Folyamat / Eredmény feliratokat a nyelveden. A szöveg ott marad, ahol az alkalmazások gombjai nem takarják.
+- **Animált SharkyClips logó a végén** (kb. 1,5 másodperc). Alapból be van kapcsolva, és kikapcsolhatod.
+- **Előbb előnézet, aztán exportálás** a videókártyán vagy a processzoron, így lassabb gépen is működik. Utána: Mentés, Mappa megnyitása vagy Megosztás YouTube Shortsra, Instagramra vagy TikTokra a saját stílusodban írt címmel és leírással. Zene nem kerül bele: a dalt az Instagramon vagy a YouTube-on adod hozzá.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Новое: слайд-шоу из фото. Превратите 2–20 фото (например, работу от «до» к «после») в вертикальное видео для Reels, Shorts и TikTok.
+
+### Новое
+- **Слайд-шоу из фото** в простом режиме и в Pro, со своей кнопкой на главном экране. Перетащите 2–20 фото (JPG, PNG, HEIC или WebP). Они встают по дате съёмки, а порядок можно поменять перетаскиванием.
+- **Аккуратное видео 9:16:** каждое фото видно 3 секунды (можно выбрать от 2 до 5), между фото мягкая смена (плавный переход, сдвиг или приближение) и медленное лёгкое приближение, которое никогда не обрезает главное. Фото, снятые боком, поворачиваются правильно, а широкие фото помещаются в кадр поверх своей размытой копии и никогда не растягиваются.
+- **Короткий текст на фото,** например «ДО», «ДЕНЬ 3» или «РЕЗУЛЬТАТ». Один переключатель добавляет До / Процесс / Результат на вашем языке. Текст стоит там, где его не закрывают кнопки приложений.
+- **Анимированный логотип SharkyClips в конце** (около 1,5 секунды). Он включён по умолчанию, его можно выключить.
+- **Сначала предпросмотр, потом экспорт** на видеокарте или процессоре, так что это работает и на слабых ПК. После экспорта: Сохранить, Открыть папку или Поделиться в YouTube Shorts, Instagram или TikTok с названием и описанием в вашем стиле. Музыка не добавляется: песню вы добавляете в Instagram или YouTube.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+جديد: عرض الصور. حوّل من 2 إلى 20 صورة (مثلًا عمل من قبل إلى بعد) إلى فيديو عمودي لـ Reels وShorts وTikTok.
+
+### جديد
+- **عرض الصور** في الوضع السهل والاحترافي، مع زر خاص به في الشاشة الرئيسية. أفلت من 2 إلى 20 صورة (JPG أو PNG أو HEIC أو WebP). تُرتَّب حسب تاريخ التقاطها، ويمكنك سحبها لتغيير الترتيب.
+- **فيديو 9:16 نظيف:** تظهر كل صورة 3 ثوانٍ (يمكنك اختيار من 2 إلى 5)، مع انتقال ناعم بين الصور (تلاشٍ أو انزلاق أو تكبير) وتكبير بطيء وخفيف لا يقص الجزء المهم أبدًا. تُعدَّل الصور الملتقطة بالعرض، وتتسع الصور العريضة داخل الإطار فوق نسخة ضبابية منها، دون أي تمطيط.
+- **نص قصير على الصور** مثل "قبل" أو "اليوم 3" أو "النتيجة". زر واحد يضيف قبل / أثناء العمل / النتيجة بلغتك. يبقى النص حيث لا تغطيه أزرار التطبيقات.
+- **شعار SharkyClips متحرك في النهاية** (نحو 1.5 ثانية). يكون مفعّلًا افتراضيًا ويمكنك إيقافه.
+- **معاينة ثم تصدير** على بطاقة الرسوميات أو المعالج، لذلك يعمل أيضًا على الأجهزة الأبطأ. بعد التصدير: احفظ، أو افتح المجلد، أو شارك على YouTube Shorts أو Instagram أو TikTok بعنوان ووصف بأسلوبك. لا تُضاف موسيقى: أنت تضيف الأغنية في Instagram أو YouTube.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+新功能：照片幻灯片。把 2 到 20 张照片（例如一项工程从之前到之后）做成适合 Reels、Shorts 和 TikTok 的竖屏视频。
+
+### 新功能
+- **照片幻灯片**，简单模式和专业模式都有，主屏幕上有专门的按钮。拖入 2 到 20 张照片（JPG、PNG、HEIC 或 WebP）。照片按拍摄日期排序，你也可以拖动来改变顺序。
+- **干净的 9:16 视频：**每张照片显示 3 秒（可在 2 到 5 秒之间选择），照片之间平滑切换（淡入淡出、滑动或缩放），并有缓慢、轻柔的缩放，绝不会裁掉重要部分。横着拍的照片会转正，宽照片会放在自身的模糊副本上完整显示，绝不拉伸。
+- **照片上的简短文字**，例如“之前”“第 3 天”或“完成”。一个开关即可用你的语言添加“之前 / 进行中 / 完成”。文字会放在不被应用按钮遮挡的位置。
+- **结尾的 SharkyClips 动画标志**（约 1.5 秒）。默认开启，也可以关闭。
+- **先预览，再导出**，可使用显卡或处理器，所以较慢的电脑也能用。导出后：保存、打开文件夹，或带着你风格的标题和简介分享到 YouTube Shorts、Instagram 或 TikTok。不添加音乐：歌曲由你在 Instagram 或 YouTube 里添加。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+新機能：写真スライドショー。2〜20枚の写真（たとえば作業のビフォーからアフターまで）を、Reels・Shorts・TikTok 向けの縦型動画にします。
+
+### 新機能
+- **写真スライドショー**。かんたんモードとプロモードの両方で、ホーム画面に専用のボタンがあります。2〜20枚の写真（JPG・PNG・HEIC・WebP）をドロップすると撮影日の順に並び、ドラッグで順番を変えられます。
+- **きれいな 9:16 動画：**1枚あたり 3 秒表示（2〜5 秒で選べます）。写真の切り替えはなめらか（クロスフェード・スライド・ズーム）で、大事な部分を切らないゆっくりとした軽いズームが入ります。横向きで撮った写真は正しい向きに直り、横長の写真は自分のぼかしたコピーの上に収まり、引き伸ばされることはありません。
+- **写真に短い文字**。たとえば「ビフォー」「3日目」「アフター」。スイッチひとつで、あなたの言語のビフォー / 作業中 / アフターが入ります。文字はアプリのボタンに隠れない位置に置かれます。
+- **最後に SharkyClips のアニメーションロゴ**（約 1.5 秒）。最初からオンで、オフにもできます。
+- **プレビューしてから書き出し**。グラフィックカードでも CPU でも動くので、遅めの PC でも使えます。書き出し後は、保存、フォルダーを開く、またはあなたのスタイルのタイトルと説明で YouTube Shorts・Instagram・TikTok に共有できます。音楽は入りません：曲は Instagram や YouTube で追加してください。
+
+</details>
+
 ## [1.2.71] - 2026-11-27
 A small fix: two posts going out at the same moment no longer trip over each other when they save your account sign-in.
 

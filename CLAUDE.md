@@ -114,6 +114,13 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   (`test_assisted_upload.py` checks the extension code). Tests: fake extension reports + real headless Edge
   against `fake_tiktok_studio.py` / `fake_instagram.py`; `SHARKYCLIPS_ASSIST_DEFAULT=semi` in conftest.
   Decisions: `docs/assisted-upload.md`.
+- Photo slideshow (1.2.72) = `slideshow.py` + `web/slideshow_api.py` + `pages/Slideshow.tsx`: a project of
+  meta `kind: "slideshow"` whose export is its one clip `c01` (so Share / publishing / trash reuse the normal
+  code); the stream lists and "Render all accepted" skip it. ffmpeg graph: composed stills -> `perspective`
+  Ken Burns (max 1.06) -> `xfade` -> libass labels (`assets/fonts/ArchivoSC-ExtraBold.ttf`, libass can't
+  read WOFF2) -> PIL-drawn logo outro (same geometry as `make_icons.py`, tested). HEIC via `pi-heif`
+  (decode-only, no GPL x265). Decisions: `docs/phase-d3.md`. Sample: `docs/demo/make_slideshow_sample.py`.
+  A fixture server must set `SHARKYCLIPS_DOWNLOADS` too, or "Save" writes into the real Downloads.
 - Icons/logo come from `installer/make_icons.py` (one geometry; `frontend/src/components/Brand.tsx`
   and `backend/sharkyclips/web/splash.html` copy the same paths).
 - Settings folder: `~/.sharkyclips` (`config.config_dir()`); `migrate.py` moves an old `~/.clipforge`

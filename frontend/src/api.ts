@@ -31,7 +31,7 @@ export interface Meta {
 
 export interface Job {
   id: string;
-  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "description" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue" | "reconcile" | "post" | "full_prepare" | "full_upload" | "channel_style" | "style_preview" | "setup";
+  kind: "import" | "transcribe" | "highlights" | "render" | "facecam" | "proxy" | "analyze" | "titles" | "description" | "chat" | "montage" | "benchmark" | "update" | "export" | "upload" | "yt_stats" | "music" | "story" | "story_render" | "ab" | "hook_fetch" | "cover_burn" | "voices" | "proofread" | "ai_cover" | "dub" | "platform_export" | "platform_upload" | "swearscan" | "long_metadata" | "pubqueue" | "reconcile" | "post" | "full_prepare" | "full_upload" | "channel_style" | "style_preview" | "setup" | "slideshow_preview" | "slideshow_export";
   lane: string;
   project_id: string | null;
   params: Record<string, any>;

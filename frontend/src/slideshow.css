@@ -1,0 +1,259 @@
+/* 1.2.72 Photo slideshow (pages/Slideshow.tsx). Colours: theme tokens only (themes.css). */
+
+.ss-back { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 10px; }
+.ss-head { margin-bottom: 18px; }
+.ss-title-wrap { width: min(100%, 560px); }
+.ss-title { font-size: var(--fs-xl); font-weight: 600; }
+
+.ss-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: var(--gap);
+  align-items: start;
+}
+.ss-main, .ss-side { display: grid; gap: var(--gap); min-width: 0; }
+.ss-side { position: sticky; top: calc(var(--topbar-h) + 12px); }
+@media (max-width: 900px) {
+  .ss-layout { grid-template-columns: minmax(0, 1fr); }
+  .ss-side { position: static; }
+}
+
+.ss-page h2 { font-size: var(--fs-lg); margin: 0 0 6px; }
+.ss-section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ss-count { font-size: var(--fs-sm); font-weight: 500; }
+
+/* ---------------------------------------------------------------- drop zones */
+.ss-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 16px;
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  color: var(--muted);
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ss-drop.drag { border-color: var(--gold); background: var(--gold-soft); color: var(--text); }
+.ss-drop-big {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 44px 24px;
+  background: var(--surface);
+  background-image: repeating-linear-gradient(-45deg, transparent 0 14px, var(--surface-2) 14px 15px);
+}
+.ss-drop-big strong { font-size: var(--fs-xl); color: var(--strong); }
+.ss-drop-icon {
+  --cut: calc(12px * var(--cut-k));
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  background: var(--gold);
+  color: var(--on-sign);
+  border-radius: var(--fin-r);
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+}
+[dir="rtl"] .ss-drop-icon { clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut)); }
+.ss-drop-actions { justify-content: center; }
+
+/* ---------------------------------------------------------------- the photo grid */
+.ss-grid {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.ss-card {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+  min-width: 0;
+  transition: border-color 0.15s, transform 0.15s var(--ease), opacity 0.15s;
+}
+.ss-card.dragging { opacity: 0.45; }
+.ss-card.over { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-line); }
+.ss-thumb {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  background: var(--surface-3);
+  cursor: grab;
+}
+.ss-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.ss-num {
+  position: absolute;
+  top: 6px;
+  inset-inline-start: 6px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--scrim);
+  color: var(--on-media);
+  font-size: var(--fs-xs);
+}
+.ss-grip {
+  position: absolute;
+  top: 6px;
+  inset-inline-end: 6px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-sm);
+  background: var(--scrim-sm);
+  color: var(--on-media);
+}
+.ss-tag {
+  position: absolute;
+  top: 14%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 86%;
+  padding: 2px 6px;
+  background: var(--gold);
+  color: var(--on-sign);
+  font-weight: 800;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ss-card-body { display: grid; gap: 6px; padding: 8px; min-width: 0; }
+.ss-date { font-size: var(--fs-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-card-actions { display: flex; align-items: center; gap: 2px; }
+.ss-uploading { display: grid; gap: 6px; margin-top: 12px; }
+.ss-failed { margin: 4px 0 0; padding-inline-start: 18px; font-size: var(--fs-sm); }
+
+/* ---------------------------------------------------------------- the look */
+.ss-look { display: grid; gap: 16px; }
+.ss-look h2 { margin-bottom: 0; }
+.ss-range { width: 100%; accent-color: var(--gold); }
+.ss-toggle { align-items: flex-start; }
+.ss-toggle .toggle { margin-top: 2px; }
+
+/* ---------------------------------------------------------------- preview + export */
+.ss-preview, .ss-export { display: grid; gap: 10px; }
+.ss-phone {
+  position: relative;
+  width: min(100%, 260px);
+  aspect-ratio: 9 / 16;
+  justify-self: center;
+  border-radius: 18px;
+  border: 6px solid var(--mock-phone);
+  background: var(--mock-screen);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.ss-phone video, .ss-phone-poster { width: 100%; height: 100%; object-fit: contain; display: block; }
+.ss-phone-poster { opacity: 0.55; }
+.ss-phone-empty { display: grid; place-items: center; }
+.ss-phone-busy {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  background: var(--scrim);
+  color: var(--on-media);
+  font-size: var(--fs-sm);
+}
+.ss-length { margin: 0; font-weight: 600; }
+.ss-length .muted { font-weight: 400; font-size: var(--fs-sm); }
+.ss-music {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+}
+.ss-music svg { flex: none; margin-top: 2px; }
+.ss-export-btn { width: 100%; justify-content: center; }
+.ss-progress { display: grid; gap: 6px; }
+.ss-done { display: grid; gap: 10px; }
+.ss-done-line { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.ss-done-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ss-folder { word-break: break-all; }
+.ss-err-hint { font-size: var(--fs-xs); word-break: break-word; max-height: 6em; overflow: auto; }
+.ss-shared { margin: 0; }
+
+/* ---------------------------------------------------------------- list screen */
+.ss-recent { margin-top: 28px; }
+.ss-recent-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; }
+.ss-recent-list li { display: flex; align-items: center; gap: 6px; }
+.ss-recent-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: 8px 14px 8px 8px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+}
+.ss-recent-item:hover { border-color: var(--border-strong); background: var(--surface-2); }
+.ss-recent-thumb {
+  flex: none;
+  width: 36px;
+  height: 64px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: var(--surface-3);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.ss-recent-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ss-recent-text { flex: 1; min-width: 0; display: grid; }
+.ss-recent-text b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--strong); font-weight: 600; }
+.ss-recent-del { flex: none; }
+
+/* home screens: the "Photo slideshow" button */
+.ss-home-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+}
+.ss-home-card:hover { border-color: var(--gold-line); background: var(--surface-2); }
+.ss-home-card .ss-home-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  background: var(--gold-soft);
+  color: var(--gold-text);
+}
+.ss-home-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.ss-home-text b { color: var(--strong); }
+.ss-home-text span { font-size: var(--fs-sm); color: var(--muted); }
+.ss-home-pro { margin: 0 0 20px; }
+.ez-create + .ss-home-card { margin-top: 16px; max-width: 860px; }

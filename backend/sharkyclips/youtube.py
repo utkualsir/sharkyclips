@@ -80,7 +80,7 @@ DEFAULT_DAILY_UPLOADS = 100
 STUDIO_URL = "https://studio.youtube.com/video/{id}/edit"
 CHUNK = 8 * 1024 * 1024  # resumable upload chunk (multiple of 256 KiB)
 PRIVACY = ("private", "unlisted", "public")
-CATEGORY = {"gaming": "20", "study": "27", "music": "10"}  # Gaming, Education, Music
+CATEGORY = {"gaming": "20", "study": "27", "music": "10", "slideshow": "22"}  # Gaming, Education, Music, People & Blogs
 # Categories a video can be put in (the ones YouTube offers for uploads in every region).
 CATEGORIES = ("1", "2", "10", "15", "17", "19", "20", "22", "23", "24", "25", "26", "27", "28", "29")
 CONSOLE = "https://console.cloud.google.com"

@@ -193,7 +193,8 @@ def board(project: Project) -> dict:
             "batch": batch_view(project), "ig_gap_hours": igpace.MIN_GAP_HOURS,
             "history": before, "space": space.view(project, cards),
             "language": languages.content_language(None, project),
-            "language_set": bool(meta.get("content_language")), "has_source": has_source}
+            "language_set": bool(meta.get("content_language")), "has_source": has_source,
+            "kind": meta.get("kind") or "stream"}
 
 
 # ===================================================================== the plan

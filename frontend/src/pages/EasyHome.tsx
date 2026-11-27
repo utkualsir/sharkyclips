@@ -6,6 +6,7 @@ import { EasyProgress, ModeChip } from "../components/Easy";
 import { Icon } from "../components/Icons";
 import { ChannelSource, ConnectChannelCard } from "../components/Channels";
 import { DeleteDialog, useUndoToast } from "../components/Trash";
+import { SlideshowButton } from "../components/SlideshowButton";
 import { ProgressBar } from "../components/ui";
 import { AlreadyShared, useSharedBefore } from "../components/SharedBefore";
 import type { HistorySummary } from "../share";
@@ -256,6 +257,8 @@ export default function EasyHome() {
           )}
         </form>
       )}
+
+      {!working && <SlideshowButton />}
 
       <ConnectChannelCard />
 
