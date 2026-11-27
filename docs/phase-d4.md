@@ -1,6 +1,44 @@
 # Phase D4 (1.2.74): logo, website, feedback, extension stores, full test
 
-<!-- The short Turkish report for the owner goes at the top when the release is done. -->
+## Kısa rapor (Türkçe)
+
+**Sürüm 1.2.74 yayında** (etiket v1.2.74, GitHub sürümü, CI ve kurulum dosyası testi).
+
+**Neler değişti**
+- **Logo:** uygulama ikonu, saatin yanındaki ikon, kurulum görselleri, açılış ekranı, slayt gösterisinin
+  sonu, site ve favicon'lar artık uygulamanın Klasik görünümünde. `docs/logo-120.png` değişmedi.
+- **Web sitesi (docs/site):** 11 dilde 88 sayfa: ana sayfa (tek cümlelik özet, büyük İndir düğmesi,
+  3 adım, kısa demo, ekran görüntüleri), özellikler (slayt gösterisi, TikTok yardımcısı, kişiselleştirme
+  dahil), indirme (sistem gereksinimleri, SmartScreen yardımı), SSS, güncellemeler, gizlilik, koşullar,
+  iletişim; dil seçici, koyu/açık tema. SEO (başlık, açıklama, OG görseli, sitemap, robots, yapılandırılmış
+  veri), harici font veya izleyici yok. Erişilebilirlik testi (axe) 88 sayfada iki temada da temiz,
+  Lighthouse mobil ve masaüstünde 96-100. Google'ın incelediği gizlilik metni korundu, yalnızca değişen
+  gerçekler düzeltildi (diğer dillerde çevrilmiş özet + bağlayıcı İngilizce metin).
+- **Geri bildirim:** Ayarlar > Hakkında'da "Hata bildir / Fikir öner" ve her hata mesajında "Bildir"
+  düğmesi; önceden doldurulmuş GitHub formu açar (yalnızca sürüm ve sistem; hata metnindeki yollar,
+  e-postalar, bağlantılar temizlenir). Sitede de aynı bağlantılar var. Hata ve özellik şablonları güncellendi.
+- **Eklenti mağaza paketleri:** Edge ve Firefox paketleri hazır (GitHub sürümüne eklendi), mağaza
+  metinleri ve görselleri hazır, gönderim rehberi: `docs/extension-stores.md`. Mağaza kopyası 6 haneli
+  kodla bir kez bağlanır; gerçek Edge'de denendi. Firefox kullanıcıları da artık doldurma alabilecek.
+
+**Bulunan ve düzeltilen hatalar** (her birine test eklendi)
+- Kaydırılmış bir sayfada pencereler ekran dışında, üst çubuğun altında açılıyordu.
+- Rusça, telefon genişliğinde Ayarlar'daki bir seçim kesiliyordu.
+- (Yayından önce yakalandı) Bu oturumdaki bir değişiklik yüzünden SharkyClips'in kendi Yardımcı kopyası
+  tarayıcıya yüklenmiyordu; düzeltildi, gerçek Edge testleri 18/18 geçti.
+
+**Testler:** tüm test paketi (~1290 test), gerçek tarayıcılı yardımlı yükleme testleri, ekran düzeni
+(4 görünüm, 11 dil, 9 ekran boyutu, koyu/açık; ~4400 görünüm), önizleme = çıktı kontrolü, erişilebilirlik
+(4 görünüm), Chromium/Firefox/WebKit, site kontrolleri. Gerçek hesaplara hiçbir şey yüklenmedi.
+
+**Senin elle yapman gerekenler**
+1. **Eklentiyi mağazalara gönder** (ücretsiz): `docs/extension-stores.md` adım adım anlatıyor
+   (Edge Partner Center + addons.mozilla.org). Onay gelince söyle, uygulamadaki Firefox metnini ve siteye
+   mağaza bağlantılarını ekleyeyim. Chrome Web Store isteğe bağlı (tek seferlik 5 $).
+2. **GitHub sosyal önizleme görseli:** repo Settings → General → Social preview → `docs/social-preview.png`
+   yükle (yeni Klasik görünüm).
+3. İstersen sitedeki ekran görüntülerine ve dil metinlerine bir göz at; yerel konuşucu düzeltmeleri
+   `docs/sitegen/i18n/<dil>.json` dosyalarında.
 
 ## Decisions log
 
@@ -82,22 +120,11 @@
   has `default_locale: "en"`; test_extension_store.py checks it, and a direct headless-Edge load
   confirmed the service worker starts.
 
-## Resume point (paused again 2026-11-27, user shut the PC down)
-Done and verified: tasks 1-4 (logo, site in 11 languages + checks, feedback, extension packages + pairing),
-two bugs fixed (dialog position, Helper manifest), test_assisted_upload.py 18/18 green (real Edge).
-Next, in order:
-1. DONE: full pytest suite green (all ~1290 tests; assisted upload 18/18 separately).
-   DONE: layout-check Classic 1530 views (tr/ar/en, 9 sizes, light/dark) and Ocean/Sign/Contrast 1224 views.
-   (A first run crashed only because the PC went to sleep.)
-2. Still to run: layout-check quick pass in es,pt,de,fr,hu,ru,zh,ja (interrupted, rerun:
-   LAYOUT_CHANNEL=msedge LAYOUT_PRESETS=classic LAYOUT_QUICK=1 LAYOUT_LANGS=es,pt,de,fr,hu,ru,zh,ja),
-   then preview-check, axe-check (all presets), browser-check. Fixture server: scratchpad fixserve.sh
-   (if the scratchpad is gone: CI's commands from .github/workflows/ci.yml with SHARKYCLIPS_DOWNLOADS,
-   SHARKYCLIPS_QUEUE_HOME and APPDATA pointed into a temp folder). UI checks on a fixture (`frontend/scripts/layout-fixture.py`, server on 8799 with SHARKYCLIPS_DOWNLOADS set):
-   layout-check (all presets, extra langs), preview-check, axe-check, browser-check, handoff-check.
-3. CHANGELOG: insert the drafted 1.2.74 entry (docs/changelog-1.2.74-draft.md, delete that file after inserting;
-   again from this log) above 1.2.73; VERSION 1.2.74; README badge; `npm run build` AFTER the bump;
-   rebuild the site (`docs/sitegen/build.py`) and extension zips (`installer/build_extension.py`).
-4. Commit, tag v1.2.74, push, gh release (attach the extension zips), wait for CI + installer workflow green.
-5. Publish the site (`bash docs/publish-site.sh "..."`) once the 1.2.74 setup .exe exists on the release.
-6. Remove dev_in_progress.json, restart the user's app if idle, write the Turkish report at the top.
+## Release
+Done 2026-11-27: v1.2.74 tagged and pushed, GitHub release with the extension zips, CI green (the Windows
+backend job first failed on a Chocolatey 503 while installing FFmpeg, before any test; green on re-run),
+Windows installer workflow green (clean install / launch / uninstall), website published and checked live.
+Extra checks after the resume: layout-check in the 8 other languages found a cut-off Russian choice on
+phones (fixed, test_phone_choices.py); preview-check OK; axe OK (224 views, 4 presets); Chromium, Firefox
+and WebKit OK (one WebKit run reported cancelled requests during navigation; two re-runs clean).
+No SharkyClips was running on 8000-8010 at release: nothing to restart.
