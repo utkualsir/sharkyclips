@@ -9,6 +9,110 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.71] - 2026-11-27
+A small fix: two posts going out at the same moment no longer trip over each other when they save your account sign-in.
+
+### Fixed
+- **TikTok or Instagram could fail on Windows** when two posts saved the account sign-in at the same moment. SharkyClips now waits a moment and tries again.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Küçük bir düzeltme: aynı anda giden iki paylaşım, hesap girişini kaydederken artık birbirine takılmıyor.
+
+### Düzeltmeler
+- **Windows'ta TikTok ya da Instagram başarısız olabiliyordu,** iki paylaşım hesap girişini aynı anda kaydettiğinde. SharkyClips artık kısa bir süre bekleyip yeniden deniyor.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Un arreglo pequeño: dos publicaciones que salen a la vez ya no chocan al guardar el inicio de sesión de tu cuenta.
+
+### Correcciones
+- **TikTok o Instagram podían fallar en Windows** cuando dos publicaciones guardaban el inicio de sesión a la vez. Ahora SharkyClips espera un momento y lo vuelve a intentar.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Uma correção pequena: duas publicações saindo ao mesmo tempo não se atrapalham mais ao salvar o login da sua conta.
+
+### Correções
+- **TikTok ou Instagram podiam falhar no Windows** quando duas publicações salvavam o login ao mesmo tempo. Agora o SharkyClips espera um pouco e tenta de novo.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Eine kleine Korrektur: Zwei Posts, die gleichzeitig rausgehen, stören sich nicht mehr beim Speichern deiner Kontoanmeldung.
+
+### Behoben
+- **TikTok oder Instagram konnte unter Windows fehlschlagen,** wenn zwei Posts die Anmeldung gleichzeitig speicherten. SharkyClips wartet jetzt kurz und versucht es erneut.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Une petite correction : deux publications envoyées en même temps ne se gênent plus en enregistrant la connexion de ton compte.
+
+### Corrections
+- **TikTok ou Instagram pouvait échouer sous Windows** quand deux publications enregistraient la connexion en même temps. SharkyClips attend maintenant un instant et réessaie.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+Egy kis javítás: két egyszerre induló poszt már nem akad össze, amikor elmenti a fiókod bejelentkezését.
+
+### Javítások
+- **A TikTok vagy az Instagram hibát adhatott Windowson,** ha két poszt egyszerre mentette a bejelentkezést. A SharkyClips most vár egy kicsit, és újrapróbálja.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Небольшое исправление: две публикации, которые уходят одновременно, больше не мешают друг другу при сохранении входа в аккаунт.
+
+### Исправления
+- **TikTok или Instagram могли сбоить в Windows,** когда две публикации одновременно сохраняли вход. Теперь SharkyClips немного ждёт и пробует снова.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+إصلاح صغير: لم يعد منشوران يخرجان في اللحظة نفسها يتعارضان عند حفظ تسجيل دخول حسابك.
+
+### إصلاحات
+- **كان TikTok أو Instagram قد يفشل على Windows** عندما يحفظ منشوران تسجيل الدخول في اللحظة نفسها. ينتظر SharkyClips الآن قليلًا ثم يحاول مجددًا.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+一个小修复：同时发出的两个帖子在保存账号登录信息时不会再互相冲突。
+
+### 修复
+- **在 Windows 上 TikTok 或 Instagram 可能失败，** 当两个帖子同时保存登录信息时。现在 SharkyClips 会稍等片刻再试一次。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+小さな修正：同時に送信される 2 つの投稿が、アカウントのログイン情報を保存するときにぶつからなくなりました。
+
+### 修正
+- **Windows で TikTok や Instagram が失敗することがありました。** 2 つの投稿が同時にログイン情報を保存したときです。今は SharkyClips が少し待ってから再試行します。
+
+</details>
+
 ## [1.2.70] - 2026-11-26
 SharkyClips now fills in your TikTok upload in your own browser (video, caption and settings), and you check it and click Post yourself. Sharing also never gets stuck on "Sharing…" any more.
 

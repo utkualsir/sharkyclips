@@ -22,6 +22,7 @@ import os
 import platform
 import secrets
 import subprocess
+import threading
 from pathlib import Path
 
 from .procs import no_window
@@ -131,13 +132,30 @@ def _keychain_delete(account: str) -> None:
         pass
 
 
+_write_lock = threading.Lock()
+
+
 def _write_private(path: Path, data: bytes) -> None:
+    """1.2.70: one writer at a time and its own temp name (two posts refreshing the same token at
+    once raced on one .tmp file), and a short retry while Windows still holds the old file open."""
+    import time
+    import uuid
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_bytes(data)
-    if os.name != "nt":
-        os.chmod(tmp, 0o600)
-    os.replace(tmp, path)
+    with _write_lock:
+        tmp = path.with_name(f"{path.name}.{uuid.uuid4().hex[:8]}.tmp")
+        tmp.write_bytes(data)
+        if os.name != "nt":
+            os.chmod(tmp, 0o600)
+        for attempt in range(20):
+            try:
+                os.replace(tmp, path)
+                return
+            except PermissionError:
+                if attempt == 19:
+                    tmp.unlink(missing_ok=True)
+                    raise
+                time.sleep(0.05 * (attempt + 1))
 
 
 def _account(folder: Path) -> str:
