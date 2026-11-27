@@ -37,7 +37,7 @@
 - Not: Chrome `--load-extension`'ı yok saydığı için **yalnızca bu test** eklentiyi yüklemek üzere Chrome'u bir hata ayıklama portuyla açtı (uygulama bunu asla yapmaz).
 - Senin tarafında bir kez yapılacak: SharkyClips ilk TikTok paylaşımında rehberi gösterecek. Chrome'da "Paketlenmemiş öğe yükle" ile eklentiyi ekle (veya Ayarlar'dan tarayıcı olarak Edge'i seç: orada kendiliğinden yükleniyor).
 
-**Sürüm:** 1.2.70 (VERSION, CHANGELOG 11 dil, README rozeti, etiket, release).
+**Sürüm:** 1.2.70 + 1.2.71 (VERSION, CHANGELOG 11 dil, README rozeti, etiket, release). 1.2.71: CI'da Windows'ta aynı anda iki paylaşım hesap token'ını kaydederken çakışıyordu (WinError 5), düzeltildi. Gerçek Edge testleri yalnızca Windows'ta çalışıyor (Linux runner'da zaman aşımı). **CI yeşil**, çalışan uygulama 1.2.71'e yeniden başlatıldı (TikTok modu: assist).
 
 ---
 
