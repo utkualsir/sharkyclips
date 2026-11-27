@@ -15,10 +15,11 @@ Measured on the dev PC (24 threads, 16 GB RAM, Windows 11) and on GitHub Actions
 | Full pytest, local | 24 min 28 s (1468 s, serial) | 9 min 26 s (261 s parallel with 6 workers + 305 s serial pass) |
 | Local check of one change (`scripts/quick-check.py`) | full suite only: 24 min 28 s | 3 s (one module, e.g. `uploadstats.py`) to 31 s (`slideshow.py`); a change to core modules like `youtube.py` + `web/app.py` picks ~60 files: 4 min 20 s |
 | Layout smoke, local (2 screens, 2 sizes, tr/ar, light/dark = 32 views) | full matrix only (thousands of views, CI) | 30 s (fixture server start included) |
-| CI wall time (slowest job) | 31 min (Layout, 30:51) | __CI_AFTER__ |
-| CI Backend (windows / ubuntu) | 20:21 / 16:32 | __CI_BACKEND__ |
+| CI wall time (slowest job) | 31 min (Layout, 30:51) | 17 min 43 s (Backend windows 17:19; layout shards 13:47-14:59 each) |
+| CI Backend (windows / ubuntu) | 20:21 / 16:32 | 17:19 / 10:27 (parallel pass + serial pass + bleep step) |
 
-"Before" CI numbers: run 46056863474 (commit 2ef3630, 2026-11-27).
+"Before" CI numbers: run 46056863474 (commit 2ef3630). "After": run 46074286140 (commit e0bedd6),
+both 2026-11-27.
 
 ## What changed
 

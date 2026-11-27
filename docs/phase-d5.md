@@ -7,7 +7,7 @@
 - **Test hızı (adım 0, önceden yapılmamıştı):** yerel `scripts/quick-check.py` (ruff + sadece
   değişen dosyaların testleri + isteğe bağlı küçük layout seti), pytest-xdist (paralel testler),
   CI'da layout matrisi 4 paralel parçaya bölündü, Playwright tarayıcıları önbellekte. Öncesi/sonrası
-  süreler: `docs/test-speed.md` (tüm testler yerelde 24,5 dk → 9,4 dk; tek modül değişikliği 3–31 sn; layout smoke 30 sn).
+  süreler: `docs/test-speed.md` (tüm testler yerelde 24,5 dk → 9,4 dk; tek modül değişikliği 3–31 sn; layout smoke 30 sn; CI 31 dk → 17,7 dk).
 - **Yüklemeler sekmesi** (Geçmiş sayfası): bugün / bu hafta / toplam, YouTube / Instagram / TikTok /
   elle. Her sayı ve çubuk üzerine gelince, odaklanınca ya da dokununca altta klipler listelenir
   (saat, platform, bağlantı, durum). Son 14 günün yığılmış grafiği; renkler temada
@@ -88,6 +88,15 @@
 16. **History table on phones** became small cards (it scrolled sideways). Found because the layout
     fixture now has upload history (it had none before, so the table was never checked with rows).
 17. **No privacy policy change published.** Draft below.
+18. **Required check kept by name.** The ruleset requires "Layout (no overlapping panels, preview =
+    render)". After the split that job name was gone, so a 3-second gate job with exactly that name
+    now passes only when all 4 shards and the preview / axe / browser job pass. The ruleset itself
+    was not touched.
+19. **First CI run after the release failed** on `test_web.py::test_projects_empty`: with
+    `--dist loadfile` on 4 workers it ran after `test_easy.py` on the same worker and saw its
+    project. The test now uses its own empty workspace. Next run: all green (run 46074286140).
+20. **Serial pass** (`-m serial`, 8 files that start real browsers / servers): under 6 parallel
+    workers their 5-20 s waits timed out and one hung job blocked the rest (a 30-minute run).
 
 ## Shared-pool counter setup (owner, after Google verification)
 
