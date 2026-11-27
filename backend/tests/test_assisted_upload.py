@@ -410,6 +410,10 @@ def _edge() -> str | None:
 @pytest.fixture(scope="module")
 def live():
     """The real app on a real port (no start-up tasks), the fake TikTok Studio and Instagram."""
+    if sys.platform != "win32" and not os.environ.get("SHARKYCLIPS_ASSIST_EDGE_TESTS"):
+        # the Linux runner's Edge doesn't run a --load-extension extension headless (each test then
+        # waited its full timeout and the job hit its 30-minute limit); Windows runs them
+        pytest.skip("real-Edge tests run on Windows")
     edge = _edge()
     if not edge:
         pytest.skip("Microsoft Edge isn't installed here")
