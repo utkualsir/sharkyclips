@@ -201,6 +201,20 @@ jobs:
           path: ${{ runner.temp }}/layout-shots
           if-no-files-found: ignore
 
+  layout-gate:
+    # 1.2.75: the required status check keeps its old name. It passes only when all four layout
+    # shards and the preview / axe / browser job passed (a ruleset lists this exact name).
+    name: Layout (no overlapping panels, preview = render)
+    if: ${{ always() }}
+    needs: [layout, layout-checks]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: All layout jobs passed
+        run: |
+          echo "shards: ${{ needs.layout.result }}, checks: ${{ needs.layout-checks.result }}"
+          [ "${{ needs.layout.result }}" = "success" ] && [ "${{ needs.layout-checks.result }}" = "success" ]
+
   layout-presets:
     # 1.2.69: axe on every screen for the other Personalization presets (light + dark) and the
     # Personalization flow (their layout runs in the matrix above).

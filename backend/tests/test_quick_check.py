@@ -35,4 +35,8 @@ def test_ci_runs_the_split_and_the_layout_shards():
     ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     assert ci.count('pytest -n auto --dist loadfile -m "not serial"') == 2 and ci.count("pytest -m serial") == 2
     assert "shard: [1, 2, 3, 4]" in ci and "LAYOUT_SHARD=${{ matrix.shard }}/4" in ci
+    # the ruleset requires this exact check name (the gate over the shards)
+    assert "name: Layout (no overlapping panels, preview = render)" in ci
+    for required in ("Backend (${{ matrix.os }})", "name: Backend (macOS)", "name: Frontend", "name: Installer scripts"):
+        assert required in ci
     assert "LAYOUT_SHARD" in (ROOT / "frontend" / "scripts" / "layout-check.mjs").read_text(encoding="utf-8")
