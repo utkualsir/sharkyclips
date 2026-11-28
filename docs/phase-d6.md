@@ -7,6 +7,11 @@
 kapatıldı: #1 (1.2.53'te teslim edilip #6-#9'a bölünmüştü), #15 (1.2.34'te var), #16 ve #20
 (1.2.76). Özellik istekleri açık kaldı, etiketleri yerinde. Kopya veya spam issue yoktu.
 
+Sürüm: [1.2.76](https://github.com/utkualsir/sharkyclips/releases/tag/v1.2.76). CI ve Windows
+installer yeşil; sürümde `install.sh`, `install.sh.sha256` ve `.exe` var. Yerel testler: tam paket
+geçti (tek hata, notlarda "Ollama" kelimesi, düzeltildi). Çalışan uygulama yoktu (8000-8010 boş),
+yeniden başlatma gerekmedi.
+
 | # | Başlık | Ne yapıldı | Sürüm |
 |---|---|---|---|
 | 1 | Spanish language support and better AI gameplay context | 1.2.53'te teslim edildi, kalan işler #6-#9'da: açıklama + kapatıldı (completed) | 1.2.53 |
