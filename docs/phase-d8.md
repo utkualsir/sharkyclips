@@ -182,3 +182,9 @@ spoken "ha ha" is not real laughter for the laughter model), and the chat is gen
 - i18n check: 3498 keys in all 11 locales. UI rebuilt after the version bump.
 - Not done on purpose: nothing was posted to any account; the public website was not republished (its download
   checksums for 1.2.77 appear with the next `build.py --stats` after this release).
+- Release: commit `5a19abe`, tag `v1.2.77`, GitHub release "SharkyClips 1.2.77" (notes = the CHANGELOG entry).
+  CI on main green (16 min 56 s), CI on the tag green (15 min 37 s), Windows installer built (6 min 30 s).
+- Restart (rule 3): the running app (port 8000) was still on 1.2.76 with jobs running / queued (analysis,
+  highlights, full video prepare), checked twice, so it was **not** restarted. Its "restart to finish the update"
+  bar is showing: restart it when those jobs are done.
+- `dev_in_progress.json` removed after the push.
