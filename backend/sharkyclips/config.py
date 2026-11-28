@@ -104,6 +104,10 @@ DEFAULTS: dict[str, Any] = {
     "channel_min_minutes": 5,  # shorter streams / uploads are skipped
     "marker_hotkey": "ctrl+alt+c",
     "marker_hotkey_enabled": True,
+    # 1.2.77: say one of these while recording / streaming to mark a moment (found in the transcript
+    # afterwards with the local Whisper; nothing listens live)
+    "marker_phrases": ["clip it", "klip al"],
+    "marker_phrases_enabled": True,
     "live_clip_command": "!clip",
     "live_twitch_channel": "",  # read-only: "!clip" from you / your mods + chat for the bubbles
     "live_youtube_chat": False,

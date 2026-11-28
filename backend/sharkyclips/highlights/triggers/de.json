@@ -35,5 +35,31 @@
     "merken": 0.6,
     "regel": 0.5,
     "zum beispiel": 0.5
+  },
+  "funny": {
+    "ich kann nicht mehr": 0.9,
+    "so lustig": 0.9,
+    "lustig": 0.6,
+    "ich sterbe": 0.8,
+    "zu geil": 0.6,
+    "was war das": 0.7,
+    "hör auf": 0.5,
+    "lacht": 0.8,
+    "lachen": 0.7,
+    "gelächter": 0.8,
+    "wie witzig": 0.9
+  },
+  "fail": {
+    "was habe ich gemacht": 1.0,
+    "warum habe ich das gemacht": 1.0,
+    "ich bin so schlecht": 0.9,
+    "mein fehler": 0.7,
+    "hoppla": 0.8,
+    "ups": 0.6,
+    "verkackt": 0.9,
+    "versemmelt": 0.9,
+    "wie peinlich": 0.9,
+    "verfehlt": 0.6,
+    "wie habe ich das verfehlt": 1.0
   }
 }

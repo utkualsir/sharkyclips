@@ -653,6 +653,7 @@
 .ez-thumb.on { color: var(--success); background: var(--success-soft); }
 .ez-thumb.on.bad { color: var(--danger); background: var(--danger-soft, var(--surface-2)); }
 .ez-chip-taste { gap: 4px; color: var(--success); background: var(--success-soft); border-color: transparent; }
+.ez-chip-headline { gap: 4px; color: var(--gold-text); background: var(--gold-soft); border-color: var(--gold-line); font-weight: 700; }
 
 /* ---- Easy 2.0: connection pill, Autopilot */
 .ez-pill {

@@ -35,6 +35,7 @@ import { PublishSetupDialog } from "../components/PublishTools";
 import { LongMetaDialog } from "../components/MyStyle";
 import { FullUploadButton } from "../components/FullUpload";
 import TranscriptEditor from "../components/TranscriptEditor";
+import { headlineIcon, headlineLabel } from "../headline";
 import SwearReview from "../components/SwearReview";
 import VoicesPanel from "../components/VoicesPanel";
 import FacecamEditor from "../components/FacecamEditor";
@@ -133,7 +134,11 @@ function CandidateRow({
   onPick?: (v: boolean) => void;
 }) {
   const { t, num } = useI18n();
-  const codes = [...new Set(c.reasons.map((r) => r.code))].slice(0, 4);
+  const head = headlineLabel(t, c.headline);
+  // the headline's own game event isn't repeated as a chip
+  const codes = [...new Set(c.reasons.map((r) => r.code))]
+    .filter((code) => !(c.headline?.code === "game" && code === c.headline.value))
+    .slice(0, head ? 3 : 4);
   const valueOf = (code: string) =>
     c.reasons.find((r) => r.code === code && r.value)?.value;
   const title = c.publish.titles[0] || c.text;
@@ -227,6 +232,12 @@ function CandidateRow({
         <div className="cand-reasons">
           {rejected && (
             <span className="chip chip-danger">{t("fast.skipped")}</span>
+          )}
+          {head && c.headline && (
+            <span className="chip chip-headline" dir="auto">
+              <Icon name={headlineIcon(c.headline)} size={11} />
+              {head}
+            </span>
           )}
           {codes.map((code) => (
             <span

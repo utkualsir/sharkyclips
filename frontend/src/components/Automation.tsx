@@ -175,8 +175,10 @@ export function MarkersCard() {
   const [key, setKey] = useState<string | null>(null);
   const [channel, setChannel] = useState<string | null>(null);
   const [cmd, setCmd] = useState<string | null>(null);
+  const [phr, setPhr] = useState<string | null>(null);
   const [obs, setObs] = useState<{ ok: boolean; reason?: string; obs?: string } | null>(null);
   const kid = useId();
+  const pid = useId();
   const cid = useId();
   const mid = useId();
   useEffect(() => {
@@ -215,6 +217,35 @@ export function MarkersCard() {
           <span className={`field-hint${hk === "taken" || hk === "invalid" ? " warn-text" : ""}`}>
             {!m.hotkey_supported ? t("mark.hotkey_unsupported") : t(`mark.hotkey_status.${hk}`)}
           </span>
+        </div>
+        <div className="field">
+          <span className="field-label">{t("mark.phrases")}</span>
+          <div className="toggle-line">
+            <form
+              className="lan-pin-row"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (phr != null) run(() => liveApi.markers({ phrases: phr }), t("common.saved")).then(() => setPhr(null));
+              }}
+            >
+              <label htmlFor={pid} className="visually-hidden">{t("mark.phrases")}</label>
+              <input
+                id={pid}
+                className="input"
+                dir="auto"
+                style={{ maxWidth: 260 }}
+                placeholder="clip it, klip al"
+                value={phr ?? (m.phrases ?? []).join(", ")}
+                onChange={(e) => setPhr(e.target.value)}
+                disabled={m.phrases_enabled === false}
+              />
+              {phr != null && phr !== (m.phrases ?? []).join(", ") && (
+                <button className="btn btn-sm" type="submit">{t("common.save")}</button>
+              )}
+            </form>
+            <Toggle checked={m.phrases_enabled !== false} onChange={(v) => run(() => liveApi.markers({ phrases_enabled: v }))} label={t("mark.phrases")} />
+          </div>
+          <span className="field-hint">{t("mark.phrases_hint")}</span>
         </div>
         <div className="field">
           <span className="field-label">{t("mark.obs")}</span>

@@ -41,7 +41,8 @@ TAIL = {"gaming": 1.5, "study": 0.8, "music": 0.0}  # and after the last one
 NUDGE_S = 3.0
 EVENT_CODES_MIN = 0.5  # reasons at least this strong count as "a big moment"
 # Reasons that are the moment itself (not just "it got loud")
-MOMENT_PREFIXES = ("df_", "lol_", "marker", "keyword", "laughter", "scream", "shouting", "cheering",
+MOMENT_PREFIXES = ("df_", "lol_", "marker", "keyword", "laughter", "scream", "shouting", "cheering", "voice_excited",
+                   "silence_break", "funny_line", "fail_line",
                    "chat_spike", "chat_reactions", "loudness_spike", "llm")
 
 
@@ -399,15 +400,37 @@ def stretch(ar: Around, start: float, end: float, goal: float, lo: float, hi: fl
 # ===================================================================== one-tap nudges
 
 
-NUDGES = ("earlier", "later", "short", "long")
+NUDGES = ("earlier", "start_later", "end_sooner", "later", "short", "long")
 
 
 def nudge(ar: Around, cand: dict, start: float, end: float, action: str, tgt: dict,
           lo: float, hi: float) -> tuple[float, float]:
-    """The card's one-tap buttons: start 3 s earlier, end 3 s later, short / long version."""
+    """The card's one-tap buttons: start 3 s earlier / later, end 3 s sooner / later, short / long
+    version. Starting later / ending sooner never cuts into the clip's big moment."""
     s, e = float(start), float(end)
     lo, hi = max(0.0, lo), min(ar.duration, hi)
-    if action == "earlier":
+    if action in ("start_later", "end_sooner"):
+        first = next((ev["t"] for ev in ar.events if s <= ev["t"] <= e), None)
+        last = next((ev["t"] for ev in reversed(ar.events) if s <= ev["t"] <= e), None)
+        if action == "start_later":
+            cap = (first - LEAD.get(ar.mode, 2.0)) if first is not None else e - 3.0
+            t = min(s + NUDGE_S, cap, e - 3.0)
+            if t > s + 0.3:
+                ns = snap_start(ar, t)
+                if ns <= s + 0.3:  # t is inside a word that began before the old start: the next word
+                    j = ar.index_at_or_after(t)
+                    ns = ar.words[j]["start"] - 0.2 if j < len(ar.words) else t
+                s = ns if ns < e - 3.0 else s
+        else:
+            floor = (last + TAIL.get(ar.mode, 1.0)) if last is not None else s + 3.0
+            t = max(e - NUDGE_S, floor, s + 3.0)
+            if t < e - 0.3:
+                ne = snap_end(ar, t)
+                if ne >= e - 0.3:  # t is inside a word that ends after the old end: the word before
+                    j = ar.index_at_or_after(t) - 1
+                    ne = ar.words[j]["end"] + 0.3 if j >= 0 else t
+                e = ne if ne > s + 3.0 else e
+    elif action == "earlier":
         t = max(lo, s - NUDGE_S)
         ns = sentence_start(ar, t + 0.05, 1.5)  # a sentence start nearby, if there is one
         s = snap_start(ar, max(lo, ns if t - ns <= 1.5 else t))
@@ -504,8 +527,8 @@ def edit_for(cand: dict, start: float, end: float, old: dict | None) -> dict:
 
 CHIP_ORDER = ("marker", "lol_pentakill", "lol_quadrakill", "lol_baron_steal", "df_extracted", "lol_triplekill",
               "lol_dragon_steal", "df_multikill", "lol_ace", "lol_shutdown", "lol_doublekill", "df_revenge",
-              "lol_first_blood", "laughter", "chat_spike", "chat_reactions", "df_kill", "lol_kill", "keyword",
-              "scream", "shouting", "cheering", "llm_explanation", "steady_explanation", "chorus", "drop",
+              "lol_first_blood", "laughter", "funny_line", "chat_spike", "chat_reactions", "df_kill", "lol_kill",
+              "scream", "fail_line", "silence_break", "voice_excited", "keyword", "shouting", "cheering", "llm_explanation", "steady_explanation", "chorus", "drop",
               "pause_then_burst", "loudness_spike", "fast_speech", "df_death", "lol_death", "df_extract_failed")
 
 

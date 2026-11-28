@@ -9,6 +9,242 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.77] - 2026-11-28
+SharkyClips now finds more than kills: big laughs, screams, sudden excitement, fails and moments when chat goes wild, in every game and in Just Chatting, IRL and study streams. Clips also start earlier, with the build-up, and end at a clean point.
+
+### New
+- **Moments that aren't kills:** the app now listens for laughter, screams, a voice that suddenly goes up, a long silence broken by a reaction, and funny or fail lines like "what did I just do". This works in every game and in talk streams, in all 11 languages of the app.
+- **Just Chatting and IRL streams:** when the stream's category or title says so, the app pays more attention to laughter, the voice and chat, and keeps the start of a story before its funny end.
+- **Why this clip:** every clip card now shows one short reason first, for example "Chat went wild", "Big laugh", "Clutch" or "Fail".
+- **Say "clip it" to mark a moment:** while you record or stream, say "clip it" or "klip al" (or your own words in Settings > Live markers). After the recording, the app finds the words with the speech recognition on your PC, and that moment always becomes a clip. The clip ends just before you said it. Nothing listens while you play. The hotkey still works too.
+- **Change the cut with one tap:** "Start later" and "End sooner" are now next to "Start earlier" and "End later". In Pro mode, the text editor of a clip has buttons that move the start or the end by 2 seconds, always between two words.
+
+### Improved
+- **Clips don't start too late:** a clip now starts where the action began, for example when the fight started, up to about 20 seconds before the big moment, and never in the middle of a sentence.
+- **Clean endings:** a clip no longer stops in the middle of a sentence or a laugh, and long silent parts at the end are cut short.
+- **Chat:** more chat reactions count, like "GOOOL", "ahaha", "ICANT", "jajaja", "kkkk", "mdr" and more Twitch and Kick emotes.
+
+### Fixed
+- **The "Light" speed setting was translated as the colour "light"** in Hungarian and Russian, and in a few texts in Spanish, French and Portuguese. It now means "light" as in "not heavy". The Japanese text is clearer too.
+
+<!-- lang:tr -->
+**Türkçe**
+
+SharkyClips artık sadece kill'leri değil; büyük kahkahaları, çığlıkları, ani heyecanı, fail anlarını ve sohbetin çıldırdığı anları da buluyor. Bu her oyunda ve Just Chatting, IRL ve ders yayınlarında çalışıyor. Klipler ayrıca daha erken, hazırlık kısmıyla başlıyor ve temiz bir yerde bitiyor.
+
+### Yeni
+- **Kill olmayan anlar:** uygulama artık kahkahaları, çığlıkları, birden yükselen sesi, bir tepkiyle bozulan uzun sessizlikleri ve "ne yaptım ben" gibi komik veya fail sözlerini duyuyor. Bu her oyunda ve sohbet yayınlarında, uygulamanın 11 dilinin hepsinde çalışıyor.
+- **Just Chatting ve IRL yayınları:** yayının kategorisi veya başlığı bunu söylüyorsa uygulama kahkahaya, sese ve sohbete daha çok bakıyor ve bir hikâyenin başını, komik sonundan önce klipte tutuyor.
+- **Bu klip neden seçildi:** her klip kartı artık önce tek bir kısa neden gösteriyor, örneğin "Sohbet çıldırdı", "Büyük kahkaha", "Clutch" veya "Fail".
+- **Bir anı işaretlemek için "klip al" de:** kayıt veya yayın sırasında "klip al" ya da "clip it" de (veya Ayarlar > Canlı işaretler bölümünde kendi sözlerini yaz). Kayıttan sonra uygulama bu sözleri bilgisayarındaki konuşma tanıma ile buluyor ve o an her zaman klip oluyor. Klip, sen bunu söylemeden hemen önce bitiyor. Oynarken hiçbir şey seni dinlemiyor. Kısayol tuşu da çalışmaya devam ediyor.
+- **Tek dokunuşla kesimi değiştir:** "Sonra başlasın" ve "Önce bitsin" artık "Daha erken başlat" ve "Daha geç bitir"in yanında. Pro modda klibin metin düzenleyicisinde başlangıcı veya bitişi 2 saniye kaydıran düğmeler var; her zaman iki kelimenin arasına denk geliyor.
+
+### İyileştirmeler
+- **Klipler geç başlamıyor:** klip artık aksiyonun başladığı yerden başlıyor, örneğin çatışmanın başladığı andan; büyük andan en fazla yaklaşık 20 saniye önce ve asla bir cümlenin ortasında değil.
+- **Temiz bitişler:** klip artık bir cümlenin veya kahkahanın ortasında durmuyor, sondaki uzun sessiz kısımlar kısaltılıyor.
+- **Sohbet:** daha fazla sohbet tepkisi sayılıyor; "GOOOL", "ahaha", "ICANT", "jajaja", "kkkk", "mdr" ve daha fazla Twitch ve Kick emote'u gibi.
+
+### Düzeltmeler
+- **"Hafif" hız ayarı** Macarca ve Rusçada, ayrıca İspanyolca, Fransızca ve Portekizcedeki birkaç metinde renk anlamında "açık" diye çevrilmişti. Artık "ağır olmayan" anlamında doğru çevriliyor. Japonca metin de daha anlaşılır.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+SharkyClips ahora encuentra más que bajas: grandes carcajadas, gritos, emoción repentina, fallos y momentos en los que el chat enloquece, en todos los juegos y en directos de Just Chatting, IRL y estudio. Además, los clips empiezan antes, con lo que pasó justo antes, y terminan en un punto limpio.
+
+### Nuevo
+- **Momentos que no son bajas:** la app ahora detecta risas, gritos, una voz que sube de repente, un silencio largo roto por una reacción y frases graciosas o de fallo como "¿qué acabo de hacer?". Funciona en todos los juegos y en directos de charla, en los 11 idiomas de la app.
+- **Directos de Just Chatting e IRL:** cuando la categoría o el título del directo lo indican, la app presta más atención a las risas, la voz y el chat, y mantiene el comienzo de una historia antes de su final gracioso.
+- **Por qué este clip:** cada tarjeta de clip ahora muestra primero un motivo corto, por ejemplo "El chat enloqueció", "Gran carcajada", "Clutch" o "Fallo".
+- **Di "clip it" para marcar un momento:** mientras grabas o haces directo, di "clip it" o "klip al" (o tus propias palabras en Configuración > Marcadores en vivo). Después de la grabación, la app encuentra esas palabras con el reconocimiento de voz de tu PC, y ese momento siempre se convierte en un clip. El clip termina justo antes de que lo dijeras. Nada te escucha mientras juegas. El atajo de teclado también sigue funcionando.
+- **Cambia el corte con un toque:** "Comenzar después" y "Terminar antes" están ahora junto a "Comenzar antes" y "Terminar más tarde". En el modo Pro, el editor de texto de un clip tiene botones que mueven el inicio o el final 2 segundos, siempre entre dos palabras.
+
+### Mejoras
+- **Los clips no empiezan demasiado tarde:** un clip ahora empieza donde comenzó la acción, por ejemplo cuando empezó la pelea, hasta unos 20 segundos antes del gran momento, y nunca en medio de una frase.
+- **Finales limpios:** un clip ya no se corta en medio de una frase o de una risa, y las partes largas en silencio al final se acortan.
+- **Chat:** cuentan más reacciones del chat, como "GOOOL", "ahaha", "ICANT", "jajaja", "kkkk", "mdr" y más emotes de Twitch y Kick.
+
+### Correcciones
+- **El ajuste de velocidad "Ligero" estaba traducido como el color "claro"** en húngaro y ruso, y en algunos textos en español, francés y portugués. Ahora significa "ligero", es decir, "poco pesado". El texto en japonés también es más claro.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+O SharkyClips agora encontra mais do que abates: grandes gargalhadas, gritos, empolgação repentina, falhas e momentos em que o chat enlouquece, em todos os jogos e em lives de Just Chatting, IRL e estudo. Os clipes também começam mais cedo, com o que levou ao momento, e terminam num ponto limpo.
+
+### Novo
+- **Momentos que não são abates:** o app agora percebe risadas, gritos, uma voz que sobe de repente, um silêncio longo quebrado por uma reação e frases engraçadas ou de falha como "o que eu acabei de fazer?". Funciona em todos os jogos e em lives de conversa, nos 11 idiomas do app.
+- **Lives de Just Chatting e IRL:** quando a categoria ou o título da live indica isso, o app presta mais atenção às risadas, à voz e ao chat, e mantém o começo de uma história antes do seu final engraçado.
+- **Por que este clipe:** cada cartão de clipe agora mostra primeiro um motivo curto, por exemplo "O chat enlouqueceu", "Grande gargalhada", "Clutch" ou "Falha".
+- **Diga "clip it" para marcar um momento:** enquanto grava ou faz live, diga "clip it" ou "klip al" (ou suas próprias palavras em Configurações > Marcadores ao vivo). Depois da gravação, o app encontra essas palavras com o reconhecimento de fala do seu PC, e esse momento sempre vira um clipe. O clipe termina logo antes de você falar. Nada escuta você enquanto joga. O atalho de teclado também continua funcionando.
+- **Mude o corte com um toque:** "Começar depois" e "Finalizar antes" agora ficam ao lado de "Começar mais cedo" e "Finalizar depois". No modo Pro, o editor de texto de um clipe tem botões que movem o início ou o fim em 2 segundos, sempre entre duas palavras.
+
+### Melhorias
+- **Os clipes não começam tarde demais:** um clipe agora começa onde a ação começou, por exemplo quando a luta começou, até uns 20 segundos antes do grande momento, e nunca no meio de uma frase.
+- **Finais limpos:** um clipe não para mais no meio de uma frase ou de uma risada, e partes longas em silêncio no final são encurtadas.
+- **Chat:** mais reações do chat contam, como "GOOOL", "ahaha", "ICANT", "jajaja", "kkkk", "mdr" e mais emotes da Twitch e do Kick.
+
+### Correções
+- **A configuração de velocidade "Leve" estava traduzida como a cor "claro"** em húngaro e russo, e em alguns textos em espanhol, francês e português. Agora significa "leve", no sentido de "pouco pesado". O texto em japonês também está mais claro.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+SharkyClips findet jetzt mehr als Kills: großes Lachen, Schreie, plötzliche Aufregung, Fails und Momente, in denen der Chat ausrastet, in jedem Spiel und in Just-Chatting-, IRL- und Lern-Streams. Clips beginnen außerdem früher, mit der Vorgeschichte, und enden an einer sauberen Stelle.
+
+### Neu
+- **Momente, die keine Kills sind:** Die App hört jetzt auf Lachen, Schreie, eine Stimme, die plötzlich hochgeht, eine lange Stille, die von einer Reaktion unterbrochen wird, und lustige oder Fail-Sätze wie „Was habe ich gerade gemacht?“. Das funktioniert in jedem Spiel und in Talk-Streams, in allen 11 Sprachen der App.
+- **Just-Chatting- und IRL-Streams:** Wenn die Kategorie oder der Titel des Streams das sagt, achtet die App mehr auf Lachen, die Stimme und den Chat und behält den Anfang einer Geschichte vor ihrem lustigen Ende.
+- **Warum dieser Clip:** Jede Clip-Karte zeigt jetzt zuerst einen kurzen Grund, zum Beispiel „Der Chat ist ausgerastet“, „Großes Lachen“, „Clutch“ oder „Fail“.
+- **Sag „clip it“, um einen Moment zu markieren:** Sag beim Aufnehmen oder Streamen „clip it“ oder „klip al“ (oder deine eigenen Worte unter Einstellungen > Live-Marker). Nach der Aufnahme findet die App die Worte mit der Spracherkennung auf deinem PC, und dieser Moment wird immer ein Clip. Der Clip endet kurz bevor du es gesagt hast. Während du spielst, hört nichts zu. Der Hotkey funktioniert weiterhin.
+- **Den Schnitt mit einem Tipp ändern:** „Später starten“ und „Früher enden“ stehen jetzt neben „Früher starten“ und „Später enden“. Im Pro-Modus hat der Texteditor eines Clips Knöpfe, die den Anfang oder das Ende um 2 Sekunden verschieben, immer zwischen zwei Wörter.
+
+### Verbessert
+- **Clips beginnen nicht zu spät:** Ein Clip beginnt jetzt dort, wo die Action anfing, zum Beispiel als der Kampf begann, bis etwa 20 Sekunden vor dem großen Moment, und nie mitten in einem Satz.
+- **Saubere Enden:** Ein Clip hört nicht mehr mitten in einem Satz oder einem Lachen auf, und lange stille Stellen am Ende werden gekürzt.
+- **Chat:** Mehr Chat-Reaktionen zählen, zum Beispiel „GOOOL“, „ahaha“, „ICANT“, „jajaja“, „kkkk“, „mdr“ und mehr Twitch- und Kick-Emotes.
+
+### Behoben
+- **Die Geschwindigkeitseinstellung „Leicht“ war als Farbe „hell“ übersetzt**, auf Ungarisch und Russisch und in einigen Texten auf Spanisch, Französisch und Portugiesisch. Jetzt bedeutet sie „leicht“ im Sinne von „nicht schwer“. Der japanische Text ist auch klarer.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+SharkyClips trouve maintenant plus que des kills : gros fous rires, cris, excitation soudaine, fails et moments où le chat s'enflamme, dans tous les jeux et dans les streams Just Chatting, IRL et d'étude. Les clips commencent aussi plus tôt, avec ce qui mène au moment, et se terminent à un endroit propre.
+
+### Nouveau
+- **Des moments qui ne sont pas des kills :** l'app repère maintenant les rires, les cris, une voix qui monte d'un coup, un long silence coupé par une réaction, et les phrases drôles ou de fail comme « qu'est-ce que je viens de faire ? ». Ça marche dans tous les jeux et dans les streams de discussion, dans les 11 langues de l'app.
+- **Streams Just Chatting et IRL :** quand la catégorie ou le titre du stream l'indique, l'app fait plus attention aux rires, à la voix et au chat, et garde le début d'une histoire avant sa fin drôle.
+- **Pourquoi ce clip :** chaque carte de clip affiche maintenant d'abord une raison courte, par exemple « Le chat s'est enflammé », « Gros fou rire », « Clutch » ou « Fail ».
+- **Dis « clip it » pour marquer un moment :** pendant que tu enregistres ou streames, dis « clip it » ou « klip al » (ou tes propres mots dans Paramètres > Marqueurs en direct). Après l'enregistrement, l'app trouve ces mots avec la reconnaissance vocale de ton PC, et ce moment devient toujours un clip. Le clip se termine juste avant que tu le dises. Rien ne t'écoute pendant que tu joues. Le raccourci clavier fonctionne toujours.
+- **Change la coupe en un geste :** « Commencer plus tard » et « Finir plus tôt » sont maintenant à côté de « Commencer plus tôt » et « Plus tard ». En mode Pro, l'éditeur de texte d'un clip a des boutons qui déplacent le début ou la fin de 2 secondes, toujours entre deux mots.
+
+### Améliorations
+- **Les clips ne commencent plus trop tard :** un clip commence maintenant là où l'action a commencé, par exemple quand le combat a démarré, jusqu'à environ 20 secondes avant le grand moment, et jamais au milieu d'une phrase.
+- **Des fins propres :** un clip ne s'arrête plus au milieu d'une phrase ou d'un rire, et les longs passages silencieux à la fin sont raccourcis.
+- **Chat :** plus de réactions du chat comptent, comme « GOOOL », « ahaha », « ICANT », « jajaja », « kkkk », « mdr » et plus d'emotes Twitch et Kick.
+
+### Corrections
+- **Le réglage de vitesse « Légère » était traduit comme la couleur « clair »** en hongrois et en russe, et dans quelques textes en espagnol, français et portugais. Il veut maintenant dire « léger », au sens de « pas lourd ». Le texte japonais est aussi plus clair.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A SharkyClips most már nem csak a kill-eket találja meg: a nagy nevetéseket, a sikolyokat, a hirtelen izgalmat, a fail-eket és azokat a pillanatokat is, amikor elszabadul a chat, minden játékban és a Just Chatting, IRL és tanulós streamekben. A klipek ráadásul korábban, az előzményekkel kezdődnek, és tiszta ponton érnek véget.
+
+### Új
+- **Pillanatok, amelyek nem kill-ek:** az app most figyeli a nevetést, a sikolyt, a hirtelen felmenő hangot, egy reakcióval megtört hosszú csendet, és a vicces vagy fail mondatokat, például: „mit csináltam?”. Ez minden játékban és a beszélgetős streamekben is működik, az app mind a 11 nyelvén.
+- **Just Chatting és IRL streamek:** ha a stream kategóriája vagy címe ezt mutatja, az app jobban figyel a nevetésre, a hangra és a chatre, és megtartja egy történet elejét a vicces vége előtt.
+- **Miért ez a klip:** minden klipkártya most először egy rövid okot mutat, például „Elszabadult a chat”, „Nagy nevetés”, „Clutch” vagy „Fail”.
+- **Mondd, hogy „clip it”, és megjelölöd a pillanatot:** felvétel vagy stream közben mondd azt, hogy „clip it” vagy „klip al” (vagy a saját szavaidat a Beállítások > Élő jelölések részben). A felvétel után az app a géped beszédfelismerésével megtalálja ezeket a szavakat, és abból a pillanatból mindig klip lesz. A klip közvetlenül azelőtt ér véget, hogy kimondtad. Játék közben semmi sem figyel. A gyorsbillentyű is továbbra is működik.
+- **Változtasd meg a vágást egy koppintással:** a „Később induljon” és az „Előbb érjen véget” most a „Korábban kezdjen” és a „Később érjen véget” mellett van. Pro módban a klip szövegszerkesztőjében gombok vannak, amelyek 2 másodperccel mozgatják az elejét vagy a végét, mindig két szó közé.
+
+### Fejlesztések
+- **A klipek nem kezdődnek túl későn:** egy klip most ott kezdődik, ahol az akció elkezdődött, például amikor a harc indult, legfeljebb körülbelül 20 másodperccel a nagy pillanat előtt, és soha nem egy mondat közepén.
+- **Tiszta befejezések:** egy klip már nem áll meg egy mondat vagy egy nevetés közepén, és a végén lévő hosszú csendes részek rövidebbek lesznek.
+- **Chat:** több chatreakció számít, például „GOOOL”, „ahaha”, „ICANT”, „jajaja”, „kkkk”, „mdr”, és több Twitch- és Kick-emote.
+
+### Javítások
+- **A „Könnyű” sebességbeállítás a „Világos” színként volt lefordítva** magyarul és oroszul, és néhány spanyol, francia és portugál szövegben. Most azt jelenti, hogy „könnyű”, vagyis „nem nehéz”. A japán szöveg is érthetőbb.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+SharkyClips теперь находит не только убийства: громкий смех, крики, внезапное волнение, фейлы и моменты, когда чат сходит с ума, в любой игре и на стримах Just Chatting, IRL и учёбы. Клипы также начинаются раньше, с того, что привело к моменту, и заканчиваются в удачном месте.
+
+### Новое
+- **Моменты без убийств:** приложение теперь слышит смех, крики, голос, который вдруг становится выше, долгую тишину, прерванную реакцией, и смешные фразы или фразы о фейле вроде «что я сейчас сделал?». Это работает в любой игре и на разговорных стримах, на всех 11 языках приложения.
+- **Стримы Just Chatting и IRL:** если категория или название стрима говорит об этом, приложение больше обращает внимание на смех, голос и чат и сохраняет начало истории перед её смешным концом.
+- **Почему этот клип:** на каждой карточке клипа теперь сначала видна одна короткая причина, например «Чат сошёл с ума», «Громкий смех», «Клатч» или «Фейл».
+- **Скажите «clip it», чтобы отметить момент:** во время записи или стрима скажите «clip it» или «klip al» (или свои слова в «Настройки» > «Метки во время стрима»). После записи приложение находит эти слова с помощью распознавания речи на вашем ПК, и этот момент всегда становится клипом. Клип заканчивается прямо перед тем, как вы это сказали. Пока вы играете, ничего не слушает. Горячая клавиша тоже по-прежнему работает.
+- **Измените нарезку одним нажатием:** «Начать позже» и «Закончить раньше» теперь стоят рядом с «Начать раньше» и «Закончить позже». В режиме Pro в текстовом редакторе клипа есть кнопки, которые сдвигают начало или конец на 2 секунды, всегда между двумя словами.
+
+### Улучшения
+- **Клипы не начинаются слишком поздно:** теперь клип начинается там, где началось действие, например когда начался бой, примерно до 20 секунд до главного момента, и никогда посреди фразы.
+- **Аккуратные концовки:** клип больше не обрывается посреди фразы или смеха, а длинные тихие куски в конце сокращаются.
+- **Чат:** засчитывается больше реакций чата, например «GOOOL», «ahaha», «ICANT», «jajaja», «kkkk», «mdr» и больше эмоутов Twitch и Kick.
+
+### Исправления
+- **Настройка скорости «Лёгкий» была переведена как цвет «Светлая»** на венгерском и русском языках, а также в нескольких текстах на испанском, французском и португальском. Теперь она означает «лёгкий», то есть «нетяжёлый». Текст на японском тоже стал понятнее.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+أصبح SharkyClips يجد أكثر من عمليات القتل: الضحك الكبير والصراخ والحماس المفاجئ والأخطاء المحرجة واللحظات التي تنفجر فيها الدردشة، في كل لعبة وفي بثوث الدردشة وIRL والدراسة. كما تبدأ المقاطع الآن أبكر، مع ما سبق اللحظة، وتنتهي في مكان مناسب.
+
+### جديد
+- **لحظات ليست عمليات قتل:** صار التطبيق ينتبه إلى الضحك والصراخ والصوت الذي يرتفع فجأة والصمت الطويل الذي يقطعه ردّ فعل، والجمل المضحكة أو جمل الخطأ مثل «ماذا فعلت للتو؟». يعمل هذا في كل لعبة وفي بثوث الحديث، وبكل لغات التطبيق الإحدى عشرة.
+- **بثوث الدردشة وIRL:** عندما تدل فئة البث أو عنوانه على ذلك، ينتبه التطبيق أكثر إلى الضحك والصوت والدردشة، ويحتفظ ببداية القصة قبل نهايتها المضحكة.
+- **لماذا هذا المقطع:** تعرض كل بطاقة مقطع الآن سببًا قصيرًا واحدًا أولًا، مثل «الدردشة انفجرت» أو «ضحك كبير» أو «لحظة حاسمة» أو «خطأ محرج».
+- **قل «clip it» لتعليم لحظة:** أثناء التسجيل أو البث، قل «clip it» أو «klip al» (أو كلماتك الخاصة في الإعدادات > علامات أثناء البث). بعد التسجيل يجد التطبيق هذه الكلمات بالتعرّف على الكلام في حاسوبك، وتصبح تلك اللحظة مقطعًا دائمًا. ينتهي المقطع قبل أن تقولها مباشرة. لا شيء يستمع إليك أثناء اللعب. ويبقى اختصار لوحة المفاتيح يعمل أيضًا.
+- **غيّر القصّ بلمسة واحدة:** صار «ابدأ لاحقًا» و«انتهِ أبكر» بجانب «ابدأ أبكر» و«أنهِ لاحقًا». وفي وضع Pro، يحتوي محرر نص المقطع على أزرار تحرّك البداية أو النهاية ثانيتين، دائمًا بين كلمتين.
+
+### تحسينات
+- **لا تبدأ المقاطع متأخرة:** يبدأ المقطع الآن حيث بدأ الحدث، مثلًا عندما بدأ القتال، حتى نحو 20 ثانية قبل اللحظة الكبيرة، ولا يبدأ أبدًا في منتصف جملة.
+- **نهايات نظيفة:** لم يعد المقطع يتوقف في منتصف جملة أو ضحكة، وتُقصَّر الأجزاء الصامتة الطويلة في النهاية.
+- **الدردشة:** صارت ردود فعل أكثر في الدردشة تُحتسب، مثل «GOOOL» و«ahaha» و«ICANT» و«jajaja» و«kkkk» و«mdr» ومزيد من رموز Twitch وKick التعبيرية.
+
+### إصلاحات
+- **إعداد السرعة «خفيف» كان مترجمًا بمعنى اللون «فاتح»** في المجرية والروسية، وفي بعض النصوص الإسبانية والفرنسية والبرتغالية. صار الآن بمعنى «خفيف»، أي «غير ثقيل». كما صار النص الياباني أوضح.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+SharkyClips 现在能找到的不只是击杀：大笑、尖叫、突然激动、失误，以及弹幕炸了的时刻，适用于所有游戏，也适用于闲聊、IRL 和学习直播。片段现在也会更早开始，带上前面的铺垫，并在干净的位置结束。
+
+### 新功能
+- **不是击杀的精彩时刻：** 应用现在会留意笑声、尖叫、突然变高的声音、被反应打破的长时间沉默，以及像“我刚才干了什么”这样的搞笑或失误台词。这适用于所有游戏和聊天直播，支持应用的全部 11 种语言。
+- **闲聊和 IRL 直播：** 当直播的分类或标题表明是这类直播时，应用会更关注笑声、声音和弹幕，并保留故事的开头，再接上好笑的结尾。
+- **为什么选这个片段：** 每张片段卡片现在都会先显示一个简短的理由，例如“弹幕炸了”“大笑”“关键时刻”或“失误”。
+- **说“clip it”来标记一个瞬间：** 录制或直播时，说“clip it”或“klip al”（也可以在“设置 > 直播标记”中写你自己的词）。录制结束后，应用会用你电脑上的语音识别找到这些词，这个瞬间一定会成为一个片段。片段会在你说这句话之前结束。你玩游戏时没有任何程序在监听。快捷键也照样可以用。
+- **一键调整剪辑：** “晚点开始”和“早点结束”现在就在“提前开始”和“延后结束”旁边。在 Pro 模式下，片段的文字编辑器里有按钮，可以把开头或结尾移动 2 秒，并且总是落在两个词之间。
+
+### 改进
+- **片段不会开始得太晚：** 片段现在从动作开始的地方开始，例如战斗刚开始时，最多在精彩时刻前约 20 秒，而且绝不会从一句话的中间开始。
+- **干净的结尾：** 片段不再在一句话或一阵笑声的中间停下，结尾处长时间的安静部分也会被缩短。
+- **弹幕：** 更多弹幕反应会被计算在内，例如“GOOOL”“ahaha”“ICANT”“jajaja”“kkkk”“mdr”，以及更多 Twitch 和 Kick 表情。
+
+### 修复
+- **速度设置“轻量”曾在匈牙利语和俄语中被翻译成颜色“浅色”**，在西班牙语、法语和葡萄牙语的几处文字中也是如此。现在它的意思是“轻”，也就是“不重”。日语文字也更清楚了。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+SharkyClips はキルだけでなく、大笑い、叫び声、急な興奮、失敗、チャットが大盛り上がりした瞬間も見つけるようになりました。どのゲームでも、雑談・IRL・勉強の配信でも使えます。クリップは前振りから少し早めに始まり、きれいなところで終わります。
+
+### 新機能
+- **キル以外の名場面：** 笑い声、叫び声、急に高くなる声、反応で破られる長い沈黙、「今なにした？」のような面白い一言や失敗の一言を聞き取るようになりました。どのゲームでも雑談配信でも、アプリの 11 言語すべてで使えます。
+- **雑談・IRL 配信：** 配信のカテゴリーやタイトルからそう分かるとき、笑い声、声、チャットをより重視し、面白いオチの前にある話の始まりも残します。
+- **このクリップの理由：** すべてのクリップカードに、まず短い理由が 1 つ表示されます。例：「チャットが大盛り上がり」「大笑い」「クラッチ」「失敗」。
+- **「clip it」と言って瞬間をマーク：** 録画や配信中に「clip it」または「klip al」と言います（設定 > ライブマーカーで自分の言葉にもできます）。録画のあと、PC 上の音声認識がその言葉を見つけ、その瞬間は必ずクリップになります。クリップは言う直前で終わります。プレイ中に何かが聞き続けることはありません。ホットキーもこれまでどおり使えます。
+- **ワンタップでカットを変更：** 「開始を遅らせる」と「終了を早める」が「より早期に開始」と「後で終了」の横に並びました。Pro モードでは、クリップのテキストエディターにあるボタンで開始や終了を 2 秒ずつ動かせます。位置は必ず単語と単語の間になります。
+
+### 改善
+- **クリップの始まりが遅すぎない：** クリップは、たとえば戦いが始まったところなど、アクションが始まった場所から始まります。大事な瞬間の最大およそ 20 秒前までさかのぼり、文の途中から始まることはありません。
+- **きれいな終わり方：** 文や笑いの途中で止まらなくなり、最後の長い無音部分は短くなります。
+- **チャット：** 「GOOOL」「ahaha」「ICANT」「jajaja」「kkkk」「mdr」や、より多くの Twitch・Kick のエモートなど、数えられるチャットの反応が増えました。
+
+### 修正
+- **速度設定の「軽量」が、ハンガリー語とロシア語で色の「明るい」という意味に訳されていました**（スペイン語・フランス語・ポルトガル語の一部の文も同様）。今は「重くない」という意味の「軽い」になっています。日本語の文もわかりやすくなりました。
+
+</details>
+
 ## [1.2.76] - 2026-11-28
 Long Kick videos are imported in full again, the Mac installer is back in the downloads, and the local AI can now use AMD Radeon and Intel Arc graphics cards.
 

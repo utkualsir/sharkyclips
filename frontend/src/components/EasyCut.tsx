@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError, easyApi, type CaptionWord, type EasyClip, type EasyHook, type EasyView, type NudgeAction } from "../api";
+import { headlineIcon, headlineLabel } from "../headline";
 import { useI18n } from "../i18n";
 import { useToast } from "../toast";
 import { Icon, type IconName } from "./Icons";
@@ -53,6 +54,8 @@ export function CutRow({ pid, c, disabled, onView }: { pid: string; c: EasyClip;
       )}
       <div className="ez-nudges" role="group" aria-label={t("easy2.nudge_group")}>
         {btn("earlier", "chevron-left", t("easy2.earlier"))}
+        {btn("start_later", "chevron-right", t("easy2.start_later"))}
+        {btn("end_sooner", "chevron-left", t("easy2.end_sooner"))}
         {btn("later", "chevron-right", t("easy2.later"))}
         {btn("short", "minus", t("easy2.short"))}
         {btn("long", "plus", t("easy2.long"))}
@@ -137,12 +140,17 @@ export function ReasonChips({ c, children }: { c: EasyClip; children?: React.Rea
           </span>
         )
       )}
+      {c.headline && headlineLabel(t, c.headline) && (
+        <span className="ez-chip ez-chip-headline" dir="auto">
+          <Icon name={headlineIcon(c.headline)} size={13} /> {headlineLabel(t, c.headline)}
+        </span>
+      )}
       {(c.taste ?? 0) >= 0.35 && (
         <span className="ez-chip ez-chip-taste">
           <Icon name="thumb-up" size={12} /> {t("easy2.your_taste")}
         </span>
       )}
-      {(c.chips ?? []).map((ch) => (
+      {(c.chips ?? []).filter((ch) => !(c.headline?.code === "game" && ch.code === c.headline.value)).map((ch) => (
         <span key={ch.code} className="ez-chip" dir="auto">
           {label(ch)}
         </span>

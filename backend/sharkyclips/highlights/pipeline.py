@@ -14,7 +14,7 @@ from ..errors import SharkyClipsError
 from ..project import Project, write_json_atomic
 from .candidates import pick_candidates
 from .context import AnalysisContext
-from .modes import get_mode
+from .modes import detect_profile, get_mode, with_profile
 from .scorer import compute_hype
 
 HIGHLIGHTS_VERSION = 1
@@ -56,6 +56,9 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
     meta = project.load_meta()
     mode_name = mode or meta.get("mode") or "gaming"
     preset = get_mode(mode_name)
+    profile, profile_why = _profile(project, meta, preset)
+    preset = with_profile(preset, profile)
+    meta = project.load_meta()  # game detection may have saved what it found
     if not project.audio_path.is_file():
         raise SharkyClipsError(f"Project '{project.id}' has no audio.wav.",
                                "Re-run: python cli.py ingest <url-or-path>")
@@ -77,6 +80,7 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
         "version": HIGHLIGHTS_VERSION,
         "project_id": project.id,
         "mode": preset.name,
+        **({"profile": {"name": profile, "why": profile_why}} if preset.name == "gaming" else {}),
         "language": ctx.language,
         "duration": round(ctx.duration, 3),
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -95,6 +99,7 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
                 "duration": round(c.duration, 2),
                 "peak": c.peak,
                 "hype_score": c.hype_score,
+                **({"headline": c.headline} if c.headline else {}),
                 "hype_raw": round(c.raw, 4),
                 "hype_raw_unsmoothed": round(c.raw_unsmoothed, 4),
                 "reasons": c.reasons,
@@ -121,6 +126,21 @@ def run_highlights(project: Project, mode: str | None = None, top: int | None = 
         meta.pop("analysis", None)  # the clips changed: the old AI results don't apply any more
     project.save_meta(meta)
     return result
+
+
+def _profile(project: Project, meta: dict, preset) -> tuple[str, str]:
+    """1.2.77: game or talk stream (Just Chatting / IRL) inside Gaming mode."""
+    if preset.name != "gaming":
+        return "game", "not gaming mode"
+    game = None
+    if (meta.get("profile") or "auto") == "auto":
+        try:
+            from ..game import resolve
+
+            game = resolve(project).get("game")
+        except Exception:  # noqa: BLE001 - no game detection here: the title decides
+            game = None
+    return detect_profile(meta, game)
 
 
 AI_FIELDS = ("publish", "llm", "translations")

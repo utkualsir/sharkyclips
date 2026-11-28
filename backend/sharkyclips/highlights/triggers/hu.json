@@ -33,5 +33,29 @@
     "vizsga": 0.6,
     "szabály": 0.6,
     "például": 0.5
+  },
+  "funny": {
+    "megszakadok": 0.9,
+    "nagyon vicces": 0.9,
+    "vicces": 0.6,
+    "meghalok": 0.8,
+    "ez mi volt": 0.7,
+    "hagyd abba": 0.5,
+    "nevet": 0.8,
+    "nevetés": 0.8,
+    "röhög": 0.8,
+    "röhej": 0.7
+  },
+  "fail": {
+    "mit csináltam": 1.0,
+    "miért csináltam": 0.9,
+    "nagyon rossz vagyok": 0.9,
+    "bocsi": 0.5,
+    "hoppá": 0.8,
+    "elrontottam": 0.9,
+    "elszúrtam": 0.9,
+    "de ciki": 0.9,
+    "kihagytam": 0.7,
+    "meghaltam": 0.6
   }
 }

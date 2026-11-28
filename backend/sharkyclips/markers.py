@@ -5,6 +5,11 @@ recording time (exact even after a pause). When a finished recording is imported
 the markers that fall inside it are written to <project>/markers.json in video seconds; the
 highlight engine turns them into top candidates ("marked by you", build-up included).
 
+Spoken markers (1.2.77): say a short phrase while you record or stream ("clip it", "klip al",
+your own in Settings). Nothing listens live: no microphone process runs. After the recording, the
+local Whisper transcript is searched for the phrase and every hit becomes a marker (source "voice").
+The clip ends just before the phrase, so "clip it" itself isn't in the video.
+
 Global hotkey (Windows): RegisterHotKey on a thread of its own with a message loop. It works
 while a game has the focus and never takes the focus away; a short system sound confirms it.
 macOS / Linux: not available (macOS needs an accessibility permission prompt; use "!clip").
@@ -28,6 +33,12 @@ DEDUPE_S = 4.0  # two marks this close are one moment (hotkey + a mod's !clip)
 BUILD_UP_S = 25.0  # seconds before a marker that the clip keeps (what led to it)
 AFTER_S = 6.0
 MERGE_S = 15.0  # marks this close (hotkey + a mod's !clip a moment later) share one clip
+
+DEFAULT_PHRASES = ("clip it", "klip al")
+# Whisper writes short phrases in several ways: these count as the same phrase.
+PHRASE_VARIANTS = {"clip it": ("clipit", "clip it", "klip it", "clip et"),
+                   "klip al": ("klipal", "klip al", "kılip al", "klib al", "klibi al", "clip al")}
+VOICE_END_GAP_S = 0.12  # the clip ends this long before the phrase starts
 
 _lock = threading.RLock()
 
@@ -141,6 +152,61 @@ def load_project(project: Project) -> list[dict]:
         return list((read_json(p) if p.is_file() else {}).get("markers") or [])
     except (OSError, ValueError):
         return []
+
+
+# ===================================================================== spoken markers
+
+
+def marker_phrases(even_if_off: bool = False) -> list[str]:
+    """The phrases that mark a moment (config "marker_phrases"; [] when switched off, unless
+    even_if_off: the settings page shows them either way)."""
+    if config.get("marker_phrases_enabled") is False and not even_if_off:
+        return []
+    raw = config.get("marker_phrases")
+    items = DEFAULT_PHRASES if raw is None else raw
+    if isinstance(items, str):
+        items = items.split(",")
+    out = []
+    for x in items:
+        x = " ".join(str(x).split())[:40]
+        if x and x.casefold() not in (o.casefold() for o in out):
+            out.append(x)
+    return out[:8]
+
+
+def find_spoken(words: list, phrases: list[str] | None = None) -> list[dict]:
+    """Spoken markers in a transcript: [{"t": phrase start, "end": phrase end, "source": "voice",
+    "by": the phrase}]. `words` = highlight-context words (start / end / text)."""
+    from .highlights.signals.keywords import normalize
+
+    phrases = marker_phrases() if phrases is None else phrases
+    if not phrases or not words:
+        return []
+    forms: dict[tuple[str, ...], str] = {}
+    for ph in phrases:
+        for form in (ph, *PHRASE_VARIANTS.get(normalize(ph), ())):
+            toks = tuple(normalize(form).split())
+            if toks:
+                forms.setdefault(toks, ph)
+    tokens: list[str] = []
+    owner: list[int] = []
+    for i, w in enumerate(words):
+        for tok in normalize(w.text).split():
+            tokens.append(tok)
+            owner.append(i)
+    out: list[dict] = []
+    for j in range(len(tokens)):
+        for toks, ph in forms.items():
+            if tuple(tokens[j:j + len(toks)]) != toks:
+                continue
+            a, b = words[owner[j]], words[owner[j + len(toks) - 1]]
+            if b.end - a.start > 4.0:  # words far apart: not the phrase
+                continue
+            if out and a.start - out[-1]["t"] < DEDUPE_S:
+                continue
+            out.append({"t": round(a.start, 2), "end": round(b.end, 2), "source": "voice", "by": ph})
+            break
+    return out
 
 
 # ===================================================================== global hotkey (Windows)

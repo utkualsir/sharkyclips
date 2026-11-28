@@ -1,0 +1,60 @@
+{
+  "language": "pt",
+  "reaction": {
+    "não acredito": 1.0,
+    "meu deus": 0.9,
+    "que loucura": 0.9,
+    "incrível": 0.8,
+    "vamos": 0.6,
+    "bora": 0.7,
+    "caramba": 0.8,
+    "sério": 0.7,
+    "não não não": 0.8,
+    "absurdo": 0.8,
+    "golaço": 1.0,
+    "gol": 0.8,
+    "nossa": 0.7,
+    "mano": 0.3,
+    "eita": 0.8,
+    "uau": 0.7
+  },
+  "study": {
+    "importante": 1.0,
+    "muito importante": 1.0,
+    "atenção": 0.9,
+    "o truque é": 1.0,
+    "na prova": 1.0,
+    "prova": 0.6,
+    "fórmula": 0.9,
+    "lembrem": 0.9,
+    "resumindo": 0.8,
+    "por exemplo": 0.5,
+    "a chave": 0.9,
+    "definição": 0.6,
+    "regra": 0.6
+  },
+  "funny": {
+    "tô morrendo": 0.8,
+    "morri": 0.8,
+    "muito engraçado": 0.9,
+    "engraçado": 0.6,
+    "que isso": 0.6,
+    "o que foi isso": 0.7,
+    "risos": 0.8,
+    "rindo": 0.8,
+    "não aguento": 0.8
+  },
+  "fail": {
+    "o que eu fiz": 1.0,
+    "por que eu fiz isso": 1.0,
+    "sou muito ruim": 0.9,
+    "foi mal": 0.7,
+    "ops": 0.7,
+    "vacilei": 0.8,
+    "que vergonha": 0.9,
+    "errei": 0.6,
+    "como eu errei": 1.0,
+    "morri": 0.5,
+    "estraguei": 0.8
+  }
+}

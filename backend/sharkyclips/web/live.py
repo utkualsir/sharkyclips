@@ -275,6 +275,8 @@ def _live_view(request: Request | None = None) -> dict:
     return {"watch": {**watch.settings(), "recent": watch.recent()},
             "markers": {"hotkey": str(config.get("marker_hotkey") or markers.DEFAULT_HOTKEY),
                         "hotkey_enabled": config.get("marker_hotkey_enabled") is not False,
+                        "phrases": markers.marker_phrases(even_if_off=True),
+                        "phrases_enabled": config.get("marker_phrases_enabled") is not False,
                         "command": str(config.get("live_clip_command") or markers.DEFAULT_COMMAND),
                         "twitch_channel": str(config.get("live_twitch_channel") or ""),
                         "youtube_chat": bool(config.get("live_youtube_chat")),
@@ -354,6 +356,23 @@ def api_markers_put(body: dict, request: Request) -> dict:
                 from exc
     if "hotkey_enabled" in body:
         changes["marker_hotkey_enabled"] = bool(body["hotkey_enabled"])
+    if "phrases" in body:  # 1.2.77: "clip it, klip al" -> ["clip it", "klip al"]
+        raw = body["phrases"]
+        items = raw.split(",") if isinstance(raw, str) else list(raw or [])
+        phrases = []
+        for x in items:
+            x = " ".join(str(x).split())
+            if not x:
+                continue
+            if len(x) > 40 or len(x.split()) > 4:
+                raise SharkyClipsError("A marker phrase is short: 1 to 4 words, e.g. clip it.")
+            if x.casefold() not in (q.casefold() for q in phrases):
+                phrases.append(x)
+        if len(phrases) > 8:
+            raise SharkyClipsError("At most 8 marker phrases.")
+        changes["marker_phrases"] = phrases
+    if "phrases_enabled" in body:
+        changes["marker_phrases_enabled"] = bool(body["phrases_enabled"])
     if "command" in body:
         cmd = str(body["command"] or "").strip()
         if not cmd.startswith("!") or " " in cmd or len(cmd) > 20:

@@ -166,10 +166,15 @@ def test_download_page_has_checksums_requirements_times_and_mac(site):
     mod, out = site
     dl = (out / "download.html").read_text(encoding="utf-8")
     stats = mod.load_json(mod.STATS_FILE)
-    sums = stats["sha256"][mod.VERSION]
-    assert re.fullmatch(r"[0-9a-f]{64}", sums["setup"]) and f'<code class="hash" translate="no">{sums["setup"]}</code>' in dl
-    assert sums["install_sh"] in dl and "bash ~/Downloads/install.sh" in dl and mod.INSTALL_SH_URL in dl
-    assert dl.index('id="checksum"') < dl.index('id="requirements"')  # right below the download button
+    assert "bash ~/Downloads/install.sh" in dl and mod.INSTALL_SH_URL in dl
+    sums = stats["sha256"].get(mod.VERSION)
+    if sums:  # the release's checksum files exist (stats refreshed after the release)
+        assert re.fullmatch(r"[0-9a-f]{64}", sums["setup"]) and f'<code class="hash" translate="no">{sums["setup"]}</code>' in dl
+        assert sums["install_sh"] in dl
+        assert dl.index('id="checksum"') < dl.index('id="requirements"')  # right below the download button
+    else:  # a version bump before its release: no box, and never another version's checksum
+        assert '<code class="hash"' not in dl
+        assert not any(v["setup"] in dl for v in stats["sha256"].values())
     for part in ("Processor", "Memory", "Graphics card", "Disk"):
         assert f'<th scope="row">{part}</th>' in dl
     bench = mod.load_json(mod.BENCH_FILE)

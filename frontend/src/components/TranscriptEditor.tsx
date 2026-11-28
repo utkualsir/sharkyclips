@@ -159,6 +159,33 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
   const edited = !!(edit && (edit.start != null || edit.end != null || edit.deleted?.length || edit.bleep?.length || edit.unbleep?.length));
   const outDur = plan?.duration ?? range.end - range.start;
 
+  // 1.2.77: one tap moves the start / end by about 2 s, always onto a word edge (never mid-word).
+  const NUDGE = 2;
+  const startTo = (dir: -1 | 1): number | null => {
+    const target = range.start + dir * NUDGE;
+    const w =
+      dir < 0
+        ? [...words].reverse().find((x) => x.start <= target + 0.3 && x.start < range.start - 0.15)
+        : words.find((x) => x.start >= target - 0.3 && x.start > range.start + 0.15);
+    if (!w || range.end - (w.start - 0.05) < 1) return null;
+    return Math.max(0, w.start - 0.05);
+  };
+  const endTo = (dir: -1 | 1): number | null => {
+    const target = range.end + dir * NUDGE;
+    const w =
+      dir > 0
+        ? words.find((x) => x.end >= target - 0.3 && x.end > range.end + 0.15)
+        : [...words].reverse().find((x) => x.end <= target + 0.3 && x.end < range.end - 0.25);
+    if (!w || w.end + 0.2 - range.start < 1) return null;
+    return w.end + 0.2;
+  };
+  const nudges: { key: string; label: string; icon: "chevron-left" | "chevron-right"; to: number | null; apply: (v: number) => ClipEdit }[] = [
+    { key: "se", label: t("tx.start_earlier"), icon: "chevron-left", to: startTo(-1), apply: (v) => ({ ...edit, start: v }) },
+    { key: "sl", label: t("tx.start_later"), icon: "chevron-right", to: startTo(1), apply: (v) => ({ ...edit, start: v }) },
+    { key: "es", label: t("tx.end_sooner"), icon: "chevron-left", to: endTo(-1), apply: (v) => ({ ...edit, end: v }) },
+    { key: "el", label: t("tx.end_later"), icon: "chevron-right", to: endTo(1), apply: (v) => ({ ...edit, end: v }) },
+  ];
+
   return (
     <section className="panel transcript" aria-labelledby="tx-title">
       <div className="panel-head">
@@ -190,6 +217,22 @@ export default function TranscriptEditor({ words, cand, edit, plan, time, lang, 
           )}
         </div>
       </div>
+      {words.length > 0 && (
+        <div className="tx-nudges" role="group" aria-label={t("tx.nudge_group")}>
+          {nudges.map((n) => (
+            <button
+              key={n.key}
+              type="button"
+              className="btn btn-sm btn-ghost"
+              disabled={n.to == null}
+              onClick={() => n.to != null && onChange(n.apply(n.to))}
+            >
+              <Icon name={n.icon} className="icon flip-rtl" />
+              {n.label}
+            </button>
+          ))}
+        </div>
+      )}
       {words.length === 0 ? (
         <p className="muted" style={{ margin: 0 }}>
           {t("tx.empty")}

@@ -1,0 +1,59 @@
+{
+  "language": "fr",
+  "reaction": {
+    "c'est pas possible": 1.0,
+    "oh mon dieu": 0.9,
+    "incroyable": 0.8,
+    "c'est fou": 0.9,
+    "allez": 0.5,
+    "allez allez": 0.9,
+    "sérieux": 0.7,
+    "non non non": 0.8,
+    "trop fort": 0.8,
+    "dingue": 0.8,
+    "oh non": 0.8,
+    "putain": 0.7,
+    "waouh": 0.7,
+    "mec": 0.3,
+    "but": 0.6
+  },
+  "study": {
+    "important": 1.0,
+    "très important": 1.0,
+    "attention": 0.9,
+    "l'astuce": 1.0,
+    "à l'examen": 1.0,
+    "examen": 0.6,
+    "formule": 0.9,
+    "retenez": 0.9,
+    "en résumé": 0.8,
+    "par exemple": 0.5,
+    "la clé": 0.9,
+    "définition": 0.6,
+    "règle": 0.6
+  },
+  "funny": {
+    "je suis mort": 0.8,
+    "mort de rire": 1.0,
+    "trop drôle": 0.9,
+    "drôle": 0.6,
+    "c'était quoi ça": 0.7,
+    "arrête": 0.4,
+    "rires": 0.8,
+    "il rit": 0.8,
+    "je pleure": 0.7,
+    "j'en peux plus": 0.8
+  },
+  "fail": {
+    "qu'est ce que j'ai fait": 1.0,
+    "pourquoi j'ai fait ça": 1.0,
+    "je suis nul": 0.9,
+    "ma faute": 0.7,
+    "oups": 0.8,
+    "j'ai merdé": 0.9,
+    "la honte": 0.9,
+    "raté": 0.6,
+    "comment j'ai raté": 1.0,
+    "je suis mort": 0.5
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "language": "es",
+  "reaction": {
+    "no puede ser": 1.0,
+    "dios mío": 0.9,
+    "qué locura": 0.9,
+    "increíble": 0.8,
+    "vamos": 0.6,
+    "vamos vamos": 0.9,
+    "madre mía": 0.9,
+    "en serio": 0.7,
+    "no no no": 0.8,
+    "brutal": 0.8,
+    "golazo": 1.0,
+    "gol": 0.8,
+    "qué pasó": 0.6,
+    "ay no": 0.8,
+    "tío": 0.3,
+    "wow": 0.7
+  },
+  "study": {
+    "importante": 1.0,
+    "muy importante": 1.0,
+    "ojo": 0.8,
+    "atención": 0.9,
+    "el truco es": 1.0,
+    "en el examen": 1.0,
+    "examen": 0.6,
+    "fórmula": 0.9,
+    "recuerden": 0.9,
+    "resumiendo": 0.8,
+    "por ejemplo": 0.5,
+    "la clave": 0.9,
+    "definición": 0.6,
+    "regla": 0.6
+  },
+  "funny": {
+    "me muero": 0.8,
+    "no puedo más": 0.8,
+    "qué risa": 1.0,
+    "muy gracioso": 0.9,
+    "gracioso": 0.6,
+    "qué fue eso": 0.7,
+    "para ya": 0.5,
+    "risas": 0.8,
+    "se ríe": 0.8,
+    "jajaja": 0.8,
+    "me meo": 0.8
+  },
+  "fail": {
+    "qué he hecho": 1.0,
+    "por qué hice eso": 1.0,
+    "soy malísimo": 0.9,
+    "qué malo soy": 0.9,
+    "mi culpa": 0.7,
+    "ups": 0.7,
+    "la cagué": 0.9,
+    "qué vergüenza": 0.9,
+    "fallé": 0.7,
+    "cómo fallé": 1.0,
+    "me morí": 0.6
+  }
+}

@@ -1,8 +1,10 @@
 {
-  "_comment": "Chat reaction patterns (regex, case-insensitive). 'whole' must match the entire message, 'contains' anywhere. All languages are used together, because chat language often differs from the streamer's.",
+  "_comment": "Chat reaction patterns (regex, case-insensitive). 'whole' must match the entire message, 'contains' anywhere. All languages are used together, because chat language often differs from the streamer's. 1.2.77: more Twitch / 7TV / Kick emotes, goal spam ('GOOOL'), 'ahaha', es / pt / fr / ja / ko chat laughter.",
   "universal": {
-    "whole": ["w+", "l+", "f", "gg+", "ez+", "\\?{2,}", "!{2,}", "\\.{3,}", "[0-9]{3,}", "o+", "x+d+", "\\+1+"],
-    "contains": ["kekw", "\\blul\\w*", "omegalul", "pepelaugh", "lmf?ao+", "\\brofl\\b", "\\blo+l\\b", "\\bx+d+\\b", "\\bpog\\w*", "kappa", "monkas", "pausechamp", "pepega", "sadge", "copium", "\\bclip ?it\\b", "\\?{3,}", "!{3,}", "😂|🤣|😭|💀|😱|🔥|👀|😳|🤯|😮|👏", "(?:ha){3,}|(?:ah){3,}|(?:he){3,}", "\\bwtf\\b", "\\bomg\\b", "\\bbruh\\b"]
+    "whole": ["w+", "l+", "f", "gg+", "ez+", "\\?{2,}", "!{2,}", "\\.{3,}", "[0-9]{3,}", "o+", "x+d+", "\\+1+", "\\+2", "go+a?l+"],
+    "contains": ["kekw", "\\blul\\w*", "omegalul", "pepelaugh", "lmf?ao+", "\\brofl\\b", "\\blo+l\\b", "\\bx+d+\\b", "\\bpog\\w*", "kappa", "monka\\w*", "pausechamp", "pepega", "sadge", "copium", "\\bclip ?it\\b", "\\?{3,}", "!{3,}", "😂|🤣|😭|💀|😱|🔥|👀|😳|🤯|😮|👏|⚽", "(?:ha){3,}|(?:ah){3,}|(?:he){3,}", "\\bwtf\\b", "\\bomg\\b", "\\bbruh\\b",
+                 "icant", "\\bkekl\\b", "kekwait", "\\b4head\\b", "wutface", "notlikethis", "biblethump", "pepehands", "\\bxdd+\\b", "\\baware\\b", "\\bez ?clap\\b",
+                 "\\bgo{2,}a?l+\\b", "\\bgol+\\b", "\\ba?(?:ha){2,}h?\\b", "\\bunlucky\\b", "\\bthrow(?:ing|n)?\\b"]
   },
   "tr": {"whole": ["a+", "of+"], "contains": ["(?:a?sj){2,}|(?:as[dj]){2,}|ajs|sjsj|asdasd|ahah", "\\bklip", "aşırı", "efsane", "\\boha+\\b", "yok artık", "helal", "ağla", "kral"]},
   "en": {"whole": [], "contains": ["no way", "let'?s go+", "insane", "\\bclutch\\b", "holy"]},
@@ -10,5 +12,10 @@
   "de": {"whole": [], "contains": ["krass", "digga", "\\balter\\b", "geil", "clip"]},
   "hu": {"whole": [], "contains": ["úristen", "durva", "\\bkl[ií]p"]},
   "ar": {"whole": [], "contains": ["(?:ه){3,}", "(?:خ){3,}", "والله", "يا رجل", "كليب"]},
-  "zh": {"whole": [], "contains": ["哈{2,}", "笑死", "草+", "(?:6){3,}", "牛", "卧槽", "绝了", "w{3,}"]}
+  "zh": {"whole": [], "contains": ["哈{2,}", "笑死", "草+", "(?:6){3,}", "牛", "卧槽", "绝了", "w{3,}"]},
+  "es": {"whole": [], "contains": ["\\bja(?:ja)+\\b", "\\bjsjs\\w*", "golazo", "qu[eé] locura", "no mames"]},
+  "pt": {"whole": ["k{3,}"], "contains": ["\\bk{4,}\\b", "\\brs(?:rs)+\\b", "\\bhue(?:hue)+\\b", "golaço", "caraca", "\\beita\\b"]},
+  "fr": {"whole": [], "contains": ["\\bmdr+\\b", "\\bx?ptdr\\b", "\\bjpp\\b", "incroyable", "\\bouf\\b"]},
+  "ja": {"whole": ["w{3,}", "草+"], "contains": ["w{4,}", "草", "笑", "やば", "神"]},
+  "ko": {"whole": [], "contains": ["ㅋ{2,}", "ㅎ{3,}", "대박"]}
 }

@@ -35,11 +35,11 @@ HOP_S = 2.0  # non-overlapping: 2 s resolution is plenty for laughter, and half 
 GROUPS = {
     "laughter": {"Laughter", "Baby laughter", "Giggle", "Snicker", "Belly laugh",
                  "Chuckle, chortle"},
-    "shouting": {"Shout", "Yell", "Screaming", "Children shouting", "Battle cry", "Whoop",
-                 "Bellow"},
+    "shouting": {"Shout", "Yell", "Children shouting", "Battle cry", "Whoop", "Bellow"},
+    "screaming": {"Screaming"},  # 1.2.77: its own reason ("Scream"), not just "Shouting"
     "cheering": {"Cheering", "Applause", "Crowd", "Clapping"},
 }
-GROUP_SCALE = {"laughter": 0.45, "shouting": 0.45, "cheering": 0.5}
+GROUP_SCALE = {"laughter": 0.45, "shouting": 0.45, "screaming": 0.4, "cheering": 0.5}
 
 
 def model_dir() -> Path:
@@ -107,7 +107,7 @@ def ensure_model(show_progress: bool = True) -> Path:
 @register
 class LaughterSignal(Signal):
     name = "laughter"
-    version = 3
+    version = 4
     cacheable = True
 
     def check(self, ctx) -> None:
@@ -184,7 +184,7 @@ class LaughterSignal(Signal):
         events = []
         for i in local_peaks(scores, 0.5, 4):
             g = max(scaled, key=lambda k: scaled[k][i])
-            events.append(ReasonEvent(float(i), g, None, float(scores[i])))
+            events.append(ReasonEvent(float(i), "scream" if g == "screaming" else g, None, float(scores[i])))
         return SignalResult(self.name, scores, events, {
             "provider": "cpu", "workers": workers,
             "seconds_with": {g: int((v >= 0.5).sum()) for g, v in scaled.items()},

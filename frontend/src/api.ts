@@ -1,4 +1,5 @@
 // Typed client for the SharkyClips REST API (backend/sharkyclips/web/app.py).
+import type { Headline } from "./headline";
 import { onCsrfRefused } from "./csrf";
 
 export type Mode = "gaming" | "study" | "music";
@@ -301,6 +302,8 @@ export interface Candidate {
   chat?: ChatStats | null;
   /** marked by hand (I/O) */
   manual?: boolean;
+  /** 1.2.77: the one reason shown first ("Chat went wild", "Big laugh", "Clutch") */
+  headline?: Headline | null;
 }
 
 export type ProfanityMode = "auto" | "bleep" | "mute" | "off";
@@ -2197,6 +2200,9 @@ export interface LiveView {
   markers: {
     hotkey: string;
     hotkey_enabled: boolean;
+    /** 1.2.77: spoken markers ("clip it"), found in the recording's transcript afterwards */
+    phrases: string[];
+    phrases_enabled: boolean;
     command: string;
     twitch_channel: string;
     youtube_chat: boolean;
@@ -2220,7 +2226,7 @@ export const liveApi = {
     req<LiveView>("PUT", "/api/live/watch", body),
   scan: () => req<{ started: string[]; recent: WatchRecent[] }>("POST", "/api/live/watch/scan"),
   obsCheck: () => req<{ ok: boolean; reason?: "not_enabled" | "no_websocket" | "password" | "not_running"; obs?: string }>("GET", "/api/live/obs/check"),
-  markers: (body: Partial<{ hotkey: string; hotkey_enabled: boolean; command: string; twitch_channel: string; youtube_chat: boolean; obs_websocket: "auto" | "off" }>) =>
+  markers: (body: Partial<{ hotkey: string; hotkey_enabled: boolean; phrases: string; phrases_enabled: boolean; command: string; twitch_channel: string; youtube_chat: boolean; obs_websocket: "auto" | "off" }>) =>
     req<LiveView>("PUT", "/api/live/markers", body),
   mark: () => req<{ marker: LiveMarker | null; recent: LiveMarker[] }>("POST", "/api/live/markers", { source: "button" }),
   unmark: (id: string) => req<{ recent: LiveMarker[] }>("DELETE", `/api/live/markers/${encodeURIComponent(id)}`),
@@ -2440,11 +2446,12 @@ export interface EasyClip {
   taste?: number | null;
   /** 1.2.34: why it was picked, in plain words (reason codes, see "reason.*") */
   chips?: { code: string; value?: string; count?: number }[];
+  headline?: Headline | null;
 }
 
 export type ShapeWhy =
   | "setup_sentence" | "setup_lead" | "ai_setup" | "payoff_event" | "payoff_reaction" | "payoff_sentence" | "ai_payoff" | "hook_later";
-export type NudgeAction = "earlier" | "later" | "short" | "long" | "auto";
+export type NudgeAction = "earlier" | "start_later" | "end_sooner" | "later" | "short" | "long" | "auto";
 
 export interface EasyHook {
   score: number;

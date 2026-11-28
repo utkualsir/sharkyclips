@@ -80,6 +80,18 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   it (with any local AI server it started, e.g. Ollama's `llama-server`) as soon as a game starts. The owner
   plays on this PC: a leftover benchmark once made a game run at 1-2 fps (phase D7, 2026-11-28).
 
+### 6. Stop only your own processes, by PID (every command, every session)
+
+- Never kill processes by name or image (`taskkill /IM`, `Stop-Process -Name`, `pkill`, `killall`,
+  `Get-Process ollama | Stop-Process`, ...): not Ollama / `llama-server`, ffmpeg, python, node,
+  browsers (Chrome, Edge, msedge), OBS, games or anything else. The owner's own copies may be running.
+- Only stop a process this session started itself, by the PID it got when it started it (note the PID
+  at start; `taskkill /PID <pid> /T`, `Stop-Process -Id <pid>`, `proc.kill()`). Before stopping it,
+  check that the PID still belongs to that same command (name + command line), since Windows reuses PIDs.
+- Never touch the owner's running SharkyClips or its jobs: no killing its server, its ffmpeg / Whisper /
+  LLM workers or its browsers, no cancelling its jobs. The only allowed action is rule 3's
+  `POST /api/update/restart`, and only when `/api/jobs` shows nothing queued or running.
+
 ## Working here
 
 - Tests: `.venv/Scripts/python -m pytest -q` (from the repo root; tests use a throwaway
@@ -136,6 +148,13 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   read WOFF2) -> PIL-drawn logo outro (same geometry as `make_icons.py`, tested). HEIC via `pi-heif`
   (decode-only, no GPL x265). Decisions: `docs/phase-d3.md`. Sample: `docs/demo/make_slideshow_sample.py`.
   A fixture server must set `SHARKYCLIPS_DOWNLOADS` too, or "Save" writes into the real Downloads.
+- Non-kill moments (1.2.77) = `highlights/signals/voice.py` (CPU pitch + loudness vs the speaker's own
+  baseline: `voice_excited`, `scream`, `silence_break`), the `funny` / `fail` trigger lists (11 languages,
+  `funny_line` / `fail_line`), the "talk" profile inside Gaming mode (`modes.detect_profile`: Just Chatting /
+  IRL from category or title), `candidates.smart_window` (pre-roll from the build-up) + `clean_sentence_end` /
+  `trim_dead_tail`, `candidates.headline` (the card's one reason, `frontend/src/headline.ts`) and spoken
+  markers (`markers.find_spoken`, config `marker_phrases`: found in the transcript afterwards, no live mic).
+  Measure engine changes with `docs/phase-d8/compare_picks.py` on shadow copies (never on the real projects).
 - Icons/logo come from `installer/make_icons.py` (one geometry; `frontend/src/components/Brand.tsx`
   and `backend/sharkyclips/web/splash.html` copy the same paths).
 - Settings folder: `~/.sharkyclips` (`config.config_dir()`); `migrate.py` moves an old `~/.clipforge`

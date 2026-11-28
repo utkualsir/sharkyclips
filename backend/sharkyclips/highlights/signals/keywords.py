@@ -8,6 +8,10 @@ Users add their own in config.json:
 Matching ignores case and diacritics, collapses stretched letters
 ("nooooo" == "no"), and understands multi-word phrases. Chinese is matched
 without word boundaries.
+
+1.2.77 (phase D8): the "funny" and "fail" lists (every language) find moments that aren't kills:
+a funny line or a laugh the transcript wrote down ("hahaha", "(laughs)") -> reason "funny_line",
+a mistake the streamer says out loud ("what did I just do", "ne yaptım ben") -> "fail_line".
 """
 
 from __future__ import annotations
@@ -27,6 +31,12 @@ from .base import ReasonEvent, Signal, SignalResult, SignalUnavailable, register
 
 TRIGGERS_DIR = Path(__file__).resolve().parents[1] / "triggers"
 NO_SPACE_LANGS = {"zh", "ja", "th"}
+# reason code per trigger category (reaction / study keep the old "keyword")
+CATEGORY_CODE = {"funny": "funny_line", "fail": "fail_line"}
+# Laughter written out by Whisper as one word: "haha", "ahahah", "hehe", "jajaja", "хаха", "ههههه"
+# (normalize() already squeezed "ههههه" to one letter: a lone "ه" is that laugh)
+LAUGH_TOKEN = re.compile(r"^(?:a?h[aei]){2,}h?$|^(?:ja|je|ji){2,}$|^(?:a?х[аеи]){2,}х?$|^ه$")
+LAUGH_WEIGHT = 0.8
 
 _CHAR_MAP = str.maketrans({
     "ı": "i", "ß": "ss", "ø": "o", "æ": "ae", "œ": "oe", "đ": "d", "ł": "l",
@@ -119,10 +129,27 @@ def find_matches(words: list[dict], lang: str,
                 yield owner[j], display, weight
 
 
+def phrase_categories(lang: str, categories: tuple[str, ...]) -> dict[str, str]:
+    """display phrase -> its category (the first one that lists it; your own words = "reaction")."""
+    out: dict[str, str] = {}
+    defaults = default_triggers(lang)
+    for cat in categories:
+        for phrase in defaults.get(cat, {}):
+            out.setdefault(phrase, cat)
+    return out
+
+
+def laugh_tokens(words: list) -> Iterator[int]:
+    """Word indexes that are written-out laughter ("hahaha"), in any language."""
+    for i, w in enumerate(words):
+        if any(LAUGH_TOKEN.match(tok) for tok in normalize(w.text).split()):
+            yield i
+
+
 @register
 class KeywordSignal(Signal):
     name = "keywords"
-    version = 1
+    version = 2
 
     def check(self, ctx) -> None:
         if not ctx.words:
@@ -133,15 +160,21 @@ class KeywordSignal(Signal):
             raise SignalUnavailable(f"no trigger words for language '{ctx.language}'")
 
     def compute(self, ctx) -> SignalResult:
-        phrases = trigger_phrases(ctx.language, ctx.mode.keyword_categories)
+        cats = ctx.mode.keyword_categories
+        phrases = trigger_phrases(ctx.language, cats)
+        cat_of = phrase_categories(ctx.language, cats)
         impulses = np.zeros(ctx.n)
         events: list[ReasonEvent] = []
         hits: dict[str, int] = {}
-        for wi, display, weight in find_matches(ctx.words, ctx.language, phrases):
+        found = list(find_matches(ctx.words, ctx.language, phrases))
+        if "funny" in cats:
+            found += [(i, "haha", LAUGH_WEIGHT) for i in laugh_tokens(ctx.words)]
+        for wi, display, weight in found:
             t = ctx.words[wi].start
             sec = min(ctx.n - 1, int(t))
             impulses[sec] += weight
-            events.append(ReasonEvent(t, "keyword", display, weight))
+            code = "funny_line" if display == "haha" else CATEGORY_CODE.get(cat_of.get(display, ""), "keyword")
+            events.append(ReasonEvent(t, code, display, weight))
             hits[display] = hits.get(display, 0) + 1
         sigma = 1.5
         spread = gaussian_filter1d(impulses, sigma) * (np.sqrt(2 * np.pi) * sigma)

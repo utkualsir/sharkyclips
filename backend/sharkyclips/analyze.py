@@ -47,6 +47,10 @@ REASON_TEXT = {
     "pause_then_burst": "silence then outburst", "steady_explanation": "calm explanation",
     "chorus": "music chorus", "drop": "music drop", "chat_spike": "chat exploded",
     "chat_reactions": "chat spammed reactions", "llm_explanation": "self-contained explanation",
+    # 1.2.77: moments that aren't kills
+    "scream": "screaming", "voice_excited": "the voice suddenly went up (excited)",
+    "silence_break": "a long silence, then a sudden reaction", "funny_line": "a funny line / laughing",
+    "fail_line": "the streamer admits a mistake (fail)", "marker": "marked by the streamer",
 }
 # Game events read from the game screen (game signal). These are facts, not guesses.
 GAME_EVENT_TEXT = {
