@@ -519,6 +519,7 @@ def results(code: str, t: dict) -> str:
     """Before -> after pairs: a frame of the long stream and the same moment in the finished clip."""
     root = "" if code == "en" else "../"
     r = t["results"]
+    en_attr = "" if code == "en" else ' lang="en"'  # the app's real AI titles (an English stream) stay as they were
     items = []
     for i, it in enumerate(r["items"][:RESULTS], 1):
         items.append(
@@ -530,7 +531,7 @@ def results(code: str, t: dict) -> str:
             f'<div class="ba-after"><img src="{root}img/results/{i}-after.webp" width="270" height="480" '
             f'alt="{esc(fill(r["after_alt"], {"title": it["title"]}))}" loading="lazy" decoding="async">'
             f'<span class="tag">{esc(r["after"])}</span></div></div>'
-            f'<figcaption><b>{esc(it["title"])}</b><span>{esc(it["why"])}</span></figcaption></figure></li>')
+            f'<figcaption><b{en_attr}>{esc(it["title"])}</b><span>{esc(it["why"])}</span></figcaption></figure></li>')
     return f"""<section id="results" aria-labelledby="res-h">
   <h2 id="res-h">{esc(r['h'])}</h2>
   <p class="lead">{esc(r['lead'])}</p>
@@ -559,7 +560,7 @@ def compare(code: str, t: dict) -> str:
     return f"""<section id="compare" aria-labelledby="cmp-h">
   <h2 id="cmp-h">{esc(k['h'])}</h2>
   <p class="lead">{esc(fill(k['lead'], {'date': fmt_date(COMPARE_CHECKED, t)}))}</p>
-  <div class="tablewrap compare" tabindex="0" role="region" aria-labelledby="cmp-h"><table>
+  <div class="tablewrap compare" tabindex="0" role="region" aria-label="{esc(k['h'] + ': ' + ', '.join(cols))}"><table>
     <thead><tr><th scope="col"><span class="vh">{esc(k['corner'])}</span></th>{head_}</tr></thead><tbody>{rows}</tbody></table></div>
   <p class="muted small">{esc(k['note'])}</p>
   <details class="more small"><summary>{esc(fill(k['sources'], {'n': len(COMPARE_SOURCES)}))}</summary><ul class="sources">{src}</ul></details>
