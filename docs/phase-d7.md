@@ -2,7 +2,43 @@
 
 ## Kısa rapor (Türkçe)
 
-(written at the end)
+**Site yayında** (https://utkualsir.github.io/sharkyclips-site/), 11 dilde. Uygulama değişmedi: sürüm
+yükseltmesi ve CHANGELOG yok. Gerçek hesaplarına hiçbir şey yüklenmedi.
+
+**Neler değişti**
+- **Ana sayfanın üstü:** "Works with Kick" rozeti ve "%100 ücretsiz · filigran yok · sınır yok · bilgisayarında
+  çalışır". Demo video artık ilk ekranda (telefonda başlığın hemen altında): otomatik ve sessiz oynar, poster
+  görseli ve 11 dilde altyazısı var. "Hareketi azalt" ayarında durur.
+- **Yeni demo videosu (31 sn):** uygulama ekranı → yan yana "yayın → hazır klip" sahneleri → Paylaş penceresi.
+- **"Gerçek sonuçlar" galerisi:** 6 çift (16:9 yayın karesi → aynı an 9:16 hazır klipte), demo yayından
+  (çizilmiş oyun, bilgisayar sesi, yüz yok), elle düzenleme yok. Birinde küfür biplenmiş görünüyor.
+- **Karşılaştırma tablosu:** SharkyClips, Eklipse, OpusClip, StreamLadder (fiyat, filigran, klip sınırı,
+  nerede işlenir, ne gerekir, oyuna göre algılama, Kick, bipleme, diller). Yalnızca resmi sayfalardan,
+  28 Kasım 2026'da kontrol edildi, 14 kaynak bağlantısı tablonun altında, tarafsız dil.
+- **İndirme sayfası:** düğmenin hemen altında SHA-256 (ve PowerShell ile kontrol), ayrıntılı sistem
+  gereksinimleri (işlemci, RAM, ekran kartı, disk), işlem süreleri tablosu, SmartScreen açıklaması ve
+  görseli, macOS install.sh bölümü (komut + kendi SHA-256'sı).
+- **Diğer:** YouTube API tablosu ana sayfada ama kapalı bir bölümde; "Your look" → "Themes and colours";
+  TikTok yardımcısının tarayıcıları adıyla yazıyor (Edge, Chrome, Opera, Brave); GitHub yıldız ve indirme
+  rozetleri (derleme anında çizilir, dış servis yok).
+
+**İşlem süreleri (senin bilgisayarında, gerçek 1080p kayıtlarınla, 6 klibe kadar)**
+- NVIDIA ile 1 saat: ölçüldü, yaklaşık 18 dk (sitede "yaklaşık 20 dk"). 3 saat: tahmini, yaklaşık 50 dk.
+- Hafif mod (yalnızca işlemci): 10 dakikalık parça ölçüldü (7 dk), 1 saat yaklaşık 40 dk ve 3 saat
+  yaklaşık 1 sa 55 dk olarak tahmin edildi. Tahminler tabloda "(tahmini)" diye işaretli, altında açıklama var.
+
+**Kontroller:** axe 88 sayfada iki temada temiz; bağlantı, görsel ve telefon genişliği kontrolü temiz;
+Lighthouse ana sayfa ve indirme sayfasında mobil/masaüstü 95-100; site testleri (12) geçti.
+
+**Yeni kalıcı kural (CLAUDE.md, kural 5):** bilgisayarında 30 dakikadan uzun ölçüm veya test yok; uzun
+kontroller CI'da ya da tahminle; uzun işler önce planda söylenir, 30 dakikalık kesin süre sınırı ve oyun
+açılınca hemen durma.
+
+**Bir hatam oldu:** bir ölçümden arta kalan Ollama işlemi oyunu 1-2 FPS'e düşürdü. Kapatıldı; artık
+ölçüm aracı oyun açılınca kendini ve yapay zekâ işlemini durduruyor.
+
+**Uygulamada bulunan, düzeltilmeyen hata:** Performans ayarındaki "Light" seçeneği Macarcada "Világos",
+Rusçada "Светлая" (renk anlamında "açık") diye çevrilmiş. Bir uygulama sürümü gerektiriyor; istersen yaparım.
 
 ## Decisions log
 
@@ -65,25 +101,24 @@
     "Generate captions in over 90 languages" (clip-editor/captions); game-specific detection not stated.
 - Check again before quoting new numbers: prices and plans change often.
 
-## Where we stopped (paused 2026-11-28 ~09:20, owner asked to save and stop)
-Done: hero (Kick badge, "100% free / no watermark / no limits / runs on your PC", demo video in the hero
-with 11 caption tracks), comparison table, collapsible YouTube section, "Themes and colours", Helper
-browsers, GitHub stars + downloads (stats.json, drawn at build time), download page (SHA-256 boxes, detailed
-requirements, macOS install.sh section, SmartScreen caption), all 11 languages, tests. Lighthouse (local):
-home 98/100/96/100 mobile (the 96 is only the missing gallery images), download 99-100.
 
-Still to do:
-1. Gallery + new demo video: in the demo project (throwaway home `%TEMP%\sc-time-demo6-evc98swj`) the top
-   7 highlights are found; run `analyze` + `render 1..6` there, then `docs/phase-d7/make_media.py
-   <project> docs/site/img/demo.mp4 <out>` and copy results/*.webp, demo.mp4, demo-poster.webp into
-   docs/site/img; write `results.items` (time, title, why) in all 11 languages from results.json.
-2. Benchmarks: done gpu60 (real 1080p recordings, 1 h: 1106 s = about 18 min; transcribe 32 s, find
-   moments 254 s, AI 683 s, render 6 clips 111 s). Still to run: gpu180, light60, light180 with
-   `docs/phase-d7/timeit.py` (inputs in the scratchpad `real/real60.mp4`, `real180.mp4`, built from the
-   two recordings in workspace/; rebuild them if the scratchpad was cleared). Only while no game runs
-   (the script marks a run "disturbed" if Delta Force / LoL is seen). Then write docs/sitegen/benchmarks.json
-   {"checked","machine":{"cpu":"Intel Core i7-14650HX","ram_gb":16,"gpu":"NVIDIA GeForce RTX 5070 Laptop GPU (8 GB)"},"clips":6,"runs":{...seconds}}.
-3. Full build, pytest test_website.py, check-site.mjs (axe, 2 themes), Lighthouse, commit to main, publish
-   with docs/publish-site.sh, Turkish report at the top of this file.
-Found, not fixed (app, outside this task): the "Light" performance preset is translated as the colour
-"light" in Hungarian ("Világos") and Russian ("Светлая") in the app (frontend locales, perf.preset.light).
+### 4. Processing times (download page, `#speed`)
+- Measured with `docs/phase-d7/timeit.py` (CLI steps of the Easy-mode pipeline: import, speech recognition,
+  finding moments, AI titles, rendering 6 clips) in throwaway settings folders, on the owner's PC
+  (Intel Core i7-14650HX, 16 GB RAM, RTX 5070 Laptop 8 GB). Input: real 1080p OBS recordings of the owner
+  (talking + gameplay; never published), joined to 1 h and looped to 3 h. The synthetic demo stream was not
+  used for timing: it is mostly silence, so speech recognition would look far too fast.
+- Owner's decision: Light / CPU only for the 1-hour stream; the 3-hour Light time is estimated as
+  `3 x (1 h total - render) + render` (everything grows with the length, except rendering the same 6 clips)
+  and marked "estimated" in the table, with a note.
+- `docs/phase-d7/runner.py` starts a run only after 5 minutes without a game and stops it at once (with the
+  local AI server) when Delta Force / League of Legends starts, then redoes it. Reason: a benchmark that ran
+  next to the owner's game made it unplayable (1-2 fps) on 2026-11-28; the cause was a leftover Ollama
+  `llama-server` holding most of the GPU memory and CPU.
+- Owner's later decision (same day): stop every measurement longer than 1 hour and finish. New permanent
+  rule in CLAUDE.md (rule 5): no job over 30 minutes on the owner's PC, long checks in CI or estimated,
+  long jobs announced in the plan first with a hard time limit.
+- Result: GPU 1 h measured; GPU 3 h estimated from it (the stopped 3 h run had finished speech recognition
+  in 91.6 s = 2.9 x the 1 h run's 31.9 s, so scaling with length holds). Light/CPU: one run on a 10-minute
+  piece of the same recording (announced, 30-minute hard stop), scaled to 1 h and 3 h; both marked
+  "estimated". Formula (`build.bench_seconds`): (total - render) x length / measured length + render per clip x 6.

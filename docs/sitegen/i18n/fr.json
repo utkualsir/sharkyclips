@@ -50,7 +50,8 @@
     "date": "{d} {m} {y}",
     "dur_min": "environ {m} min",
     "dur_h": "environ {h} h {m} min",
-    "dur_h0": "environ {h} h"
+    "dur_h0": "environ {h} h",
+    "estimated": "{t} (estimation)"
   },
   "home": {
     "title": "SharkyClips : les temps forts de vos lives en Shorts, TikTok et Reels, gratuitement",
@@ -518,6 +519,7 @@
       "Un processeur plus lent prend plus de temps : sur un petit portable 2 cœurs sans carte graphique, une vidéo de 17 minutes a pris environ 16 minutes en mode Léger.",
       "SharkyClips travaille en arrière-plan. En mode Silencieux, il se met en pause pendant que vous jouez et reprend quand vous arrêtez."
     ],
+    "time_est": "Les temps marqués « estimation » sont calculés à partir de mesures réelles plus courtes (1 heure avec carte graphique, 10 minutes en mode Léger) : le travail augmente avec la durée du live, et le rendu est compté pour {clips} clips.",
     "smart_h": "« Windows a protégé votre ordinateur » ?",
     "smart_p": "L'installateur n'est pas encore signé avec un certificat payant, donc Microsoft Defender SmartScreen peut avertir d'un nouveau téléchargement. C'est normal pour les nouvelles apps gratuites.",
     "smart_steps": [

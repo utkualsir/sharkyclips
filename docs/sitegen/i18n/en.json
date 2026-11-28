@@ -50,7 +50,8 @@
     "date": "{d} {m} {y}",
     "dur_min": "about {m} min",
     "dur_h": "about {h} h {m} min",
-    "dur_h0": "about {h} h"
+    "dur_h0": "about {h} h",
+    "estimated": "{t} (estimated)"
   },
   "home": {
     "title": "SharkyClips: free stream highlights to Shorts, TikTok and Reels",
@@ -518,6 +519,7 @@
       "A slower processor takes longer: on a small 2-core laptop without a graphics card, a 17-minute video took about 16 minutes in Light mode.",
       "SharkyClips works in the background. In Silent mode it pauses while you play a game, and goes on when you stop."
     ],
+    "time_est": "Times marked \"estimated\" are calculated from shorter real measurements (1 hour with the graphics card, 10 minutes in Light mode): the work grows with the length of the stream, and rendering is counted for {clips} clips.",
     "smart_h": "\"Windows protected your PC\"?",
     "smart_p": "The installer is not signed with a paid certificate yet, so Microsoft Defender SmartScreen may warn about a new download. This is normal for new free apps.",
     "smart_steps": [

@@ -1,0 +1,14 @@
+{
+ "label": "gpu180",
+ "preset": "normal",
+ "device": "auto",
+ "video": "C:\\Users\\redmo\\AppData\\Local\\Temp\\claude\\9ea16ee277ee090a\\ff94c2dd-a07d-4239-921c-6a3460958261\\scratchpad\\real\\real180.mp4",
+ "home": "C:\\Users\\redmo\\AppData\\Local\\Temp\\sc-time-gpu180-x7sz8ajp",
+ "steps": {
+  "ingest": 54.5,
+  "transcribe": 91.6
+ },
+ "cpu": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+ "started": "2026-11-28 10:45:20",
+ "project": "real180-7d98f60a"
+}

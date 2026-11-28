@@ -1,0 +1,21 @@
+{
+ "label": "light10",
+ "preset": "light",
+ "device": "cpu",
+ "video": "C:/Users/redmo/AppData/Local/Temp/claude/9ea16ee277ee090a/ff94c2dd-a07d-4239-921c-6a3460958261/scratchpad/real/real10.mp4",
+ "home": "C:\\Users\\redmo\\AppData\\Local\\Temp\\sc-time-light10-kciv4uym",
+ "steps": {
+  "ingest": 3.7,
+  "transcribe": 37.1,
+  "highlights": 4.8,
+  "analyze": 340.7,
+  "render": 29.5
+ },
+ "cpu": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+ "started": "2026-11-28 10:57:20",
+ "project": "real10-bb6945a1",
+ "clips": 3,
+ "total": 415.9,
+ "disturbed": [],
+ "finished": "2026-11-28 11:04:16"
+}

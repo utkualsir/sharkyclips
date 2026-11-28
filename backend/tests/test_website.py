@@ -173,8 +173,14 @@ def test_download_page_has_checksums_requirements_times_and_mac(site):
     for part in ("Processor", "Memory", "Graphics card", "Disk"):
         assert f'<th scope="row">{part}</th>' in dl
     bench = mod.load_json(mod.BENCH_FILE)
-    assert set(bench["runs"]) >= {"gpu60", "gpu180", "light60", "light180"}
+    assert "gpu60" in bench["measured"] and any(k.startswith("light") for k in bench["measured"])
     assert 'id="speed"' in dl and "1-hour stream" in dl and "3-hour stream" in dl and bench["machine"]["cpu"] in dl
+    # cells without a run of that length are estimated, and the table says so
+    sec, est = mod.bench_seconds(bench, "gpu", 60)
+    assert not est and sec == bench["measured"]["gpu60"]["total"]
+    s180, est180 = mod.bench_seconds(bench, "gpu", 180)
+    assert est180 and 2 * sec < s180 < 3 * sec
+    assert "(estimated)" in dl and "Times marked" in dl
     assert "smartscreen.webp" in dl
     # the badges are drawn at build time: no request to a badge service
     assert "shields.io" not in dl and f"{mod.GH}/stargazers" in (out / "index.html").read_text(encoding="utf-8")

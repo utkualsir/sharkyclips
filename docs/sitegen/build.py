@@ -655,21 +655,43 @@ def fmt_duration(seconds: float, t: dict) -> str:
     return fill(c["dur_min"], {"m": m}) if m < 60 else fill(c["dur_h"] if m % 60 else c["dur_h0"], {"h": m // 60, "m": m % 60})
 
 
+def bench_seconds(b: dict, mode: str, minutes: int) -> tuple[float, bool]:
+    """(seconds, estimated) for a stream of `minutes` in `mode` ("gpu" / "light"). A cell is measured when a run
+    of exactly that length exists; otherwise it is estimated from that mode's measured run: everything grows
+    with the stream's length except rendering, which is counted per clip for the same number of clips."""
+    runs = {k: v for k, v in b.get("measured", {}).items() if k.startswith(mode)}
+    exact = runs.get(f"{mode}{minutes}")
+    if exact:
+        return exact["total"], False
+    base_key = min(runs, key=lambda k: abs(int(k[len(mode):]) - minutes))
+    r, base_min = runs[base_key], int(base_key[len(mode):])
+    per_clip = r["render"] / max(1, r["clips"])
+    return (r["total"] - r["render"]) * minutes / base_min + per_clip * b.get("clips", 6), True
+
+
 def speed_table(code: str, t: dict) -> str:
     b = load_json(BENCH_FILE)
-    runs = b.get("runs", {})
-    if not all(k in runs for k in ("gpu60", "gpu180", "light60", "light180")):
+    if not any(k.startswith("gpu") for k in b.get("measured", {})) or not any(k.startswith("light") for k in b.get("measured", {})):
         return ""
     d = t["download"]
-    rows = "".join(
-        f'<tr><th scope="row">{esc(label)}</th><td>{esc(fmt_duration(runs["gpu" + n], t))}</td>'
-        f'<td>{esc(fmt_duration(runs["light" + n], t))}</td></tr>'
-        for label, n in ((d["time_rows"][0], "60"), (d["time_rows"][1], "180")))
+    c = t["common"]
+    any_est = False
+
+    def cell(mode: str, minutes: int) -> str:
+        nonlocal any_est
+        sec, est = bench_seconds(b, mode, minutes)
+        any_est = any_est or est
+        txt = fmt_duration(sec, t)
+        return esc(fill(c["estimated"], {"t": txt}) if est else txt)
+
+    rows = "".join(f'<tr><th scope="row">{esc(label)}</th><td>{cell("gpu", m)}</td><td>{cell("light", m)}</td></tr>'
+                   for label, m in ((d["time_rows"][0], 60), (d["time_rows"][1], 180)))
     ctx = {"cpu": b["machine"]["cpu"], "gpu": b["machine"]["gpu"], "ram": b["machine"]["ram_gb"],
            "date": fmt_date(b["checked"], t), "clips": b.get("clips", 6)}
+    notes = list(d["time_notes"]) + ([d["time_est"]] if any_est else [])
     return f"""<section id="speed" aria-labelledby="time-h"><h2 id="time-h">{esc(d['time_h'])}</h2><p class="muted">{esc(fill(d['time_p'], ctx))}</p>
   <div class="tablewrap"><table><thead><tr><th scope="col"><span class="vh">{esc(d['time_cols'][0])}</span></th><th scope="col">{esc(d['time_cols'][1])}</th><th scope="col">{esc(d['time_cols'][2])}</th></tr></thead><tbody>{rows}</tbody></table></div>
-  <ul class="notes muted small">{''.join(f'<li>{esc(fill(x, ctx))}</li>' for x in d['time_notes'])}</ul></section>"""
+  <ul class="notes muted small">{''.join(f'<li>{esc(fill(x, ctx))}</li>' for x in notes)}</ul></section>"""
 
 
 def checksum_box(t: dict, kind: str, file: str, sha_url: str, cmd: str, how: str) -> str:

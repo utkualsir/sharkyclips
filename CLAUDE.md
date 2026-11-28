@@ -69,6 +69,17 @@ SharkyClips (called ClipForge before 1.2.1) is a free, local stream-highlight cl
   `~/SharkyClips`, the repo). `conftest.py` also routes every `shutil.rmtree` during tests through
   the same check (`test_safe_delete.py`).
 
+### 5. No long jobs on the owner's PC (every session)
+
+- No benchmark, test run or other job may take more than **30 minutes** on the owner's PC. Checks that
+  need longer run in CI, or the result is **estimated** from a shorter run (and marked "estimated"
+  wherever it is shown).
+- Never start a long job (anything that may take more than a few minutes, or keeps the GPU / CPU busy)
+  without saying so in the plan first: what it is, how long it should take, and its hard time limit.
+- Give every such job a hard stop (timeout) at 30 minutes, run it only while no game is running, and stop
+  it (with any local AI server it started, e.g. Ollama's `llama-server`) as soon as a game starts. The owner
+  plays on this PC: a leftover benchmark once made a game run at 1-2 fps (phase D7, 2026-11-28).
+
 ## Working here
 
 - Tests: `.venv/Scripts/python -m pytest -q` (from the repo root; tests use a throwaway

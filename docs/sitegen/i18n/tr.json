@@ -50,7 +50,8 @@
     "date": "{d} {m} {y}",
     "dur_min": "yaklaşık {m} dk",
     "dur_h": "yaklaşık {h} sa {m} dk",
-    "dur_h0": "yaklaşık {h} sa"
+    "dur_h0": "yaklaşık {h} sa",
+    "estimated": "{t} (tahmini)"
   },
   "home": {
     "title": "SharkyClips: yayın kesitlerini ücretsiz Shorts, TikTok ve Reels'e çevir",
@@ -518,6 +519,7 @@
       "Daha yavaş bir işlemci daha uzun sürer: ekran kartı olmayan küçük, 2 çekirdekli bir dizüstünde 17 dakikalık bir video Hafif modda yaklaşık 16 dakika sürdü.",
       "SharkyClips arka planda çalışır. Sessiz modda sen oyun oynarken durur, bıraktığında devam eder."
     ],
+    "time_est": "\"Tahmini\" yazan süreler daha kısa gerçek ölçümlerden hesaplandı (ekran kartıyla 1 saat, Hafif modda 10 dakika): iş yayının uzunluğuyla artar, dışa aktarma {clips} klip için hesaplandı.",
     "smart_h": "\"Windows bilgisayarınızı korudu\" mu?",
     "smart_p": "Kurulum henüz ücretli bir sertifikayla imzalı değil, bu yüzden Microsoft Defender SmartScreen yeni bir indirme için uyarabilir. Yeni ücretsiz uygulamalarda bu normaldir.",
     "smart_steps": [

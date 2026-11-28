@@ -18,8 +18,8 @@ NOWIN = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 GAMES = ("deltaforceclient", "league of legends.exe", "leagueclient")
 scratch = Path(sys.argv[1])
 out = scratch / "timing2"
-SPECS = [("real180", "gpu180", "normal", "auto"), ("real60", "light60", "light", "cpu"),
-         ("real180", "light180", "light", "cpu")]
+# Light / CPU only for 1 hour: the 3-hour Light time is estimated from it (owner's decision, docs/phase-d7.md)
+SPECS = [("real180", "gpu180", "normal", "auto"), ("real60", "light60", "light", "cpu")]
 
 
 def log(msg):
@@ -52,8 +52,25 @@ def kill_tree(pid):
     subprocess.run(["taskkill", "/IM", "llama-server.exe", "/F"], capture_output=True, creationflags=NOWIN)
 
 
+def running_pids(label):
+    """timeit runs of this label that an earlier runner started (taken over, not restarted)."""
+    ps = ("Get-CimInstance Win32_Process | Where-Object { $_.Name -eq 'python.exe' -and $_.CommandLine -match 'timeit.py' "
+          f"-and $_.CommandLine -match ' {label} ' }} | ForEach-Object {{ $_.ProcessId }}")
+    o = subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True, text=True, creationflags=NOWIN).stdout
+    return [int(x) for x in o.split()]
+
+
 for src, label, preset, device in SPECS:
     res = out / f"{label}.json"
+    pids = running_pids(label)
+    while pids:  # take over a run that is already going: keep yielding to games
+        if game_running():
+            log(f"game started: stopping the running {label}, will redo it")
+            for pid in pids:
+                kill_tree(pid)
+            break
+        time.sleep(10)
+        pids = running_pids(label)
     while True:
         if res.exists() and "total" in json.loads(res.read_text(encoding="utf-8")) \
                 and not json.loads(res.read_text(encoding="utf-8")).get("disturbed"):

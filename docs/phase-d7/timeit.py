@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 from pathlib import Path
 
@@ -18,7 +19,6 @@ CLI = str(REPO / "backend" / "cli.py")
 REAL_MODELS = Path.home() / ".sharkyclips" / "models"
 
 video, chat, label, preset, device, outdir = sys.argv[1:7]
-import threading
 
 GAMES = ("deltaforceclient", "league of legends.exe", "leagueclient")
 
@@ -85,7 +85,8 @@ if chat != "-":
 run("transcribe", "transcribe", pid)
 run("highlights", "highlights", pid)
 run("analyze", "analyze", pid, "--lang", "en", "--no-translate")
-run("render", "render", pid, "1", "2", "3", "4", "5", "6")
+run("render", "render", pid, "--all")
+res["clips"] = len(list((ws / pid / "clips").glob("*.mp4")))
 res["total"] = round(time.time() - T0, 1)
 res["disturbed"] = DISTURBED[:5]
 res["finished"] = time.strftime("%Y-%m-%d %H:%M:%S")

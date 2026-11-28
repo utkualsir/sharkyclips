@@ -50,7 +50,8 @@
     "date": "{d}. {m} {y}",
     "dur_min": "etwa {m} Min.",
     "dur_h": "etwa {h} Std. {m} Min.",
-    "dur_h0": "etwa {h} Std."
+    "dur_h0": "etwa {h} Std.",
+    "estimated": "{t} (geschätzt)"
   },
   "home": {
     "title": "SharkyClips: Stream-Highlights kostenlos zu Shorts, TikTok und Reels",
@@ -518,6 +519,7 @@
       "Ein langsamerer Prozessor braucht länger: Auf einem kleinen 2-Kern-Laptop ohne Grafikkarte dauerte ein 17-Minuten-Video im Leicht-Modus etwa 16 Minuten.",
       "SharkyClips arbeitet im Hintergrund. Im Leise-Modus pausiert es, während du spielst, und macht weiter, wenn du aufhörst."
     ],
+    "time_est": "Mit \"geschätzt\" markierte Zeiten sind aus kürzeren echten Messungen berechnet (1 Stunde mit Grafikkarte, 10 Minuten im Leicht-Modus): Die Arbeit wächst mit der Länge des Streams, das Rendern ist für {clips} Clips gerechnet.",
     "smart_h": "\"Der Computer wurde durch Windows geschützt\"?",
     "smart_p": "Der Installer ist noch nicht mit einem kostenpflichtigen Zertifikat signiert, deshalb kann Microsoft Defender SmartScreen vor einem neuen Download warnen. Das ist bei neuen kostenlosen Apps normal.",
     "smart_steps": [

@@ -1,0 +1,10 @@
+{
+ "checked": "2026-11-28",
+ "machine": {"cpu": "Intel Core i7-14650HX", "ram_gb": 16, "gpu": "NVIDIA GeForce RTX 5070 Laptop GPU (8 GB)"},
+ "clips": 6,
+ "measured": {
+  "gpu60": {"total": 1105.7, "render": 111.4, "clips": 6},
+  "light10": {"total": 415.9, "render": 29.5, "clips": 3}
+ },
+ "source": "docs/phase-d7.md section 4; raw results in docs/phase-d7/bench-*.json"
+}

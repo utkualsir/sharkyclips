@@ -50,7 +50,8 @@
     "date": "{y}. {m} {d}.",
     "dur_min": "kb. {m} perc",
     "dur_h": "kb. {h} óra {m} perc",
-    "dur_h0": "kb. {h} óra"
+    "dur_h0": "kb. {h} óra",
+    "estimated": "{t} (becslés)"
   },
   "home": {
     "title": "SharkyClips: stream-pillanatok ingyen Shorts, TikTok és Reels videókká",
@@ -518,6 +519,7 @@
       "Lassabb processzorral tovább tart: egy kis, 2 magos, videókártya nélküli laptopon egy 17 perces videó könnyített módban kb. 16 percig tartott.",
       "A SharkyClips a háttérben dolgozik. Csendes módban szünetel, amíg játszol, és folytatja, ha abbahagyod."
     ],
+    "time_est": "A \"becslés\" jelölésű idők rövidebb valódi mérésekből számoltak (1 óra videókártyával, 10 perc könnyített módban): a munka a stream hosszával nő, a renderelést {clips} klipre számoltuk.",
     "smart_h": "\"A Windows megvédte a számítógépet\"?",
     "smart_p": "A telepítő még nincs fizetős tanúsítvánnyal aláírva, ezért a Microsoft Defender SmartScreen figyelmeztethet egy új letöltésre. Ez új ingyenes appoknál normális.",
     "smart_steps": [
