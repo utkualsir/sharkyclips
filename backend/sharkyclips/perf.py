@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import time
 from dataclasses import asdict, dataclass, field
 
@@ -92,6 +93,33 @@ def gpu_usable(m: Machine | None = None) -> bool:
     """A GPU good enough for the AI: NVIDIA with >= 4 GB VRAM, or Apple Silicon. Never an iGPU."""
     m = m or machine()
     return bool((m.nvidia_vram_gb and m.nvidia_vram_gb >= 4) or m.apple_silicon)
+
+
+_DEDICATED = (
+    # Radeon RX 7900 GRE, Radeon Pro W7600, Radeon VII ("Radeon RX Vega 11 Graphics" is a Ryzen iGPU)
+    re.compile(r"radeon.*\b(rx\s*\d|pro\s*w\s*\d|vii\b)", re.I),
+    # Intel Arc A770 / B580 / Pro A60M (iGPUs: "Arc Graphics", "Arc Pro Graphics", "Arc 140V")
+    re.compile(r"\barc\b.*\b[ab]\d{2,3}[a-z]?\b", re.I),
+)
+
+
+def dedicated_other_gpu(m: Machine | None = None) -> str | None:
+    """A dedicated AMD Radeon / Intel Arc card (issue #10). Whisper can't use it (no CUDA), but
+    Ollama runs the LLM on it (ROCm / Vulkan), so the LLM must not be pinned to the CPU there.
+    Integrated GPUs ("AMD Radeon(TM) Graphics", "Radeon 780M", "Intel Arc Graphics") don't count."""
+    m = m or machine()
+    if os.environ.get("SHARKYCLIPS_SIM_NO_GPU") == "1":
+        return None
+    return next((g for g in m.igpu if any(p.search(g) for p in _DEDICATED)), None)
+
+
+def llm_on_gpu(m: Machine | None = None) -> bool:
+    """May Ollama put the LLM on a GPU? NVIDIA / Apple (device 'gpu'), or a dedicated AMD / Intel
+    card unless the user picked "CPU" in Settings > Performance."""
+    m = m or machine()
+    if str(config.get("processing_device") or "auto") == "cpu":
+        return False
+    return device(m) == "gpu" or dedicated_other_gpu(m) is not None
 
 
 def device(m: Machine | None = None) -> str:

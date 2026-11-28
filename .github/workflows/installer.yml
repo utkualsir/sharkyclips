@@ -16,6 +16,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  macos-script:
+    # issue #20: the README's macOS steps download install.sh from the latest release, but no
+    # release had it. Its own job, so a failed Windows build never holds the Mac script back.
+    name: Attach install.sh (macOS)
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: write  # gh release upload
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Attach install.sh to the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          v="$(tr -d '[:space:]' < VERSION)"
+          test "v$v" = "${GITHUB_REF_NAME}" || { echo "VERSION $v != tag ${GITHUB_REF_NAME}"; exit 1; }
+          bash -n install.sh
+          sha256sum install.sh > install.sh.sha256
+          for i in $(seq 1 60); do gh release view "v$v" >/dev/null 2>&1 && break; echo "waiting for release v$v ..."; sleep 30; done
+          gh release upload "v$v" install.sh install.sh.sha256 --clobber
+          cat install.sh.sha256
+
   build-test-release:
     name: Build, install, smoke test, uninstall
     runs-on: windows-latest

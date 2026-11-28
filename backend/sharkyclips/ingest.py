@@ -220,7 +220,18 @@ def _ingest_url(url: str) -> tuple[Project, dict]:
         "upload_date": info.get("upload_date"),
         "category": next((c for c in info.get("categories") or [] if c), None),  # Kick: the game
         "title": title,
+        "expected_duration": info.get("duration"),  # not stored: only checks the download (#16)
     }
+
+
+def short_download(got: float | None, expected: float | None) -> bool:
+    """The file is clearly shorter than the site says (missing HLS fragments, issue #16).
+    Short videos and a few seconds of difference (intros, rounding) don't count."""
+    try:
+        exp = float(expected or 0)
+    except (TypeError, ValueError):
+        return False
+    return exp >= 120 and float(got or 0) < 0.9 * exp
 
 
 # ----------------------------------------------------------------------- main
@@ -236,17 +247,26 @@ def ingest(source: str, mode: str = "gaming") -> Project:
     media = audio.probe(src_path)
     if not media["has_audio"]:
         raise SharkyClipsError("This video has no audio track, so it can't be transcribed.")
+    expected = src_info.pop("expected_duration", None)
+    incomplete = short_download(media["duration"], expected)
+    if incomplete:
+        console.print(f"[yellow]The downloaded video is {media['duration'] or 0:.0f} s long, but the site says "
+                      f"{expected:.0f} s: parts of it may be missing. Import the link again to try once more.[/]")
 
-    if not (project.audio_path.is_file() and audio.wav_is_valid(project.audio_path)):
+    old = project.load_meta()
+    # issue #16: an earlier run used a download fragment as the source. Its audio.wav and
+    # transcript belong to that fragment: take the audio again from the real video.
+    changed = bool(old) and ((old.get("files") or {}).get("source") != src_path.name
+                             or old.get("source_size_bytes") != src_path.stat().st_size)
+    if changed or not (project.audio_path.is_file() and audio.wav_is_valid(project.audio_path)):
         with time_progress() as prog:
             task = prog.add_task("Extracting audio", total=media["duration"] or None)
             audio.extract_audio(src_path, project.audio_path, media["duration"],
-                                lambda t: prog.update(task, completed=t))
+                                lambda t: prog.update(task, completed=t), force=changed)
             prog.update(task, completed=media["duration"] or 0)
     else:
         console.print("audio.wav already extracted.")
 
-    old = project.load_meta()
     meta = {
         "id": project.id,
         "title": src_info.pop("title"),
@@ -261,6 +281,7 @@ def ingest(source: str, mode: str = "gaming") -> Project:
         "source": src_info,
         "files": {"source": src_path.name, "audio": project.audio_path.name},
         "source_size_bytes": src_path.stat().st_size,
+        **({"download_incomplete": {"got": media["duration"], "expected": expected}} if incomplete else {}),
         "created_at": old.get("created_at") or datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "sharkyclips_version": __version__,

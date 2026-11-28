@@ -189,6 +189,105 @@ def test_ingest_falls_back_to_kick_endpoints(fake, monkeypatch):
     assert project.source_path is not None and project.source_path.name == "source.mp4"
 
 
+def test_download_leftovers_are_never_the_source(tmp_path):
+    """Issue #16: `source.mp4.part-Frag100` (one 10 s HLS fragment) became the whole project."""
+    from sharkyclips.project import Project, is_partial_download
+
+    for name in ("source.mp4.part", "source.mp4.part-Frag100", "source.mp4.part-Frag7.part", "source.mp4.ytdl",
+                 "source.f137.mp4", "source.f140.m4a", "source.f299-1.mp4", "source.temp.mp4"):
+        assert is_partial_download(Path(name)), name
+    for name in ("source.mp4", "source.webm", "source.mkv", "source.MP4"):
+        assert not is_partial_download(Path(name)), name
+    p = Project("leftovers", tmp_path)
+    for name in ("source.mp4.part", "source.mp4.part-Frag100", "source.mp4.ytdl", "source.f137.mp4"):
+        (tmp_path / name).write_bytes(b"\0" * 10)
+    assert p.source_path is None  # -> the import downloads again (and yt-dlp resumes the .part)
+    (tmp_path / "source.mp4").write_bytes(b"\0" * 10)
+    assert p.source_path is not None and p.source_path.name == "source.mp4"
+
+
+def test_short_download_check():
+    assert ingest.short_download(10.0, 3600) and ingest.short_download(959, 3600)
+    assert not ingest.short_download(3590, 3600) and not ingest.short_download(3600, 3600)
+    assert not ingest.short_download(20, 30)  # short clips: a few seconds off is normal
+    assert not ingest.short_download(10, None) and not ingest.short_download(10, "x")
+
+
+def _av(path: Path, seconds: float) -> Path:
+    import shutil
+    import subprocess
+
+    subprocess.run([shutil.which("ffmpeg"), "-y", "-hide_banner", "-loglevel", "error",
+                    "-f", "lavfi", "-i", f"testsrc2=size=160x90:rate=15:duration={seconds}",
+                    "-f", "lavfi", "-i", f"sine=frequency=440:sample_rate=16000:duration={seconds}",
+                    "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest",
+                    "-f", "mp4", str(path)], check=True, capture_output=True)
+    return path
+
+
+def test_project_stuck_on_a_fragment_recovers(fake, monkeypatch, tmp_path):
+    """Issue #16 end to end: a project made from a fragment gets the full video on the next
+    import (the download runs again instead of "Already downloaded"), new audio, and a note
+    when the file is still much shorter than the VOD."""
+    import shutil
+    import types
+
+    from sharkyclips import audio
+    from sharkyclips.project import make_project_id, read_json
+
+    if not shutil.which("ffmpeg"):
+        pytest.skip("needs ffmpeg")
+    full = _av(tmp_path / "full.mp4", 6)
+    p = project_for_id(make_project_id("Ranked grind", f"url:KickVOD:{VOD}"))
+    p.dir.mkdir(parents=True, exist_ok=True)
+    _av(p.dir / "source.mp4.part-Frag100", 2)  # what 1.2.65 left behind
+    audio.extract_audio(p.dir / "source.mp4.part-Frag100", p.audio_path)
+    p.save_meta({"id": p.id, "title": "Ranked grind", "duration": 2.0,
+                 "files": {"source": "source.mp4.part-Frag100", "audio": "audio.wav"}})
+
+    class _YDL(_FakeYDL):
+        def download(self, urls):
+            _FakeYDL.downloaded += urls
+            shutil.copyfile(full, self.opts["outtmpl"].replace("%(ext)s", "mp4"))
+
+    _FakeYDL.downloaded = []
+    monkeypatch.setattr(ingest, "require_module", lambda *a: types.SimpleNamespace(YoutubeDL=_YDL))
+    got = ingest.ingest(f"https://kick.com/video/{VOD}")
+    assert got.id == p.id and _FakeYDL.downloaded == ["https://cdn.example/vod.m3u8"]
+    meta = read_json(p.meta_path)
+    assert meta["files"]["source"] == "source.mp4" and meta["duration"] > 5
+    assert audio.wav_duration(p.audio_path) > 5  # taken again from the real video
+    assert meta["download_incomplete"]["expected"] == 3600  # the fake VOD says 1 h: told, not hidden
+    assert "expected_duration" not in meta["source"]
+
+
+def test_transcript_of_other_audio_is_not_reused(monkeypatch, tmp_path):
+    """Issue #16: the 10 s fragment's transcript must not stand in for the full video's."""
+    import wave
+
+    from sharkyclips import hardware, transcribe
+    from sharkyclips.project import Project, write_json_atomic
+
+    p = Project("stale-transcript", tmp_path)
+    with wave.open(str(p.audio_path), "wb") as w:
+        w.setnchannels(1), w.setsampwidth(2), w.setframerate(16000)
+        w.writeframes(b"\0\0" * 16000 * 30)  # 30 s
+    old = {"request": {"language": "en", "model": "small"}, "language": "en", "segments": [], "duration": 30.0}
+    write_json_atomic(p.transcript_path, old)
+
+    class Reached(Exception):
+        pass
+
+    def stop(*a, **k):
+        raise Reached
+
+    monkeypatch.setattr(hardware, "detect_hardware", stop)
+    assert transcribe.transcribe_project(p, "en", "small")["duration"] == 30.0  # same audio: reused
+    write_json_atomic(p.transcript_path, old | {"duration": 10.0})  # made from the fragment
+    with pytest.raises(Reached):  # -> transcribes again
+        transcribe.transcribe_project(p, "en", "small")
+
+
 def test_channel_link_is_refused_before_any_download(fake, monkeypatch):
     monkeypatch.setattr(ingest, "require_module", lambda *a: pytest.fail("yt-dlp must not run"))
     with pytest.raises(SharkyClipsError, match="channel, not a video"):

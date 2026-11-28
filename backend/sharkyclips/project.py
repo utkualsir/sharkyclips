@@ -16,6 +16,17 @@ from .errors import SharkyClipsError
 
 MODES = ("gaming", "study", "music")
 _PARTIAL_SUFFIXES = {".part", ".ytdl", ".tmp", ".temp"}
+_FORMAT_PART = re.compile(r"\.f\d+(-\d+)?$")  # yt-dlp's video-only / audio-only parts before the merge
+
+
+def is_partial_download(path: Path) -> bool:
+    """A file yt-dlp is still writing or left behind: `source.mp4.part`, an HLS / DASH fragment
+    (`source.mp4.part-Frag100`, issue #16: a 10 s fragment became the whole project), its
+    `.ytdl` resume file, or a `source.f137.mp4` stream not merged yet. Never a project's source."""
+    for s in (s.lower() for s in path.suffixes):
+        if s in _PARTIAL_SUFFIXES or s.startswith(".part") or _FORMAT_PART.match(s):
+            return True
+    return False
 
 
 def write_json_atomic(path: Path, data: Any, compact: bool = False) -> None:
@@ -130,7 +141,7 @@ class Project:
     @property
     def source_path(self) -> Path | None:
         for p in sorted(self.dir.glob("source.*")):
-            if p.is_file() and not (set(s.lower() for s in p.suffixes) & _PARTIAL_SUFFIXES):
+            if p.is_file() and not is_partial_download(p):
                 return p
         return None
 

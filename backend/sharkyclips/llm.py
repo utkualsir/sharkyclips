@@ -556,8 +556,10 @@ def placement(name: str, num_ctx: int) -> dict:
     base: dict = {}
     if k["device"] == "cpu":
         # 1.2.53: CPU only / no usable GPU: num_gpu 0 keeps Ollama off a weak integrated GPU
-        # (Vulkan on Intel UHD is slower than the CPU and eats the shared RAM)
-        base["num_gpu"] = 0
+        # (Vulkan on Intel UHD is slower than the CPU and eats the shared RAM). Issue #10: not
+        # off a dedicated Radeon RX / Intel Arc card, Ollama runs the LLM there.
+        if not perf.llm_on_gpu():
+            base["num_gpu"] = 0
         if k.get("llm_threads"):
             base["num_thread"] = k["llm_threads"]
     g = governor.get()

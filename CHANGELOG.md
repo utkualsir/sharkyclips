@@ -9,6 +9,165 @@ New / Improved / Fixed. Turkish follows, then the other UI languages in `<!-- la
 (translated from the English). The app's "What's new" window and Updates page show the block of
 the UI language, English where a translation is missing.
 
+## [1.2.76] - 2026-11-28
+Long Kick videos are imported in full again, the Mac installer is back in the downloads, and the local AI can now use AMD Radeon and Intel Arc graphics cards.
+
+### Improved
+- **AMD Radeon and Intel Arc graphics cards:** the local AI that writes titles and picks the best moments can now run on these cards, if your card is supported. Speech recognition still runs on the processor. To keep everything on the processor, choose Settings > Performance > Processing device > "CPU only".
+
+### Fixed
+- **A long Kick video became a 10-second project.** When the download was cut off, the app took one small piece of the video as the whole video. Now it only uses the finished file. Import the same link again: the download continues where it stopped, and the sound and the speech text are made again from the full video.
+- **When parts of a video are still missing after the download**, the app now tells you, instead of quietly working with a shorter video.
+- **The Mac installer was missing from the downloads.** Every new version now comes with the install file for Mac, as the instructions say.
+
+<!-- lang:tr -->
+**Türkçe**
+
+Uzun Kick videoları yeniden eksiksiz içe aktarılıyor, Mac kurulum dosyası indirmelere geri döndü ve yerel yapay zekâ artık AMD Radeon ve Intel Arc ekran kartlarını kullanabiliyor.
+
+### İyileştirmeler
+- **AMD Radeon ve Intel Arc ekran kartları:** başlıkları yazan ve en iyi anları seçen yerel yapay zekâ, kartın destekleniyorsa artık bu kartlarda çalışabiliyor. Konuşma tanıma yine işlemcide çalışır. Her şeyi işlemcide tutmak için Ayarlar > Performans > İşlem cihazı > "Sadece CPU" seç.
+
+### Düzeltmeler
+- **Uzun bir Kick videosu 10 saniyelik bir projeye dönüşüyordu.** İndirme yarıda kesildiğinde uygulama videonun küçük bir parçasını videonun tamamı sanıyordu. Artık yalnızca bitmiş dosyayı kullanıyor. Aynı bağlantıyı yeniden içe aktar: indirme kaldığı yerden devam eder, ses ve konuşma metni tam videodan yeniden oluşturulur.
+- **İndirmeden sonra videonun bazı bölümleri hâlâ eksikse** uygulama artık bunu söylüyor, daha kısa bir videoyla sessizce devam etmiyor.
+- **Mac kurulum dosyası indirmelerde yoktu.** Artık her yeni sürümde, talimatlarda yazdığı gibi Mac kurulum dosyası da var.
+
+<details><summary>Español</summary>
+
+<!-- lang:es -->
+Los vídeos largos de Kick vuelven a importarse completos, el instalador para Mac vuelve a estar en las descargas y la IA local ahora puede usar tarjetas gráficas AMD Radeon e Intel Arc.
+
+### Mejoras
+- **Tarjetas gráficas AMD Radeon e Intel Arc:** la IA local que escribe los títulos y elige los mejores momentos ahora puede funcionar en estas tarjetas, si tu tarjeta es compatible. El reconocimiento de voz sigue funcionando en el procesador. Para dejar todo en el procesador, elige Ajustes > Rendimiento > Dispositivo de procesamiento > "Solo CPU".
+
+### Correcciones
+- **Un vídeo largo de Kick se convertía en un proyecto de 10 segundos.** Cuando la descarga se cortaba, la app tomaba un trozo pequeño del vídeo como si fuera el vídeo entero. Ahora solo usa el archivo terminado. Vuelve a importar el mismo enlace: la descarga sigue donde se quedó, y el sonido y el texto de lo que se dice se vuelven a crear a partir del vídeo completo.
+- **Si después de la descarga todavía faltan partes del vídeo**, la app ahora te lo dice, en lugar de seguir en silencio con un vídeo más corto.
+- **Faltaba el instalador para Mac en las descargas.** Cada nueva versión ahora incluye el archivo de instalación para Mac, como dicen las instrucciones.
+
+</details>
+
+<details><summary>Português (Brasil)</summary>
+
+<!-- lang:pt -->
+Vídeos longos do Kick voltam a ser importados por completo, o instalador para Mac voltou para os downloads e a IA local agora pode usar placas de vídeo AMD Radeon e Intel Arc.
+
+### Melhorias
+- **Placas de vídeo AMD Radeon e Intel Arc:** a IA local que escreve os títulos e escolhe os melhores momentos agora pode rodar nessas placas, se a sua placa for compatível. O reconhecimento de fala continua rodando no processador. Para deixar tudo no processador, escolha Configurações > Desempenho > Dispositivo de processamento > "Apenas CPU".
+
+### Correções
+- **Um vídeo longo do Kick virava um projeto de 10 segundos.** Quando o download era interrompido, o app pegava um pedaço pequeno do vídeo como se fosse o vídeo inteiro. Agora ele só usa o arquivo terminado. Importe o mesmo link de novo: o download continua de onde parou, e o som e o texto da fala são criados de novo a partir do vídeo completo.
+- **Se ainda faltarem partes do vídeo depois do download**, o app agora avisa você, em vez de continuar em silêncio com um vídeo mais curto.
+- **O instalador para Mac não estava nos downloads.** Cada nova versão agora vem com o arquivo de instalação para Mac, como dizem as instruções.
+
+</details>
+
+<details><summary>Deutsch</summary>
+
+<!-- lang:de -->
+Lange Kick-Videos werden wieder vollständig importiert, das Mac-Installationsprogramm ist zurück bei den Downloads, und die lokale KI kann jetzt Grafikkarten von AMD Radeon und Intel Arc nutzen.
+
+### Verbessert
+- **Grafikkarten von AMD Radeon und Intel Arc:** Die lokale KI, die Titel schreibt und die besten Momente auswählt, kann jetzt auf diesen Karten laufen, wenn deine Karte unterstützt wird. Die Spracherkennung läuft weiter auf dem Prozessor. Damit alles auf dem Prozessor bleibt, wähle Einstellungen > Leistung > Verarbeitungsgerät > „Nur CPU".
+
+### Behoben
+- **Ein langes Kick-Video wurde zu einem 10-Sekunden-Projekt.** Wenn der Download abbrach, nahm die App ein kleines Stück des Videos als ganzes Video. Jetzt nutzt sie nur die fertige Datei. Importiere denselben Link noch einmal: Der Download macht dort weiter, wo er aufgehört hat, und Ton und Sprachtext werden aus dem ganzen Video neu erstellt.
+- **Wenn nach dem Download noch Teile des Videos fehlen**, sagt dir die App das jetzt, statt still mit einem kürzeren Video weiterzumachen.
+- **Das Mac-Installationsprogramm fehlte bei den Downloads.** Jede neue Version enthält jetzt die Installationsdatei für den Mac, so wie es in der Anleitung steht.
+
+</details>
+
+<details><summary>Français</summary>
+
+<!-- lang:fr -->
+Les longues vidéos Kick sont de nouveau importées en entier, l'installateur Mac est de retour dans les téléchargements, et l'IA locale peut maintenant utiliser les cartes graphiques AMD Radeon et Intel Arc.
+
+### Améliorations
+- **Cartes graphiques AMD Radeon et Intel Arc :** l'IA locale qui écrit les titres et choisit les meilleurs moments peut maintenant fonctionner sur ces cartes, si ta carte est prise en charge. La reconnaissance vocale fonctionne toujours sur le processeur. Pour tout garder sur le processeur, choisis Paramètres > Performance > Dispositif de traitement > « CPU uniquement ».
+
+### Corrections
+- **Une longue vidéo Kick devenait un projet de 10 secondes.** Quand le téléchargement était coupé, l'app prenait un petit morceau de la vidéo pour la vidéo entière. Maintenant, elle utilise seulement le fichier terminé. Importe à nouveau le même lien : le téléchargement reprend là où il s'était arrêté, et le son et le texte parlé sont refaits à partir de la vidéo complète.
+- **Si des parties de la vidéo manquent encore après le téléchargement**, l'app te le dit maintenant, au lieu de continuer en silence avec une vidéo plus courte.
+- **L'installateur Mac manquait dans les téléchargements.** Chaque nouvelle version contient maintenant le fichier d'installation pour Mac, comme le disent les instructions.
+
+</details>
+
+<details><summary>Magyar</summary>
+
+<!-- lang:hu -->
+A hosszú Kick-videók újra teljes egészükben importálódnak, a Mac-telepítő visszakerült a letöltések közé, és a helyi MI most már AMD Radeon és Intel Arc videokártyákat is használhat.
+
+### Fejlesztések
+- **AMD Radeon és Intel Arc videokártyák:** a címeket író és a legjobb pillanatokat kiválasztó helyi MI most már ezeken a kártyákon is futhat, ha a kártyád támogatott. A beszédfelismerés továbbra is a processzoron fut. Ha mindent a processzoron szeretnél tartani, válaszd ezt: Beállítások > Teljesítmény > Feldolgozó eszköz > „Csak CPU”.
+
+### Javítások
+- **Egy hosszú Kick-videóból 10 másodperces projekt lett.** Ha a letöltés megszakadt, az app a videó egy kis darabját vette az egész videónak. Most már csak a kész fájlt használja. Importáld újra ugyanazt a linket: a letöltés ott folytatódik, ahol abbamaradt, a hang és a beszéd szövege pedig újra elkészül a teljes videóból.
+- **Ha a letöltés után még hiányoznak részek a videóból**, az app most szól, ahelyett hogy csendben egy rövidebb videóval dolgozna tovább.
+- **A Mac-telepítő hiányzott a letöltések közül.** Mostantól minden új verzióhoz ott van a Mac-es telepítőfájl is, ahogy az útmutató írja.
+
+</details>
+
+<details><summary>Русский</summary>
+
+<!-- lang:ru -->
+Длинные видео с Kick снова импортируются полностью, установщик для Mac вернулся в загрузки, а локальный ИИ теперь может использовать видеокарты AMD Radeon и Intel Arc.
+
+### Улучшения
+- **Видеокарты AMD Radeon и Intel Arc:** локальный ИИ, который пишет названия и выбирает лучшие моменты, теперь может работать на этих картах, если ваша карта поддерживается. Распознавание речи по-прежнему работает на процессоре. Чтобы всё оставалось на процессоре, выберите «Настройки» > «Производительность» > «Оборудование обработки» > «Только CPU».
+
+### Исправления
+- **Длинное видео с Kick превращалось в проект на 10 секунд.** Когда загрузка обрывалась, приложение принимало маленький кусок видео за всё видео. Теперь оно использует только готовый файл. Импортируйте ту же ссылку ещё раз: загрузка продолжится с того места, где остановилась, а звук и текст речи будут созданы заново из полного видео.
+- **Если после загрузки в видео всё ещё не хватает частей**, приложение теперь сообщает об этом, а не продолжает молча работать с более коротким видео.
+- **Установщика для Mac не было в загрузках.** Теперь в каждой новой версии есть установочный файл для Mac, как сказано в инструкции.
+
+</details>
+
+<details><summary>العربية</summary>
+
+<!-- lang:ar -->
+تُستورد مقاطع Kick الطويلة كاملة من جديد، وعاد مثبّت Mac إلى التنزيلات، ويمكن للذكاء الاصطناعي المحلي الآن استخدام بطاقات الرسومات AMD Radeon وIntel Arc.
+
+### تحسينات
+- **بطاقات الرسومات AMD Radeon وIntel Arc:** يمكن الآن للذكاء الاصطناعي المحلي الذي يكتب العناوين ويختار أفضل اللحظات أن يعمل على هذه البطاقات، إذا كانت بطاقتك مدعومة. أما التعرّف على الكلام فما زال يعمل على المعالج. لإبقاء كل شيء على المعالج اختر الإعدادات > الأداء > جهاز المعالجة > "CPU فقط".
+
+### إصلاحات
+- **كان فيديو Kick الطويل يتحول إلى مشروع مدته 10 ثوانٍ.** عندما كان التنزيل ينقطع، كان التطبيق يعتبر قطعة صغيرة من الفيديو هي الفيديو كله. الآن يستخدم الملف المكتمل فقط. استورد الرابط نفسه مرة أخرى: يكمل التنزيل من حيث توقف، ويُصنع الصوت ونص الكلام من جديد من الفيديو الكامل.
+- **إذا بقيت أجزاء من الفيديو ناقصة بعد التنزيل**، يخبرك التطبيق الآن بذلك، بدلًا من أن يكمل بصمت بفيديو أقصر.
+- **كان مثبّت Mac غير موجود في التنزيلات.** أصبح كل إصدار جديد يأتي الآن مع ملف التثبيت لجهاز Mac، كما تقول التعليمات.
+
+</details>
+
+<details><summary>中文</summary>
+
+<!-- lang:zh -->
+长的 Kick 视频又能完整导入了，Mac 安装文件回到了下载列表中，本地 AI 现在也可以使用 AMD Radeon 和 Intel Arc 显卡。
+
+### 改进
+- **AMD Radeon 和 Intel Arc 显卡：** 负责写标题和挑选精彩时刻的本地 AI 现在可以在这些显卡上运行（前提是你的显卡受支持）。语音识别仍然在处理器上运行。如果想让所有工作都留在处理器上，请选择"设置" > "性能" > "处理设备" > "仅 CPU"。
+
+### 修复
+- **长的 Kick 视频变成了只有 10 秒的项目。** 下载中断时，应用把视频的一小段当成了整个视频。现在它只使用下载完成的文件。请再次导入同一个链接：下载会从中断的地方继续，声音和语音文字会根据完整视频重新生成。
+- **如果下载后视频仍有部分缺失**，应用现在会告诉你，而不是默默地用一个更短的视频继续处理。
+- **下载中缺少 Mac 安装文件。** 现在每个新版本都会附带 Mac 安装文件，和说明中写的一样。
+
+</details>
+
+<details><summary>日本語</summary>
+
+<!-- lang:ja -->
+長い Kick の動画がまた最後まで読み込まれるようになり、Mac 用インストーラーがダウンロードに戻り、ローカル AI が AMD Radeon と Intel Arc のグラフィックカードを使えるようになりました。
+
+### 改善
+- **AMD Radeon と Intel Arc のグラフィックカード：** タイトルを書いて一番いい場面を選ぶローカル AI が、あなたのカードが対応していれば、これらのカードで動くようになりました。音声認識はこれまでどおりプロセッサーで動きます。すべてをプロセッサーで動かしたい場合は、設定 > パフォーマンス > 処理デバイス > 「CPU 専用」を選んでください。
+
+### 修正
+- **長い Kick の動画が 10 秒のプロジェクトになっていました。** ダウンロードが途中で切れると、アプリは動画の小さな一部を動画全体だと思っていました。今は完成したファイルだけを使います。同じリンクをもう一度読み込んでください。ダウンロードは止まったところから続き、音声と話した内容のテキストは完全な動画から作り直されます。
+- **ダウンロード後も動画の一部が欠けている場合**、アプリがそれを知らせるようになりました。短い動画のまま黙って続けることはありません。
+- **Mac 用インストーラーがダウンロードにありませんでした。** 今後は新しいバージョンごとに、説明どおり Mac 用のインストールファイルが付きます。
+
+</details>
+
 ## [1.2.75] - 2026-11-27
 See how much you shared: a new Uploads tab counts your uploads today, this week and in total on every platform. The YouTube upload limit is now shown honestly, with the reset time in your own time.
 

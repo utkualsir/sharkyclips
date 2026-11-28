@@ -67,9 +67,10 @@ def wav_is_valid(path: Path) -> bool:
 
 
 def extract_audio(source: Path, dest: Path, duration: float | None = None,
-                  on_progress: Callable[[float], None] | None = None) -> Path:
-    """Extract 16 kHz mono 16-bit WAV. Skips work if a valid file already exists."""
-    if dest.is_file() and wav_is_valid(dest):
+                  on_progress: Callable[[float], None] | None = None, force: bool = False) -> Path:
+    """Extract 16 kHz mono 16-bit WAV. Skips work if a valid file already exists (unless
+    `force`: the source video changed; the new file replaces the old one only when complete)."""
+    if dest.is_file() and wav_is_valid(dest) and not force:
         return dest
     ffmpeg = require_tool("ffmpeg")
     tmp = dest.with_name(dest.stem + ".partial.wav")

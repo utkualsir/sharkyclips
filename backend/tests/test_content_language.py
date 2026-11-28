@@ -91,6 +91,28 @@ def test_cpu_only_and_template_titles(monkeypatch):
     assert llm.placement("qwen3.5:2b", 4096)["num_gpu"] == 0  # never the integrated GPU
 
 
+@pytest.mark.parametrize("gpu, dedicated", [
+    ("AMD Radeon RX 7900 GRE", True), ("Intel(R) Arc(TM) B580 Graphics", True), ("Intel(R) Arc(TM) A770 Graphics", True),
+    ("AMD Radeon Pro W7600", True), ("Intel(R) Arc(TM) Pro A60M Graphics", True),
+    ("AMD Radeon(TM) Graphics", False), ("AMD Radeon 780M Graphics", False), ("Radeon RX Vega 11 Graphics", False),
+    ("Intel(R) Arc(TM) Graphics", False), ("Intel(R) Arc(TM) Pro Graphics", False), ("Intel(R) Arc(TM) 140V GPU", False),
+    ("Intel(R) UHD Graphics 620", False), ("Intel(R) Iris(R) Xe Graphics", False),
+])
+def test_llm_may_use_a_dedicated_amd_or_intel_card(monkeypatch, gpu, dedicated):
+    """Issue #10: on a Radeon RX / Intel Arc PC the LLM was pinned to the CPU (num_gpu 0)."""
+    from sharkyclips import llm
+
+    monkeypatch.setattr(perf, "machine", lambda: perf.Machine(ram_gb=32, threads=16, cores=8, nvidia_vram_gb=None,
+                                                             nvidia_name=None, apple_silicon=False, igpu=[gpu]))
+    config.update(performance_preset="normal", processing_device="auto")
+    assert perf.device() == "cpu"  # Whisper has no AMD / Intel GPU path: it stays on the CPU
+    assert (perf.dedicated_other_gpu() == gpu) is dedicated
+    assert ("num_gpu" not in llm.placement("qwen3.5:4b", 8192)) is dedicated
+    config.update(processing_device="cpu")  # Settings > Performance > CPU: everything on the CPU
+    assert llm.placement("qwen3.5:4b", 8192)["num_gpu"] == 0
+    config.update(processing_device="auto")
+
+
 def test_every_language_has_swears_and_a_relisten_prompt():
     from sharkyclips.edit import profanity
     from sharkyclips.voices import swearscan

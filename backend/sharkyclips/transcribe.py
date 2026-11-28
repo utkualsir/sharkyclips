@@ -483,7 +483,12 @@ def transcribe_project(project: Project, lang: str = "auto", model: str = "auto"
     # Already done with the same settings?
     if project.transcript_path.is_file() and not force:
         old = project.load_transcript()
-        if (old.get("request", {}).get("language") == lang
+        if old.get("duration") is not None and abs(float(old["duration"]) - duration) > 2.0:
+            # issue #16: the transcript belongs to other audio (a download fragment used to be
+            # taken as the video): transcribe the real audio, without its old chunk results
+            console.print("[yellow]The audio changed since the last transcript: transcribing it again.[/]")
+            force = True
+        elif (old.get("request", {}).get("language") == lang
                 and old.get("request", {}).get("model") == model):
             console.print(f"[green]Already transcribed[/] ({old.get('model')}, "
                           f"language={old.get('language')}). Use --force to redo it.")

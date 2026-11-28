@@ -37,6 +37,20 @@ def test_launcher_finds_homebrew_tools():
     assert "/opt/homebrew/bin/brew" in launcher and "shellenv" in launcher
 
 
+def test_every_release_gets_install_sh():
+    """Issue #20: the README tells Mac users to download install.sh from the latest release, so
+    the tag workflow must attach it, in a job that doesn't wait for the Windows installer."""
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "**`install.sh`** from the [latest release]" in readme
+    flow = (ROOT / ".github" / "workflows" / "installer.yml").read_text(encoding="utf-8")
+    assert re.search(r'push:\s*\n\s*tags: \["v\*"\]', flow)
+    # the jobs are the 2-space-indented keys under `jobs:`
+    jobs = dict(re.findall(r"(?m)^  ([\w-]+):\n((?:(?:    .*)?\n)+)", flow.split("\njobs:\n", 1)[1]))
+    job = jobs["macos-script"]
+    assert "needs:" not in job and "contents: write" in job
+    assert 'gh release upload "v$v" install.sh install.sh.sha256' in job
+
+
 def test_scripts_use_lf_line_endings():
     for script in SCRIPTS:
         assert b"\r\n" not in script.read_bytes(), f"{script.name} has CRLF line endings (breaks bash)"
