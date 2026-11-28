@@ -1,0 +1,93 @@
+{
+  "common": {
+    "stars": "étoiles GitHub", "downloads": "téléchargements", "sha_link": "Empreinte SHA-256",
+    "months": ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"],
+    "date": "{d} {m} {y}", "dur_min": "environ {m} min", "dur_h": "environ {h} h {m} min", "dur_h0": "environ {h} h"
+  },
+  "home": {
+    "desc": "SharkyClips est une app gratuite pour les streamers. Elle trouve les meilleurs moments de votre live Twitch, YouTube ou Kick et en fait des clips verticaux prêts à publier, le tout sur votre propre PC. Sans filigrane, sans limites.",
+    "kick": "Compatible Kick",
+    "kick_more": "et Twitch, YouTube ou n'importe quel fichier vidéo",
+    "promise_label": "Ce que vous obtenez",
+    "promise": ["100 % gratuit", "Sans filigrane", "Sans limites", "Tourne sur votre PC"],
+    "demo_alt": "Vidéo : SharkyClips transforme l'enregistrement d'un live en clips verticaux finis et les partage",
+    "demo_cap": "Du live au clip : le live à gauche, le clip fini à droite. Sans son, avec sous-titres.",
+    "captions": [
+      "Déposez l'enregistrement d'un live, ou collez un lien Twitch, YouTube ou Kick.",
+      "SharkyClips trouve les meilleurs moments et crée les clips tout seul.",
+      "À gauche, le live. À droite, le clip fini : recadré en 9:16, avec sous-titres.",
+      "Le clip commence et finit avec les mots : aucune phrase n'est coupée au milieu.",
+      "Chaque clip reçoit un titre et une note, les meilleurs sont en haut.",
+      "Un seul bouton Partager pour YouTube Shorts, TikTok et Instagram Reels."
+    ],
+    "card_palette": {"h": "Thèmes et couleurs", "p": "Quatre thèmes de couleur pour l'app (Classique, Océan, Shark Sign, Contraste élevé), sombres ou clairs, et votre propre couleur d'accent."},
+    "card_puzzle_p": "Une petite extension pour Edge, Chrome, Opera et Brave remplit votre mise en ligne TikTok. Vous vérifiez et cliquez vous-même sur Publier.",
+    "yt_short": "Connecter YouTube est facultatif. Si vous le faites, SharkyClips utilise les services d'API YouTube officiels uniquement pour mettre en ligne et gérer les clips que vous choisissez et vous montrer leurs résultats. Vos données YouTube restent sur votre ordinateur.",
+    "yt_show": "Voir les autorisations et l'usage de vos données YouTube"
+  },
+  "results": {
+    "h": "Résultats réels",
+    "lead": "Chaque paire montre un moment du long live et le même moment dans le clip que SharkyClips en a tiré tout seul : coupé, passé en 9:16, avec sous-titres et titre.",
+    "before": "Live", "after": "Clip fini",
+    "before_alt": "Une image de l'enregistrement 16:9 du live à {time}",
+    "after_alt": "Le même moment dans le clip 9:16 fini : {title}",
+    "note": "Fait à partir de notre live de démonstration (un jeu dessiné, une voix d'ordinateur et un chat généré) : aucune vraie personne, aucun vrai jeu ni chaîne n'apparaît. Rien n'a été retouché à la main."
+  },
+  "compare": {
+    "h": "SharkyClips face aux autres",
+    "lead": "Informations tirées du site officiel de chaque produit, vérifiées le {date}. Prix en dollars américains, hors taxes. Les offres changent : consultez leurs pages avant de décider.",
+    "corner": "Critère",
+    "rows": [
+      ["Prix", "Gratuit (open source, licence MIT)", "Un essai gratuit ; Premium dès 24,99 $ par mois ou 179,99 $ par an", "Offre gratuite ; offres payantes dès 15 $ par mois", "Offre gratuite ; offres payantes dès 15 $ par mois ou 150 $ par an"],
+      ["Filigrane", "Jamais", "Sur les exports gratuits", "Avec l'offre gratuite", "Seulement si un clip gratuit utilise des fonctions payantes"],
+      ["Limites de clips", "Aucune", "Gratuit : aperçu des clips d'un live récent ; Premium : clips IA illimités", "Gratuit : 60 minutes de traitement par mois, fichiers gardés 3 jours", "Pas de limite de minutes ; clips IA de lives entiers à partir de l'offre Creator (27 $ par mois) ; exports gratuits en 720p"],
+      ["Où votre vidéo est traitée", "Sur votre PC : rien n'est envoyé", "En ligne : leur montage IA tourne dans le cloud", "En ligne : vous envoyez un fichier ou collez un lien", "En ligne : vous envoyez un fichier ou collez un lien"],
+      ["Ce qu'il vous faut", "Un PC Windows 10 ou 11 avec 8 Go de RAM (macOS : moins testé)", "Un navigateur et un compte", "Un navigateur et un compte", "Un navigateur et un compte"],
+      ["Détection selon le jeu", "Lit l'écran du jeu dans Delta Force et League of Legends ; les autres jeux via la voix, le son et le chat", "Plus de 3 000 jeux, réglée pour chaque catégorie de jeu", "Non précisé", "Non précisé"],
+      ["Kick", "Vidéos Kick avec leur chat", "Importe les lives Kick", "Liens Kick pris en charge", "Clips Kick avec l'offre gratuite ; lives Kick entiers à partir de l'offre Creator"],
+      ["Bip sur les jurons", "Automatique en 11 langues, et chaque clip est revérifié", "Non précisé", "À partir de l'offre Pro (29 $ par mois)", "Censure automatique de mots (offre pas clairement précisée)"],
+      ["Langues", "11 (app, reconnaissance vocale et sous-titres)", "Non précisé pour les sous-titres ; commandes vocales en anglais", "Plus de 25 pour les sous-titres", "Plus de 90 pour les sous-titres"]
+    ],
+    "note": "« Non précisé » signifie que nous ne l'avons pas trouvé sur leurs pages officielles. Une erreur ou une info dépassée ? Dites-le-nous via la page contact et nous corrigerons.",
+    "sources": "Sources ({n} pages officielles)"
+  },
+  "download": {
+    "desc": "Téléchargez l'installateur gratuit de SharkyClips pour Windows 10 et 11, ou install.sh pour macOS. Configuration requise détaillée, temps de traitement, empreintes SHA-256 et aide pour le message SmartScreen.",
+    "sha_label": "SHA-256 de {file}",
+    "sha_how_win": "Pour vérifier votre téléchargement, lancez {cmd} dans PowerShell : le Hash doit être exactement ce nombre. Le même nombre se trouve dans le <a href='{sha_url}'>fichier .sha256</a> de la version.",
+    "sha_how_mac": "Pour vérifier, lancez {cmd} dans le Terminal : le résultat doit être exactement ce nombre. Il se trouve aussi dans le <a href='{sha_url}'>fichier .sha256</a> de la version.",
+    "req_p": "SharkyClips vérifie votre matériel à chaque démarrage et choisit le réglage le plus rapide qui fonctionne. Il tourne sur des PC ordinaires : une carte graphique l'accélère, mais elle n'est pas nécessaire.",
+    "req_rows": [
+      ["Système", "Windows 10 (1809 ou plus récent) ou Windows 11, 64 bits", "Windows 11"],
+      ["Processeur", "64 bits, 2 cœurs / 4 threads (par exemple Intel Core i3 de 11e génération)", "6 cœurs / 12 threads ou plus (par exemple Intel Core i5 ou AMD Ryzen 5 de 2020 ou plus récent)"],
+      ["Mémoire", "8 Go de RAM (4 Go fonctionne en mode Léger, lentement)", "16 Go de RAM"],
+      ["Carte graphique", "Pas nécessaire : le mode Léger tourne sur le processeur", "NVIDIA GeForce RTX avec 6 Go ou plus. AMD Radeon et Intel Arc : l'IA peut les utiliser, la reconnaissance vocale reste sur le processeur"],
+      ["Disque", "Environ 3 Go pour l'app et 2 à 10 Go pour les modèles d'IA, plus de la place pour vos vidéos (un enregistrement d'une heure en 1080p fait environ 4 à 8 Go)", "Un SSD avec 50 Go libres ou plus"],
+      ["Internet", "Pour le premier démarrage, les téléchargements et le partage", "Ensuite il fonctionne hors ligne"]
+    ],
+    "time_h": "Combien de temps ça prend ?",
+    "time_p": "Mesuré le {date} sur de vrais enregistrements de lives en 1080p (paroles et jeu), de l'import jusqu'à {clips} clips finis : reconnaissance vocale, recherche des moments, titres par l'IA et rendu.",
+    "time_cols": ["Live", "Avec une carte graphique NVIDIA", "Mode Léger, processeur seul"],
+    "time_rows": ["Live d'1 heure", "Live de 3 heures"],
+    "time_notes": [
+      "PC de test : {cpu}, {ram} Go de RAM, {gpu}. En mode Léger, la carte graphique n'a pas été utilisée (Paramètres → Performance → CPU uniquement).",
+      "Un processeur plus lent prend plus de temps : sur un petit portable 2 cœurs sans carte graphique, une vidéo de 17 minutes a pris environ 16 minutes en mode Léger.",
+      "SharkyClips travaille en arrière-plan. En mode Silencieux, il se met en pause pendant que vous jouez et reprend quand vous arrêtez."
+    ],
+    "smart_note": "Vous voulez être sûr ? Comparez l'empreinte SHA-256 de votre fichier avec le nombre <a href='#checksum'>en haut de cette page</a>.",
+    "smart_cap": "Illustration des deux clics. Votre écran peut être un peu différent.",
+    "mac_h": "macOS et Linux",
+    "mac_p": "Sur Mac, une seule commande installe tout. macOS et Linux sont moins testés que Windows.",
+    "mac_steps": [
+      "Téléchargez <b>install.sh</b> avec le bouton ci-dessous.",
+      "Ouvrez le <b>Terminal</b> et lancez <code>bash ~/Downloads/install.sh</code>. Il montre ce qu'il va installer (Homebrew, Python, FFmpeg et les éléments d'IA) et demande le mot de passe de votre Mac si Homebrew est nécessaire.",
+      "Ouvrez <b>SharkyClips</b> depuis Applications."
+    ],
+    "mac_btn": "Télécharger install.sh pour macOS",
+    "linux_p": "Linux et développeurs : l'installation manuelle est dans le <a href='{gh}#install'>guide d'installation</a>."
+  },
+  "features": {
+    "looks": {"h": "Thèmes et couleurs", "p": "Choisissez un thème de couleur pour l'app : Classique, Océan, Shark Sign ou Contraste élevé.", "alt": "Paramètres avec les quatre thèmes de couleur de l'app"},
+    "helper_item1": "Fonctionne tout seul dans Microsoft Edge, Opera, Opera GX et Brave ; Google Chrome demande une étape de configuration"
+  }
+}

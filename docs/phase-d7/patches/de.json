@@ -1,0 +1,93 @@
+{
+  "common": {
+    "stars": "GitHub-Sterne", "downloads": "Downloads", "sha_link": "SHA-256-Prüfsumme",
+    "months": ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+    "date": "{d}. {m} {y}", "dur_min": "etwa {m} Min.", "dur_h": "etwa {h} Std. {m} Min.", "dur_h0": "etwa {h} Std."
+  },
+  "home": {
+    "desc": "SharkyClips ist eine kostenlose App für Streamer. Sie findet die besten Momente in deinem Twitch-, YouTube- oder Kick-Stream und macht daraus fertige Hochkant-Clips, alles auf deinem eigenen PC. Kein Wasserzeichen, keine Limits.",
+    "kick": "Funktioniert mit Kick",
+    "kick_more": "und mit Twitch, YouTube oder jeder Videodatei",
+    "promise_label": "Das bekommst du",
+    "promise": ["100 % kostenlos", "Kein Wasserzeichen", "Keine Limits", "Läuft auf deinem PC"],
+    "demo_alt": "Video: SharkyClips macht aus einer Stream-Aufnahme fertige Hochkant-Clips und teilt sie",
+    "demo_cap": "Vom Stream zum Clip: links der Stream, rechts der fertige Clip. Ohne Ton, mit Untertiteln.",
+    "captions": [
+      "Zieh eine Stream-Aufnahme hinein oder füge einen Twitch-, YouTube- oder Kick-Link ein.",
+      "SharkyClips findet die besten Momente und macht die Clips von selbst.",
+      "Links der Stream, rechts der fertige Clip: im Format 9:16, mit Untertiteln.",
+      "Der Clip beginnt und endet mit den Worten: Kein Satz wird mittendrin abgeschnitten.",
+      "Jeder Clip bekommt einen Titel und eine Bewertung, die besten stehen oben.",
+      "Ein Teilen-Knopf für YouTube Shorts, TikTok und Instagram Reels."
+    ],
+    "card_palette": {"h": "Designs und Farben", "p": "Vier Farbdesigns für die App (Klassisch, Ozean, Shark Sign, Hoher Kontrast), dunkel oder hell, und deine eigene Akzentfarbe."},
+    "card_puzzle_p": "Eine kleine Browser-Erweiterung für Edge, Chrome, Opera und Brave füllt deinen TikTok-Upload aus. Du prüfst ihn und klickst selbst auf Posten.",
+    "yt_short": "YouTube zu verbinden ist freiwillig. Wenn du es verbindest, nutzt SharkyClips die offiziellen YouTube API Services nur, um die Clips hochzuladen und zu verwalten, die du auswählst, und dir ihre Ergebnisse zu zeigen. Deine YouTube-Daten bleiben auf deinem Computer.",
+    "yt_show": "Berechtigungen und die Nutzung deiner YouTube-Daten anzeigen"
+  },
+  "results": {
+    "h": "Echte Ergebnisse",
+    "lead": "Jedes Paar zeigt einen Moment im langen Stream und denselben Moment im Clip, den SharkyClips daraus von selbst gemacht hat: geschnitten, in 9:16, mit Untertiteln und Titel.",
+    "before": "Stream", "after": "Fertiger Clip",
+    "before_alt": "Ein Bild aus der 16:9-Stream-Aufnahme bei {time}",
+    "after_alt": "Derselbe Moment im fertigen 9:16-Clip: {title}",
+    "note": "Gemacht aus unserem Demo-Stream (ein gezeichnetes Spiel, eine Computerstimme und ein erzeugter Chat), daher ist keine echte Person, kein echtes Spiel und kein Kanal zu sehen. Nichts wurde von Hand bearbeitet."
+  },
+  "compare": {
+    "h": "SharkyClips im Vergleich",
+    "lead": "Angaben von der offiziellen Website jedes Produkts, geprüft am {date}. Preise in US-Dollar, ohne Steuern. Pläne ändern sich, prüfe also ihre Seiten, bevor du dich entscheidest.",
+    "corner": "Merkmal",
+    "rows": [
+      ["Preis", "Kostenlos (Open Source, MIT-Lizenz)", "Kostenloser Test; Premium ab 24,99 $ im Monat oder 179,99 $ im Jahr", "Kostenloser Plan; bezahlte Pläne ab 15 $ im Monat", "Kostenloser Plan; bezahlte Pläne ab 15 $ im Monat oder 150 $ im Jahr"],
+      ["Wasserzeichen", "Nie", "Bei kostenlosen Exporten", "Im kostenlosen Plan", "Nur wenn ein kostenloser Clip bezahlte Funktionen nutzt"],
+      ["Clip-Limits", "Keine", "Kostenlos: Vorschau der Clips eines aktuellen Streams; Premium: unbegrenztes KI-Clipping", "Kostenlos: 60 Verarbeitungsminuten im Monat, Dateien 3 Tage gespeichert", "Keine Minutenlimits; KI-Clipping ganzer Streams ab dem Creator-Plan (27 $ im Monat); kostenlose Exporte in 720p"],
+      ["Wo dein Video verarbeitet wird", "Auf deinem PC: nichts wird hochgeladen", "Online: die KI-Bearbeitung läuft in der Cloud", "Online: du lädst eine Datei hoch oder fügst einen Link ein", "Online: du lädst eine Datei hoch oder fügst einen Link ein"],
+      ["Was du brauchst", "Einen PC mit Windows 10 oder 11 und 8 GB RAM (macOS: weniger getestet)", "Einen Browser und ein Konto", "Einen Browser und ein Konto", "Einen Browser und ein Konto"],
+      ["Spielerkennung", "Liest den Spielbildschirm in Delta Force und League of Legends; andere Spiele über Stimme, Ton und Chat", "Mehr als 3.000 Spiele, auf jede Spielkategorie abgestimmt", "Nicht angegeben", "Nicht angegeben"],
+      ["Kick", "Kick-Videos mit ihrem Chat", "Importiert Kick-Streams", "Kick-Links werden unterstützt", "Kick-Clips im kostenlosen Plan; ganze Kick-Streams ab dem Creator-Plan"],
+      ["Schimpfwörter überpiepen", "Automatisch in 11 Sprachen, jeder Clip wird noch einmal geprüft", "Nicht angegeben", "Ab dem Pro-Plan (29 $ im Monat)", "Automatische Wortzensur (Plan nicht klar angegeben)"],
+      ["Sprachen", "11 (App, Spracherkennung und Untertitel)", "Für Untertitel nicht angegeben; Sprachbefehle auf Englisch", "Mehr als 25 für Untertitel", "Mehr als 90 für Untertitel"]
+    ],
+    "note": "„Nicht angegeben“ heißt, dass wir es auf ihren offiziellen Seiten nicht gefunden haben. Ist etwas falsch oder veraltet? Schreib uns über die Kontaktseite, dann korrigieren wir es.",
+    "sources": "Quellen ({n} offizielle Seiten)"
+  },
+  "download": {
+    "desc": "Lade den kostenlosen SharkyClips-Installer für Windows 10 und 11 oder install.sh für macOS herunter. Ausführliche Systemanforderungen, Verarbeitungszeiten, SHA-256-Prüfsummen und Hilfe zur SmartScreen-Meldung.",
+    "sha_label": "SHA-256 von {file}",
+    "sha_how_win": "Um deinen Download zu prüfen, führe {cmd} in PowerShell aus: Der Hash muss genau diese Zahl sein. Dieselbe Zahl steht in der <a href='{sha_url}'>.sha256-Datei</a> der Version.",
+    "sha_how_mac": "Zum Prüfen führe {cmd} im Terminal aus: Das Ergebnis muss genau diese Zahl sein. Sie steht auch in der <a href='{sha_url}'>.sha256-Datei</a> der Version.",
+    "req_p": "SharkyClips prüft bei jedem Start deine Hardware und wählt die schnellste Einstellung, die funktioniert. Es läuft auf normalen PCs: Eine Grafikkarte macht es schneller, ist aber nicht nötig.",
+    "req_rows": [
+      ["System", "Windows 10 (1809 oder neuer) oder Windows 11, 64 Bit", "Windows 11"],
+      ["Prozessor", "64 Bit, 2 Kerne / 4 Threads (zum Beispiel Intel Core i3 der 11. Generation)", "6 Kerne / 12 Threads oder mehr (zum Beispiel Intel Core i5 oder AMD Ryzen 5 ab 2020)"],
+      ["Arbeitsspeicher", "8 GB RAM (mit 4 GB geht es im Leicht-Modus, langsam)", "16 GB RAM"],
+      ["Grafikkarte", "Nicht nötig: Der Leicht-Modus läuft auf dem Prozessor", "NVIDIA GeForce RTX mit 6 GB oder mehr. AMD Radeon und Intel Arc: Die KI kann sie nutzen, die Spracherkennung bleibt auf dem Prozessor"],
+      ["Speicherplatz", "Etwa 3 GB für die App und 2 bis 10 GB für die KI-Modelle, dazu Platz für deine Videos (eine 1-stündige 1080p-Aufnahme hat etwa 4 bis 8 GB)", "Eine SSD mit 50 GB oder mehr frei"],
+      ["Internet", "Für den ersten Start, Downloads und zum Teilen", "Danach funktioniert es offline"]
+    ],
+    "time_h": "Wie lange dauert es?",
+    "time_p": "Gemessen am {date} mit echten 1080p-Stream-Aufnahmen (Sprechen und Gameplay), vom Import bis zu {clips} fertigen Clips: Spracherkennung, Momente finden, KI-Titel und Rendern.",
+    "time_cols": ["Stream", "Mit NVIDIA-Grafikkarte", "Leicht-Modus, nur Prozessor"],
+    "time_rows": ["1-Stunden-Stream", "3-Stunden-Stream"],
+    "time_notes": [
+      "Test-PC: {cpu}, {ram} GB RAM, {gpu}. Im Leicht-Modus wurde die Grafikkarte nicht benutzt (Einstellungen → Leistung → Nur CPU).",
+      "Ein langsamerer Prozessor braucht länger: Auf einem kleinen 2-Kern-Laptop ohne Grafikkarte dauerte ein 17-Minuten-Video im Leicht-Modus etwa 16 Minuten.",
+      "SharkyClips arbeitet im Hintergrund. Im Leise-Modus pausiert es, während du spielst, und macht weiter, wenn du aufhörst."
+    ],
+    "smart_note": "Willst du sicher sein? Vergleiche die SHA-256 deiner Datei mit der Zahl <a href='#checksum'>oben auf dieser Seite</a>.",
+    "smart_cap": "Eine Darstellung der beiden Klicks. Dein Bildschirm kann etwas anders aussehen.",
+    "mac_h": "macOS und Linux",
+    "mac_p": "Auf dem Mac installiert ein einziger Befehl alles. macOS und Linux sind weniger getestet als Windows.",
+    "mac_steps": [
+      "Lade <b>install.sh</b> mit dem Knopf unten herunter.",
+      "Öffne das <b>Terminal</b> und führe <code>bash ~/Downloads/install.sh</code> aus. Es zeigt, was es installiert (Homebrew, Python, FFmpeg und die KI-Teile), und fragt nach deinem Mac-Passwort, falls Homebrew nötig ist.",
+      "Öffne <b>SharkyClips</b> unter Programme."
+    ],
+    "mac_btn": "install.sh für macOS herunterladen",
+    "linux_p": "Linux und Entwickler: Die manuelle Installation steht in der <a href='{gh}#install'>Installationsanleitung</a>."
+  },
+  "features": {
+    "looks": {"h": "Designs und Farben", "p": "Wähle ein Farbdesign für die App: Klassisch, Ozean, Shark Sign oder Hoher Kontrast.", "alt": "Einstellungen mit den vier Farbdesigns der App"},
+    "helper_item1": "Läuft in Microsoft Edge, Opera, Opera GX und Brave von selbst; Google Chrome braucht einen Einrichtungsschritt"
+  }
+}

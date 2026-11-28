@@ -3,6 +3,7 @@
     python docs/sitegen/build.py                 build every page (fails on a missing translation)
     python docs/sitegen/build.py --shots <dir>   also convert fresh app screenshots (PNG) to WebP
     python docs/sitegen/build.py --og            also redraw the Open Graph image (img/og.png)
+    python docs/sitegen/build.py --stats         also refresh stats.json (GitHub stars, downloads, checksums; gh CLI)
 
 Sources: docs/sitegen/i18n/<lang>.json (texts; English is the reference, every other file must
 have the same keys), docs/sitegen/legal/*.html (the English privacy policy and terms, the text
@@ -33,6 +34,89 @@ VERSION = (REPO / "VERSION").read_text(encoding="utf-8").strip()
 SETUP_URL = f"{GH}/releases/download/v{VERSION}/SharkyClips-Setup-{VERSION}.exe"
 RELEASES = f"{GH}/releases"
 SETUP_MB = 375
+SETUP_NAME = f"SharkyClips-Setup-{VERSION}.exe"
+INSTALL_SH_URL = f"{GH}/releases/download/v{VERSION}/install.sh"
+
+# docs/sitegen/stats.json: GitHub stars + download count + the SHA-256 of each release's installers,
+# refreshed with `--stats` (gh api). Drawn into the page at build time: no badge service, no request
+# from the visitor's browser to anyone but this site.
+STATS_FILE = HERE / "stats.json"
+# docs/sitegen/benchmarks.json: processing times measured on a real PC (docs/phase-d7.md)
+BENCH_FILE = HERE / "benchmarks.json"
+# the demo video's captions: (start, end) in seconds for each text of home.captions
+DEMO_CUES = [(0.0, 3.5), (3.5, 7.5), (7.5, 13.5), (13.5, 19.5), (19.5, 25.0), (25.0, 31.0)]
+# the "Real results" pictures: img/results/<n>-before.webp (16:9) and <n>-after.webp (9:16)
+RESULTS = 6
+DEMO_SIZE = (1280, 720)
+DEMO_DATE = "2026-11-28"
+# the comparison table (home page): official pages only, read on this date (docs/phase-d7.md lists the quotes)
+COMPARE_CHECKED = "2026-11-28"
+COMPARE_SOURCES = [
+    "https://eklipse.gg/",
+    "https://eklipse.gg/help/how-much-does-eklipse-premium-cost/",
+    "https://eklipse.gg/help/what-are-the-main-differences-between-the-free-and-premium-plans/",
+    "https://eklipse.gg/help/will-my-exported-video-have-a-watermark/",
+    "https://eklipse.gg/help/import-kick-streams-to-eklipse/",
+    "https://eklipse.gg/features/ai-edit/",
+    "https://www.opus.pro/pricing",
+    "https://help.opus.pro/docs/article/plans-and-credits.md",
+    "https://help.opus.pro/docs/article/video-sources-supported.md",
+    "https://help.opus.pro/docs/article/video-languages-supported.md",
+    "https://streamladder.com/pricing",
+    "https://www.streamladder.com/clipgpt/import-from-kick",
+    "https://www.streamladder.com/clip-editor/word-censoring",
+    "https://www.streamladder.com/clip-editor/captions",
+]
+
+
+def load_json(p: Path) -> dict:
+    return json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
+
+
+def fetch_stats() -> None:
+    """Stars, downloads and this version's checksums from GitHub (needs the gh CLI)."""
+    import subprocess
+
+    def gh(*args: str) -> str:
+        kw = {"creationflags": subprocess.CREATE_NO_WINDOW} if sys.platform == "win32" else {}
+        return subprocess.run(["gh", *args], check=True, capture_output=True, text=True, encoding="utf-8", **kw).stdout
+
+    from datetime import date
+
+    stats = load_json(STATS_FILE)
+    repo = json.loads(gh("api", "repos/utkualsir/sharkyclips"))
+    rels = json.loads(gh("api", "--paginate", "--slurp", "repos/utkualsir/sharkyclips/releases?per_page=100"))
+    rels = [r for page in rels for r in page] if rels and isinstance(rels[0], list) else rels
+    # what people download: installers, install.sh and the extension packages (not the .sha256 files)
+    downloads = sum(a["download_count"] for r in rels for a in r.get("assets", [])
+                    if not a["name"].endswith((".sha256", ".txt", ".json")))
+    sums = dict(stats.get("sha256", {}))
+    for r in rels:
+        if r.get("tag_name") != f"v{VERSION}":
+            continue
+        for a in r.get("assets", []):
+            if a["name"] in (f"{SETUP_NAME}.sha256", "install.sh.sha256"):
+                txt = gh("api", "-H", "Accept: application/octet-stream", f"repos/utkualsir/sharkyclips/releases/assets/{a['id']}")
+                h = txt.split()[0].lower()
+                if not re.fullmatch(r"[0-9a-f]{64}", h):
+                    raise SystemExit(f"bad checksum file {a['name']}")
+                sums.setdefault(VERSION, {})["setup" if a["name"].startswith("SharkyClips") else "install_sh"] = h
+    stats.update(stars=int(repo["stargazers_count"]), downloads=int(downloads), checked=date.today().isoformat(),
+                 sha256=dict(sorted(sums.items(), key=lambda kv: [int(x) for x in kv[0].split(".")])[-5:]))
+    STATS_FILE.write_text(json.dumps(stats, indent=1) + "\n", encoding="utf-8", newline="\n")
+    print(f"stats: {stats['stars']} stars, {stats['downloads']} downloads, checksums for {sorted(stats['sha256'])}")
+
+
+def sha_for(kind: str) -> str | None:
+    return load_json(STATS_FILE).get("sha256", {}).get(VERSION, {}).get(kind)
+
+
+def compact_number(n: int, code: str) -> str:
+    """1234 -> 1.2k (the same short form in every language, as on GitHub)."""
+    if n < 1000:
+        return str(n)
+    s = f"{n / 1000:.1f}".rstrip("0").rstrip(".")
+    return (s.replace(".", ",") if code in ("tr", "es", "pt", "de", "fr", "hu", "ru") else s) + "k"
 
 # code, name in its own language, html lang / hreflang, Open Graph locale, text direction
 LANGS = [
@@ -85,12 +169,18 @@ ICONS = {
     "shield": '<path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
     "mail": '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
     "windows": '<path d="M3 5.5 10.5 4.5v7H3zM12 4.3 21 3v8.5h-9zM3 12.5h7.5v7L3 18.5zM12 12.5h9V21l-9-1.3z"/>',
+    "check": '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+    "star": '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+    "arrow": '<path d="M4 12h15m0 0-6-6m6 6-6 6"/>',
+    "plug": '<path d="M9 3v5m6-5v5M6 8h12v3a6 6 0 0 1-12 0zM12 17v4"/>',
+    "terminal": '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3m5 0h5"/>',
 }
 
 
 def icon(name: str, cls: str = "") -> str:
     c = f' class="{cls}"' if cls else ""
-    fill = ' fill="currentColor" stroke="none"' if name == "windows" else ' fill="none" stroke="currentColor"'
+    fill = (' fill="currentColor" stroke="none"' if name == "windows"
+            else ' fill="none" stroke="currentColor"')
     return (f'<svg{c} viewBox="0 0 24 24" aria-hidden="true" focusable="false"{fill} stroke-width="1.9" '
             f'stroke-linecap="round" stroke-linejoin="round">{ICONS[name]}</svg>')
 
@@ -312,6 +402,8 @@ function cur(){return d.dataset.theme||(matchMedia("(prefers-color-scheme: light
 b.addEventListener("click",function(){var n=cur()==="light"?"dark":"light";d.dataset.theme=n;try{localStorage.setItem("sc-theme",n)}catch(e){}});
 var l=document.querySelector(".lang");document.addEventListener("click",function(e){if(l.open&&!l.contains(e.target))l.open=false});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&l.open){l.open=false;l.querySelector("summary").focus()}});
+var v=document.getElementById("demo");if(v&&matchMedia("(prefers-reduced-motion: reduce)").matches){v.removeAttribute("autoplay");v.pause()}
+function yt(){var y=document.getElementById("youtube-details");if(y&&/^#youtube/.test(location.hash))y.open=true}yt();addEventListener("hashchange",yt);
 document.querySelectorAll("[data-setlang]").forEach(function(a){a.addEventListener("click",function(){try{localStorage.setItem("sc-lang",a.dataset.setlang)}catch(e){}})});
 var H=%s,me="%s",pick=null;try{if(localStorage.getItem("sc-lang"))return}catch(e){return}
 (navigator.languages||[navigator.language||""]).some(function(x){var c=String(x).slice(0,2).toLowerCase();if(H[c]){pick=c;return true}return false});
@@ -385,40 +477,127 @@ def ld_app(code: str, t: dict) -> dict:
 # ===================================================================== pages
 
 
+def trust_badges(code: str, t: dict) -> str:
+    """GitHub stars + downloads, drawn from stats.json at build time (no badge service)."""
+    st = load_json(STATS_FILE)
+    if not st.get("stars") and not st.get("downloads"):
+        return ""
+    c = t["common"]
+    out = []
+    if st.get("stars"):
+        out.append(f'<a class="badge" href="{GH}/stargazers">{icon("star")}<span>{esc(c["stars"])}</span>'
+                   f'<b>{compact_number(st["stars"], code)}</b></a>')
+    if st.get("downloads"):
+        out.append(f'<a class="badge" href="{RELEASES}">{icon("download")}<span>{esc(c["downloads"])}</span>'
+                   f'<b>{compact_number(st["downloads"], code)}</b></a>')
+    return f'<div class="badges">{"".join(out)}</div>'
+
+
+def demo_video(code: str, t: dict) -> str:
+    """The demo: autoplays muted and loops (paused for reduced motion), captions in every language."""
+    root = "" if code == "en" else "../"
+    h = t["home"]
+    tracks = "".join(
+        f'<track kind="captions" srclang="{x[2]}" label="{esc(x[1])}" src="{root}img/demo-{x[0]}.vtt"'
+        f'{" default" if x[0] == code else ""}>' for x in LANGS)
+    return (f'<figure class="shot demo"><video id="demo" autoplay muted loop playsinline controls preload="auto" '
+            f'width="{DEMO_SIZE[0]}" height="{DEMO_SIZE[1]}" poster="{root}img/demo-poster.webp" '
+            f'aria-label="{esc(h["demo_alt"])}"><source src="{root}img/demo.mp4" type="video/mp4">{tracks}</video>'
+            f'<figcaption>{esc(h["demo_cap"])}</figcaption></figure>')
+
+
+def vtt(code: str, texts: dict) -> str:
+    def ts(s: float) -> str:
+        return f"{int(s // 60):02d}:{s % 60:06.3f}"
+
+    caps = texts[code]["home"]["captions"]
+    return "WEBVTT\n\n" + "\n".join(f"{i + 1}\n{ts(a)} --> {ts(b)}\n{strip_tags(c)}\n"
+                                     for i, ((a, b), c) in enumerate(zip(DEMO_CUES, caps)))
+
+
+def results(code: str, t: dict) -> str:
+    """Before -> after pairs: a frame of the long stream and the same moment in the finished clip."""
+    root = "" if code == "en" else "../"
+    r = t["results"]
+    items = []
+    for i, it in enumerate(r["items"][:RESULTS], 1):
+        items.append(
+            f'<li class="ba"><figure><div class="ba-pair">'
+            f'<div class="ba-before"><img src="{root}img/results/{i}-before.webp" width="640" height="360" '
+            f'alt="{esc(fill(r["before_alt"], {"time": it["time"]}))}" loading="lazy" decoding="async">'
+            f'<span class="tag">{esc(r["before"])} · {esc(it["time"])}</span></div>'
+            f'<span class="ba-arrow" aria-hidden="true">{icon("arrow")}</span>'
+            f'<div class="ba-after"><img src="{root}img/results/{i}-after.webp" width="270" height="480" '
+            f'alt="{esc(fill(r["after_alt"], {"title": it["title"]}))}" loading="lazy" decoding="async">'
+            f'<span class="tag">{esc(r["after"])}</span></div></div>'
+            f'<figcaption><b>{esc(it["title"])}</b><span>{esc(it["why"])}</span></figcaption></figure></li>')
+    return f"""<section id="results" aria-labelledby="res-h">
+  <h2 id="res-h">{esc(r['h'])}</h2>
+  <p class="lead">{esc(r['lead'])}</p>
+  <ul class="results">{''.join(items)}</ul>
+  <p class="muted small">{esc(r['note'])}</p>
+</section>"""
+
+
+def fmt_date(iso: str, t: dict) -> str:
+    y, m, d = (int(x) for x in iso.split("-"))
+    return fill(t["common"]["date"], {"d": d, "m": t["common"]["months"][m - 1], "y": y})
+
+
+def short_url(u: str) -> str:
+    return re.sub(r"^https://(www[.])?", "", u).rstrip("/")
+
+
+def compare(code: str, t: dict) -> str:
+    k = t["compare"]
+    cols = ["SharkyClips", "Eklipse", "OpusClip", "StreamLadder"]
+    head_ = "".join(f'<th scope="col">{esc(x)}</th>' for x in cols)
+    rows = "".join(
+        f'<tr><th scope="row">{esc(r[0])}</th>' + "".join(f"<td>{esc(x)}</td>" for x in r[1:]) + "</tr>"
+        for r in k["rows"])
+    src = "".join(f'<li><a href="{u}">{esc(short_url(u))}</a></li>' for u in COMPARE_SOURCES)
+    return f"""<section id="compare" aria-labelledby="cmp-h">
+  <h2 id="cmp-h">{esc(k['h'])}</h2>
+  <p class="lead">{esc(fill(k['lead'], {'date': fmt_date(COMPARE_CHECKED, t)}))}</p>
+  <div class="tablewrap compare" tabindex="0" role="region" aria-labelledby="cmp-h"><table>
+    <thead><tr><th scope="col"><span class="vh">{esc(k['corner'])}</span></th>{head_}</tr></thead><tbody>{rows}</tbody></table></div>
+  <p class="muted small">{esc(k['note'])}</p>
+  <details class="more small"><summary>{esc(fill(k['sources'], {'n': len(COMPARE_SOURCES)}))}</summary><ul class="sources">{src}</ul></details>
+</section>"""
+
+
 def page_index(code: str, texts: dict) -> str:
     t = texts[code]
     h = t["home"]
     c = ctx_for(code)
-    facts = "".join(f"<li>{esc(x)}</li>" for x in h["facts"])
+    promise = "".join(f"<li>{icon('check')}{esc(x)}</li>" for x in h["promise"])
     steps = "".join(f"<li><h3>{esc(s['h'])}</h3><p>{fill(s['p'], c)}</p></li>" for s in h["steps"])
     cards = "".join(
         f'<div class="card"><span class="ico">{icon(k["icon"])}</span><h3>{esc(k["h"])}'
         f'{"<span class=new>" + esc(t["common"]["new"]) + "</span>" if k.get("new") == "1" else ""}</h3><p>{fill(k["p"], c)}</p></div>'
         for k in h["cards"])
-    root = "" if code == "en" else "../"
     gallery = "".join(
         f'<figure class="shot">{picture(code, g["img"], g["alt"], *SHOT_SIZE, sizes="(min-width: 1080px) 340px, (min-width: 700px) 50vw, 100vw")}'
         f'<figcaption>{esc(g["cap"])}</figcaption></figure>' for g in h["gallery"])
+    sha_line = (f'<a class="sha-link" href="{c["download"]}#checksum">{icon("shield")}{esc(t["common"]["sha_link"])}</a>'
+                if sha_for("setup") else "")
     body = f"""<div class="wrap">
 <section class="hero">
-  <div>
-    <p class="eyebrow">{esc(h['eyebrow'])}</p>
+  <div class="hero-text">
+    <p class="kick"><b>{icon('check')}{esc(h['kick'])}</b><span>{esc(h['kick_more'])}</span></p>
     <h1>{esc(h['h1'])}</h1>
     <p class="lead">{fill(h['lead'], c)}</p>
+    <ul class="promise" aria-label="{esc(h['promise_label'])}">{promise}</ul>
     <div class="cta">{download_button(code, t)}<a class="btn" href="{c['features']}">{esc(h['see_features'])}</a></div>
-    <ul class="facts">{facts}</ul>
+    <div class="trust">{trust_badges(code, t)}{sha_line}</div>
   </div>
-  <figure class="shot">{picture(code, 'easy-project', h['hero_alt'], *SHOT_SIZE, eager=True)}</figure>
+  {demo_video(code, t)}
 </section>
+{results(code, t)}
 <section id="how" aria-labelledby="how-h">
   <h2 id="how-h">{esc(h['how_h'])}</h2>
   <p class="lead">{fill(h['how_lead'], c)}</p>
   <ol class="steps">{steps}</ol>
-</section>
-<section aria-labelledby="demo-h">
-  <h2 id="demo-h">{esc(h['demo_h'])}</h2>
-  <p class="lead">{fill(h['demo_lead'], c)}</p>
-  <figure class="shot"><video controls muted playsinline preload="none" width="1280" height="760" poster="{root}img/demo-poster.webp" aria-label="{esc(h['demo_alt'])}"><source src="{root}img/demo.mp4" type="video/mp4"></video><figcaption>{esc(h['demo_cap'])}</figcaption></figure>
   <div class="gallery">{gallery}</div>
 </section>
 <section aria-labelledby="feat-h">
@@ -426,9 +605,11 @@ def page_index(code: str, texts: dict) -> str:
   <div class="grid">{cards}</div>
   <p><a class="btn" href="{c['features']}">{esc(h['all_features'])}</a></p>
 </section>
+{compare(code, t)}
 <section id="youtube" aria-labelledby="yt-h">
   <h2 id="yt-h">{esc(h['yt_h'])}</h2>
-  {fill(h['yt_html'], c)}
+  <p>{fill(h['yt_short'], c)}</p>
+  <details class="more" id="youtube-details"><summary>{esc(h['yt_show'])}</summary><div class="more-body">{fill(h['yt_html'], c)}</div></details>
 </section>
 <section aria-labelledby="oss-h">
   <h2 id="oss-h">{esc(h['oss_h'])}</h2>
@@ -437,7 +618,10 @@ def page_index(code: str, texts: dict) -> str:
 </section>
 </div>"""
     ld = [ld_app(code, t), {"@context": "https://schema.org", "@type": "WebSite", "name": "SharkyClips", "url": BASE,
-                            "inLanguage": next(x[2] for x in LANGS if x[0] == code)}]
+                            "inLanguage": next(x[2] for x in LANGS if x[0] == code)},
+          {"@context": "https://schema.org", "@type": "VideoObject", "name": h["demo_alt"], "description": h["demo_cap"],
+           "thumbnailUrl": BASE + "img/demo-poster.webp", "contentUrl": BASE + "img/demo.mp4",
+           "uploadDate": DEMO_DATE, "duration": f"PT{round(DEMO_CUES[-1][1])}S"}]
     return document(code, "index", texts, h["title"], strip_tags(h["desc"]), body, ld)
 
 
@@ -462,6 +646,41 @@ def page_features(code: str, texts: dict) -> str:
     return document(code, "features", texts, f["title"], strip_tags(f["desc"]), body)
 
 
+def fmt_duration(seconds: float, t: dict) -> str:
+    """About 7 min / about 1 h 25 min, rounded the way people read times (from benchmarks.json)."""
+    m = seconds / 60
+    m = max(1, round(m)) if m < 15 else 5 * round(m / 5)
+    c = t["common"]
+    return fill(c["dur_min"], {"m": m}) if m < 60 else fill(c["dur_h"] if m % 60 else c["dur_h0"], {"h": m // 60, "m": m % 60})
+
+
+def speed_table(code: str, t: dict) -> str:
+    b = load_json(BENCH_FILE)
+    runs = b.get("runs", {})
+    if not all(k in runs for k in ("gpu60", "gpu180", "light60", "light180")):
+        return ""
+    d = t["download"]
+    rows = "".join(
+        f'<tr><th scope="row">{esc(label)}</th><td>{esc(fmt_duration(runs["gpu" + n], t))}</td>'
+        f'<td>{esc(fmt_duration(runs["light" + n], t))}</td></tr>'
+        for label, n in ((d["time_rows"][0], "60"), (d["time_rows"][1], "180")))
+    ctx = {"cpu": b["machine"]["cpu"], "gpu": b["machine"]["gpu"], "ram": b["machine"]["ram_gb"],
+           "date": fmt_date(b["checked"], t), "clips": b.get("clips", 6)}
+    return f"""<section id="speed" aria-labelledby="time-h"><h2 id="time-h">{esc(d['time_h'])}</h2><p class="muted">{esc(fill(d['time_p'], ctx))}</p>
+  <div class="tablewrap"><table><thead><tr><th scope="col"><span class="vh">{esc(d['time_cols'][0])}</span></th><th scope="col">{esc(d['time_cols'][1])}</th><th scope="col">{esc(d['time_cols'][2])}</th></tr></thead><tbody>{rows}</tbody></table></div>
+  <ul class="notes muted small">{''.join(f'<li>{esc(fill(x, ctx))}</li>' for x in d['time_notes'])}</ul></section>"""
+
+
+def checksum_box(t: dict, kind: str, file: str, sha_url: str, cmd: str, how: str) -> str:
+    h = sha_for(kind)
+    if not h:
+        return ""
+    d = t["download"]
+    return (f'<div class="checksum"><p class="sum-h">{icon("shield")}<span>{esc(fill(d["sha_label"], {"file": file}))}</span></p>'
+            f'<code class="hash" translate="no">{h}</code>'
+            f'<p class="small muted">{fill(d[how], {"cmd": "<code>" + esc(cmd) + "</code>", "sha_url": sha_url})}</p></div>')
+
+
 def page_download(code: str, texts: dict) -> str:
     t = texts[code]
     d = t["download"]
@@ -471,17 +690,29 @@ def page_download(code: str, texts: dict) -> str:
     rows = "".join(f"<tr><th scope=\"row\">{esc(r[0])}</th><td>{fill(r[1], c)}</td><td>{fill(r[2], c)}</td></tr>"
                    for r in d["req_rows"])
     smart = "".join(f"<li>{fill(x, c)}</li>" for x in d["smart_steps"])
+    setup_box = checksum_box(t, "setup", SETUP_NAME, f"{SETUP_URL}.sha256",
+                             f"Get-FileHash $HOME\\Downloads\\{SETUP_NAME}", "sha_how_win")
+    mac_box = checksum_box(t, "install_sh", "install.sh", f"{INSTALL_SH_URL}.sha256", "shasum -a 256 ~/Downloads/install.sh",
+                           "sha_how_mac")
+    mac_steps = "".join(f"<li>{fill(x, c)}</li>" for x in d["mac_steps"])
     body = f"""<div class="wrap">
 <div class="page-head"><h1>{esc(d['h1'])}</h1><p class="lead">{fill(d['lead'], c)}</p>
   <div class="cta">{download_button(code, t)}<a class="btn" href="{RELEASES}">{esc(d['all_releases'])}</a></div>
-  <ul class="facts">{''.join(f'<li>{esc(fill(x, c))}</li>' for x in d['facts'])}</ul></div>
+  <ul class="facts">{''.join(f'<li>{esc(fill(x, c))}</li>' for x in d['facts'])}</ul>
+  <div class="trust">{trust_badges(code, t)}</div>
+  <div id="checksum">{setup_box}</div></div>
 <section aria-labelledby="st-h"><h2 id="st-h">{esc(d['steps_h'])}</h2><ol class="steps">{steps}</ol></section>
 <section id="requirements" aria-labelledby="req-h"><h2 id="req-h">{esc(d['req_h'])}</h2><p class="muted">{fill(d['req_p'], c)}</p>
   <div class="tablewrap"><table><thead><tr><th scope="col"><span class="vh">{esc(d['req_cols'][0])}</span></th><th scope="col">{esc(d['req_cols'][1])}</th><th scope="col">{esc(d['req_cols'][2])}</th></tr></thead><tbody>{rows}</tbody></table></div></section>
+{speed_table(code, t)}
 <section id="smartscreen" aria-labelledby="ss-h"><div class="feature">
   <div><h2 id="ss-h">{esc(d['smart_h'])}</h2><p>{fill(d['smart_p'], c)}</p><ol class="howto">{smart}</ol><p class="muted small">{fill(d['smart_note'], c)}</p></div>
-  <figure class="shot"><img src="{root}img/smartscreen.webp" width="1280" height="499" alt="{esc(d['smart_alt'])}" loading="lazy" decoding="async"></figure>
+  <figure class="shot"><img src="{root}img/smartscreen.webp" width="1280" height="499" alt="{esc(d['smart_alt'])}" loading="lazy" decoding="async"><figcaption>{esc(d['smart_cap'])}</figcaption></figure>
 </div></section>
+<section id="mac" aria-labelledby="mac-h"><h2 id="mac-h">{esc(d['mac_h'])}</h2><p>{fill(d['mac_p'], c)}</p>
+  <ol class="howto">{mac_steps}</ol>
+  <p><a class="btn" href="{INSTALL_SH_URL}">{icon('terminal')}{esc(d['mac_btn'])}</a></p>{mac_box}
+  <p class="muted small">{fill(d['linux_p'], c)}</p></section>
 <section aria-labelledby="more-h"><h2 id="more-h">{esc(d['more_h'])}</h2><div class="grid">
   {''.join(f'<div class="card"><h3>{esc(x["h"])}</h3><p>{fill(x["p"], c)}</p></div>' for x in d['more'])}
 </div></section>
@@ -683,6 +914,8 @@ def main(argv: list[str]) -> int:
         convert_shots(Path(argv[argv.index("--shots") + 1]))
     if "--og" in argv:
         make_og()
+    if "--stats" in argv:
+        fetch_stats()
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "site.css").write_text(build_css(), encoding="utf-8", newline="\n")
     n = 0
@@ -697,6 +930,9 @@ def main(argv: list[str]) -> int:
         for which in ("privacy", "terms"):
             (folder / f"{which}.html").write_text(page_legal(code, texts, which), encoding="utf-8", newline="\n")
             n += 1
+    (OUT / "img").mkdir(parents=True, exist_ok=True)
+    for code in CODES:
+        (OUT / "img" / f"demo-{code}.vtt").write_text(vtt(code, texts), encoding="utf-8", newline="\n")
     (OUT / "404.html").write_text(page_404(texts), encoding="utf-8", newline="\n")
     (OUT / "sitemap.xml").write_text(sitemap(), encoding="utf-8", newline="\n")
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}sitemap.xml\n", encoding="utf-8", newline="\n")

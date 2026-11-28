@@ -1,5 +1,12 @@
 {
-  "nav": {"index": "Inicio", "features": "Funciones", "download": "Descargar", "faq": "Preguntas", "updates": "Novedades", "contact": "Contacto"},
+  "nav": {
+    "index": "Inicio",
+    "features": "Funciones",
+    "download": "Descargar",
+    "faq": "Preguntas",
+    "updates": "Novedades",
+    "contact": "Contacto"
+  },
   "ui": {
     "skip": "Ir al contenido",
     "nav_label": "Principal",
@@ -10,52 +17,256 @@
     "langhint_go": "Leer en español",
     "og_alt": "SharkyClips: la app convierte la grabación de un directo en clips verticales"
   },
-  "footer": {"label": "Pie de página", "license": "Gratis y de código abierto (MIT)", "privacy": "Privacidad", "terms": "Términos", "feedback": "Enviar comentarios", "source": "Código fuente en GitHub"},
+  "footer": {
+    "label": "Pie de página",
+    "license": "Gratis y de código abierto (MIT)",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "feedback": "Enviar comentarios",
+    "source": "Código fuente en GitHub"
+  },
   "common": {
     "download_btn": "Descargar para Windows",
     "download_sub": "Gratis · {size} MB · versión {version}",
     "new": "Nuevo",
-    "english_binding": "El texto completo de abajo está en inglés, y el texto en inglés es el que vale."
+    "english_binding": "El texto completo de abajo está en inglés, y el texto en inglés es el que vale.",
+    "stars": "estrellas en GitHub",
+    "downloads": "descargas",
+    "sha_link": "Suma de verificación SHA-256",
+    "months": [
+      "enero",
+      "febrero",
+      "marzo",
+      "abril",
+      "mayo",
+      "junio",
+      "julio",
+      "agosto",
+      "septiembre",
+      "octubre",
+      "noviembre",
+      "diciembre"
+    ],
+    "date": "{d} de {m} de {y}",
+    "dur_min": "unos {m} min",
+    "dur_h": "unas {h} h {m} min",
+    "dur_h0": "unas {h} h"
   },
   "home": {
     "title": "SharkyClips: lo mejor de tus directos a Shorts, TikTok y Reels, gratis",
-    "desc": "SharkyClips es una app gratuita para streamers. Encuentra los mejores momentos de la grabación de tu directo y los convierte en clips verticales listos para publicar, todo en tu propio PC.",
-    "eyebrow": "App gratuita para streamers",
+    "desc": "SharkyClips es una app gratuita para streamers. Encuentra los mejores momentos de tu directo de Twitch, YouTube o Kick y los convierte en clips verticales listos para publicar, todo en tu propio PC. Sin marca de agua, sin límites.",
+    "kick": "Funciona con Kick",
+    "kick_more": "y con Twitch, YouTube o cualquier archivo de vídeo",
     "h1": "Entra tu directo, salen clips listos para publicar.",
     "lead": "SharkyClips encuentra los mejores momentos de la grabación de tu directo y los convierte en clips verticales para YouTube Shorts, TikTok e Instagram Reels. Todo funciona en tu propio PC.",
+    "promise_label": "Lo que obtienes",
+    "promise": [
+      "100 % gratis",
+      "Sin marca de agua",
+      "Sin límites",
+      "Funciona en tu PC"
+    ],
     "see_features": "Mira lo que hace",
-    "facts": ["Gratis y de código abierto", "Sin cuenta, sin nube", "11 idiomas", "Windows 10 / 11"],
     "hero_alt": "SharkyClips en modo Fácil: un directo con sus clips listos y un botón Compartir para cada uno",
     "how_h": "Cómo funciona",
     "how_lead": "Tres pasos. SharkyClips hace la edición entre medias.",
     "steps": [
-      {"h": "Añade tu directo", "p": "Suelta un archivo de vídeo o pega un enlace de Twitch, YouTube o Kick. SharkyClips también puede tomar la grabación más reciente de tu carpeta de OBS."},
-      {"h": "SharkyClips crea los clips", "p": "Encuentra los momentos ruidosos, divertidos y emocionantes, los corta limpiamente, añade subtítulos, pita las palabrotas y escribe los títulos."},
-      {"h": "Revisa y comparte", "p": "Mira los clips, cambia lo que quieras y compártelos en YouTube Shorts, TikTok e Instagram Reels."}
+      {
+        "h": "Añade tu directo",
+        "p": "Suelta un archivo de vídeo o pega un enlace de Twitch, YouTube o Kick. SharkyClips también puede tomar la grabación más reciente de tu carpeta de OBS."
+      },
+      {
+        "h": "SharkyClips crea los clips",
+        "p": "Encuentra los momentos ruidosos, divertidos y emocionantes, los corta limpiamente, añade subtítulos, pita las palabrotas y escribe los títulos."
+      },
+      {
+        "h": "Revisa y comparte",
+        "p": "Mira los clips, cambia lo que quieras y compártelos en YouTube Shorts, TikTok e Instagram Reels."
+      }
     ],
-    "demo_h": "Míralo en acción",
-    "demo_lead": "Un recorrido corto por la versión actual, hecho con un directo de demostración (sin personas ni juegos reales).",
-    "demo_alt": "Vídeo corto: la pantalla de inicio de SharkyClips, un directo con sus clips y la ventana Compartir",
-    "demo_cap": "Modo Fácil: abre un directo, mira un clip, compártelo.",
+    "demo_alt": "Vídeo: SharkyClips convierte la grabación de un directo en clips verticales terminados y los comparte",
+    "demo_cap": "Del directo al clip: el directo a la izquierda, el clip terminado a la derecha. Sin sonido, con subtítulos.",
+    "captions": [
+      "Suelta la grabación de un directo o pega un enlace de Twitch, YouTube o Kick.",
+      "SharkyClips encuentra los mejores momentos y crea los clips por sí solo.",
+      "Izquierda: el directo. Derecha: el clip terminado, en 9:16 y con subtítulos.",
+      "El clip empieza y termina con las palabras: ninguna frase queda cortada.",
+      "Cada clip recibe un título y una puntuación, y los mejores quedan arriba.",
+      "Un solo botón Compartir para YouTube Shorts, TikTok e Instagram Reels."
+    ],
     "gallery": [
-      {"img": "easy-home", "alt": "La pantalla de inicio de SharkyClips con una gran zona para soltar un vídeo o un enlace", "cap": "Empieza: suelta un vídeo o pega un enlace."},
-      {"img": "share", "alt": "La ventana Compartir con YouTube, TikTok e Instagram y un texto para cada uno", "cap": "Un solo Compartir para cada plataforma."},
-      {"img": "pro-project", "alt": "Modo Pro: el directo con su mapa de emoción, una vista previa 9:16 y la lista de clips", "cap": "Modo Pro: todos los ajustes, si los quieres."}
+      {
+        "img": "easy-home",
+        "alt": "La pantalla de inicio de SharkyClips con una gran zona para soltar un vídeo o un enlace",
+        "cap": "Empieza: suelta un vídeo o pega un enlace."
+      },
+      {
+        "img": "share",
+        "alt": "La ventana Compartir con YouTube, TikTok e Instagram y un texto para cada uno",
+        "cap": "Un solo Compartir para cada plataforma."
+      },
+      {
+        "img": "pro-project",
+        "alt": "Modo Pro: el directo con su mapa de emoción, una vista previa 9:16 y la lista de clips",
+        "cap": "Modo Pro: todos los ajustes, si los quieres."
+      }
     ],
     "feat_h": "Hecho para streamers",
     "cards": [
-      {"icon": "wave", "h": "Encuentra los momentos", "p": "Reacciones fuertes, risas, explosiones del chat y eventos del juego se convierten en una lista ordenada de clips."},
-      {"icon": "mute", "h": "Pitidos, comprobados", "p": "Las palabrotas se pitan en 11 idiomas, y cada clip terminado se vuelve a escuchar."},
-      {"icon": "share", "h": "Un botón Compartir", "p": "YouTube Shorts, TikTok e Instagram Reels, con el texto y los límites correctos para cada uno."},
-      {"icon": "puzzle", "h": "Ayudante de TikTok", "p": "Una pequeña extensión del navegador rellena tu subida a TikTok. Tú la revisas y pulsas Publicar.", "new": "1"},
-      {"icon": "photos", "h": "Presentación de fotos", "p": "Convierte de 2 a 20 fotos en un vídeo vertical de antes y después con etiquetas y música.", "new": "1"},
-      {"icon": "palette", "h": "Tu estilo", "p": "Cuatro estilos para la app, oscuro y claro, y tus propios colores.", "new": "1"}
+      {
+        "icon": "wave",
+        "h": "Encuentra los momentos",
+        "p": "Reacciones fuertes, risas, explosiones del chat y eventos del juego se convierten en una lista ordenada de clips."
+      },
+      {
+        "icon": "mute",
+        "h": "Pitidos, comprobados",
+        "p": "Las palabrotas se pitan en 11 idiomas, y cada clip terminado se vuelve a escuchar."
+      },
+      {
+        "icon": "share",
+        "h": "Un botón Compartir",
+        "p": "YouTube Shorts, TikTok e Instagram Reels, con el texto y los límites correctos para cada uno."
+      },
+      {
+        "icon": "puzzle",
+        "h": "Ayudante de TikTok",
+        "p": "Una pequeña extensión para Edge, Chrome, Opera y Brave rellena tu subida a TikTok. Tú la revisas y pulsas Publicar.",
+        "new": "1"
+      },
+      {
+        "icon": "photos",
+        "h": "Presentación de fotos",
+        "p": "Convierte de 2 a 20 fotos en un vídeo vertical de antes y después con etiquetas y música.",
+        "new": "1"
+      },
+      {
+        "icon": "palette",
+        "h": "Temas y colores",
+        "p": "Cuatro temas de color para la app (Clásico, Océano, Shark Sign, Alto contraste), oscuros o claros, y tu propio color de acento.",
+        "new": "1"
+      }
     ],
     "all_features": "Todas las funciones",
     "yt_h": "Cómo usa SharkyClips YouTube",
+    "yt_short": "Conectar YouTube es opcional. Si lo conectas, SharkyClips usa los Servicios de la API de YouTube oficiales solo para subir y gestionar los clips que elijas y mostrarte sus resultados. Tus datos de YouTube se quedan en tu ordenador.",
+    "yt_show": "Ver los permisos y cómo se usan tus datos de YouTube",
     "yt_html": "<p>Subir a YouTube es opcional. Si conectas tu canal en <b>Ajustes → YouTube</b>, SharkyClips usa los servicios oficiales de la API de YouTube para hacer exactamente esto, y solo cuando tú lo pides:</p><div class='tablewrap'><table><thead><tr><th scope='col'>Acción</th><th scope='col'>Permiso (scope)</th><th scope='col'>Cuándo</th></tr></thead><tbody><tr><td>Subir un clip que preparaste (título, descripción, etiquetas, privacidad, hora de publicación, lista, miniatura); cambiar sus datos o su hora, publicarlo antes o borrarlo si lo cancelas antes de que sea público; mostrar qué canal está conectado; leer las vistas, los me gusta y el estado de privacidad de los vídeos subidos <i>con SharkyClips</i></td><td><code>youtube</code></td><td>Cuando pulsas <b>Publicar ahora</b> o programas un clip (se sube antes mientras tu PC está encendido), lo editas o cancelas en la Biblioteca, abres Ajustes, y cada 6 horas más o menos mientras la app funciona</td></tr><tr><td>Leer el porcentaje medio de visualización de esos mismos vídeos, para saber qué estilo de inicio (gancho) retiene a tus espectadores</td><td><code>yt-analytics.readonly</code></td><td>Solo para clips subidos dentro de una prueba de ganchos, cuando llevan 48 horas públicos</td></tr></tbody></table></div><p class='callout'>Estos datos se guardan solo en tu ordenador y solo sirven para mostrarte tus resultados y mejorar las puntuaciones de los clips para <i>tu</i> canal. SharkyClips no tiene servidor: los desarrolladores nunca reciben, ven ni comparten tus datos de YouTube, y nada se usa para anuncios. SharkyClips nunca lee canales de otras personas, tus comentarios, tus suscriptores ni tu historial. Solo cambia o borra vídeos subidos con SharkyClips, y solo cuando tú lo pides (por ejemplo, al editar o cancelar un clip programado).</p><p>Puedes desconectarte cuando quieras en Ajustes → YouTube (esto revoca el token de acceso en Google), o quitar el acceso en los <a href='https://myaccount.google.com/permissions'>permisos de tu cuenta de Google</a>. Al conectar aceptas los <a href='https://www.youtube.com/t/terms'>Términos de servicio de YouTube</a>; Google trata tus datos según la <a href='https://policies.google.com/privacy'>Política de privacidad de Google</a>. Lee nuestra <a href='{privacy}'>política de privacidad</a> y los <a href='{terms}'>términos de uso</a> completos.</p>",
     "oss_h": "Gratis, abierto, privado",
     "oss_p": "SharkyClips tiene licencia MIT: sin suscripción, sin créditos, sin marca de agua. No hay cuenta ni rastreo, y tus vídeos se quedan en tu PC salvo que los compartas. El código y todas las versiones están en <a href='{gh}'>GitHub</a>."
+  },
+  "results": {
+    "h": "Resultados reales",
+    "lead": "Cada pareja muestra un momento del directo largo y el mismo momento en el clip que SharkyClips hizo con él por sí solo: recortado, pasado a 9:16, con subtítulos y un título.",
+    "before": "Directo",
+    "after": "Clip terminado",
+    "before_alt": "Un fotograma de la grabación 16:9 del directo en {time}",
+    "after_alt": "El mismo momento en el clip 9:16 terminado: {title}",
+    "items": [
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      }
+    ],
+    "note": "Hecho con nuestro directo de demostración (un juego dibujado, una voz de ordenador y un chat generado), así que no aparece ninguna persona, juego ni canal real. Nada se editó a mano."
+  },
+  "compare": {
+    "h": "SharkyClips frente a otros",
+    "lead": "Datos de la web oficial de cada producto, comprobados el {date}. Precios en dólares estadounidenses, sin impuestos. Los planes cambian: revisa sus páginas antes de decidir.",
+    "corner": "Función",
+    "rows": [
+      [
+        "Precio",
+        "Gratis (código abierto, licencia MIT)",
+        "Una prueba gratis; Premium desde 24,99 $ al mes o 179,99 $ al año",
+        "Plan gratis; planes de pago desde 15 $ al mes",
+        "Plan gratis; planes de pago desde 15 $ al mes o 150 $ al año"
+      ],
+      [
+        "Marca de agua",
+        "Nunca",
+        "En las exportaciones gratis",
+        "En el plan gratis",
+        "Solo si un clip gratis usa funciones de pago"
+      ],
+      [
+        "Límites de clips",
+        "Ninguno",
+        "Gratis: vista previa de los clips de un directo reciente; Premium: clips con IA sin límite",
+        "Gratis: 60 minutos de procesamiento al mes, archivos guardados 3 días",
+        "Sin límite de minutos; clips con IA de directos completos desde el plan Creator (27 $ al mes); exportación gratis en 720p"
+      ],
+      [
+        "Dónde se procesa tu vídeo",
+        "En tu PC: no se sube nada",
+        "En línea: su edición con IA funciona en la nube",
+        "En línea: subes un archivo o pegas un enlace",
+        "En línea: subes un archivo o pegas un enlace"
+      ],
+      [
+        "Qué necesitas",
+        "Un PC con Windows 10 u 11 y 8 GB de RAM (macOS: menos probado)",
+        "Un navegador y una cuenta",
+        "Un navegador y una cuenta",
+        "Un navegador y una cuenta"
+      ],
+      [
+        "Detección según el juego",
+        "Lee la pantalla del juego en Delta Force y League of Legends; en otros juegos usa la voz, el sonido y el chat",
+        "Más de 3.000 juegos, ajustada a cada categoría de juego",
+        "No indicado",
+        "No indicado"
+      ],
+      [
+        "Kick",
+        "Vídeos de Kick con su chat",
+        "Importa directos de Kick",
+        "Admite enlaces de Kick",
+        "Clips de Kick en el plan gratis; directos completos de Kick desde el plan Creator"
+      ],
+      [
+        "Pitido de palabrotas",
+        "Automático en 11 idiomas, y cada clip se vuelve a comprobar",
+        "No indicado",
+        "Desde el plan Pro (29 $ al mes)",
+        "Censura automática de palabras (plan no indicado con claridad)"
+      ],
+      [
+        "Idiomas",
+        "11 (app, reconocimiento de voz y subtítulos)",
+        "No indicado para subtítulos; comandos de voz en inglés",
+        "Más de 25 para subtítulos",
+        "Más de 90 para subtítulos"
+      ]
+    ],
+    "note": "«No indicado» significa que no lo encontramos en sus páginas oficiales. ¿Algo está mal o desactualizado? Escríbenos desde la página de contacto y lo corregimos.",
+    "sources": "Fuentes ({n} páginas oficiales)"
   },
   "features": {
     "title": "Funciones: SharkyClips, el editor gratuito de clips de directos",
@@ -63,52 +274,279 @@
     "h1": "Todo lo que hace SharkyClips",
     "lead": "De un directo largo a clips que se ven hasta el final. El modo Fácil lo hace todo solo; el modo Pro te da cada ajuste.",
     "sections": [
-      {"id": "moments", "eyebrow": "Mejores momentos", "h": "Encuentra los momentos que vale la pena publicar", "p": "SharkyClips escucha y lee como lo haría un editor.", "items": ["Volumen, risas, gritos y palabras de reacción", "Explosiones del chat en la repetición (Twitch, YouTube, Kick)", "Los cortes caen entre palabras, nunca a mitad de frase", "Una IA local puntúa cada clip y escribe títulos"], "img": "pro-project", "alt": "El mapa de emoción de un directo con sus mejores momentos marcados"},
-      {"id": "games", "eyebrow": "Juegos", "h": "Conoce tu juego", "p": "En Delta Force y League of Legends lee la propia pantalla del juego.", "items": ["Bajas, multibajas, objetivos y victorias", "Una multibaja siempre cabe en un clip", "Títulos según lo que pasó en la partida", "Más juegos como perfiles que puedes añadir"], "icon": "game", "aside": "Otros juegos también funcionan: los momentos salen entonces de tu voz, el sonido y el chat."},
-      {"id": "editing", "eyebrow": "Edición", "h": "Clips listos para publicar", "p": "Vídeo 9:16 con tu cámara arriba y el juego abajo.", "items": ["Subtítulos palabra a palabra, también de derecha a izquierda", "Palabrotas pitadas en 11 idiomas, y cada clip revisado otra vez", "Zoom inteligente, repetición instantánea y burbujas de chat", "Edita por texto: borra palabras para cortarlas"], "icon": "mute", "aside": "Un clip con una palabrota que aún se oye no se comparte automáticamente hasta que lo escuches."},
-      {"id": "easy", "eyebrow": "Fácil y Pro", "h": "El modo Fácil lo hace todo", "p": "Suelta un vídeo y vuelve a clips terminados. Cambia al modo Pro para cada ajuste.", "items": ["Los mejores clips elegidos, ajustados y renderizados solos", "Clips solos después de un directo (carpeta de OBS o tu canal)", "Marca momentos mientras juegas con un atajo o !clip en el chat", "Aprueba clips desde tu móvil"], "img": "easy-home", "alt": "La pantalla de inicio del modo Fácil"},
-      {"id": "share", "eyebrow": "Compartir", "h": "Un solo Compartir para cada plataforma", "p": "YouTube Shorts, TikTok e Instagram Reels desde una ventana.", "items": ["Un texto para cada plataforma, con sus límites comprobados", "Comparte ahora o elige una hora", "Tus subidas a YouTube con tu propio proyecto gratuito de Google", "Un historial de lo compartido, para que nada se publique dos veces"], "img": "share", "alt": "La ventana Compartir con tres plataformas"},
-      {"id": "helper", "eyebrow": "TikTok e Instagram", "h": "El SharkyClips Helper rellena tu subida", "new": "1", "p": "Una pequeña extensión del navegador. SharkyClips abre la página de subida de TikTok en tu navegador y el Helper pone el vídeo y el texto.", "items": ["Se detiene antes de Publicar: tú revisas y publicas", "Funciona solo en Edge, Opera y Brave; Chrome necesita un paso de configuración", "Solo funciona en páginas de TikTok e Instagram", "Solo habla con SharkyClips en tu PC, con nada más"], "icon": "puzzle", "aside": "Nunca se guarda ni se escribe una contraseña por ti: inicias sesión en TikTok tú mismo, una vez."},
-      {"id": "slideshow", "eyebrow": "Fotos", "h": "Presentación de fotos", "new": "1", "p": "Convierte de 2 a 20 fotos en un vídeo vertical: perfecto para un antes y después.", "items": ["Etiquetas como Antes, Proceso y Resultado en tu idioma", "Un zoom lento y suave en cada foto y transiciones suaves", "Tu música y el logo de SharkyClips al final", "Se comparte con el mismo botón Compartir"], "img": "slideshow", "alt": "La pantalla de presentación de fotos con las fotos en fila y una vista previa 9:16"},
-      {"id": "looks", "eyebrow": "Personalización", "h": "Hazla tuya", "new": "1", "p": "Elige un estilo para la app: Clásico, Océano, Shark Sign o Alto contraste.", "items": ["Oscuro y claro en cada estilo", "Tu propio color de acento, comprobado para un buen contraste", "Animaciones suaves, completas o ninguna", "Un pequeño juego del tiburón mientras se procesa un directo"], "img": "looks", "alt": "Ajustes con los cuatro estilos de la app"},
-      {"id": "languages", "eyebrow": "Idiomas", "h": "11 idiomas", "p": "La app, el reconocimiento de voz, los títulos y los subtítulos.", "items": ["English, Türkçe, Español, Português (Brasil), Deutsch, Français, Magyar", "Русский, العربية (de derecha a izquierda), 中文, 日本語", "Los títulos pueden ir en otro idioma que el hablado", "Subtítulos traducidos manteniendo su tiempo"], "icon": "lang", "aside": "El reconocimiento de voz (Whisper) y la IA funcionan en tu PC en todos los idiomas."},
-      {"id": "lowend", "eyebrow": "Cualquier PC", "h": "Funciona en PC normales", "p": "No hace falta un PC gamer. SharkyClips revisa tu hardware y elige la configuración adecuada.", "items": ["Una GPU NVIDIA lo hace mucho más rápido", "Modo Ligero para PC antiguos y portátiles sin GPU", "El modo Silencioso se pausa mientras juegas o ves algo a pantalla completa", "Una app cerrada sigue donde se quedó"], "icon": "cpu", "aside": "En un portátil pequeño de 2 núcleos sin GPU, un vídeo de 17 minutos tarda unos 16 minutos en modo Ligero."},
-      {"id": "private", "eyebrow": "Privacidad", "h": "Privado desde el diseño", "p": "No existe un servidor de SharkyClips.", "items": ["El reconocimiento de voz y la IA funcionan en tu PC", "Sin cuenta, sin analíticas, sin anuncios", "Tus inicios de sesión se guardan cifrados en tu PC", "Tus vídeos solo salen de tu PC cuando los compartes"], "icon": "lock", "aside": "Lee la <a href='{privacy}'>política de privacidad</a> completa."}
+      {
+        "id": "moments",
+        "eyebrow": "Mejores momentos",
+        "h": "Encuentra los momentos que vale la pena publicar",
+        "p": "SharkyClips escucha y lee como lo haría un editor.",
+        "items": [
+          "Volumen, risas, gritos y palabras de reacción",
+          "Explosiones del chat en la repetición (Twitch, YouTube, Kick)",
+          "Los cortes caen entre palabras, nunca a mitad de frase",
+          "Una IA local puntúa cada clip y escribe títulos"
+        ],
+        "img": "pro-project",
+        "alt": "El mapa de emoción de un directo con sus mejores momentos marcados"
+      },
+      {
+        "id": "games",
+        "eyebrow": "Juegos",
+        "h": "Conoce tu juego",
+        "p": "En Delta Force y League of Legends lee la propia pantalla del juego.",
+        "items": [
+          "Bajas, multibajas, objetivos y victorias",
+          "Una multibaja siempre cabe en un clip",
+          "Títulos según lo que pasó en la partida",
+          "Más juegos como perfiles que puedes añadir"
+        ],
+        "icon": "game",
+        "aside": "Otros juegos también funcionan: los momentos salen entonces de tu voz, el sonido y el chat."
+      },
+      {
+        "id": "editing",
+        "eyebrow": "Edición",
+        "h": "Clips listos para publicar",
+        "p": "Vídeo 9:16 con tu cámara arriba y el juego abajo.",
+        "items": [
+          "Subtítulos palabra a palabra, también de derecha a izquierda",
+          "Palabrotas pitadas en 11 idiomas, y cada clip revisado otra vez",
+          "Zoom inteligente, repetición instantánea y burbujas de chat",
+          "Edita por texto: borra palabras para cortarlas"
+        ],
+        "icon": "mute",
+        "aside": "Un clip con una palabrota que aún se oye no se comparte automáticamente hasta que lo escuches."
+      },
+      {
+        "id": "easy",
+        "eyebrow": "Fácil y Pro",
+        "h": "El modo Fácil lo hace todo",
+        "p": "Suelta un vídeo y vuelve a clips terminados. Cambia al modo Pro para cada ajuste.",
+        "items": [
+          "Los mejores clips elegidos, ajustados y renderizados solos",
+          "Clips solos después de un directo (carpeta de OBS o tu canal)",
+          "Marca momentos mientras juegas con un atajo o !clip en el chat",
+          "Aprueba clips desde tu móvil"
+        ],
+        "img": "easy-home",
+        "alt": "La pantalla de inicio del modo Fácil"
+      },
+      {
+        "id": "share",
+        "eyebrow": "Compartir",
+        "h": "Un solo Compartir para cada plataforma",
+        "p": "YouTube Shorts, TikTok e Instagram Reels desde una ventana.",
+        "items": [
+          "Un texto para cada plataforma, con sus límites comprobados",
+          "Comparte ahora o elige una hora",
+          "Tus subidas a YouTube con tu propio proyecto gratuito de Google",
+          "Un historial de lo compartido, para que nada se publique dos veces"
+        ],
+        "img": "share",
+        "alt": "La ventana Compartir con tres plataformas"
+      },
+      {
+        "id": "helper",
+        "eyebrow": "TikTok e Instagram",
+        "h": "El SharkyClips Helper rellena tu subida",
+        "new": "1",
+        "p": "Una pequeña extensión del navegador. SharkyClips abre la página de subida de TikTok en tu navegador y el Helper pone el vídeo y el texto.",
+        "items": [
+          "Se detiene antes de Publicar: tú revisas y publicas",
+          "Funciona solo en Microsoft Edge, Opera, Opera GX y Brave; Google Chrome necesita un paso de configuración",
+          "Solo funciona en páginas de TikTok e Instagram",
+          "Solo habla con SharkyClips en tu PC, con nada más"
+        ],
+        "icon": "puzzle",
+        "aside": "Nunca se guarda ni se escribe una contraseña por ti: inicias sesión en TikTok tú mismo, una vez."
+      },
+      {
+        "id": "slideshow",
+        "eyebrow": "Fotos",
+        "h": "Presentación de fotos",
+        "new": "1",
+        "p": "Convierte de 2 a 20 fotos en un vídeo vertical: perfecto para un antes y después.",
+        "items": [
+          "Etiquetas como Antes, Proceso y Resultado en tu idioma",
+          "Un zoom lento y suave en cada foto y transiciones suaves",
+          "Tu música y el logo de SharkyClips al final",
+          "Se comparte con el mismo botón Compartir"
+        ],
+        "img": "slideshow",
+        "alt": "La pantalla de presentación de fotos con las fotos en fila y una vista previa 9:16"
+      },
+      {
+        "id": "looks",
+        "eyebrow": "Personalización",
+        "h": "Temas y colores",
+        "new": "1",
+        "p": "Elige un tema de color para la app: Clásico, Océano, Shark Sign o Alto contraste.",
+        "items": [
+          "Oscuro y claro en cada estilo",
+          "Tu propio color de acento, comprobado para un buen contraste",
+          "Animaciones suaves, completas o ninguna",
+          "Un pequeño juego del tiburón mientras se procesa un directo"
+        ],
+        "img": "looks",
+        "alt": "Ajustes con los cuatro temas de color de la app"
+      },
+      {
+        "id": "languages",
+        "eyebrow": "Idiomas",
+        "h": "11 idiomas",
+        "p": "La app, el reconocimiento de voz, los títulos y los subtítulos.",
+        "items": [
+          "English, Türkçe, Español, Português (Brasil), Deutsch, Français, Magyar",
+          "Русский, العربية (de derecha a izquierda), 中文, 日本語",
+          "Los títulos pueden ir en otro idioma que el hablado",
+          "Subtítulos traducidos manteniendo su tiempo"
+        ],
+        "icon": "lang",
+        "aside": "El reconocimiento de voz (Whisper) y la IA funcionan en tu PC en todos los idiomas."
+      },
+      {
+        "id": "lowend",
+        "eyebrow": "Cualquier PC",
+        "h": "Funciona en PC normales",
+        "p": "No hace falta un PC gamer. SharkyClips revisa tu hardware y elige la configuración adecuada.",
+        "items": [
+          "Una GPU NVIDIA lo hace mucho más rápido",
+          "Modo Ligero para PC antiguos y portátiles sin GPU",
+          "El modo Silencioso se pausa mientras juegas o ves algo a pantalla completa",
+          "Una app cerrada sigue donde se quedó"
+        ],
+        "icon": "cpu",
+        "aside": "En un portátil pequeño de 2 núcleos sin GPU, un vídeo de 17 minutos tarda unos 16 minutos en modo Ligero."
+      },
+      {
+        "id": "private",
+        "eyebrow": "Privacidad",
+        "h": "Privado desde el diseño",
+        "p": "No existe un servidor de SharkyClips.",
+        "items": [
+          "El reconocimiento de voz y la IA funcionan en tu PC",
+          "Sin cuenta, sin analíticas, sin anuncios",
+          "Tus inicios de sesión se guardan cifrados en tu PC",
+          "Tus vídeos solo salen de tu PC cuando los compartes"
+        ],
+        "icon": "lock",
+        "aside": "Lee la <a href='{privacy}'>política de privacidad</a> completa."
+      }
     ]
   },
   "download": {
     "title": "Descargar SharkyClips para Windows (gratis)",
-    "desc": "Descarga el instalador gratuito de SharkyClips para Windows 10 y 11. Requisitos del sistema, pasos de instalación y ayuda con el aviso de Windows SmartScreen.",
+    "desc": "Descarga gratis el instalador de SharkyClips para Windows 10 y 11, o install.sh para macOS. Requisitos detallados, tiempos de procesamiento, sumas SHA-256 y ayuda con el aviso de SmartScreen.",
     "h1": "Descargar SharkyClips",
     "lead": "Un instalador con todo dentro. Sin permisos de administrador, sin programas extra.",
     "all_releases": "Todas las versiones",
-    "facts": ["Versión {version}", "Unos {size} MB", "Windows 10 / 11, 64 bits", "Gratis, sin cuenta"],
+    "facts": [
+      "Versión {version}",
+      "Unos {size} MB",
+      "Windows 10 / 11, 64 bits",
+      "Gratis, sin cuenta"
+    ],
+    "sha_label": "SHA-256 de {file}",
+    "sha_how_win": "Para comprobar tu descarga, ejecuta {cmd} en PowerShell: el Hash debe ser exactamente este número. El mismo número está en el <a href='{sha_url}'>archivo .sha256</a> de la versión.",
+    "sha_how_mac": "Para comprobarlo, ejecuta {cmd} en Terminal: el resultado debe ser exactamente este número. También está en el <a href='{sha_url}'>archivo .sha256</a> de la versión.",
     "steps_h": "Instala en tres pasos",
     "steps": [
-      {"h": "Descarga", "p": "Pulsa el botón de descarga. El archivo se llama SharkyClips-Setup-{version}.exe."},
-      {"h": "Instala", "p": "Ábrelo y pulsa Siguiente y luego Instalar. Tarda alrededor de un minuto. ¿Windows muestra un mensaje azul? <a href='#smartscreen'>Mira abajo</a>."},
-      {"h": "Primer inicio", "p": "SharkyClips se abre en tu navegador, pregunta tu idioma y revisa tu PC. Luego descarga una vez las partes de IA que encajan con tu PC."}
+      {
+        "h": "Descarga",
+        "p": "Pulsa el botón de descarga. El archivo se llama SharkyClips-Setup-{version}.exe."
+      },
+      {
+        "h": "Instala",
+        "p": "Ábrelo y pulsa Siguiente y luego Instalar. Tarda alrededor de un minuto. ¿Windows muestra un mensaje azul? <a href='#smartscreen'>Mira abajo</a>."
+      },
+      {
+        "h": "Primer inicio",
+        "p": "SharkyClips se abre en tu navegador, pregunta tu idioma y revisa tu PC. Luego descarga una vez las partes de IA que encajan con tu PC."
+      }
     ],
     "req_h": "Requisitos del sistema",
-    "req_p": "SharkyClips revisa tu hardware en cada inicio y elige la configuración más rápida que funciona.",
-    "req_cols": ["Parte", "Mínimo", "Recomendado"],
+    "req_p": "SharkyClips revisa tu hardware en cada inicio y elige la configuración más rápida que funcione. Funciona en PCs normales: una tarjeta gráfica lo acelera, pero no es necesaria.",
+    "req_cols": [
+      "Parte",
+      "Mínimo",
+      "Recomendado"
+    ],
     "req_rows": [
-      ["Sistema", "Windows 10 (1809 o posterior) u 11, 64 bits", "Windows 11"],
-      ["Memoria", "8 GB de RAM (4 GB funciona en modo Ligero, despacio)", "16 GB de RAM"],
-      ["Gráficos", "No hace falta GPU", "GPU NVIDIA con 6 GB o más"],
-      ["Disco", "Unos 3 GB para la app y de 2 a 10 GB para los modelos de IA", "Un SSD, más espacio para tus vídeos"],
-      ["Internet", "Para el primer inicio y para compartir", "Después funciona sin conexión"]
+      [
+        "Sistema",
+        "Windows 10 (1809 o posterior) o Windows 11, 64 bits",
+        "Windows 11"
+      ],
+      [
+        "Procesador",
+        "64 bits, 2 núcleos / 4 hilos (por ejemplo Intel Core i3 de 11.ª generación)",
+        "6 núcleos / 12 hilos o más (por ejemplo Intel Core i5 o AMD Ryzen 5 de 2020 o posterior)"
+      ],
+      [
+        "Memoria",
+        "8 GB de RAM (con 4 GB funciona en modo Ligero, despacio)",
+        "16 GB de RAM"
+      ],
+      [
+        "Tarjeta gráfica",
+        "No hace falta: el modo Ligero usa el procesador",
+        "NVIDIA GeForce RTX con 6 GB o más. AMD Radeon e Intel Arc: la IA puede usarlas, el reconocimiento de voz sigue en el procesador"
+      ],
+      [
+        "Disco",
+        "Unos 3 GB para la app y de 2 a 10 GB para los modelos de IA, más espacio para tus vídeos (una grabación de 1 hora en 1080p ocupa unos 4 a 8 GB)",
+        "Un SSD con 50 GB libres o más"
+      ],
+      [
+        "Internet",
+        "Para el primer inicio, las descargas y para compartir",
+        "Después funciona sin conexión"
+      ]
+    ],
+    "time_h": "¿Cuánto tarda?",
+    "time_p": "Medido el {date} con grabaciones reales de directos en 1080p (charla y juego), desde la importación hasta {clips} clips terminados: reconocimiento de voz, búsqueda de momentos, títulos con IA y renderizado.",
+    "time_cols": [
+      "Directo",
+      "Con tarjeta gráfica NVIDIA",
+      "Modo Ligero, solo procesador"
+    ],
+    "time_rows": [
+      "Directo de 1 hora",
+      "Directo de 3 horas"
+    ],
+    "time_notes": [
+      "PC de prueba: {cpu}, {ram} GB de RAM, {gpu}. En el modo Ligero no se usó la tarjeta gráfica (Ajustes → Rendimiento → Solo CPU).",
+      "Un procesador más lento tarda más: en un portátil pequeño de 2 núcleos sin tarjeta gráfica, un vídeo de 17 minutos tardó unos 16 minutos en modo Ligero.",
+      "SharkyClips trabaja en segundo plano. En el modo Silencioso se detiene mientras juegas y sigue cuando paras."
     ],
     "smart_h": "¿\"Windows protegió su PC\"?",
     "smart_p": "El instalador aún no está firmado con un certificado de pago, así que Microsoft Defender SmartScreen puede avisar de una descarga nueva. Es normal en apps gratuitas nuevas.",
-    "smart_steps": ["Pulsa <b>Más información</b>.", "Comprueba que la app es SharkyClips-Setup-{version}.exe.", "Pulsa <b>Ejecutar de todas formas</b>."],
-    "smart_note": "¿Quieres asegurarte? Cada versión tiene un archivo .sha256. En PowerShell, <code>Get-FileHash SharkyClips-Setup-{version}.exe</code> debe mostrar el mismo número.",
+    "smart_steps": [
+      "Pulsa <b>Más información</b>.",
+      "Comprueba que la app es SharkyClips-Setup-{version}.exe.",
+      "Pulsa <b>Ejecutar de todas formas</b>."
+    ],
+    "smart_note": "¿Quieres estar seguro? Compara el SHA-256 de tu archivo con el número <a href='#checksum'>de arriba</a>.",
     "smart_alt": "El mensaje de Windows SmartScreen: primero pulsa Más información y luego Ejecutar de todas formas",
+    "smart_cap": "Ilustración de los dos clics. Tu pantalla puede verse un poco distinta.",
+    "mac_h": "macOS y Linux",
+    "mac_p": "En un Mac, un solo comando lo instala todo. macOS y Linux están menos probados que Windows.",
+    "mac_steps": [
+      "Descarga <b>install.sh</b> con el botón de abajo.",
+      "Abre <b>Terminal</b> y ejecuta <code>bash ~/Downloads/install.sh</code>. Muestra lo que va a instalar (Homebrew, Python, FFmpeg y las partes de IA) y pide la contraseña de tu Mac si hace falta Homebrew.",
+      "Abre <b>SharkyClips</b> desde Aplicaciones."
+    ],
+    "mac_btn": "Descargar install.sh para macOS",
+    "linux_p": "Linux y desarrolladores: la instalación manual está en la <a href='{gh}#install'>guía de instalación</a>.",
     "more_h": "Más",
     "more": [
-      {"h": "Actualizaciones", "p": "Ajustes → Actualizaciones → Buscar actualizaciones. SharkyClips instala la versión nueva cuando no lo estás usando. <a href='{updates}'>Novedades</a>."},
-      {"h": "Desinstalar", "p": "Configuración de Windows → Aplicaciones → SharkyClips → Desinstalar. Te pregunta si también quieres borrar tus ajustes; tus vídeos se conservan."},
-      {"h": "macOS y Linux", "p": "Hay un instalador de un solo comando para macOS y una instalación manual para desarrolladores. Están menos probados que Windows. Mira la <a href='{gh}#install'>guía de instalación</a>."}
+      {
+        "h": "Actualizaciones",
+        "p": "Ajustes → Actualizaciones → Buscar actualizaciones. SharkyClips instala la versión nueva cuando no lo estás usando. <a href='{updates}'>Novedades</a>."
+      },
+      {
+        "h": "Desinstalar",
+        "p": "Configuración de Windows → Aplicaciones → SharkyClips → Desinstalar. Te pregunta si también quieres borrar tus ajustes; tus vídeos se conservan."
+      }
     ]
   },
   "faq": {
@@ -117,18 +555,66 @@
     "h1": "Preguntas y respuestas",
     "lead": "¿No encuentras tu pregunta? <a href='{contact}'>Pregúntanos</a>.",
     "items": [
-      {"id": "free", "q": "¿SharkyClips es de verdad gratis?", "a": "<p>Sí. Es de código abierto (licencia MIT). No hay suscripción, créditos, marca de agua ni anuncios. La IA funciona en tu propio PC, así que no hay nada que pagar.</p>"},
-      {"id": "privacy", "q": "¿SharkyClips sube mis vídeos a algún sitio?", "a": "<p>No. Todo funciona en tu PC: el reconocimiento de voz, la IA, la búsqueda de momentos y la creación de clips. No hay servidor de SharkyClips ni rastreo. Tus vídeos solo salen de tu PC cuando tú compartes un clip en YouTube, TikTok o Instagram. Los detalles están en la <a href='{privacy}'>política de privacidad</a>.</p>"},
-      {"id": "google", "q": "¿Por qué necesito mi propio proyecto de Google para YouTube? ¿Qué es el límite de 100 usuarios?", "a": "<p>Para subir a YouTube, una app necesita un inicio de sesión de Google. Google limita un inicio de sesión que no ha revisado a <b>100 usuarios en total</b> (Google lo llama límite de usuarios). Un inicio de sesión compartido para todos los usuarios de SharkyClips se llenaría enseguida.</p><p>Por eso la descarga no trae un inicio de sesión de Google compartido. En su lugar conectas un <b>proyecto de Google gratuito propio</b>. Así el límite y la cuota diaria de subidas son solo tuyos. Es gratis, no necesita tarjeta y lleva unos 5 a 10 minutos, una sola vez.</p>"},
-      {"id": "google-setup", "q": "¿Cómo conecto mi propio proyecto de Google?", "a": "<p>En SharkyClips: Ajustes → YouTube → <b>Conectar tu propio proyecto de Google</b>. Una guía te abre las páginas de Google correctas:</p><ol class='howto'><li>Crea un proyecto (cualquier nombre).</li><li>Activa la YouTube Data API v3.</li><li>Configura la pantalla de consentimiento (Externa) y añádete como usuario de prueba.</li><li>Crea un cliente OAuth de tipo App de escritorio y descarga su archivo.</li><li>Suelta ese archivo en SharkyClips y pulsa Conectar con Google.</li></ol><p>Google puede decir que la app no está verificada: es tu propio proyecto, así que puedes seguir. Mientras el proyecto está en Prueba, Google cierra la sesión a los 7 días; ponlo En producción para seguir conectado. <a href='{own_google}'>Guía completa</a>.</p>"},
-      {"id": "helper", "q": "¿Cómo configuro la extensión ayudante de TikTok?", "a": "<p>El SharkyClips Helper es una pequeña extensión del navegador. Rellena tu página de subida de TikTok (y, si quieres, de Instagram) y se detiene antes de Publicar.</p><ul><li><b>Microsoft Edge, Opera, Opera GX, Brave:</b> no tienes que hacer nada. SharkyClips añade el Helper solo cuando abre la página de subida.</li><li><b>Google Chrome:</b> un paso de configuración. SharkyClips muestra una guía corta: abre chrome://extensions, activa el Modo de desarrollador, pulsa Cargar descomprimida y elige la carpeta que te muestra SharkyClips.</li><li>La primera vez, inicia sesión en TikTok en esa ventana tú mismo. SharkyClips nunca ve tu contraseña.</li></ul><p>El Helper solo funciona en páginas de TikTok e Instagram y solo habla con SharkyClips en tu PC. Sin él, SharkyClips te copia el texto y publicas a mano.</p>"},
-      {"id": "lowend", "q": "¿Funcionará en mi PC? No tengo un PC gamer.", "a": "<p>Sí. Necesitas Windows 10 u 11 (64 bits) y 8 GB de RAM. No hace falta GPU. En un PC sin GPU NVIDIA, SharkyClips elige el <b>modo Ligero</b> solo: un modelo de voz más pequeño y una IA más pequeña que funcionan en el procesador. Es más lento, pero funciona: un vídeo de 17 minutos tarda unos 16 minutos en un portátil pequeño de 2 núcleos. Con una GPU NVIDIA es mucho más rápido. Mira los <a href='{download}#requirements'>requisitos del sistema</a>.</p>"},
-      {"id": "gaming", "q": "¿Ralentiza mis juegos?", "a": "<p>No. En el modo Silencioso, que viene por defecto, SharkyClips pausa su trabajo pesado mientras juegas o ves algo a pantalla completa y le devuelve al juego la memoria gráfica. Continúa cuando paras.</p>"},
-      {"id": "smartscreen", "q": "Windows dice \"Windows protegió su PC\". ¿Es seguro?", "a": "<p>Es SmartScreen avisando de una descarga nueva que aún no está firmada con un certificado de pago. Pulsa <b>Más información</b> y luego <b>Ejecutar de todas formas</b>. Puedes comprobar el archivo con el archivo .sha256 de la versión. <a href='{download}#smartscreen'>Paso a paso</a>.</p>"},
-      {"id": "sources", "q": "¿Qué vídeos puedo usar?", "a": "<p>Grabaciones de Twitch, YouTube y Kick (con su repetición del chat), la mayoría de los demás sitios de vídeo o cualquier archivo de vídeo de tu PC. Los directos largos de varias horas no son problema. Usa solo vídeos que sean tuyos o que tengas derecho a usar.</p>"},
-      {"id": "posting", "q": "¿Publica en TikTok e Instagram por mí?", "a": "<p>SharkyClips lo prepara todo y el Helper rellena la página de subida, pero <b>tú</b> pulsas Publicar. Instagram siempre lo compartes tú. Las subidas a YouTube pueden ser automáticas cuando conectas tu propio proyecto de Google.</p>"},
-      {"id": "mac", "q": "¿Funciona en Mac o Linux?", "a": "<p>Windows es la plataforma principal, con un instalador de un clic. Hay un instalador de un solo comando para macOS y una instalación manual para Linux y desarrolladores, pero están menos probados. Mira la <a href='{gh}#install'>guía de instalación</a>.</p>"},
-      {"id": "feedback", "q": "¿Cómo informo de un error o sugiero una idea?", "a": "<p>En la app: Ajustes → Acerca de → <b>Enviar comentarios</b>, o el mismo botón en un mensaje de error. Abre un formulario de GitHub con la versión de la app y tu sistema ya rellenos, y nada más. O usa la <a href='{contact}'>página de contacto</a>.</p>"}
+      {
+        "id": "free",
+        "q": "¿SharkyClips es de verdad gratis?",
+        "a": "<p>Sí. Es de código abierto (licencia MIT). No hay suscripción, créditos, marca de agua ni anuncios. La IA funciona en tu propio PC, así que no hay nada que pagar.</p>"
+      },
+      {
+        "id": "privacy",
+        "q": "¿SharkyClips sube mis vídeos a algún sitio?",
+        "a": "<p>No. Todo funciona en tu PC: el reconocimiento de voz, la IA, la búsqueda de momentos y la creación de clips. No hay servidor de SharkyClips ni rastreo. Tus vídeos solo salen de tu PC cuando tú compartes un clip en YouTube, TikTok o Instagram. Los detalles están en la <a href='{privacy}'>política de privacidad</a>.</p>"
+      },
+      {
+        "id": "google",
+        "q": "¿Por qué necesito mi propio proyecto de Google para YouTube? ¿Qué es el límite de 100 usuarios?",
+        "a": "<p>Para subir a YouTube, una app necesita un inicio de sesión de Google. Google limita un inicio de sesión que no ha revisado a <b>100 usuarios en total</b> (Google lo llama límite de usuarios). Un inicio de sesión compartido para todos los usuarios de SharkyClips se llenaría enseguida.</p><p>Por eso la descarga no trae un inicio de sesión de Google compartido. En su lugar conectas un <b>proyecto de Google gratuito propio</b>. Así el límite y la cuota diaria de subidas son solo tuyos. Es gratis, no necesita tarjeta y lleva unos 5 a 10 minutos, una sola vez.</p>"
+      },
+      {
+        "id": "google-setup",
+        "q": "¿Cómo conecto mi propio proyecto de Google?",
+        "a": "<p>En SharkyClips: Ajustes → YouTube → <b>Conectar tu propio proyecto de Google</b>. Una guía te abre las páginas de Google correctas:</p><ol class='howto'><li>Crea un proyecto (cualquier nombre).</li><li>Activa la YouTube Data API v3.</li><li>Configura la pantalla de consentimiento (Externa) y añádete como usuario de prueba.</li><li>Crea un cliente OAuth de tipo App de escritorio y descarga su archivo.</li><li>Suelta ese archivo en SharkyClips y pulsa Conectar con Google.</li></ol><p>Google puede decir que la app no está verificada: es tu propio proyecto, así que puedes seguir. Mientras el proyecto está en Prueba, Google cierra la sesión a los 7 días; ponlo En producción para seguir conectado. <a href='{own_google}'>Guía completa</a>.</p>"
+      },
+      {
+        "id": "helper",
+        "q": "¿Cómo configuro la extensión ayudante de TikTok?",
+        "a": "<p>El SharkyClips Helper es una pequeña extensión del navegador. Rellena tu página de subida de TikTok (y, si quieres, de Instagram) y se detiene antes de Publicar.</p><ul><li><b>Microsoft Edge, Opera, Opera GX, Brave:</b> no tienes que hacer nada. SharkyClips añade el Helper solo cuando abre la página de subida.</li><li><b>Google Chrome:</b> un paso de configuración. SharkyClips muestra una guía corta: abre chrome://extensions, activa el Modo de desarrollador, pulsa Cargar descomprimida y elige la carpeta que te muestra SharkyClips.</li><li>La primera vez, inicia sesión en TikTok en esa ventana tú mismo. SharkyClips nunca ve tu contraseña.</li></ul><p>El Helper solo funciona en páginas de TikTok e Instagram y solo habla con SharkyClips en tu PC. Sin él, SharkyClips te copia el texto y publicas a mano.</p>"
+      },
+      {
+        "id": "lowend",
+        "q": "¿Funcionará en mi PC? No tengo un PC gamer.",
+        "a": "<p>Sí. Necesitas Windows 10 u 11 (64 bits) y 8 GB de RAM. No hace falta GPU. En un PC sin GPU NVIDIA, SharkyClips elige el <b>modo Ligero</b> solo: un modelo de voz más pequeño y una IA más pequeña que funcionan en el procesador. Es más lento, pero funciona: un vídeo de 17 minutos tarda unos 16 minutos en un portátil pequeño de 2 núcleos. Con una GPU NVIDIA es mucho más rápido. Mira los <a href='{download}#requirements'>requisitos del sistema</a>.</p>"
+      },
+      {
+        "id": "gaming",
+        "q": "¿Ralentiza mis juegos?",
+        "a": "<p>No. En el modo Silencioso, que viene por defecto, SharkyClips pausa su trabajo pesado mientras juegas o ves algo a pantalla completa y le devuelve al juego la memoria gráfica. Continúa cuando paras.</p>"
+      },
+      {
+        "id": "smartscreen",
+        "q": "Windows dice \"Windows protegió su PC\". ¿Es seguro?",
+        "a": "<p>Es SmartScreen avisando de una descarga nueva que aún no está firmada con un certificado de pago. Pulsa <b>Más información</b> y luego <b>Ejecutar de todas formas</b>. Puedes comprobar el archivo con el archivo .sha256 de la versión. <a href='{download}#smartscreen'>Paso a paso</a>.</p>"
+      },
+      {
+        "id": "sources",
+        "q": "¿Qué vídeos puedo usar?",
+        "a": "<p>Grabaciones de Twitch, YouTube y Kick (con su repetición del chat), la mayoría de los demás sitios de vídeo o cualquier archivo de vídeo de tu PC. Los directos largos de varias horas no son problema. Usa solo vídeos que sean tuyos o que tengas derecho a usar.</p>"
+      },
+      {
+        "id": "posting",
+        "q": "¿Publica en TikTok e Instagram por mí?",
+        "a": "<p>SharkyClips lo prepara todo y el Helper rellena la página de subida, pero <b>tú</b> pulsas Publicar. Instagram siempre lo compartes tú. Las subidas a YouTube pueden ser automáticas cuando conectas tu propio proyecto de Google.</p>"
+      },
+      {
+        "id": "mac",
+        "q": "¿Funciona en Mac o Linux?",
+        "a": "<p>Windows es la plataforma principal, con un instalador de un clic. Hay un instalador de un solo comando para macOS y una instalación manual para Linux y desarrolladores, pero están menos probados. Mira la <a href='{gh}#install'>guía de instalación</a>.</p>"
+      },
+      {
+        "id": "feedback",
+        "q": "¿Cómo informo de un error o sugiero una idea?",
+        "a": "<p>En la app: Ajustes → Acerca de → <b>Enviar comentarios</b>, o el mismo botón en un mensaje de error. Abre un formulario de GitHub con la versión de la app y tu sistema ya rellenos, y nada más. O usa la <a href='{contact}'>página de contacto</a>.</p>"
+      }
     ],
     "more_h": "¿Sigues atascado?",
     "more_p": "Abre un <a href='{bug}'>informe de error</a> o mira todas las <a href='{issues}'>preguntas en GitHub</a>."
@@ -140,7 +626,12 @@
     "lead": "SharkyClips se actualiza solo: Ajustes → Actualizaciones. Esto es lo que cambió en las últimas versiones.",
     "version": "Versión",
     "show": "Mostrar detalles",
-    "groups": {"new": "Nuevo", "improved": "Mejoras", "fixed": "Correcciones", "other": "Cambios"},
+    "groups": {
+      "new": "Nuevo",
+      "improved": "Mejoras",
+      "fixed": "Correcciones",
+      "other": "Cambios"
+    },
     "older": "Las versiones antiguas y los instaladores de cada versión están en <a href='{releases}'>GitHub</a>."
   },
   "contact": {
@@ -149,10 +640,34 @@
     "h1": "Contacto y comentarios",
     "lead": "SharkyClips se hace en abierto, en GitHub. Cada aviso ayuda.",
     "cards": [
-      {"icon": "bug", "h": "Informar de un error", "p": "¿Algo no funciona? Cuéntanos qué hiciste y qué pasó.", "btn": "Informar de un error", "href": "{bug}"},
-      {"icon": "bulb", "h": "Sugerir una idea", "p": "Una función que echas de menos, un juego al que juegas, un idioma que deberíamos mejorar.", "btn": "Sugerir una idea", "href": "{idea}"},
-      {"icon": "shield", "h": "Problema de seguridad", "p": "¿Encontraste un problema de seguridad? Avísanos en privado, no en un tema público.", "btn": "Avisar en privado", "href": "{security}"},
-      {"icon": "mail", "h": "Este sitio y la privacidad", "p": "Preguntas sobre este sitio, la política de privacidad o los términos.", "btn": "Preguntar sobre el sitio", "href": "{site_issues}"}
+      {
+        "icon": "bug",
+        "h": "Informar de un error",
+        "p": "¿Algo no funciona? Cuéntanos qué hiciste y qué pasó.",
+        "btn": "Informar de un error",
+        "href": "{bug}"
+      },
+      {
+        "icon": "bulb",
+        "h": "Sugerir una idea",
+        "p": "Una función que echas de menos, un juego al que juegas, un idioma que deberíamos mejorar.",
+        "btn": "Sugerir una idea",
+        "href": "{idea}"
+      },
+      {
+        "icon": "shield",
+        "h": "Problema de seguridad",
+        "p": "¿Encontraste un problema de seguridad? Avísanos en privado, no en un tema público.",
+        "btn": "Avisar en privado",
+        "href": "{security}"
+      },
+      {
+        "icon": "mail",
+        "h": "Este sitio y la privacidad",
+        "p": "Preguntas sobre este sitio, la política de privacidad o los términos.",
+        "btn": "Preguntar sobre el sitio",
+        "href": "{site_issues}"
+      }
     ],
     "app_note": "<b>En la app:</b> Ajustes → Acerca de → <b>Enviar comentarios</b> (también en cada mensaje de error) rellena por ti la versión de la app y tu sistema.",
     "privacy_note": "Los temas de GitHub son públicos. No añadas vídeos privados, enlaces a contenido privado, contraseñas ni archivos de registro con datos personales. Necesitas una cuenta gratuita de GitHub para publicar."
@@ -171,5 +686,10 @@
     "summary_h": "En resumen",
     "summary": "<ul><li>SharkyClips es software gratuito y de código abierto (licencia MIT).</li><li>Usa solo vídeos, música y logos que sean tuyos o que puedas usar. Eres responsable de lo que publicas.</li><li>Los títulos y textos de la IA son sugerencias: revísalos antes de publicar.</li><li>La app no tiene ninguna garantía. Haz copias de los vídeos que te importan.</li></ul>"
   },
-  "notfound": {"title": "Página no encontrada: SharkyClips", "h1": "Página no encontrada", "p": "Esta página no existe (o ya no existe).", "back": "Inicio"}
+  "notfound": {
+    "title": "Página no encontrada: SharkyClips",
+    "h1": "Página no encontrada",
+    "p": "Esta página no existe (o ya no existe).",
+    "back": "Inicio"
+  }
 }

@@ -1,5 +1,12 @@
 {
-  "nav": {"index": "首页", "features": "功能", "download": "下载", "faq": "常见问题", "updates": "更新", "contact": "联系"},
+  "nav": {
+    "index": "首页",
+    "features": "功能",
+    "download": "下载",
+    "faq": "常见问题",
+    "updates": "更新",
+    "contact": "联系"
+  },
   "ui": {
     "skip": "跳到内容",
     "nav_label": "主菜单",
@@ -10,52 +17,256 @@
     "langhint_go": "阅读中文版",
     "og_alt": "SharkyClips：把直播录像变成竖屏短片的应用"
   },
-  "footer": {"label": "页脚", "license": "免费开源（MIT）", "privacy": "隐私", "terms": "条款", "feedback": "发送反馈", "source": "GitHub 上的源代码"},
+  "footer": {
+    "label": "页脚",
+    "license": "免费开源（MIT）",
+    "privacy": "隐私",
+    "terms": "条款",
+    "feedback": "发送反馈",
+    "source": "GitHub 上的源代码"
+  },
   "common": {
     "download_btn": "下载 Windows 版",
     "download_sub": "免费 · {size} MB · 版本 {version}",
     "new": "新",
-    "english_binding": "下面的完整文本为英文，以英文文本为准。"
+    "english_binding": "下面的完整文本为英文，以英文文本为准。",
+    "stars": "GitHub 星标",
+    "downloads": "次下载",
+    "sha_link": "SHA-256 校验值",
+    "months": [
+      "1月",
+      "2月",
+      "3月",
+      "4月",
+      "5月",
+      "6月",
+      "7月",
+      "8月",
+      "9月",
+      "10月",
+      "11月",
+      "12月"
+    ],
+    "date": "{y}年{m}{d}日",
+    "dur_min": "约 {m} 分钟",
+    "dur_h": "约 {h} 小时 {m} 分钟",
+    "dur_h0": "约 {h} 小时"
   },
   "home": {
     "title": "SharkyClips：免费把直播精彩片段做成 Shorts、TikTok 和 Reels",
-    "desc": "SharkyClips 是一款面向主播的免费应用。它会找出直播录像里的精彩时刻，做成可直接发布的竖屏短片，全部在你自己的电脑上完成。",
-    "eyebrow": "面向主播的免费应用",
+    "desc": "SharkyClips 是一款面向主播的免费应用。它能找出你在 Twitch、YouTube 或 Kick 直播中的精彩时刻，并做成可直接发布的竖屏短视频，全部在你自己的电脑上完成。无水印，无限制。",
+    "kick": "支持 Kick",
+    "kick_more": "也支持 Twitch、YouTube 和任何视频文件",
     "h1": "放进直播，拿到可发布的短片。",
     "lead": "SharkyClips 找出直播录像中的精彩时刻，把它们做成适合 YouTube Shorts、TikTok 和 Instagram Reels 的竖屏短片。一切都在你自己的电脑上运行。",
+    "promise_label": "你能得到",
+    "promise": [
+      "100% 免费",
+      "无水印",
+      "无限制",
+      "在你的电脑上运行"
+    ],
     "see_features": "看看它能做什么",
-    "facts": ["免费开源", "无需账号，没有云端", "11 种语言", "Windows 10 / 11"],
     "hero_alt": "简单模式下的 SharkyClips：一场直播及其做好的短片，每个短片都有一个分享按钮",
     "how_h": "使用方法",
     "how_lead": "三个步骤。中间的剪辑工作由 SharkyClips 完成。",
     "steps": [
-      {"h": "添加直播", "p": "拖入一个视频文件，或粘贴 Twitch、YouTube 或 Kick 链接。SharkyClips 也可以读取 OBS 文件夹里最新的录像。"},
-      {"h": "SharkyClips 制作短片", "p": "它找出热闹、搞笑和激动的时刻，干净地剪下来，加上字幕，把脏话消音，并写好标题。"},
-      {"h": "检查并分享", "p": "观看短片，修改你想改的地方，然后分享到 YouTube Shorts、TikTok 和 Instagram Reels。"}
+      {
+        "h": "添加直播",
+        "p": "拖入一个视频文件，或粘贴 Twitch、YouTube 或 Kick 链接。SharkyClips 也可以读取 OBS 文件夹里最新的录像。"
+      },
+      {
+        "h": "SharkyClips 制作短片",
+        "p": "它找出热闹、搞笑和激动的时刻，干净地剪下来，加上字幕，把脏话消音，并写好标题。"
+      },
+      {
+        "h": "检查并分享",
+        "p": "观看短片，修改你想改的地方，然后分享到 YouTube Shorts、TikTok 和 Instagram Reels。"
+      }
     ],
-    "demo_h": "实际效果",
-    "demo_lead": "当前版本的简短演示，使用演示直播制作（不含真实人物或游戏）。",
-    "demo_alt": "短视频：SharkyClips 首页、一场直播及其短片，以及分享窗口",
-    "demo_cap": "简单模式：打开直播，观看短片，分享出去。",
+    "demo_alt": "视频：SharkyClips 把直播录像做成完成的竖屏短视频并分享",
+    "demo_cap": "从直播到短视频：左边是直播，右边是做好的短视频。静音，带字幕。",
+    "captions": [
+      "拖入一段直播录像，或粘贴 Twitch、YouTube 或 Kick 链接。",
+      "SharkyClips 自动找出精彩时刻并做成短视频。",
+      "左边是直播，右边是做好的短视频：9:16 画面，带字幕。",
+      "短视频跟着说话开始和结束，不会把一句话切成两半。",
+      "每个短视频都有标题和评分，最好的排在最上面。",
+      "一个分享按钮，发布到 YouTube Shorts、TikTok 和 Instagram Reels。"
+    ],
     "gallery": [
-      {"img": "easy-home", "alt": "SharkyClips 首页，有一个用来拖入视频或链接的大区域", "cap": "开始：拖入视频或粘贴链接。"},
-      {"img": "share", "alt": "分享窗口，含 YouTube、TikTok 和 Instagram，每个平台都有文案", "cap": "一个分享按钮，适用于所有平台。"},
-      {"img": "pro-project", "alt": "专业模式：直播及其热度图、9:16 预览和短片列表", "cap": "专业模式：需要时可调整所有设置。"}
+      {
+        "img": "easy-home",
+        "alt": "SharkyClips 首页，有一个用来拖入视频或链接的大区域",
+        "cap": "开始：拖入视频或粘贴链接。"
+      },
+      {
+        "img": "share",
+        "alt": "分享窗口，含 YouTube、TikTok 和 Instagram，每个平台都有文案",
+        "cap": "一个分享按钮，适用于所有平台。"
+      },
+      {
+        "img": "pro-project",
+        "alt": "专业模式：直播及其热度图、9:16 预览和短片列表",
+        "cap": "专业模式：需要时可调整所有设置。"
+      }
     ],
     "feat_h": "为主播打造",
     "cards": [
-      {"icon": "wave", "h": "找出精彩时刻", "p": "大声的反应、笑声、弹幕爆发和游戏事件，汇成一份排好序的短片列表。"},
-      {"icon": "mute", "h": "消音，并且复查", "p": "支持 11 种语言的脏话消音，每个做好的短片都会再听一遍。"},
-      {"icon": "share", "h": "一个分享按钮", "p": "YouTube Shorts、TikTok 和 Instagram Reels，每个平台都有合适的文案和限制。"},
-      {"icon": "puzzle", "h": "TikTok 助手", "p": "一个小小的浏览器扩展会帮你填写 TikTok 上传内容。由你检查并亲自点击发布。", "new": "1"},
-      {"icon": "photos", "h": "照片幻灯片", "p": "把 2 到 20 张照片做成带标签和音乐的竖屏前后对比视频。", "new": "1"},
-      {"icon": "palette", "h": "你的外观", "p": "应用有四种外观，深色和浅色，还可以用你自己的颜色。", "new": "1"}
+      {
+        "icon": "wave",
+        "h": "找出精彩时刻",
+        "p": "大声的反应、笑声、弹幕爆发和游戏事件，汇成一份排好序的短片列表。"
+      },
+      {
+        "icon": "mute",
+        "h": "消音，并且复查",
+        "p": "支持 11 种语言的脏话消音，每个做好的短片都会再听一遍。"
+      },
+      {
+        "icon": "share",
+        "h": "一个分享按钮",
+        "p": "YouTube Shorts、TikTok 和 Instagram Reels，每个平台都有合适的文案和限制。"
+      },
+      {
+        "icon": "puzzle",
+        "h": "TikTok 助手",
+        "p": "一个适用于 Edge、Chrome、Opera 和 Brave 的小浏览器扩展，会帮你填好 TikTok 上传页面。由你检查并亲自点击发布。",
+        "new": "1"
+      },
+      {
+        "icon": "photos",
+        "h": "照片幻灯片",
+        "p": "把 2 到 20 张照片做成带标签和音乐的竖屏前后对比视频。",
+        "new": "1"
+      },
+      {
+        "icon": "palette",
+        "h": "主题和颜色",
+        "p": "应用有四种颜色主题（经典、海洋、Shark Sign、高对比度），深色或浅色，还能设置你自己的强调色。",
+        "new": "1"
+      }
     ],
     "all_features": "全部功能",
     "yt_h": "SharkyClips 如何使用 YouTube",
+    "yt_short": "连接 YouTube 是可选的。连接后，SharkyClips 只使用官方 YouTube API 服务来上传和管理你选择的短视频，并向你显示它们的数据。你的 YouTube 数据保存在你的电脑上。",
+    "yt_show": "查看权限以及你的 YouTube 数据如何被使用",
     "yt_html": "<p>上传到 YouTube 是可选的。如果你在<b>设置 → YouTube</b> 中连接频道，SharkyClips 会使用官方 YouTube API 服务做以下这些事，而且只在你要求时才做：</p><div class='tablewrap'><table><thead><tr><th scope='col'>操作</th><th scope='col'>权限（范围）</th><th scope='col'>何时</th></tr></thead><tbody><tr><td>上传你设置好的短片（标题、描述、标签、隐私、发布时间、播放列表、缩略图）；修改其信息或发布时间，提前发布，或在公开前取消时删除；显示已连接的频道；读取<i>通过 SharkyClips</i> 上传的视频的观看次数、点赞数和隐私状态</td><td><code>youtube</code></td><td>当你点击<b>立即发布</b>或安排一个短片（电脑开着时提前上传）、在资料库中编辑或取消、打开设置时，以及应用运行期间大约每 6 小时一次</td></tr><tr><td>读取这些视频的平均观看百分比，以了解哪种开头（钩子）风格能留住观众</td><td><code>yt-analytics.readonly</code></td><td>仅针对作为钩子测试一部分上传、且已公开 48 小时的短片</td></tr></tbody></table></div><p class='callout'>这些数据只保存在你的电脑上，只用于向你展示结果，并为<i>你的</i>频道改进短片评分。SharkyClips 没有服务器：开发者从不接收、查看或分享你的 YouTube 数据，也不会把任何数据用于广告。SharkyClips 从不读取他人的频道、你的评论、订阅者或观看记录。它只会修改或删除通过 SharkyClips 上传的视频，而且只在你要求时（例如编辑或取消已安排的短片时）。</p><p>你可以随时在设置 → YouTube 中断开连接（这会在 Google 撤销访问令牌），或在 <a href='https://myaccount.google.com/permissions'>Google 账号权限</a>中移除访问权限。连接即表示你同意 <a href='https://www.youtube.com/t/terms'>YouTube 服务条款</a>；Google 依据 <a href='https://policies.google.com/privacy'>Google 隐私权政策</a>处理你的数据。请阅读完整的<a href='{privacy}'>隐私政策</a>和<a href='{terms}'>使用条款</a>。</p>",
     "oss_h": "免费、开源、私密",
     "oss_p": "SharkyClips 采用 MIT 许可：没有订阅，没有点数，没有水印。没有账号也没有追踪，除非你分享，否则视频一直留在你的电脑上。源代码和每个版本都在 <a href='{gh}'>GitHub</a> 上。"
+  },
+  "results": {
+    "h": "真实效果",
+    "lead": "每一组显示长直播中的一个时刻，以及 SharkyClips 自动用它做成的短视频中的同一时刻：已剪辑、转为 9:16、带字幕和标题。",
+    "before": "直播",
+    "after": "成品短视频",
+    "before_alt": "16:9 直播录像在 {time} 的画面",
+    "after_alt": "同一时刻在 9:16 成品短视频中的画面：{title}",
+    "items": [
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      },
+      {
+        "time": "0:00",
+        "title": "TITLE",
+        "why": "WHY"
+      }
+    ],
+    "note": "用我们的演示直播制作（手绘游戏画面、电脑合成语音和生成的聊天），没有出现任何真人、真实游戏或频道。没有任何手动剪辑。"
+  },
+  "compare": {
+    "h": "SharkyClips 对比",
+    "lead": "信息来自各产品的官方网站，核对日期：{date}。价格为美元，不含税。方案会变化，做决定前请查看它们的页面。",
+    "corner": "项目",
+    "rows": [
+      [
+        "价格",
+        "免费（开源，MIT 许可证）",
+        "免费试用；Premium 每月 24.99 美元起，或每年 179.99 美元",
+        "有免费方案；付费方案每月 15 美元起",
+        "有免费方案；付费方案每月 15 美元或每年 150 美元起"
+      ],
+      [
+        "水印",
+        "从不",
+        "免费导出带水印",
+        "免费方案带水印",
+        "仅当免费短视频使用付费功能时"
+      ],
+      [
+        "短视频数量限制",
+        "无",
+        "免费：预览一场近期直播的短视频；Premium：无限 AI 剪辑",
+        "免费：每月 60 分钟处理时长，文件保存 3 天",
+        "无分钟限制；整场直播的 AI 剪辑从 Creator 方案起（每月 27 美元）；免费导出为 720p"
+      ],
+      [
+        "视频在哪里处理",
+        "在你的电脑上：不上传任何内容",
+        "在线：AI 剪辑在云端运行",
+        "在线：上传文件或粘贴链接",
+        "在线：上传文件或粘贴链接"
+      ],
+      [
+        "你需要什么",
+        "一台 8 GB 内存的 Windows 10 或 11 电脑（macOS：测试较少）",
+        "浏览器和账号",
+        "浏览器和账号",
+        "浏览器和账号"
+      ],
+      [
+        "按游戏识别",
+        "读取《Delta Force》和《英雄联盟》的游戏画面；其他游戏通过语音、声音和聊天识别",
+        "支持 3000 多款游戏，按游戏类别调校",
+        "未说明",
+        "未说明"
+      ],
+      [
+        "Kick",
+        "Kick 视频及其聊天记录",
+        "可导入 Kick 直播",
+        "支持 Kick 链接",
+        "免费方案可导入 Kick 片段；整场 Kick 直播需 Creator 方案起"
+      ],
+      [
+        "脏话消音",
+        "11 种语言自动处理，并重新检查每个短视频",
+        "未说明",
+        "Pro 方案起（每月 29 美元）",
+        "自动屏蔽词语（未明确说明所属方案）"
+      ],
+      [
+        "语言",
+        "11 种（应用、语音识别和字幕）",
+        "字幕语言未说明；语音指令为英语",
+        "字幕支持 25 种以上",
+        "字幕支持 90 种以上"
+      ]
+    ],
+    "note": "“未说明”表示我们在其官方页面上没有找到。有错误或过时的信息？请通过联系页面告诉我们，我们会更正。",
+    "sources": "来源（{n} 个官方页面）"
   },
   "features": {
     "title": "功能：SharkyClips，免费的直播剪辑工具",
@@ -63,52 +274,279 @@
     "h1": "SharkyClips 能做的一切",
     "lead": "从一场长直播到被看完的短片。简单模式全部自动完成；专业模式提供每一项设置。",
     "sections": [
-      {"id": "moments", "eyebrow": "精彩时刻", "h": "找出值得发布的时刻", "p": "SharkyClips 像剪辑师一样去听、去读。", "items": ["音量、笑声、喊叫和反应词", "弹幕回放中的爆发（Twitch、YouTube、Kick）", "剪辑点落在词与词之间，绝不切在句子中间", "本地 AI 给每个短片打分并写标题"], "img": "pro-project", "alt": "一场直播的热度图，标出了精彩时刻"},
-      {"id": "games", "eyebrow": "游戏", "h": "认识你的游戏", "p": "对于 Delta Force 和英雄联盟，它会直接读取游戏画面。", "items": ["击杀、多杀、目标和胜利", "多杀总能完整放进一个短片", "根据游戏中发生的事写标题", "更多游戏可作为配置文件添加"], "icon": "game", "aside": "其他游戏也可以：这时精彩时刻来自你的声音、游戏音效和弹幕。"},
-      {"id": "editing", "eyebrow": "剪辑", "h": "可直接发布的短片", "p": "9:16 视频，上面是你的摄像头，下面是游戏。", "items": ["逐词字幕，也支持从右到左的语言", "11 种语言的脏话消音，每个短片都会复查", "智能缩放、即时回放和弹幕气泡", "按文字剪辑：删掉词语就能剪掉"], "icon": "mute", "aside": "仍能听到脏话的短片不会被自动分享，直到你听过为止。"},
-      {"id": "easy", "eyebrow": "简单和专业", "h": "简单模式全包", "p": "拖入一个视频，回来就是做好的短片。需要每项设置时切换到专业模式。", "items": ["自动挑选、调整并渲染最佳短片", "直播结束后自动出短片（OBS 文件夹或你的频道）", "游戏时用快捷键或在弹幕发 !clip 标记时刻", "用手机审核短片"], "img": "easy-home", "alt": "简单模式首页"},
-      {"id": "share", "eyebrow": "分享", "h": "一个分享按钮，适用于所有平台", "p": "在一个窗口里分享到 YouTube Shorts、TikTok 和 Instagram Reels。", "items": ["每个平台一份文案，并检查其限制", "立即分享或选择时间", "用你自己的免费 Google 项目上传到 YouTube", "分享记录，确保不会重复发布"], "img": "share", "alt": "含三个平台的分享窗口"},
-      {"id": "helper", "eyebrow": "TikTok 和 Instagram", "h": "SharkyClips 助手帮你填写上传内容", "new": "1", "p": "一个小小的浏览器扩展。SharkyClips 在你的浏览器中打开 TikTok 上传页面，助手放入视频和文案。", "items": ["在发布前停下：由你检查并亲自发布", "在 Edge、Opera 和 Brave 中自动可用；Chrome 需要一步设置", "只在 TikTok 和 Instagram 页面上运行", "只与你电脑上的 SharkyClips 通信，不与任何其他东西通信"], "icon": "puzzle", "aside": "不会保存或代你输入任何密码：你自己登录 TikTok 一次。"},
-      {"id": "slideshow", "eyebrow": "照片", "h": "照片幻灯片", "new": "1", "p": "把 2 到 20 张照片做成竖屏视频：非常适合前后对比。", "items": ["用你的语言显示之前、进行中和完成等标签", "每张照片都有缓慢平滑的缩放和柔和转场", "你的音乐，结尾是 SharkyClips 标志", "用同一个分享按钮分享"], "img": "slideshow", "alt": "照片幻灯片界面，照片排成一行，旁边是 9:16 预览"},
-      {"id": "looks", "eyebrow": "个性化", "h": "打造你的风格", "new": "1", "p": "为应用选择外观：经典、海洋、Shark Sign 或高对比度。", "items": ["每种外观都有深色和浅色", "你自己的强调色，并检查对比度", "柔和或完整的动画，或者不要动画", "直播处理时可以玩一个小鲨鱼游戏"], "img": "looks", "alt": "显示应用四种外观的设置页"},
-      {"id": "languages", "eyebrow": "语言", "h": "11 种语言", "p": "应用界面、语音识别、标题和字幕。", "items": ["English, Türkçe, Español, Português (Brasil), Deutsch, Français, Magyar", "Русский、العربية（从右到左）、中文、日本語", "标题可以使用与语音不同的语言", "字幕翻译时保留时间轴"], "icon": "lang", "aside": "语音识别（Whisper）和 AI 在所有语言下都在你的电脑上运行。"},
-      {"id": "lowend", "eyebrow": "任何电脑", "h": "普通电脑也能用", "p": "不需要游戏电脑。SharkyClips 会检查你的硬件并选择合适的设置。", "items": ["NVIDIA 显卡会让速度快很多", "轻量模式适合旧电脑和没有显卡的笔记本", "安静模式会在你玩游戏或全屏观看时暂停", "关闭的应用会从中断处继续"], "icon": "cpu", "aside": "在一台没有显卡的小型双核笔记本上，17 分钟的视频在轻量模式下大约需要 16 分钟。"},
-      {"id": "private", "eyebrow": "隐私", "h": "从设计上就注重隐私", "p": "不存在 SharkyClips 服务器。", "items": ["语音识别和 AI 在你的电脑上运行", "没有账号、没有统计、没有广告", "你的登录信息加密保存在电脑上", "只有你分享时，视频才会离开电脑"], "icon": "lock", "aside": "阅读完整的<a href='{privacy}'>隐私政策</a>。"}
+      {
+        "id": "moments",
+        "eyebrow": "精彩时刻",
+        "h": "找出值得发布的时刻",
+        "p": "SharkyClips 像剪辑师一样去听、去读。",
+        "items": [
+          "音量、笑声、喊叫和反应词",
+          "弹幕回放中的爆发（Twitch、YouTube、Kick）",
+          "剪辑点落在词与词之间，绝不切在句子中间",
+          "本地 AI 给每个短片打分并写标题"
+        ],
+        "img": "pro-project",
+        "alt": "一场直播的热度图，标出了精彩时刻"
+      },
+      {
+        "id": "games",
+        "eyebrow": "游戏",
+        "h": "认识你的游戏",
+        "p": "对于 Delta Force 和英雄联盟，它会直接读取游戏画面。",
+        "items": [
+          "击杀、多杀、目标和胜利",
+          "多杀总能完整放进一个短片",
+          "根据游戏中发生的事写标题",
+          "更多游戏可作为配置文件添加"
+        ],
+        "icon": "game",
+        "aside": "其他游戏也可以：这时精彩时刻来自你的声音、游戏音效和弹幕。"
+      },
+      {
+        "id": "editing",
+        "eyebrow": "剪辑",
+        "h": "可直接发布的短片",
+        "p": "9:16 视频，上面是你的摄像头，下面是游戏。",
+        "items": [
+          "逐词字幕，也支持从右到左的语言",
+          "11 种语言的脏话消音，每个短片都会复查",
+          "智能缩放、即时回放和弹幕气泡",
+          "按文字剪辑：删掉词语就能剪掉"
+        ],
+        "icon": "mute",
+        "aside": "仍能听到脏话的短片不会被自动分享，直到你听过为止。"
+      },
+      {
+        "id": "easy",
+        "eyebrow": "简单和专业",
+        "h": "简单模式全包",
+        "p": "拖入一个视频，回来就是做好的短片。需要每项设置时切换到专业模式。",
+        "items": [
+          "自动挑选、调整并渲染最佳短片",
+          "直播结束后自动出短片（OBS 文件夹或你的频道）",
+          "游戏时用快捷键或在弹幕发 !clip 标记时刻",
+          "用手机审核短片"
+        ],
+        "img": "easy-home",
+        "alt": "简单模式首页"
+      },
+      {
+        "id": "share",
+        "eyebrow": "分享",
+        "h": "一个分享按钮，适用于所有平台",
+        "p": "在一个窗口里分享到 YouTube Shorts、TikTok 和 Instagram Reels。",
+        "items": [
+          "每个平台一份文案，并检查其限制",
+          "立即分享或选择时间",
+          "用你自己的免费 Google 项目上传到 YouTube",
+          "分享记录，确保不会重复发布"
+        ],
+        "img": "share",
+        "alt": "含三个平台的分享窗口"
+      },
+      {
+        "id": "helper",
+        "eyebrow": "TikTok 和 Instagram",
+        "h": "SharkyClips 助手帮你填写上传内容",
+        "new": "1",
+        "p": "一个小小的浏览器扩展。SharkyClips 在你的浏览器中打开 TikTok 上传页面，助手放入视频和文案。",
+        "items": [
+          "在发布前停下：由你检查并亲自发布",
+          "在 Microsoft Edge、Opera、Opera GX 和 Brave 中自动可用；Google Chrome 需要一步设置",
+          "只在 TikTok 和 Instagram 页面上运行",
+          "只与你电脑上的 SharkyClips 通信，不与任何其他东西通信"
+        ],
+        "icon": "puzzle",
+        "aside": "不会保存或代你输入任何密码：你自己登录 TikTok 一次。"
+      },
+      {
+        "id": "slideshow",
+        "eyebrow": "照片",
+        "h": "照片幻灯片",
+        "new": "1",
+        "p": "把 2 到 20 张照片做成竖屏视频：非常适合前后对比。",
+        "items": [
+          "用你的语言显示之前、进行中和完成等标签",
+          "每张照片都有缓慢平滑的缩放和柔和转场",
+          "你的音乐，结尾是 SharkyClips 标志",
+          "用同一个分享按钮分享"
+        ],
+        "img": "slideshow",
+        "alt": "照片幻灯片界面，照片排成一行，旁边是 9:16 预览"
+      },
+      {
+        "id": "looks",
+        "eyebrow": "个性化",
+        "h": "主题和颜色",
+        "new": "1",
+        "p": "为应用选择颜色主题：经典、海洋、Shark Sign 或高对比度。",
+        "items": [
+          "每种外观都有深色和浅色",
+          "你自己的强调色，并检查对比度",
+          "柔和或完整的动画，或者不要动画",
+          "直播处理时可以玩一个小鲨鱼游戏"
+        ],
+        "img": "looks",
+        "alt": "显示应用四种颜色主题的设置页面"
+      },
+      {
+        "id": "languages",
+        "eyebrow": "语言",
+        "h": "11 种语言",
+        "p": "应用界面、语音识别、标题和字幕。",
+        "items": [
+          "English, Türkçe, Español, Português (Brasil), Deutsch, Français, Magyar",
+          "Русский、العربية（从右到左）、中文、日本語",
+          "标题可以使用与语音不同的语言",
+          "字幕翻译时保留时间轴"
+        ],
+        "icon": "lang",
+        "aside": "语音识别（Whisper）和 AI 在所有语言下都在你的电脑上运行。"
+      },
+      {
+        "id": "lowend",
+        "eyebrow": "任何电脑",
+        "h": "普通电脑也能用",
+        "p": "不需要游戏电脑。SharkyClips 会检查你的硬件并选择合适的设置。",
+        "items": [
+          "NVIDIA 显卡会让速度快很多",
+          "轻量模式适合旧电脑和没有显卡的笔记本",
+          "安静模式会在你玩游戏或全屏观看时暂停",
+          "关闭的应用会从中断处继续"
+        ],
+        "icon": "cpu",
+        "aside": "在一台没有显卡的小型双核笔记本上，17 分钟的视频在轻量模式下大约需要 16 分钟。"
+      },
+      {
+        "id": "private",
+        "eyebrow": "隐私",
+        "h": "从设计上就注重隐私",
+        "p": "不存在 SharkyClips 服务器。",
+        "items": [
+          "语音识别和 AI 在你的电脑上运行",
+          "没有账号、没有统计、没有广告",
+          "你的登录信息加密保存在电脑上",
+          "只有你分享时，视频才会离开电脑"
+        ],
+        "icon": "lock",
+        "aside": "阅读完整的<a href='{privacy}'>隐私政策</a>。"
+      }
     ]
   },
   "download": {
     "title": "下载 SharkyClips Windows 版（免费）",
-    "desc": "下载适用于 Windows 10 和 11 的免费 SharkyClips 安装程序。系统要求、安装步骤以及 Windows SmartScreen 提示的帮助。",
+    "desc": "免费下载适用于 Windows 10 和 11 的 SharkyClips 安装程序，或适用于 macOS 的 install.sh。详细的系统要求、处理时间、SHA-256 校验值，以及 SmartScreen 提示的帮助。",
     "h1": "下载 SharkyClips",
     "lead": "一个安装程序，包含所有内容。不需要管理员权限，不装额外程序。",
     "all_releases": "所有版本",
-    "facts": ["版本 {version}", "约 {size} MB", "Windows 10 / 11，64 位", "免费，无需账号"],
+    "facts": [
+      "版本 {version}",
+      "约 {size} MB",
+      "Windows 10 / 11，64 位",
+      "免费，无需账号"
+    ],
+    "sha_label": "{file} 的 SHA-256",
+    "sha_how_win": "要检查下载的文件，请在 PowerShell 中运行 {cmd}：Hash 必须与这个数字完全相同。同样的数字也在该版本的 <a href='{sha_url}'>.sha256 文件</a>中。",
+    "sha_how_mac": "要检查它，请在终端中运行 {cmd}：结果必须与这个数字完全相同。它也在该版本的 <a href='{sha_url}'>.sha256 文件</a>中。",
     "steps_h": "三步安装",
     "steps": [
-      {"h": "下载", "p": "点击下载按钮。文件名为 SharkyClips-Setup-{version}.exe。"},
-      {"h": "安装", "p": "打开它，点击下一步，然后点击安装。大约需要一分钟。Windows 显示蓝色提示？<a href='#smartscreen'>请看下方</a>。"},
-      {"h": "首次启动", "p": "SharkyClips 会在浏览器中打开，询问你的语言并检查你的电脑。然后一次性下载适合你电脑的 AI 组件。"}
+      {
+        "h": "下载",
+        "p": "点击下载按钮。文件名为 SharkyClips-Setup-{version}.exe。"
+      },
+      {
+        "h": "安装",
+        "p": "打开它，点击下一步，然后点击安装。大约需要一分钟。Windows 显示蓝色提示？<a href='#smartscreen'>请看下方</a>。"
+      },
+      {
+        "h": "首次启动",
+        "p": "SharkyClips 会在浏览器中打开，询问你的语言并检查你的电脑。然后一次性下载适合你电脑的 AI 组件。"
+      }
     ],
     "req_h": "系统要求",
-    "req_p": "SharkyClips 每次启动都会检查硬件，并选择能运行的最快设置。",
-    "req_cols": ["项目", "最低", "推荐"],
+    "req_p": "SharkyClips 每次启动都会检查你的硬件，并选择能用的最快设置。普通电脑也能运行：有显卡会更快，但不是必须的。",
+    "req_cols": [
+      "项目",
+      "最低",
+      "推荐"
+    ],
     "req_rows": [
-      ["系统", "Windows 10（1809 或更高）或 11，64 位", "Windows 11"],
-      ["内存", "8 GB 内存（4 GB 可在轻量模式下缓慢运行）", "16 GB 内存"],
-      ["显卡", "不需要显卡", "6 GB 或以上的 NVIDIA 显卡"],
-      ["磁盘", "应用约 3 GB，AI 模型 2 到 10 GB", "固态硬盘，并为视频留出空间"],
-      ["网络", "首次启动和分享时需要", "之后可离线使用"]
+      [
+        "系统",
+        "Windows 10（1809 或更新）或 Windows 11，64 位",
+        "Windows 11"
+      ],
+      [
+        "处理器",
+        "64 位，2 核 / 4 线程（例如第 11 代 Intel Core i3）",
+        "6 核 / 12 线程或更多（例如 2020 年或更新的 Intel Core i5 或 AMD Ryzen 5）"
+      ],
+      [
+        "内存",
+        "8 GB 内存（4 GB 可在轻量模式下缓慢运行）",
+        "16 GB 内存"
+      ],
+      [
+        "显卡",
+        "不需要：轻量模式在处理器上运行",
+        "6 GB 或以上显存的 NVIDIA GeForce RTX。AMD Radeon 和 Intel Arc：AI 可以使用它们，语音识别仍在处理器上运行"
+      ],
+      [
+        "磁盘",
+        "应用约 3 GB，AI 模型 2 到 10 GB，另需空间存放视频（1 小时 1080p 录像约 4 到 8 GB）",
+        "可用空间 50 GB 以上的 SSD"
+      ],
+      [
+        "网络",
+        "首次启动、下载和分享时需要",
+        "之后可离线使用"
+      ]
+    ],
+    "time_h": "需要多长时间？",
+    "time_p": "于 {date} 使用真实的 1080p 直播录像（说话和游戏）测得，从导入到 {clips} 个成品短视频：语音识别、找出精彩时刻、AI 标题和渲染。",
+    "time_cols": [
+      "直播",
+      "使用 NVIDIA 显卡",
+      "轻量模式，仅处理器"
+    ],
+    "time_rows": [
+      "1 小时直播",
+      "3 小时直播"
+    ],
+    "time_notes": [
+      "测试电脑：{cpu}，{ram} GB 内存，{gpu}。轻量模式下没有使用显卡（设置 → 性能 → 仅 CPU）。",
+      "处理器越慢，用时越长：在一台没有显卡的 2 核小笔记本上，一段 17 分钟的视频在轻量模式下用了约 16 分钟。",
+      "SharkyClips 在后台工作。在静默模式下，你玩游戏时它会暂停，停下后再继续。"
     ],
     "smart_h": "“Windows 已保护你的电脑”？",
     "smart_p": "安装程序尚未使用付费证书签名，因此 Microsoft Defender SmartScreen 可能会对新下载发出警告。对新的免费应用来说这很正常。",
-    "smart_steps": ["点击<b>更多信息</b>。", "确认应用是 SharkyClips-Setup-{version}.exe。", "点击<b>仍要运行</b>。"],
-    "smart_note": "想确认一下？每个版本都有一个 .sha256 文件。在 PowerShell 中，<code>Get-FileHash SharkyClips-Setup-{version}.exe</code> 应显示相同的数值。",
+    "smart_steps": [
+      "点击<b>更多信息</b>。",
+      "确认应用是 SharkyClips-Setup-{version}.exe。",
+      "点击<b>仍要运行</b>。"
+    ],
+    "smart_note": "想确认一下？把你文件的 SHA-256 与<a href='#checksum'>本页顶部</a>的数字比较。",
     "smart_alt": "Windows SmartScreen 提示：先点击更多信息，再点击仍要运行",
+    "smart_cap": "两次点击的示意图。你的屏幕可能看起来略有不同。",
+    "mac_h": "macOS 和 Linux",
+    "mac_p": "在 Mac 上，一条命令即可安装全部内容。macOS 和 Linux 的测试少于 Windows。",
+    "mac_steps": [
+      "用下面的按钮下载 <b>install.sh</b>。",
+      "打开<b>终端</b>并运行 <code>bash ~/Downloads/install.sh</code>。它会显示要安装的内容（Homebrew、Python、FFmpeg 和 AI 组件），如果需要 Homebrew，会询问你的 Mac 密码。",
+      "从“应用程序”中打开 <b>SharkyClips</b>。"
+    ],
+    "mac_btn": "下载 macOS 版 install.sh",
+    "linux_p": "Linux 和开发者：手动安装方法见<a href='{gh}#install'>安装指南</a>。",
     "more_h": "更多",
     "more": [
-      {"h": "更新", "p": "设置 → 更新 → 检查更新。SharkyClips 会在你不使用时安装新版本。<a href='{updates}'>更新内容</a>。"},
-      {"h": "卸载", "p": "Windows 设置 → 应用 → SharkyClips → 卸载。它会询问是否也删除你的设置；你的视频会保留。"},
-      {"h": "macOS 和 Linux", "p": "macOS 有一条命令即可完成的安装程序，开发者可以手动安装。它们的测试不如 Windows 充分。请参阅<a href='{gh}#install'>安装指南</a>。"}
+      {
+        "h": "更新",
+        "p": "设置 → 更新 → 检查更新。SharkyClips 会在你不使用时安装新版本。<a href='{updates}'>更新内容</a>。"
+      },
+      {
+        "h": "卸载",
+        "p": "Windows 设置 → 应用 → SharkyClips → 卸载。它会询问是否也删除你的设置；你的视频会保留。"
+      }
     ]
   },
   "faq": {
@@ -117,18 +555,66 @@
     "h1": "问题与解答",
     "lead": "没找到你的问题？<a href='{contact}'>问问我们</a>。",
     "items": [
-      {"id": "free", "q": "SharkyClips 真的免费吗？", "a": "<p>是的。它是开源的（MIT 许可）。没有订阅、点数、水印和广告。AI 在你自己的电脑上运行，所以没有任何需要付费的地方。</p>"},
-      {"id": "privacy", "q": "SharkyClips 会把我的视频上传到别处吗？", "a": "<p>不会。一切都在你的电脑上运行：语音识别、AI、寻找精彩时刻和制作短片。没有 SharkyClips 服务器，也没有追踪。只有你自己把短片分享到 YouTube、TikTok 或 Instagram 时，视频才会离开电脑。详情见<a href='{privacy}'>隐私政策</a>。</p>"},
-      {"id": "google", "q": "为什么上传 YouTube 需要我自己的 Google 项目？100 用户上限是什么？", "a": "<p>要上传到 YouTube，应用需要 Google 登录。对于未经 Google 审核的登录，Google 将其限制为<b>总共 100 个用户</b>（Google 称之为用户上限）。如果所有 SharkyClips 用户共用一个登录，很快就会满。</p><p>所以下载版没有共享的 Google 登录。你需要连接一个<b>属于你自己的免费 Google 项目</b>。这样上限和每日上传配额都只属于你。它免费、不需要信用卡，只需一次大约 5 到 10 分钟。</p>"},
-      {"id": "google-setup", "q": "如何连接我自己的 Google 项目？", "a": "<p>在 SharkyClips 中：设置 → YouTube → <b>连接你自己的 Google 项目</b>。向导会为你打开正确的 Google 页面：</p><ol class='howto'><li>创建一个项目（任意名称）。</li><li>启用 YouTube Data API v3。</li><li>设置同意屏幕（外部），并把自己添加为测试用户。</li><li>创建类型为桌面应用的 OAuth 客户端并下载其文件。</li><li>把这个文件拖入 SharkyClips，然后点击用 Google 连接。</li></ol><p>Google 可能会提示应用未经验证：那是你自己的项目，可以继续。项目处于测试状态时，Google 会在 7 天后结束登录；将其设为正式版即可保持登录。<a href='{own_google}'>完整指南</a>。</p>"},
-      {"id": "helper", "q": "如何设置 TikTok 助手扩展？", "a": "<p>SharkyClips 助手是一个小小的浏览器扩展。它会填写你的 TikTok（如需要还有 Instagram）上传页面，并在发布前停下。</p><ul><li><b>Microsoft Edge、Opera、Opera GX、Brave：</b>无需任何操作。SharkyClips 打开上传页面时会自动添加助手。</li><li><b>Google Chrome：</b>一步设置。SharkyClips 会显示简短指南：打开 chrome://extensions，开启开发者模式，点击加载已解压的扩展程序，然后选择 SharkyClips 显示的文件夹。</li><li>第一次请你自己在那个浏览器窗口中登录 TikTok。SharkyClips 永远看不到你的密码。</li></ul><p>助手只在 TikTok 和 Instagram 页面上运行，只与你电脑上的 SharkyClips 通信。没有它时，SharkyClips 会帮你复制文案，由你手动发布。</p>"},
-      {"id": "lowend", "q": "我的电脑能用吗？我没有游戏电脑。", "a": "<p>能。你需要 Windows 10 或 11（64 位）和 8 GB 内存。不需要显卡。在没有 NVIDIA 显卡的电脑上，SharkyClips 会自动选择<b>轻量模式</b>：在处理器上运行的较小语音模型和较小 AI。速度较慢，但可以使用：在小型双核笔记本上，17 分钟的视频大约需要 16 分钟。有 NVIDIA 显卡会快很多。请查看<a href='{download}#requirements'>系统要求</a>。</p>"},
-      {"id": "gaming", "q": "它会让我的游戏变卡吗？", "a": "<p>不会。在默认的安静模式下，你玩游戏或全屏观看时，SharkyClips 会暂停繁重的工作，并把显存还给游戏。你停下后它会继续。</p>"},
-      {"id": "smartscreen", "q": "Windows 提示“Windows 已保护你的电脑”。安全吗？", "a": "<p>这是 SmartScreen 对尚未使用付费证书签名的新下载发出的警告。点击<b>更多信息</b>，然后点击<b>仍要运行</b>。你可以用版本附带的 .sha256 文件校验文件。<a href='{download}#smartscreen'>分步说明</a>。</p>"},
-      {"id": "sources", "q": "我可以用哪些视频？", "a": "<p>Twitch、YouTube 和 Kick 的录像（含弹幕回放）、大多数其他视频网站，或你电脑上的任何视频文件。长达数小时的直播也没问题。请只使用你拥有或有权使用的视频。</p>"},
-      {"id": "posting", "q": "它会替我发布到 TikTok 和 Instagram 吗？", "a": "<p>SharkyClips 会准备好一切，助手会填写上传页面，但点击发布的是<b>你</b>。Instagram 始终由你分享。连接你自己的 Google 项目后，YouTube 上传可以自动进行。</p>"},
-      {"id": "mac", "q": "能在 Mac 或 Linux 上用吗？", "a": "<p>主要平台是 Windows，提供一键安装程序。macOS 有一条命令即可完成的安装程序，Linux 和开发者可以手动安装，但它们的测试较少。请参阅<a href='{gh}#install'>安装指南</a>。</p>"},
-      {"id": "feedback", "q": "如何报告问题或提出建议？", "a": "<p>在应用中：设置 → 关于 → <b>发送反馈</b>，或错误消息中的同一个按钮。它会打开一个 GitHub 表单，只填好应用版本和你的系统，不含其他内容。也可以使用<a href='{contact}'>联系页面</a>。</p>"}
+      {
+        "id": "free",
+        "q": "SharkyClips 真的免费吗？",
+        "a": "<p>是的。它是开源的（MIT 许可）。没有订阅、点数、水印和广告。AI 在你自己的电脑上运行，所以没有任何需要付费的地方。</p>"
+      },
+      {
+        "id": "privacy",
+        "q": "SharkyClips 会把我的视频上传到别处吗？",
+        "a": "<p>不会。一切都在你的电脑上运行：语音识别、AI、寻找精彩时刻和制作短片。没有 SharkyClips 服务器，也没有追踪。只有你自己把短片分享到 YouTube、TikTok 或 Instagram 时，视频才会离开电脑。详情见<a href='{privacy}'>隐私政策</a>。</p>"
+      },
+      {
+        "id": "google",
+        "q": "为什么上传 YouTube 需要我自己的 Google 项目？100 用户上限是什么？",
+        "a": "<p>要上传到 YouTube，应用需要 Google 登录。对于未经 Google 审核的登录，Google 将其限制为<b>总共 100 个用户</b>（Google 称之为用户上限）。如果所有 SharkyClips 用户共用一个登录，很快就会满。</p><p>所以下载版没有共享的 Google 登录。你需要连接一个<b>属于你自己的免费 Google 项目</b>。这样上限和每日上传配额都只属于你。它免费、不需要信用卡，只需一次大约 5 到 10 分钟。</p>"
+      },
+      {
+        "id": "google-setup",
+        "q": "如何连接我自己的 Google 项目？",
+        "a": "<p>在 SharkyClips 中：设置 → YouTube → <b>连接你自己的 Google 项目</b>。向导会为你打开正确的 Google 页面：</p><ol class='howto'><li>创建一个项目（任意名称）。</li><li>启用 YouTube Data API v3。</li><li>设置同意屏幕（外部），并把自己添加为测试用户。</li><li>创建类型为桌面应用的 OAuth 客户端并下载其文件。</li><li>把这个文件拖入 SharkyClips，然后点击用 Google 连接。</li></ol><p>Google 可能会提示应用未经验证：那是你自己的项目，可以继续。项目处于测试状态时，Google 会在 7 天后结束登录；将其设为正式版即可保持登录。<a href='{own_google}'>完整指南</a>。</p>"
+      },
+      {
+        "id": "helper",
+        "q": "如何设置 TikTok 助手扩展？",
+        "a": "<p>SharkyClips 助手是一个小小的浏览器扩展。它会填写你的 TikTok（如需要还有 Instagram）上传页面，并在发布前停下。</p><ul><li><b>Microsoft Edge、Opera、Opera GX、Brave：</b>无需任何操作。SharkyClips 打开上传页面时会自动添加助手。</li><li><b>Google Chrome：</b>一步设置。SharkyClips 会显示简短指南：打开 chrome://extensions，开启开发者模式，点击加载已解压的扩展程序，然后选择 SharkyClips 显示的文件夹。</li><li>第一次请你自己在那个浏览器窗口中登录 TikTok。SharkyClips 永远看不到你的密码。</li></ul><p>助手只在 TikTok 和 Instagram 页面上运行，只与你电脑上的 SharkyClips 通信。没有它时，SharkyClips 会帮你复制文案，由你手动发布。</p>"
+      },
+      {
+        "id": "lowend",
+        "q": "我的电脑能用吗？我没有游戏电脑。",
+        "a": "<p>能。你需要 Windows 10 或 11（64 位）和 8 GB 内存。不需要显卡。在没有 NVIDIA 显卡的电脑上，SharkyClips 会自动选择<b>轻量模式</b>：在处理器上运行的较小语音模型和较小 AI。速度较慢，但可以使用：在小型双核笔记本上，17 分钟的视频大约需要 16 分钟。有 NVIDIA 显卡会快很多。请查看<a href='{download}#requirements'>系统要求</a>。</p>"
+      },
+      {
+        "id": "gaming",
+        "q": "它会让我的游戏变卡吗？",
+        "a": "<p>不会。在默认的安静模式下，你玩游戏或全屏观看时，SharkyClips 会暂停繁重的工作，并把显存还给游戏。你停下后它会继续。</p>"
+      },
+      {
+        "id": "smartscreen",
+        "q": "Windows 提示“Windows 已保护你的电脑”。安全吗？",
+        "a": "<p>这是 SmartScreen 对尚未使用付费证书签名的新下载发出的警告。点击<b>更多信息</b>，然后点击<b>仍要运行</b>。你可以用版本附带的 .sha256 文件校验文件。<a href='{download}#smartscreen'>分步说明</a>。</p>"
+      },
+      {
+        "id": "sources",
+        "q": "我可以用哪些视频？",
+        "a": "<p>Twitch、YouTube 和 Kick 的录像（含弹幕回放）、大多数其他视频网站，或你电脑上的任何视频文件。长达数小时的直播也没问题。请只使用你拥有或有权使用的视频。</p>"
+      },
+      {
+        "id": "posting",
+        "q": "它会替我发布到 TikTok 和 Instagram 吗？",
+        "a": "<p>SharkyClips 会准备好一切，助手会填写上传页面，但点击发布的是<b>你</b>。Instagram 始终由你分享。连接你自己的 Google 项目后，YouTube 上传可以自动进行。</p>"
+      },
+      {
+        "id": "mac",
+        "q": "能在 Mac 或 Linux 上用吗？",
+        "a": "<p>主要平台是 Windows，提供一键安装程序。macOS 有一条命令即可完成的安装程序，Linux 和开发者可以手动安装，但它们的测试较少。请参阅<a href='{gh}#install'>安装指南</a>。</p>"
+      },
+      {
+        "id": "feedback",
+        "q": "如何报告问题或提出建议？",
+        "a": "<p>在应用中：设置 → 关于 → <b>发送反馈</b>，或错误消息中的同一个按钮。它会打开一个 GitHub 表单，只填好应用版本和你的系统，不含其他内容。也可以使用<a href='{contact}'>联系页面</a>。</p>"
+      }
     ],
     "more_h": "还是没解决？",
     "more_p": "提交一个<a href='{bug}'>问题报告</a>，或查看 <a href='{issues}'>GitHub 上的所有问题</a>。"
@@ -140,7 +626,12 @@
     "lead": "SharkyClips 会自动更新：设置 → 更新。以下是最近几个版本的变化。",
     "version": "版本",
     "show": "显示详情",
-    "groups": {"new": "新功能", "improved": "改进", "fixed": "修复", "other": "变更"},
+    "groups": {
+      "new": "新功能",
+      "improved": "改进",
+      "fixed": "修复",
+      "other": "变更"
+    },
     "older": "更早的版本和每个版本的安装程序都在 <a href='{releases}'>GitHub</a> 上。"
   },
   "contact": {
@@ -149,10 +640,34 @@
     "h1": "联系与反馈",
     "lead": "SharkyClips 在 GitHub 上公开开发。每一份报告都有帮助。",
     "cards": [
-      {"icon": "bug", "h": "报告问题", "p": "有地方不正常？告诉我们你做了什么，发生了什么。", "btn": "报告问题", "href": "{bug}"},
-      {"icon": "bulb", "h": "提出建议", "p": "你想要的功能、你玩的游戏、我们该改进的语言。", "btn": "提出建议", "href": "{idea}"},
-      {"icon": "shield", "h": "安全问题", "p": "发现了安全问题？请私下报告，不要发在公开的议题中。", "btn": "私下报告", "href": "{security}"},
-      {"icon": "mail", "h": "本网站与隐私", "p": "关于本网站、隐私政策或条款的问题。", "btn": "询问网站相关问题", "href": "{site_issues}"}
+      {
+        "icon": "bug",
+        "h": "报告问题",
+        "p": "有地方不正常？告诉我们你做了什么，发生了什么。",
+        "btn": "报告问题",
+        "href": "{bug}"
+      },
+      {
+        "icon": "bulb",
+        "h": "提出建议",
+        "p": "你想要的功能、你玩的游戏、我们该改进的语言。",
+        "btn": "提出建议",
+        "href": "{idea}"
+      },
+      {
+        "icon": "shield",
+        "h": "安全问题",
+        "p": "发现了安全问题？请私下报告，不要发在公开的议题中。",
+        "btn": "私下报告",
+        "href": "{security}"
+      },
+      {
+        "icon": "mail",
+        "h": "本网站与隐私",
+        "p": "关于本网站、隐私政策或条款的问题。",
+        "btn": "询问网站相关问题",
+        "href": "{site_issues}"
+      }
     ],
     "app_note": "<b>在应用中：</b>设置 → 关于 → <b>发送反馈</b>（每条错误消息中也有）会自动填好应用版本和你的系统。",
     "privacy_note": "GitHub 议题是公开的。请不要添加私人视频、私人内容的链接、密码或含个人数据的日志文件。发布需要一个免费的 GitHub 账号。"
@@ -171,5 +686,10 @@
     "summary_h": "简而言之",
     "summary": "<ul><li>SharkyClips 是免费的开源软件（MIT 许可）。</li><li>只使用你拥有或有权使用的视频、音乐和标志。你要对自己发布的内容负责。</li><li>AI 生成的标题和文字只是建议：发布前请检查。</li><li>本应用不提供任何担保。请备份对你重要的视频。</li></ul>"
   },
-  "notfound": {"title": "找不到页面：SharkyClips", "h1": "找不到页面", "p": "这个页面不存在（或已不存在）。", "back": "首页"}
+  "notfound": {
+    "title": "找不到页面：SharkyClips",
+    "h1": "找不到页面",
+    "p": "这个页面不存在（或已不存在）。",
+    "back": "首页"
+  }
 }

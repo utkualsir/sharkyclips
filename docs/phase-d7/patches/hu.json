@@ -1,0 +1,93 @@
+{
+  "common": {
+    "stars": "GitHub-csillag", "downloads": "letöltés", "sha_link": "SHA-256 ellenőrzőösszeg",
+    "months": ["január", "február", "március", "április", "május", "június", "július", "augusztus", "szeptember", "október", "november", "december"],
+    "date": "{y}. {m} {d}.", "dur_min": "kb. {m} perc", "dur_h": "kb. {h} óra {m} perc", "dur_h0": "kb. {h} óra"
+  },
+  "home": {
+    "desc": "A SharkyClips ingyenes app streamereknek. Megtalálja a Twitch-, YouTube- vagy Kick-streamed legjobb pillanatait, és posztolásra kész, álló klipeket készít belőlük, mindezt a saját gépeden. Vízjel és korlátok nélkül.",
+    "kick": "Kickkel is működik",
+    "kick_more": "és Twitch-csel, YouTube-bal vagy bármilyen videófájllal",
+    "promise_label": "Amit kapsz",
+    "promise": ["100%-ban ingyenes", "Nincs vízjel", "Nincs korlát", "A saját gépeden fut"],
+    "demo_alt": "Videó: a SharkyClips egy streamfelvételből kész álló klipeket készít, és megosztja őket",
+    "demo_cap": "A streamtől a klipig: balra a stream, jobbra a kész klip. Hang nélkül, felirattal.",
+    "captions": [
+      "Húzz be egy streamfelvételt, vagy illessz be egy Twitch-, YouTube- vagy Kick-linket.",
+      "A SharkyClips megtalálja a legjobb pillanatokat, és magától elkészíti a klipeket.",
+      "Balra a stream, jobbra a kész klip: 9:16-os, felirattal.",
+      "A klip a szavakkal kezdődik és ér véget, egy mondat sem marad félbe.",
+      "Minden klip címet és pontszámot kap, a legjobbak kerülnek felülre.",
+      "Egy Megosztás gomb a YouTube Shortshoz, a TikTokhoz és az Instagram Reelshez."
+    ],
+    "card_palette": {"h": "Témák és színek", "p": "Négy színtéma az apphoz (Klasszikus, Óceán, Shark Sign, Nagy kontraszt), sötéten vagy világosan, és a saját kiemelőszíned."},
+    "card_puzzle_p": "Egy kis böngészőbővítmény az Edge-hez, a Chrome-hoz, az Operához és a Brave-hez kitölti a TikTok-feltöltésedet. Te ellenőrzöd, és te kattintasz a Közzétételre.",
+    "yt_short": "A YouTube csatlakoztatása nem kötelező. Ha csatlakoztatod, a SharkyClips a hivatalos YouTube API-szolgáltatásokat csak arra használja, hogy feltöltse és kezelje az általad választott klipeket, és megmutassa az eredményeiket. A YouTube-adataid a gépeden maradnak.",
+    "yt_show": "Az engedélyek és a YouTube-adatok használatának megjelenítése"
+  },
+  "results": {
+    "h": "Valódi eredmények",
+    "lead": "Minden pár egy pillanatot mutat a hosszú streamből, és ugyanazt a pillanatot a klipben, amit a SharkyClips magától készített belőle: vágva, 9:16-ra alakítva, felirattal és címmel.",
+    "before": "Stream", "after": "Kész klip",
+    "before_alt": "Egy kép a 16:9-es streamfelvételből, {time}",
+    "after_alt": "Ugyanez a pillanat a kész 9:16-os klipben: {title}",
+    "note": "A demó streamünkből készült (egy rajzolt játék, gépi hang és generált chat), így nem látszik valódi személy, játék vagy csatorna. Kézzel semmit sem szerkesztettünk."
+  },
+  "compare": {
+    "h": "A SharkyClips és a többiek",
+    "lead": "Adatok az egyes termékek hivatalos weboldaláról, ellenőrizve: {date}. Az árak amerikai dollárban, adó nélkül. A csomagok változnak, ezért döntés előtt nézd meg az oldalaikat.",
+    "corner": "Jellemző",
+    "rows": [
+      ["Ár", "Ingyenes (nyílt forráskód, MIT-licenc)", "Ingyenes próba; Premium havi 24,99 $-tól vagy évi 179,99 $-tól", "Ingyenes csomag; fizetős csomagok havi 15 $-tól", "Ingyenes csomag; fizetős csomagok havi 15 $-tól vagy évi 150 $-tól"],
+      ["Vízjel", "Soha", "Az ingyenes exportokon", "Az ingyenes csomagban", "Csak ha egy ingyenes klip fizetős funkciót használ"],
+      ["Klipkorlát", "Nincs", "Ingyenes: egy friss stream klipjeinek előnézete; Premium: korlátlan MI-s klipkészítés", "Ingyenes: havi 60 feldolgozási perc, a fájlokat 3 napig tárolják", "Nincs perckorlát; egész streamek MI-s klipelése a Creator csomagtól (havi 27 $); ingyenes export 720p-ben"],
+      ["Hol dolgozzák fel a videódat", "A saját gépeden: semmi sem töltődik fel", "Online: az MI-s szerkesztésük a felhőben fut", "Online: feltöltesz egy fájlt vagy beillesztesz egy linket", "Online: feltöltesz egy fájlt vagy beillesztesz egy linket"],
+      ["Mi kell hozzá", "Windows 10 vagy 11 rendszerű gép 8 GB RAM-mal (macOS: kevésbé tesztelt)", "Böngésző és fiók", "Böngésző és fiók", "Böngésző és fiók"],
+      ["Játékfelismerés", "A Delta Force és a League of Legends játékképernyőjét olvassa; más játékoknál a hang, a beszéd és a chat alapján", "Több mint 3000 játék, minden játékkategóriára hangolva", "Nincs feltüntetve", "Nincs feltüntetve"],
+      ["Kick", "Kick-videók a chatjükkel", "Kick-streameket importál", "Támogatja a Kick-linkeket", "Kick-klipek az ingyenes csomagban; egész Kick-streamek a Creator csomagtól"],
+      ["Káromkodások kisípolása", "Automatikus 11 nyelven, és minden klipet újra ellenőriz", "Nincs feltüntetve", "A Pro csomagtól (havi 29 $)", "Automatikus szócenzúra (a csomag nincs egyértelműen feltüntetve)"],
+      ["Nyelvek", "11 (app, beszédfelismerés és felirat)", "Feliratokhoz nincs feltüntetve; hangutasítások angolul", "Több mint 25 a feliratokhoz", "Több mint 90 a feliratokhoz"]
+    ],
+    "note": "A „Nincs feltüntetve” azt jelenti, hogy nem találtuk a hivatalos oldalaikon. Valami hibás vagy elavult? Írj nekünk a kapcsolat oldalon, és javítjuk.",
+    "sources": "Források ({n} hivatalos oldal)"
+  },
+  "download": {
+    "desc": "Töltsd le az ingyenes SharkyClips telepítőt Windows 10-re és 11-re, vagy az install.sh fájlt macOS-re. Részletes rendszerkövetelmények, feldolgozási idők, SHA-256 ellenőrzőösszegek és segítség a SmartScreen-üzenethez.",
+    "sha_label": "{file} SHA-256 értéke",
+    "sha_how_win": "A letöltés ellenőrzéséhez futtasd a {cmd} parancsot a PowerShellben: a Hash pontosan ez a szám kell legyen. Ugyanez a szám szerepel a kiadás <a href='{sha_url}'>.sha256 fájljában</a> is.",
+    "sha_how_mac": "Ellenőrzéshez futtasd a {cmd} parancsot a Terminálban: az eredmény pontosan ez a szám kell legyen. A kiadás <a href='{sha_url}'>.sha256 fájljában</a> is megtalálod.",
+    "req_p": "A SharkyClips minden indításkor ellenőrzi a hardveredet, és a leggyorsabb működő beállítást választja. Átlagos gépeken is fut: a videókártya gyorsít rajta, de nem kötelező.",
+    "req_rows": [
+      ["Rendszer", "Windows 10 (1809 vagy újabb) vagy Windows 11, 64 bites", "Windows 11"],
+      ["Processzor", "64 bites, 2 mag / 4 szál (például 11. generációs Intel Core i3)", "6 mag / 12 szál vagy több (például 2020-as vagy újabb Intel Core i5 vagy AMD Ryzen 5)"],
+      ["Memória", "8 GB RAM (4 GB-tal könnyített módban, lassan működik)", "16 GB RAM"],
+      ["Videókártya", "Nem kell: a könnyített mód a processzoron fut", "NVIDIA GeForce RTX 6 GB vagy több memóriával. AMD Radeon és Intel Arc: az MI használhatja őket, a beszédfelismerés a processzoron marad"],
+      ["Tárhely", "Kb. 3 GB az appnak és 2-10 GB az MI-modelleknek, plusz hely a videóidnak (egy 1 órás 1080p-s felvétel kb. 4-8 GB)", "SSD legalább 50 GB szabad hellyel"],
+      ["Internet", "Az első indításhoz, a letöltésekhez és a megosztáshoz", "Utána offline is működik"]
+    ],
+    "time_h": "Mennyi ideig tart?",
+    "time_p": "Mérve: {date}, valódi 1080p-s streamfelvételekkel (beszéd és játék), az importálástól {clips} kész klipig: beszédfelismerés, a pillanatok keresése, MI-s címek és renderelés.",
+    "time_cols": ["Stream", "NVIDIA videókártyával", "Könnyített mód, csak processzor"],
+    "time_rows": ["1 órás stream", "3 órás stream"],
+    "time_notes": [
+      "Tesztgép: {cpu}, {ram} GB RAM, {gpu}. Könnyített módban a videókártya nem volt használva (Beállítások → Teljesítmény → Csak CPU).",
+      "Lassabb processzorral tovább tart: egy kis, 2 magos, videókártya nélküli laptopon egy 17 perces videó könnyített módban kb. 16 percig tartott.",
+      "A SharkyClips a háttérben dolgozik. Csendes módban szünetel, amíg játszol, és folytatja, ha abbahagyod."
+    ],
+    "smart_note": "Biztosra mennél? Hasonlítsd össze a fájlod SHA-256 értékét az <a href='#checksum'>oldal tetején lévő</a> számmal.",
+    "smart_cap": "A két kattintás illusztrációja. A te képernyőd kicsit másképp nézhet ki.",
+    "mac_h": "macOS és Linux",
+    "mac_p": "Macen egyetlen parancs mindent telepít. A macOS és a Linux kevésbé tesztelt, mint a Windows.",
+    "mac_steps": [
+      "Töltsd le az <b>install.sh</b> fájlt a lenti gombbal.",
+      "Nyisd meg a <b>Terminált</b>, és futtasd: <code>bash ~/Downloads/install.sh</code>. Megmutatja, mit fog telepíteni (Homebrew, Python, FFmpeg és az MI-részek), és ha kell a Homebrew, elkéri a Mac jelszavadat.",
+      "Nyisd meg a <b>SharkyClipst</b> az Alkalmazások közül."
+    ],
+    "mac_btn": "install.sh letöltése macOS-re",
+    "linux_p": "Linux és fejlesztők: a kézi telepítés a <a href='{gh}#install'>telepítési útmutatóban</a> található."
+  },
+  "features": {
+    "looks": {"h": "Témák és színek", "p": "Válassz színtémát az apphoz: Klasszikus, Óceán, Shark Sign vagy Nagy kontraszt.", "alt": "A Beállítások az app négy színtémájával"},
+    "helper_item1": "A Microsoft Edge-ben, az Operában, az Opera GX-ben és a Brave-ben magától működik; a Google Chrome egy beállítási lépést kér"
+  }
+}

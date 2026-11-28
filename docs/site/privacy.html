@@ -14,7 +14,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preload" href="fonts/archivo-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="site.css?v=1.2.74">
+<link rel="stylesheet" href="site.css?v=1.2.76">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SharkyClips">
 <meta property="og:title" content="Privacy policy: SharkyClips">
@@ -246,7 +246,7 @@
 </main>
 <footer>
   <div class="wrap">
-    <span>SharkyClips 1.2.74<span class="sep" aria-hidden="true"></span>Free and open source (MIT)</span>
+    <span>SharkyClips 1.2.76<span class="sep" aria-hidden="true"></span>Free and open source (MIT)</span>
     <nav aria-label="Footer">
       <a href="privacy.html">Privacy</a>
       <a href="terms.html">Terms</a>
@@ -260,6 +260,8 @@ function cur(){return d.dataset.theme||(matchMedia("(prefers-color-scheme: light
 b.addEventListener("click",function(){var n=cur()==="light"?"dark":"light";d.dataset.theme=n;try{localStorage.setItem("sc-theme",n)}catch(e){}});
 var l=document.querySelector(".lang");document.addEventListener("click",function(e){if(l.open&&!l.contains(e.target))l.open=false});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&l.open){l.open=false;l.querySelector("summary").focus()}});
+var v=document.getElementById("demo");if(v&&matchMedia("(prefers-reduced-motion: reduce)").matches){v.removeAttribute("autoplay");v.pause()}
+function yt(){var y=document.getElementById("youtube-details");if(y&&/^#youtube/.test(location.hash))y.open=true}yt();addEventListener("hashchange",yt);
 document.querySelectorAll("[data-setlang]").forEach(function(a){a.addEventListener("click",function(){try{localStorage.setItem("sc-lang",a.dataset.setlang)}catch(e){}})});
 var H={"en":{"t":"This page is also available in English.","go":"Read in English","x":"Close","h":"privacy.html"},"tr":{"t":"Bu sayfa Türkçe olarak da var.","go":"Türkçe oku","x":"Kapat","h":"tr/privacy.html"},"es":{"t":"Esta página también está en español.","go":"Leer en español","x":"Cerrar","h":"es/privacy.html"},"pt":{"t":"Esta página também está em português.","go":"Ler em português","x":"Fechar","h":"pt/privacy.html"},"de":{"t":"Diese Seite gibt es auch auf Deutsch.","go":"Auf Deutsch lesen","x":"Schließen","h":"de/privacy.html"},"fr":{"t":"Cette page existe aussi en français.","go":"Lire en français","x":"Fermer","h":"fr/privacy.html"},"hu":{"t":"Ez az oldal magyarul is elérhető.","go":"Olvasás magyarul","x":"Bezárás","h":"hu/privacy.html"},"ru":{"t":"Эта страница есть и на русском.","go":"Читать на русском","x":"Закрыть","h":"ru/privacy.html"},"ar":{"t":"هذه الصفحة متوفرة بالعربية أيضًا.","go":"اقرأ بالعربية","x":"إغلاق","h":"ar/privacy.html"},"zh":{"t":"本页也有中文版。","go":"阅读中文版","x":"关闭","h":"zh/privacy.html"},"ja":{"t":"このページは日本語でも読めます。","go":"日本語で読む","x":"閉じる","h":"ja/privacy.html"}},me="en",pick=null;try{if(localStorage.getItem("sc-lang"))return}catch(e){return}
 (navigator.languages||[navigator.language||""]).some(function(x){var c=String(x).slice(0,2).toLowerCase();if(H[c]){pick=c;return true}return false});

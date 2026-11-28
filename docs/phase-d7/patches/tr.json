@@ -1,0 +1,93 @@
+{
+  "common": {
+    "stars": "GitHub yıldızı", "downloads": "indirme", "sha_link": "SHA-256 sağlama değeri",
+    "months": ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"],
+    "date": "{d} {m} {y}", "dur_min": "yaklaşık {m} dk", "dur_h": "yaklaşık {h} sa {m} dk", "dur_h0": "yaklaşık {h} sa"
+  },
+  "home": {
+    "desc": "SharkyClips yayıncılar için ücretsiz bir uygulama. Twitch, YouTube veya Kick yayınındaki en iyi anları bulur ve paylaşmaya hazır dikey kliplere dönüştürür; hepsi kendi bilgisayarında. Filigran yok, sınır yok.",
+    "kick": "Kick ile çalışır",
+    "kick_more": "ayrıca Twitch, YouTube ve her video dosyası",
+    "promise_label": "Neler var",
+    "promise": ["%100 ücretsiz", "Filigran yok", "Sınır yok", "Bilgisayarında çalışır"],
+    "demo_alt": "Video: SharkyClips bir yayın kaydını hazır dikey kliplere dönüştürüp paylaşıyor",
+    "demo_cap": "Yayından klibe: solda yayın, sağda hazır klip. Sessiz, altyazılı.",
+    "captions": [
+      "Bir yayın kaydı bırak ya da Twitch, YouTube veya Kick bağlantısı yapıştır.",
+      "SharkyClips en iyi anları bulur ve klipleri kendisi hazırlar.",
+      "Solda yayın, sağda hazır klip: 9:16 kesilmiş, altyazılı.",
+      "Klip cümleyle başlar ve biter, hiçbir cümle yarıda kesilmez.",
+      "Her klibe bir başlık ve puan verilir, en iyileri en üstte.",
+      "YouTube Shorts, TikTok ve Instagram Reels için tek Paylaş düğmesi."
+    ],
+    "card_palette": {"h": "Temalar ve renkler", "p": "Uygulama için dört renk teması (Klasik, Okyanus, Shark Sign, Yüksek kontrast), koyu veya açık, ve kendi vurgu rengin."},
+    "card_puzzle_p": "Edge, Chrome, Opera ve Brave için küçük bir tarayıcı eklentisi TikTok yüklemeni doldurur. Kontrol eder ve Paylaş'a kendin basarsın.",
+    "yt_short": "YouTube'u bağlamak isteğe bağlıdır. Bağlarsan SharkyClips resmi YouTube API Hizmetlerini yalnızca seçtiğin klipleri yüklemek, yönetmek ve sonuçlarını sana göstermek için kullanır. YouTube verilerin bilgisayarında kalır.",
+    "yt_show": "İzinleri ve YouTube verilerinin nasıl kullanıldığını göster"
+  },
+  "results": {
+    "h": "Gerçek sonuçlar",
+    "lead": "Her çift, uzun yayından bir anı ve SharkyClips'in o andan kendi başına yaptığı klipteki aynı anı gösterir: kesilmiş, 9:16'ya çevrilmiş, altyazılı ve başlıklı.",
+    "before": "Yayın", "after": "Hazır klip",
+    "before_alt": "16:9 yayın kaydından bir kare, {time}",
+    "after_alt": "Hazır 9:16 klipteki aynı an: {title}",
+    "note": "Demo yayınımızdan yapıldı (çizilmiş bir oyun, bilgisayar sesi ve üretilmiş bir sohbet); gerçek bir kişi, oyun veya kanal yok. Elle hiçbir düzenleme yapılmadı."
+  },
+  "compare": {
+    "h": "SharkyClips ve diğerleri",
+    "lead": "Bilgiler her ürünün resmi sitesinden, {date} tarihinde kontrol edildi. Fiyatlar ABD doları, vergi hariç. Planlar değişir; karar vermeden önce kendi sayfalarına bak.",
+    "corner": "Özellik",
+    "rows": [
+      ["Fiyat", "Ücretsiz (açık kaynak, MIT lisansı)", "Ücretsiz deneme; Premium ayda 24,99 $ veya yılda 179,99 $", "Ücretsiz plan; ücretli planlar ayda 15 $'dan başlar", "Ücretsiz plan; ücretli planlar ayda 15 $ veya yılda 150 $'dan başlar"],
+      ["Filigran", "Hiçbir zaman", "Ücretsiz dışa aktarımlarda", "Ücretsiz planda", "Yalnızca ücretsiz bir klip ücretli özellik kullanırsa"],
+      ["Klip sınırı", "Yok", "Ücretsiz: yakın tarihli bir yayının kliplerine önizleme; Premium: sınırsız yapay zekâ kliplemesi", "Ücretsiz: ayda 60 işleme dakikası, dosyalar 3 gün saklanır", "Dakika sınırı yok; tüm yayını yapay zekâyla klipleme Creator planından (ayda 27 $); ücretsiz dışa aktarım 720p"],
+      ["Videon nerede işlenir", "Bilgisayarında: hiçbir şey yüklenmez", "Çevrim içi: yapay zekâ düzenlemesi bulutta çalışır", "Çevrim içi: dosya yüklersin veya bağlantı yapıştırırsın", "Çevrim içi: dosya yüklersin veya bağlantı yapıştırırsın"],
+      ["Ne gerekir", "8 GB RAM'li Windows 10 veya 11 bilgisayar (macOS: daha az test edildi)", "Tarayıcı ve hesap", "Tarayıcı ve hesap", "Tarayıcı ve hesap"],
+      ["Oyunu tanıyan algılama", "Delta Force ve League of Legends'ta oyun ekranını okur; diğer oyunlarda ses, konuşma ve sohbetten", "3.000'den fazla oyun, her oyun kategorisine göre ayarlı", "Belirtilmemiş", "Belirtilmemiş"],
+      ["Kick", "Kick videoları ve sohbet kayıtları", "Kick yayınlarını içe aktarır", "Kick bağlantıları desteklenir", "Ücretsiz planda Kick klipleri; tüm Kick yayınları Creator planından"],
+      ["Küfür bipleme", "11 dilde otomatik, her klip yeniden kontrol edilir", "Belirtilmemiş", "Pro planından (ayda 29 $)", "Otomatik kelime sansürü (plan açıkça belirtilmemiş)"],
+      ["Diller", "11 (uygulama, konuşma tanıma ve altyazı)", "Altyazı için belirtilmemiş; sesli komutlar İngilizce", "Altyazı için 25'ten fazla", "Altyazı için 90'dan fazla"]
+    ],
+    "note": "\"Belirtilmemiş\", resmi sayfalarında bulamadığımız anlamına gelir. Yanlış veya eski bir bilgi mi var? İletişim sayfasından bize yaz, düzeltelim.",
+    "sources": "Kaynaklar ({n} resmi sayfa)"
+  },
+  "download": {
+    "desc": "Windows 10 ve 11 için ücretsiz SharkyClips kurulum dosyası veya macOS için install.sh. Ayrıntılı sistem gereksinimleri, işlem süreleri, SHA-256 sağlama değerleri ve SmartScreen mesajı için yardım.",
+    "sha_label": "{file} için SHA-256",
+    "sha_how_win": "İndirdiğin dosyayı kontrol etmek için PowerShell'de {cmd} komutunu çalıştır: Hash tam olarak bu sayı olmalı. Aynı sayı sürümün <a href='{sha_url}'>.sha256 dosyasında</a> da var.",
+    "sha_how_mac": "Kontrol etmek için Terminal'de {cmd} komutunu çalıştır: sonuç tam olarak bu sayı olmalı. Sürümün <a href='{sha_url}'>.sha256 dosyasında</a> da var.",
+    "req_p": "SharkyClips her açılışta donanımını kontrol eder ve çalışan en hızlı ayarı seçer. Normal bilgisayarlarda çalışır: ekran kartı hızlandırır ama gerekli değildir.",
+    "req_rows": [
+      ["Sistem", "Windows 10 (1809 veya daha yeni) ya da Windows 11, 64 bit", "Windows 11"],
+      ["İşlemci", "64 bit, 2 çekirdek / 4 iş parçacığı (örneğin Intel Core i3 11. nesil)", "6 çekirdek / 12 iş parçacığı veya daha fazlası (örneğin 2020 veya sonrası Intel Core i5 ya da AMD Ryzen 5)"],
+      ["Bellek", "8 GB RAM (4 GB, Hafif modda yavaş çalışır)", "16 GB RAM"],
+      ["Ekran kartı", "Gerekmez: Hafif mod işlemcide çalışır", "6 GB veya daha fazla belleğe sahip NVIDIA GeForce RTX. AMD Radeon ve Intel Arc: yapay zekâ bunları kullanabilir, konuşma tanıma işlemcide kalır"],
+      ["Disk", "Uygulama için yaklaşık 3 GB, yapay zekâ modelleri için 2-10 GB, ayrıca videoların için yer (1 saatlik 1080p kayıt yaklaşık 4-8 GB)", "50 GB veya daha fazla boş alanı olan bir SSD"],
+      ["İnternet", "İlk açılış, indirmeler ve paylaşım için", "Sonrasında çevrim dışı çalışır"]
+    ],
+    "time_h": "Ne kadar sürer?",
+    "time_p": "{date} tarihinde gerçek 1080p yayın kayıtlarıyla (konuşma ve oyun) ölçüldü; içe aktarmadan {clips} hazır klibe kadar: konuşma tanıma, anları bulma, yapay zekâ başlıkları ve dışa aktarma.",
+    "time_cols": ["Yayın", "NVIDIA ekran kartıyla", "Hafif mod, yalnızca işlemci"],
+    "time_rows": ["1 saatlik yayın", "3 saatlik yayın"],
+    "time_notes": [
+      "Test bilgisayarı: {cpu}, {ram} GB RAM, {gpu}. Hafif modda ekran kartı kullanılmadı (Ayarlar → Performans → Sadece CPU).",
+      "Daha yavaş bir işlemci daha uzun sürer: ekran kartı olmayan küçük, 2 çekirdekli bir dizüstünde 17 dakikalık bir video Hafif modda yaklaşık 16 dakika sürdü.",
+      "SharkyClips arka planda çalışır. Sessiz modda sen oyun oynarken durur, bıraktığında devam eder."
+    ],
+    "smart_note": "Emin olmak mı istiyorsun? Dosyanın SHA-256 değerini <a href='#checksum'>bu sayfanın üstündeki</a> sayıyla karşılaştır.",
+    "smart_cap": "İki tıklamanın çizimi. Senin ekranın biraz farklı görünebilir.",
+    "mac_h": "macOS ve Linux",
+    "mac_p": "Mac'te tek bir komut her şeyi kurar. macOS ve Linux, Windows'tan daha az test edildi.",
+    "mac_steps": [
+      "Aşağıdaki düğmeyle <b>install.sh</b> dosyasını indir.",
+      "<b>Terminal</b>'i aç ve <code>bash ~/Downloads/install.sh</code> komutunu çalıştır. Neleri kuracağını gösterir (Homebrew, Python, FFmpeg ve yapay zekâ parçaları) ve Homebrew gerekirse Mac parolanı sorar.",
+      "<b>SharkyClips</b>'i Uygulamalar'dan aç."
+    ],
+    "mac_btn": "macOS için install.sh indir",
+    "linux_p": "Linux ve geliştiriciler: elle kurulum <a href='{gh}#install'>kurulum rehberinde</a>."
+  },
+  "features": {
+    "looks": {"h": "Temalar ve renkler", "p": "Uygulama için bir renk teması seç: Klasik, Okyanus, Shark Sign veya Yüksek kontrast.", "alt": "Uygulamanın dört renk temasıyla Ayarlar"},
+    "helper_item1": "Microsoft Edge, Opera, Opera GX ve Brave'de kendiliğinden çalışır; Google Chrome bir kurulum adımı ister"
+  }
+}

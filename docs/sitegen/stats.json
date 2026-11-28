@@ -1,0 +1,11 @@
+{
+ "stars": 37,
+ "downloads": 2827,
+ "checked": "2026-11-28",
+ "sha256": {
+  "1.2.76": {
+   "install_sh": "0ff8ce3a3b109f230e66e2d202e398baeda0875e32b4d8ae605da617cd81b2e7",
+   "setup": "98dfa9f67907571441001d7e478507466754f483fbd048dfcbbcd43cdc492c03"
+  }
+ }
+}

@@ -131,6 +131,23 @@ section + section { border-top: 1px solid var(--border); }
 /* ---- hero */
 .hero { padding-block: 64px 48px; display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 980px) { .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; } .hero h1 { font-size: clamp(38px, 4.2vw, 54px); } }
+@media (min-width: 980px) { .hero { grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); padding-block: 48px 40px; } }
+.kick { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 0 0 16px; font-size: 15px; color: var(--muted); }
+.kick b { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px 4px 8px; border-radius: 999px; background: #53fc18; color: #08130a; font-weight: 800; letter-spacing: 0.01em; }
+.kick svg { width: 18px; height: 18px; }
+.promise { display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: 8px 22px; margin: -6px 0 26px; padding: 0; list-style: none; font-weight: 700; color: var(--strong); font-size: 17px; }
+.promise li { display: flex; align-items: center; gap: 8px; }
+.promise svg { width: 20px; height: 20px; flex: none; color: var(--ok); stroke-width: 2.6; }
+.trust { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 18px; font-size: 14px; }
+.trust:empty { display: none; }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.badge { display: inline-flex; align-items: stretch; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; text-decoration: none; color: var(--text); font-size: 14px; line-height: 1; }
+.badge svg { width: 16px; height: 16px; margin: auto 0 auto 9px; color: var(--gold-text); }
+.badge span { padding: 7px 8px 7px 6px; }
+.badge b { padding: 7px 10px; background: var(--surface-2); color: var(--strong); border-inline-start: 1px solid var(--border); }
+.badge:hover { border-color: var(--strong); }
+.sha-link { display: inline-flex; align-items: center; gap: 6px; color: var(--link); }
+.sha-link svg { width: 17px; height: 17px; }
 .shot { margin: 0; border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
 .shot img, .shot video { display: block; width: 100%; height: auto; }
 figcaption { font-size: 14px; color: var(--muted); padding: 10px 14px; border-top: 1px solid var(--border); }
@@ -154,6 +171,46 @@ figcaption { font-size: 14px; color: var(--muted); padding: 10px 14px; border-to
 .feature ul { padding-inline-start: 1.2em; color: var(--muted); margin: 10px 0 0; }
 .feature li + li { margin-top: 4px; }
 .gallery { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); margin-top: 24px; }
+
+.shot video { aspect-ratio: 16 / 9; background: #0a1020; }
+.shot video::cue { font-size: 18px; background: rgba(5, 10, 22, 0.86); color: #fff; }
+
+/* ---- real results (before -> after) */
+.results { display: grid; gap: 18px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); margin: 24px 0 14px; padding: 0; list-style: none; }
+.ba figure { margin: 0; height: 100%; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.ba-pair { display: grid; grid-template-columns: minmax(0, 1fr) 22px minmax(0, 0.5fr); align-items: center; gap: 8px; padding: 14px; background: var(--bg-2); }
+.ba-before, .ba-after { position: relative; }
+.ba img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--border); }
+.ba-arrow { color: var(--gold-text); display: grid; place-items: center; }
+.ba-arrow svg { width: 22px; height: 22px; }
+:dir(rtl) .ba-arrow svg, [dir="rtl"] .ba-arrow svg { transform: scaleX(-1); }
+.tag { position: absolute; inset-inline-start: 6px; bottom: 6px; max-width: calc(100% - 12px); padding: 2px 7px; border-radius: 6px; background: rgba(5, 10, 22, 0.86); color: #fff; font-size: 12px; font-weight: 700; line-height: 1.4; }
+.ba figcaption { border-top: 1px solid var(--border); display: grid; gap: 2px; padding: 12px 14px 14px; font-size: 15px; }
+.ba figcaption b { color: var(--strong); }
+
+/* ---- comparison */
+.compare table { min-width: 860px; font-size: 14.5px; }
+.compare thead th { white-space: nowrap; }
+.compare thead th:nth-child(2), .compare td:nth-child(2) { background: var(--gold-soft); }
+.compare td:nth-child(2) { color: var(--strong); font-weight: 600; }
+.compare tbody th { width: 15%; }
+.tablewrap:focus-visible { outline: none; box-shadow: var(--focus); }
+details.more { margin-top: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+details.more > summary { cursor: pointer; padding: 13px 18px; font-weight: 700; color: var(--link); }
+details.more[open] > summary { border-bottom: 1px solid var(--border); }
+details.more .more-body { padding: 4px 18px 16px; }
+.sources { margin: 0; padding: 12px 18px 14px 2.2em; columns: 2 320px; font-size: 14px; }
+.sources a { overflow-wrap: anywhere; }
+
+/* ---- download trust */
+.checksum { margin-top: 22px; max-width: 760px; padding: 14px 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.checksum .sum-h { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-weight: 700; color: var(--strong); }
+.checksum .sum-h svg { width: 20px; height: 20px; color: var(--ok); flex: none; }
+.hash { display: block; font-family: var(--font-mono); font-size: 14px; overflow-wrap: anywhere; word-break: break-all; padding: 8px 10px; border-radius: 8px; background: var(--surface-2); color: var(--strong); user-select: all; }
+.checksum p:last-child { margin: 10px 0 0; }
+.checksum code:not(.hash) { overflow-wrap: anywhere; }
+ul.notes { margin: 14px 0 0; padding-inline-start: 1.2em; }
+ul.notes li + li { margin-top: 4px; }
 
 /* ---- tables, notes */
 .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
@@ -204,3 +261,14 @@ footer a:hover { color: var(--strong); }
 
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 @media print { header.top, footer, .langhint { display: none; } body { background: #fff; color: #000; } }
+
+/* phones and tablets: the demo video goes right under the headline, so it is on the first screen too */
+@media (max-width: 979px) {
+  .hero { gap: 0; padding-block: 36px 40px; }
+  .hero-text { display: contents; }
+  .hero > *, .hero-text > * { order: 2; }
+  .hero .kick, .hero h1 { order: 0; }
+  .hero .demo { order: 1; margin: 4px 0 24px; }
+  .hero h1 { font-size: clamp(30px, 8vw, 44px); }
+  .shot video::cue { font-size: 13px; }
+}

@@ -1,0 +1,19 @@
+{
+ "label": "gpu60",
+ "preset": "normal",
+ "device": "auto",
+ "video": "C:/Users/redmo/AppData/Local/Temp/claude/9ea16ee277ee090a/ff94c2dd-a07d-4239-921c-6a3460958261/scratchpad/real/real60.mp4",
+ "home": "C:\\Users\\redmo\\AppData\\Local\\Temp\\sc-time-gpu60-vwkzpz07",
+ "steps": {
+  "ingest": 26.3,
+  "transcribe": 31.9,
+  "highlights": 253.5,
+  "analyze": 682.6,
+  "render": 111.4
+ },
+ "cpu": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+ "started": "2026-11-28 06:44:29",
+ "project": "real60-7895d9b0",
+ "total": 1105.7,
+ "finished": "2026-11-28 07:02:54"
+}
